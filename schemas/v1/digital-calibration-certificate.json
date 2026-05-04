@@ -1,0 +1,297 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/qi-vc/schemas/v1/digital-calibration-certificate.json",
+  "title": "DigitalCalibrationCertificate",
+  "description": "W3C VC 2.0 credential encoding a Digital Calibration Certificate per ISO/IEC 17025:2017 and PTB DCC XSD v3.3.0 (https://ptb.de/dcc). Issued by an ISO/IEC 17025-accredited Conformity Assessment Body (CAB) to a customer.",
+  "type": "object",
+  "required": [
+    "@context",
+    "type",
+    "issuer",
+    "validFrom",
+    "credentialSubject",
+    "evidence",
+    "proof"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "@context": {
+      "$ref": "#/$defs/VcContext",
+      "description": "JSON-LD context array. First item MUST be 'https://www.w3.org/ns/credentials/v2'. Second item SHOULD be the QI-VC calibration context."
+    },
+    "type": {
+      "allOf": [
+        {"$ref": "#/$defs/VcType"},
+        {
+          "contains": {"const": "DigitalCalibrationCertificate"}
+        }
+      ],
+      "description": "Credential type array. MUST contain 'VerifiableCredential' and 'DigitalCalibrationCertificate'."
+    },
+    "id": {
+      "type": "string",
+      "format": "uri",
+      "description": "Optional globally unique URI for this credential."
+    },
+    "issuer": {
+      "$ref": "#/$defs/Issuer",
+      "description": "DID of the calibration laboratory (CAB) issuing this certificate. Maps to dcc:calibrationLaboratory in the DCC domain, providing the cryptographic identity."
+    },
+    "validFrom": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime from which this credential is valid. Set to dcc:endPerformanceDate — the date calibration was completed. ISO/IEC 17025:2017 §7.8.2."
+    },
+    "validUntil": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime after which this credential is no longer valid. Set only when the issuing lab specifies a recalibration due date. ISO/IEC 17025:2017 §7.8.4 note: calibration intervals are the user's responsibility."
+    },
+    "credentialStatus": {
+      "$ref": "#/$defs/BitstringStatusListEntry",
+      "description": "Revocation or suspension status. Per W3C Bitstring Status List v1.0."
+    },
+    "credentialSchema": {
+      "type": "object",
+      "description": "Reference to this schema for validation purposes.",
+      "properties": {
+        "id": {"type": "string", "format": "uri"},
+        "type": {"type": "string"}
+      }
+    },
+    "credentialSubject": {
+      "$ref": "#/$defs/DccCredentialSubject",
+      "description": "The DCC domain payload. Contains all calibration data per PTB DCC XSD v3.3.0."
+    },
+    "evidence": {
+      "type": "array",
+      "description": "Evidence that the issuing CAB was authorized to issue this credential. MUST contain a reference to the CapabilityCredential with a cryptographic hashBinding. W3C VC 2.0 §4.9.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/CapabilityCredentialReference"
+      }
+    },
+    "proof": {
+      "$ref": "#/$defs/DataIntegrityProof",
+      "description": "Cryptographic proof over the credential. In M1 this is a structural placeholder; real EdDSA proofs are added in M2."
+    }
+  },
+  "$defs": {
+    "VcContext": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/VcContext"},
+    "VcType": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/VcType"},
+    "Issuer": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Issuer"},
+    "BitstringStatusListEntry": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/BitstringStatusListEntry"},
+    "DataIntegrityProof": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/DataIntegrityProof"},
+    "DigestBinding": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/DigestBinding"},
+    "Unit": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Unit"},
+    "MeasurementUncertainty": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/MeasurementUncertainty"},
+    "Quantity": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Quantity"},
+    "PhysicalQuantity": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/PhysicalQuantity"},
+    "ContactInfo": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/ContactInfo"},
+    "Identification": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Identification"},
+    "CapabilityCredentialReference": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/CapabilityCredentialReference"},
+
+    "DccCredentialSubject": {
+      "title": "DccCredentialSubject",
+      "description": "The subject of a DigitalCalibrationCertificate. Maps to the content of a PTB DCC v3.3.0 document.",
+      "type": "object",
+      "required": ["administrativeData", "measurementResults"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional DID of the calibrated item or customer. W3C VC 2.0 §4.6."
+        },
+        "administrativeData": {
+          "$ref": "#/$defs/DccAdministrativeData"
+        },
+        "measurementResults": {
+          "type": "array",
+          "description": "Calibration measurement results. Maps to dcc:measurementResults/dcc:result in PTB DCC XSD v3.3.0.",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/MeasurementResultGroup"
+          }
+        }
+      }
+    },
+
+    "DccAdministrativeData": {
+      "title": "DccAdministrativeData",
+      "description": "Administrative metadata for the DCC. Maps to dcc:administrativeData in PTB DCC XSD v3.3.0.",
+      "type": "object",
+      "required": ["coreData", "items", "calibrationLaboratory", "customer"],
+      "additionalProperties": true,
+      "properties": {
+        "coreData": {
+          "title": "CoreData",
+          "description": "Essential DCC identifiers and dates. Maps to dcc:coreData in PTB DCC XSD v3.3.0.",
+          "type": "object",
+          "required": ["uniqueIdentifier", "beginPerformanceDate", "endPerformanceDate"],
+          "additionalProperties": true,
+          "properties": {
+            "uniqueIdentifier": {
+              "type": "string",
+              "description": "Unique certificate identifier. Maps to dcc:uniqueIdentifier. PTB DCC XSD §administrativeData/coreData."
+            },
+            "countryCode": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$",
+              "description": "ISO 3166-1 alpha-2 country code of the calibration laboratory. Maps to dcc:countryCodeISO3166_1."
+            },
+            "usedLanguage": {
+              "type": "string",
+              "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+              "description": "ISO 639-1 language code of the certificate content. Maps to dcc:usedLangCodeISO639_1."
+            },
+            "beginPerformanceDate": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Start of calibration activity. Maps to dcc:beginPerformanceDate. ISO 8601."
+            },
+            "endPerformanceDate": {
+              "type": "string",
+              "format": "date-time",
+              "description": "End of calibration — the calibration date. Maps to dcc:endPerformanceDate. ISO 8601. Equals VC validFrom."
+            },
+            "issueDate": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Date the certificate was formally issued. Maps to dcc:issueDate. May differ from endPerformanceDate."
+            },
+            "performanceLocation": {
+              "type": "string",
+              "description": "Location where calibration was performed. Maps to dcc:performanceLocation."
+            }
+          }
+        },
+        "items": {
+          "type": "array",
+          "description": "Calibrated equipment items. Maps to dcc:items/dcc:item in PTB DCC XSD v3.3.0. Typically one item per DCC.",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/DccItem"
+          }
+        },
+        "calibrationLaboratory": {
+          "$ref": "#/$defs/ContactInfo",
+          "description": "The calibration laboratory. Maps to dcc:calibrationLaboratory (contactType) in PTB DCC XSD v3.3.0. Human-readable complement to the VC issuer DID."
+        },
+        "customer": {
+          "$ref": "#/$defs/ContactInfo",
+          "description": "The customer who commissioned the calibration. Maps to dcc:customer (contactType) in PTB DCC XSD v3.3.0. ISO/IEC 17025:2017 §7.8.2.a requires name and address of customer."
+        }
+      }
+    },
+
+    "DccItem": {
+      "title": "DccItem",
+      "description": "An item submitted for calibration. Maps to dcc:item in PTB DCC XSD v3.3.0.",
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": true,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Descriptive name of the item. Maps to dcc:name on dcc:item."
+        },
+        "description": {
+          "type": "string",
+          "description": "Additional description. Maps to dcc:description."
+        },
+        "identifications": {
+          "type": "array",
+          "description": "Identifiers for this item (serial number, model, inventory number, etc.). Maps to dcc:identifications/dcc:identification.",
+          "items": {
+            "$ref": "#/$defs/Identification"
+          }
+        },
+        "manufacturer": {
+          "$ref": "#/$defs/ContactInfo",
+          "description": "Equipment manufacturer. Maps to dcc:manufacturer (contactType)."
+        },
+        "owner": {
+          "$ref": "#/$defs/ContactInfo",
+          "description": "Equipment owner (if different from customer). Maps to dcc:owner (contactType)."
+        }
+      }
+    },
+
+    "MeasurementResultGroup": {
+      "title": "MeasurementResultGroup",
+      "description": "A group of measurement results for one measurand with one method. Maps to dcc:result in PTB DCC XSD v3.3.0.",
+      "type": "object",
+      "required": ["measurand", "results"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Optional identifier for this result group, for cross-referencing. Maps to id attribute on dcc:result."
+        },
+        "measurand": {
+          "type": "string",
+          "description": "Human-readable label for what is being measured, e.g. 'Pressure'. Maps to dcc:name on dcc:result."
+        },
+        "usedMethods": {
+          "type": "array",
+          "description": "Calibration methods applied. Maps to dcc:usedMethod in PTB DCC XSD v3.3.0. ISO/IEC 17025:2017 §7.2 (method selection and verification).",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "additionalProperties": true,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Method name or title."
+              },
+              "reference": {
+                "type": "string",
+                "description": "Standard or SOP reference, e.g. 'EA-10/17', 'EURAMET cg-17 v4'."
+              },
+              "description": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "influenceConditions": {
+          "type": "array",
+          "description": "Environmental and influence conditions during calibration. Maps to dcc:influenceCondition. GUM §4.2 (identifying and quantifying influence quantities).",
+          "items": {
+            "$ref": "#/$defs/PhysicalQuantity"
+          }
+        },
+        "results": {
+          "type": "array",
+          "description": "Individual measurement readings for this measurand. Maps to dcc:measurement/dcc:quantity in PTB DCC XSD v3.3.0.",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/MeasurementReading"
+          }
+        }
+      }
+    },
+
+    "MeasurementReading": {
+      "title": "MeasurementReading",
+      "description": "A single measurement reading within a result group. Nested as results[].data.quantity to preserve the DRMD/DCC XSD nesting and allow future extension with qualitative or count data types.",
+      "type": "object",
+      "required": ["data"],
+      "additionalProperties": true,
+      "properties": {
+        "data": {
+          "type": "object",
+          "required": ["quantity"],
+          "additionalProperties": true,
+          "properties": {
+            "quantity": {
+              "$ref": "#/$defs/Quantity",
+              "description": "The measured quantity: quantityKind, value, unit, uncertainty. Maps to si:quantity / si:real in D-SI XSD v2.2.1."
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+
+    "id": "@id",
+    "type": "@type",
+
+    "dcc": "https://ptb.de/dcc#",
+    "si": "https://ptb.de/si#",
+    "qudt": "http://qudt.org/schema/qudt#",
+    "quantitykind": "http://qudt.org/vocab/quantitykind/",
+    "qunit": "http://qudt.org/vocab/unit/",
+    "qi": "https://w3id.org/qi-vc/vocab/v1#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+
+    "DigitalCalibrationCertificate": "qi:DigitalCalibrationCertificate",
+
+    "CapabilityCredentialReference": "qi:CapabilityCredentialReference",
+    "hashBinding": "qi:hashBinding",
+    "digestAlgorithm": "qi:digestAlgorithm",
+    "digestMultibase": "qi:digestMultibase",
+
+    "administrativeData": "dcc:administrativeData",
+    "coreData": "dcc:coreData",
+    "uniqueIdentifier": "dcc:uniqueIdentifier",
+    "countryCode": {"@id": "dcc:countryCodeISO3166_1"},
+    "usedLanguage": {"@id": "dcc:usedLangCodeISO639_1"},
+    "beginPerformanceDate": {"@id": "dcc:beginPerformanceDate", "@type": "xsd:dateTime"},
+    "endPerformanceDate": {"@id": "dcc:endPerformanceDate", "@type": "xsd:dateTime"},
+    "issueDate": {"@id": "dcc:issueDate", "@type": "xsd:dateTime"},
+    "performanceLocation": "dcc:performanceLocation",
+
+    "items": {"@id": "dcc:items", "@container": "@set"},
+    "identifications": {"@id": "dcc:identifications", "@container": "@set"},
+
+    "calibrationLaboratory": "dcc:calibrationLaboratory",
+    "customer": "dcc:customer",
+    "accreditationNumber": "qi:accreditationNumber",
+
+    "measurementResults": {"@id": "dcc:measurementResults", "@container": "@set"},
+    "measurand": "dcc:measurand",
+    "usedMethods": {"@id": "dcc:usedMethod", "@container": "@set"},
+    "influenceConditions": {"@id": "dcc:influenceCondition", "@container": "@set"},
+    "results": {"@id": "dcc:measurement", "@container": "@set"},
+
+    "data": "qi:data",
+    "quantity": {"@id": "qudt:quantity", "@type": "@json"},
+
+    "quantityKind": {"@id": "qudt:quantityKind", "@type": "@id"},
+    "value": {"@id": "qudt:numericValue", "@type": "xsd:decimal"},
+    "unit": "qudt:unit",
+    "ucumCode": "qi:ucumCode",
+    "unitIri": {"@id": "qi:unitIri", "@type": "@id"},
+
+    "uncertainty": "qi:uncertainty",
+    "standardUncertainty": {"@id": "si:standardUncertainty", "@type": "xsd:decimal"},
+    "expandedUncertainty": {"@id": "si:expandedUncertainty", "@type": "xsd:decimal"},
+    "coverageFactor": {"@id": "si:coverageFactor", "@type": "xsd:decimal"},
+    "coverageProbability": {"@id": "si:coverageProbability", "@type": "xsd:decimal"},
+
+    "name": "dcc:name",
+    "description": "dcc:description",
+    "location": "dcc:location",
+    "manufacturer": "dcc:manufacturer",
+    "owner": "dcc:owner",
+    "issuer": {"@id": "dcc:issuer"},
+    "reference": "dcc:reference",
+    "serialNumber": "dcc:serialNumber",
+    "model": "dcc:model",
+    "lotNumber": "qi:lotNumber"
+  }
+}

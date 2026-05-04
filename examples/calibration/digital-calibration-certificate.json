@@ -1,0 +1,181 @@
+{
+  "$schema": "https://w3id.org/qi-vc/schemas/v1/digital-calibration-certificate.json",
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-calibration.jsonld"
+  ],
+  "type": ["VerifiableCredential", "DigitalCalibrationCertificate"],
+  "id": "https://cab-pressure.example.com/credentials/dcc-2025-001",
+  "issuer": {
+    "id": "did:example:cab-pressure",
+    "name": "CAB Pressure Lab GmbH"
+  },
+  "validFrom": "2025-08-11T13:20:00Z",
+  "validUntil": "2026-08-11T00:00:00Z",
+  "credentialStatus": {
+    "id": "https://cab-pressure.example.com/status/lists/1#42",
+    "type": "BitstringStatusListEntry",
+    "statusPurpose": "revocation",
+    "statusListIndex": "42",
+    "statusListCredential": "https://cab-pressure.example.com/status/lists/1"
+  },
+  "credentialSchema": {
+    "id": "https://w3id.org/qi-vc/schemas/v1/digital-calibration-certificate.json",
+    "type": "JsonSchema"
+  },
+  "credentialSubject": {
+    "id": "did:example:customer-alpha",
+    "administrativeData": {
+      "coreData": {
+        "uniqueIdentifier": "DCC-2025-CAB-001",
+        "countryCode": "DE",
+        "usedLanguage": "en",
+        "beginPerformanceDate": "2025-08-10T09:00:00Z",
+        "endPerformanceDate": "2025-08-11T13:20:00Z",
+        "issueDate": "2025-08-11T14:00:00Z",
+        "performanceLocation": "CAB Pressure Lab GmbH, Berlin, Germany"
+      },
+      "items": [
+        {
+          "name": "Pressure Transmitter",
+          "description": "Industrial pressure sensor for process control",
+          "identifications": [
+            {
+              "issuer": "manufacturer",
+              "type": "serialNumber",
+              "value": "SN-987654321"
+            },
+            {
+              "issuer": "manufacturer",
+              "type": "modelNumber",
+              "value": "XYZ-200"
+            },
+            {
+              "issuer": "customer",
+              "type": "inventoryNumber",
+              "value": "INV-ACME-042"
+            }
+          ],
+          "manufacturer": {
+            "name": "ACME Instruments GmbH",
+            "location": "Frankfurt, Germany"
+          }
+        }
+      ],
+      "calibrationLaboratory": {
+        "name": "CAB Pressure Lab GmbH",
+        "location": "Berlin, Germany",
+        "url": "https://cab-pressure.example.com",
+        "accreditationNumber": "D-PL-12345-01-00"
+      },
+      "customer": {
+        "id": "did:example:customer-alpha",
+        "name": "ACME Process Industries GmbH",
+        "location": "Frankfurt, Germany",
+        "email": "metrology@acme.example.com"
+      }
+    },
+    "measurementResults": [
+      {
+        "measurand": "Pressure",
+        "usedMethods": [
+          {
+            "name": "Deadweight tester comparison method",
+            "reference": "EA-10/17 Ed 1 (2002)"
+          }
+        ],
+        "influenceConditions": [
+          {
+            "name": "Ambient temperature",
+            "quantityKind": "http://qudt.org/vocab/quantitykind/Temperature",
+            "value": 20.1,
+            "unit": {
+              "ucumCode": "Cel",
+              "unitIri": "http://qudt.org/vocab/unit/DEG_C"
+            }
+          },
+          {
+            "name": "Relative humidity",
+            "quantityKind": "http://qudt.org/vocab/quantitykind/RelativeHumidity",
+            "value": 45,
+            "unit": {
+              "ucumCode": "%",
+              "unitIri": "http://qudt.org/vocab/unit/PERCENT"
+            }
+          }
+        ],
+        "results": [
+          {
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/Pressure",
+                "value": 10.002,
+                "unit": {
+                  "ucumCode": "bar",
+                  "unitIri": "http://qudt.org/vocab/unit/BAR"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 0.02,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/Pressure",
+                "value": 50.015,
+                "unit": {
+                  "ucumCode": "bar",
+                  "unitIri": "http://qudt.org/vocab/unit/BAR"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 0.02,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/Pressure",
+                "value": 100.008,
+                "unit": {
+                  "ucumCode": "bar",
+                  "unitIri": "http://qudt.org/vocab/unit/BAR"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 0.02,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "id": "https://daaks.example.com/credentials/capability-cab-pressure-001",
+      "type": "CapabilityCredentialReference",
+      "hashBinding": {
+        "digestAlgorithm": "sha-256",
+        "digestMultibase": "z6MkrJVnaZkeFzdQyMZu1cgjaeAed29xNotARea1DigestXXX"
+      }
+    }
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:example:cab-pressure#keys-1",
+    "created": "2025-08-11T14:05:00Z",
+    "proofValue": "zTESTONLYM1PlaceholderProofValueRealSignatureAddedInM2"
+  }
+}
