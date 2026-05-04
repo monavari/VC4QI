@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "qi-vc-poc: Verifiable Credentials for Quality Infrastructure"
+version: 0.1.0
+date-released: 2026-04-30
+license: Apache-2.0
+repository-code: https://github.com/monavari/qi-vc-poc
+abstract: >
+  A polyglot (TypeScript + Python) reference implementation of W3C Verifiable
+  Credentials 2.0 for quality infrastructure use cases including calibration
+  certificates, reference material certificates, and GS type approval.
+  Implements the three-layer credential architecture (AccreditationCredential,
+  CapabilityCredential, Domain Credentials) with eddsa-rdfc-2022 Data Integrity
+  proofs, URDNA2015 canonicalization, and Bitstring Status List v1.0.
+authors:
+  - family-names: Mottaghi
+    given-names: Mehran
+    email: monavari.mehran@gmail.com
+keywords:
+  - verifiable-credentials
+  - quality-infrastructure
+  - calibration
+  - accreditation
+  - w3c-vc
+  - data-integrity
+references:
+  - type: software
+    title: "VC-calibration-chain"
+    version: 0.1.0
+    authors:
+      - family-names: Mottaghi
+        given-names: Mehran
+    repository-code: https://github.com/mehranmo/VC-calibration-chain
+    notes: >
+      Prior art v0.1; qi-vc-poc is the successor implementation. Schemas and
+      verification policy architecture derive from this work.

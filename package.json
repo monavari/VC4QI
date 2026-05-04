@@ -1,0 +1,28 @@
+{
+  "name": "qi-vc-poc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Verifiable Credentials reference implementation for Quality Infrastructure",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "type": "module",
+  "scripts": {
+    "lint": "pnpm -r --if-present lint",
+    "test": "pnpm -r --if-present test",
+    "build": "pnpm -r --if-present build",
+    "validate:schemas": "node scripts/validate-schemas.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "tsx": "^4.11.0",
+    "vitest": "^1.6.0",
+    "@typescript-eslint/eslint-plugin": "^7.10.0",
+    "@typescript-eslint/parser": "^7.10.0",
+    "eslint": "^9.3.0",
+    "ajv": "^8.16.0",
+    "ajv-formats": "^3.0.1"
+  }
+}
