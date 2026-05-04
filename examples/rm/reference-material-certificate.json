@@ -5,79 +5,168 @@
     "https://w3id.org/qi-vc/contexts/v1/qi-rm.jsonld"
   ],
   "type": ["VerifiableCredential", "ReferenceMaterialCertificate"],
-  "id": "https://rmp-berlin.example.com/credentials/rm-2025-001",
+  "id": "https://bam.de/credentials/rm/M375a",
   "issuer": {
-    "id": "did:example:rmp-berlin",
-    "name": "RM Producer Berlin GmbH"
+    "id": "did:web:bam.de",
+    "name": "Bundesanstalt für Materialforschung und -prüfung (BAM)"
   },
-  "validFrom": "2025-01-10T09:00:00Z",
-  "validUntil": "2027-12-31T23:59:59Z",
+  "validFrom": "2025-01-01T00:00:00Z",
+  "validUntil": "2099-12-31T23:59:59Z",
   "credentialStatus": {
-    "id": "https://rmp-berlin.example.com/status/lists/1#17",
+    "id": "https://bam.de/status/lists/1#42",
     "type": "BitstringStatusListEntry",
     "statusPurpose": "revocation",
-    "statusListIndex": "17",
-    "statusListCredential": "https://rmp-berlin.example.com/status/lists/1"
+    "statusListIndex": "42",
+    "statusListCredential": "https://bam.de/status/lists/1"
   },
   "credentialSchema": {
     "id": "https://w3id.org/qi-vc/schemas/v1/reference-material-certificate.json",
     "type": "JsonSchema"
   },
   "credentialSubject": {
-    "id": "did:example:lot-rm-001",
+    "id": "did:web:bam.de:crm:M375a",
     "administrativeData": {
       "coreData": {
-        "titleOfTheDocument": "Certificate of Analysis — Certified Reference Material",
-        "uniqueIdentifier": "RM-2025-RMP-001"
+        "titleOfTheDocument": "referenceMaterialCertificate",
+        "uniqueIdentifier": "7d7e1a89-bad4-4fc7-bd8a-4b7c5d5d224a",
+        "documentIdentifiers": [
+          { "type": "BAM-CERT", "value": "M375a" }
+        ]
       },
       "validity": {
-        "validFrom": "2025-01-10",
-        "validUntil": "2027-12-31"
+        "validFrom": "2025-01-01",
+        "validUntil": "2099-12-31"
       },
       "referenceMaterialProducer": {
-        "id": "did:example:rmp-berlin",
-        "name": "RM Producer Berlin GmbH",
-        "location": "Berlin, Germany",
-        "url": "https://rmp-berlin.example.com",
-        "accreditationNumber": "ISO17034-DE-0042"
+        "name": "Bundesanstalt für Materialforschung und -prüfung (BAM)",
+        "id": "did:web:bam.de",
+        "email": "sales.crm@bam.de",
+        "phone": "+49 30 8104 2061",
+        "location": "Richard-Willstätter-Str. 11, D-12489 Berlin, Germany",
+        "url": "https://ror.org/b03x516a66",
+        "accreditationNumber": "ISO17034-DE-BAM"
       }
     },
     "materials": [
       {
-        "name": "pH Buffer Solution",
-        "lotNumber": "LOT-2025-PH700-001",
-        "description": "Aqueous buffer solution certified for pH value at 25 °C. Suitable for calibration of pH electrodes and instruments.",
+        "name": "CuZn39Pb3",
+        "description": "Certified Reference Material — brass alloy disc (approx. 38 mm diameter × 30 mm height). Certified for mass fractions of major and trace elements by ICP-OES, ICP-MS, and spark OES across 10 laboratories.",
         "materialIdentifiers": [
-          {
-            "type": "CAS",
-            "value": "7732-18-5"
-          },
-          {
-            "type": "catalogNumber",
-            "value": "RMP-PH700"
-          },
-          {
-            "type": "lotNumber",
-            "value": "LOT-2025-PH700-001"
-          }
-        ]
+          { "type": "BAM-RM",   "value": "371-a" },
+          { "type": "BAM-CERT", "value": "M375a" }
+        ],
+        "minimumSampleSize": "0.2 g"
       }
     ],
     "materialPropertiesList": [
       {
-        "propertyIdentifiers": ["pH", "HydrogenIonActivity"],
+        "propertyIdentifiers": ["massFraction"],
+        "isCertified": true,
+        "name": "Certified mass fractions of major elements",
+        "description": "Unweighted mean of accepted laboratory datasets (≥3 sets per element); expanded uncertainty U at k=2, ~95% confidence (GUM / ISO/IEC Guide 98-3:2008).",
         "results": [
           {
+            "name": "Copper (Cu)",
             "data": {
               "quantity": {
-                "quantityKind": "http://qudt.org/vocab/quantitykind/PH",
-                "value": 7.00,
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 57.68,
                 "unit": {
-                  "ucumCode": "1",
-                  "unitIri": "http://qudt.org/vocab/unit/UNITLESS"
+                  "ucumCode": "%",
+                  "unitIri": "http://qudt.org/vocab/unit/PERCENT"
                 },
                 "uncertainty": {
-                  "expandedUncertainty": 0.02,
+                  "expandedUncertainty": 0.14,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Zinc (Zn)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 38.2,
+                "unit": {
+                  "ucumCode": "%",
+                  "unitIri": "http://qudt.org/vocab/unit/PERCENT"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 0.4,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Lead (Pb)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 3.07,
+                "unit": {
+                  "ucumCode": "%",
+                  "unitIri": "http://qudt.org/vocab/unit/PERCENT"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 0.06,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Iron (Fe)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 0.175,
+                "unit": {
+                  "ucumCode": "%",
+                  "unitIri": "http://qudt.org/vocab/unit/PERCENT"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 0.005,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Tin (Sn)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 0.158,
+                "unit": {
+                  "ucumCode": "%",
+                  "unitIri": "http://qudt.org/vocab/unit/PERCENT"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 0.004,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Nickel (Ni)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 0.1174,
+                "unit": {
+                  "ucumCode": "%",
+                  "unitIri": "http://qudt.org/vocab/unit/PERCENT"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 0.0020,
                   "coverageFactor": 2,
                   "coverageProbability": 0.95
                 }
@@ -87,19 +176,260 @@
         ]
       },
       {
-        "propertyIdentifiers": ["density", "MassDensity"],
+        "propertyIdentifiers": ["massFraction"],
+        "isCertified": true,
+        "name": "Certified mass fractions of trace elements",
+        "description": "Expanded uncertainty U at k=2, ~95% confidence (GUM / ISO/IEC Guide 98-3:2008).",
         "results": [
           {
+            "name": "Manganese (Mn)",
             "data": {
               "quantity": {
-                "quantityKind": "http://qudt.org/vocab/quantitykind/MassDensity",
-                "value": 0.9971,
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 139.5,
                 "unit": {
-                  "ucumCode": "g/mL",
-                  "unitIri": "http://qudt.org/vocab/unit/GM-PER-MilliL"
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
                 },
                 "uncertainty": {
-                  "expandedUncertainty": 0.0005,
+                  "expandedUncertainty": 1.7,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Silver (Ag)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 50.6,
+                "unit": {
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 1.4,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Aluminium (Al)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 107,
+                "unit": {
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 4,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Arsenic (As)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 178,
+                "unit": {
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 5,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Bismuth (Bi)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 58.9,
+                "unit": {
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 1.8,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Cadmium (Cd)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 62.4,
+                "unit": {
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 1.5,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Cobalt (Co)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 71.2,
+                "unit": {
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 1.5,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Chromium (Cr)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 1,
+                "unit": {
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
+                }
+              }
+            }
+          },
+          {
+            "name": "Indium (In)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 109.1,
+                "unit": {
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 1.9,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Phosphorus (P)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 83,
+                "unit": {
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 4,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Antimony (Sb)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 120,
+                "unit": {
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 4,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Tellurium (Te)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 42.9,
+                "unit": {
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 1.4,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "propertyIdentifiers": ["massFraction"],
+        "isCertified": false,
+        "name": "Informative values (not certified)",
+        "description": "Spread between laboratories too high for certification. Given for information only. U at k=2, ~95% confidence.",
+        "results": [
+          {
+            "name": "Silicon (Si)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 103,
+                "unit": {
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 12,
+                  "coverageFactor": 2,
+                  "coverageProbability": 0.95
+                }
+              }
+            }
+          },
+          {
+            "name": "Germanium (Ge)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 15,
+                "unit": {
+                  "ucumCode": "mg/kg",
+                  "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 4,
                   "coverageFactor": 2,
                   "coverageProbability": 0.95
                 }
@@ -110,19 +440,19 @@
       }
     ],
     "statements": {
-      "intendedUse": "Calibration and verification of pH meters, electrodes, and ion-selective electrodes. Not suitable for use as a primary standard.",
-      "storageConditions": "Store at 4–8 °C in original sealed container. Protect from light. Avoid freezing.",
-      "handlingInstructions": "Equilibrate to room temperature (20–25 °C) before use. Do not return used material to the original container. Minimum sample size: 10 mL.",
-      "metrologicalTraceability": "Certified pH value is traceable to the BIPM via the primary pH standard of PTB (Germany) through a chain of unbroken comparisons with stated uncertainties. Traceability established per ISO 17034:2016 §7.7 and BIPM CCQM guidelines."
+      "intendedUse": "The reference material is intended for use in the validation and calibration of analytical methods for elemental analysis of copper alloys by ICP-OES, ICP-MS, spark OES, and similar techniques. Not for use as a primary standard.",
+      "storageConditions": "Store in original packaging at room temperature (15–25 °C), protected from moisture and contamination. The material is stable under normal laboratory storage conditions.",
+      "handlingInstructions": "Minimum sample size: 0.2 g. Surface material should be removed before sampling. The material is available as discs (approx. 38 mm diameter × 30 mm height). Follow standard solid sampling procedures for metal alloys.",
+      "metrologicalTraceability": "Certified values are metrologically traceable to the SI via primary standards of the BAM and participating NMIs. Characterisation performed by 10 accredited laboratories using ICP-OES, ICP-MS, and spark OES. Homogeneity and stability verified per ISO Guide 35:2017. Uncertainties evaluated per GUM (JCGM 100:2008 / ISO/IEC Guide 98-3:2008)."
     }
   },
   "evidence": [
     {
-      "id": "https://daaks.example.com/credentials/capability-rmp-berlin-001",
+      "id": "https://dakksd.example.com/credentials/capability-bam-rm-001",
       "type": "CapabilityCredentialReference",
       "hashBinding": {
         "digestAlgorithm": "sha-256",
-        "digestMultibase": "z8NpQrSTuVwXyZa1b2c3d4e5f6g7h8NotARea1DigestYYY"
+        "digestMultibase": "zTestHashBAM375aDigestNotActua1SHA256Rep1aceBeforeUse"
       }
     }
   ],
@@ -130,8 +460,8 @@
     "type": "DataIntegrityProof",
     "cryptosuite": "eddsa-rdfc-2022",
     "proofPurpose": "assertionMethod",
-    "verificationMethod": "did:example:rmp-berlin#keys-1",
-    "created": "2025-01-10T09:30:00Z",
-    "proofValue": "zTESTONLYM1PlaceholderProofValueRealSignatureAddedInM2"
+    "verificationMethod": "did:web:bam.de#key-1",
+    "created": "2025-01-01T09:00:00Z",
+    "proofValue": "zTESTONLYM2PlaceholderProofValueRea1SignatureAddedByIssuer"
   }
 }
