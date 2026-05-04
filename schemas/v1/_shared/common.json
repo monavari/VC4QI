@@ -1,0 +1,333 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json",
+  "title": "QI-VC Common Definitions",
+  "description": "Reusable $defs shared across QI-VC credential schemas. Not a standalone credential schema.",
+  "$defs": {
+    "BitstringStatusListEntry": {
+      "title": "BitstringStatusListEntry",
+      "description": "Credential status entry per W3C Bitstring Status List v1.0 (https://www.w3.org/TR/vc-bitstring-status-list/).",
+      "type": "object",
+      "required": ["id", "type", "statusPurpose", "statusListIndex", "statusListCredential"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL identifying this status entry, including the list index as a fragment."
+        },
+        "type": {
+          "type": "string",
+          "const": "BitstringStatusListEntry",
+          "description": "Fixed value per W3C Bitstring Status List v1.0 §2.1."
+        },
+        "statusPurpose": {
+          "type": "string",
+          "enum": ["revocation", "suspension", "message"],
+          "description": "Purpose of the status entry per W3C Bitstring Status List v1.0 §2.1."
+        },
+        "statusListIndex": {
+          "type": "string",
+          "pattern": "^[0-9]+$",
+          "description": "Zero-based integer index into the bitstring, as a string."
+        },
+        "statusListCredential": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the BitstringStatusListCredential that contains this entry's bit."
+        }
+      }
+    },
+
+    "DataIntegrityProof": {
+      "title": "DataIntegrityProof",
+      "description": "Cryptographic proof per W3C Data Integrity 1.0 (https://www.w3.org/TR/vc-data-integrity/).",
+      "type": "object",
+      "required": ["type", "cryptosuite", "proofPurpose", "verificationMethod", "proofValue"],
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "DataIntegrityProof",
+          "description": "Fixed value per W3C Data Integrity §2.1."
+        },
+        "cryptosuite": {
+          "type": "string",
+          "enum": ["eddsa-rdfc-2022", "ecdsa-rdfc-2019"],
+          "description": "Cryptosuite identifier. eddsa-rdfc-2022 (Ed25519 + URDNA2015) is preferred."
+        },
+        "proofPurpose": {
+          "type": "string",
+          "const": "assertionMethod",
+          "description": "Proof purpose per W3C Data Integrity §2.1. Always assertionMethod for issued credentials."
+        },
+        "verificationMethod": {
+          "type": "string",
+          "format": "uri",
+          "description": "DID URL of the verification method (public key) used to create the proof."
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 datetime when the proof was created."
+        },
+        "proofValue": {
+          "type": "string",
+          "description": "Multibase-encoded proof value (base58btc, prefix 'z'). In M1: structural placeholder; real values in M2."
+        }
+      }
+    },
+
+    "DigestBinding": {
+      "title": "DigestBinding",
+      "description": "Cryptographic binding to a referenced credential. digestMultibase is the SHA-256 of the URDNA2015 canonical form encoded in multibase base58btc.",
+      "type": "object",
+      "required": ["digestAlgorithm", "digestMultibase"],
+      "additionalProperties": false,
+      "properties": {
+        "digestAlgorithm": {
+          "type": "string",
+          "enum": ["sha-256", "sha-384", "sha-512"],
+          "description": "Hash algorithm per IANA Named Information Hash Algorithm Registry (https://www.iana.org/assignments/named-information/)."
+        },
+        "digestMultibase": {
+          "type": "string",
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "SHA-256 digest of the URDNA2015 canonical form of the referenced credential (proof block excluded), encoded in multibase base58btc (prefix 'z')."
+        }
+      }
+    },
+
+    "Unit": {
+      "title": "Unit",
+      "description": "Unit of measurement. ucumCode (UCUM) for human-readable display; unitIri (QUDT v2.1) for linked-data semantics. At least one MUST be present.",
+      "type": "object",
+      "anyOf": [
+        {"required": ["ucumCode"]},
+        {"required": ["unitIri"]}
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "ucumCode": {
+          "type": "string",
+          "description": "Unified Code for Units of Measure (UCUM) code, e.g. 'bar', 'Pa', 'kg', '1' (dimensionless)."
+        },
+        "unitIri": {
+          "type": "string",
+          "format": "uri",
+          "description": "QUDT v2.1 unit URI, e.g. 'http://qudt.org/vocab/unit/BAR'. Pattern: http://qudt.org/vocab/unit/[SYMBOL]."
+        }
+      }
+    },
+
+    "MeasurementUncertainty": {
+      "title": "MeasurementUncertainty",
+      "description": "Measurement uncertainty per GUM (JCGM 100:2008) and PTB D-SI XSD v2.2.1 (https://ptb.de/si).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "standardUncertainty": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Standard uncertainty u(x) — estimated standard deviation of the measurement result. GUM §4."
+        },
+        "expandedUncertainty": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Expanded uncertainty U = k·u(x). GUM §6. D-SI si:expandedUnc.uncertainty."
+        },
+        "coverageFactor": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Coverage factor k used to compute U from u(x). GUM §6.2. D-SI si:coverageFactor."
+        },
+        "coverageProbability": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "description": "Coverage probability p associated with the expanded uncertainty interval, e.g. 0.95 for 95 %. GUM §6.2. D-SI si:coverageProbability."
+        }
+      }
+    },
+
+    "Quantity": {
+      "title": "Quantity",
+      "description": "A measured physical quantity with kind, value, unit, and optional uncertainty. Maps to D-SI si:quantity and QUDT qudt:Quantity.",
+      "type": "object",
+      "required": ["quantityKind", "value", "unit"],
+      "additionalProperties": false,
+      "properties": {
+        "quantityKind": {
+          "type": "string",
+          "format": "uri",
+          "description": "QUDT v2.1 QuantityKind URI identifying what is being measured, e.g. 'http://qudt.org/vocab/quantitykind/Pressure'. Pattern: http://qudt.org/vocab/quantitykind/[Kind]."
+        },
+        "value": {
+          "type": "number",
+          "description": "Numeric measurement result. Maps to D-SI si:value / QUDT qudt:numericValue."
+        },
+        "unit": {
+          "$ref": "#/$defs/Unit"
+        },
+        "uncertainty": {
+          "$ref": "#/$defs/MeasurementUncertainty"
+        }
+      }
+    },
+
+    "PhysicalQuantity": {
+      "title": "PhysicalQuantity",
+      "description": "A physical quantity with optional name label. Used for influence conditions (environmental parameters).",
+      "type": "object",
+      "required": ["quantityKind", "value", "unit"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable label for this condition, e.g. 'Ambient temperature'."
+        },
+        "quantityKind": {
+          "type": "string",
+          "format": "uri",
+          "description": "QUDT v2.1 QuantityKind URI."
+        },
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/Unit"
+        }
+      }
+    },
+
+    "ContactInfo": {
+      "title": "ContactInfo",
+      "description": "Contact information for an organization or person. Maps to dcc:contactType in PTB DCC XSD v3.3.0.",
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional DID or URI for this entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Full legal name of the organization or person."
+        },
+        "location": {
+          "type": "string",
+          "description": "Address or location description."
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+
+    "Identification": {
+      "title": "Identification",
+      "description": "An identifier for an item, with type and value. Maps to dcc:identification in PTB DCC XSD v3.3.0.",
+      "type": "object",
+      "required": ["value"],
+      "additionalProperties": false,
+      "properties": {
+        "issuer": {
+          "type": "string",
+          "description": "Who assigned this identifier (e.g. 'manufacturer', 'customer', 'lab')."
+        },
+        "type": {
+          "type": "string",
+          "description": "Identifier scheme (e.g. 'serialNumber', 'modelNumber', 'inventoryNumber')."
+        },
+        "value": {
+          "type": "string",
+          "description": "The identifier value."
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+
+    "CapabilityCredentialReference": {
+      "title": "CapabilityCredentialReference",
+      "description": "Evidence reference from a domain credential to the CapabilityCredential that authorized its issuance. Contains a cryptographic hashBinding.",
+      "type": "object",
+      "required": ["id", "type", "hashBinding"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uri",
+          "description": "Dereferenceable URI of the CapabilityCredential."
+        },
+        "type": {
+          "type": "string",
+          "const": "CapabilityCredentialReference",
+          "description": "Fixed type identifier for this evidence entry."
+        },
+        "hashBinding": {
+          "$ref": "#/$defs/DigestBinding",
+          "description": "SHA-256 of URDNA2015 canonical form of the referenced CapabilityCredential (proof excluded), multibase base58btc."
+        }
+      }
+    },
+
+    "VcContext": {
+      "title": "VcContext",
+      "description": "The @context array for a VC 2.0 credential. First item MUST be the W3C VC 2.0 context.",
+      "type": "array",
+      "minItems": 1,
+      "contains": {
+        "const": "https://www.w3.org/ns/credentials/v2"
+      },
+      "items": {
+        "oneOf": [
+          {"type": "string", "format": "uri"},
+          {"type": "object"}
+        ]
+      }
+    },
+
+    "VcType": {
+      "title": "VcType",
+      "description": "The type array for a VC 2.0 credential. MUST contain 'VerifiableCredential'.",
+      "type": "array",
+      "contains": {
+        "const": "VerifiableCredential"
+      },
+      "items": {"type": "string"}
+    },
+
+    "Issuer": {
+      "title": "Issuer",
+      "description": "The issuer of the credential. Either a DID/URI string or an object with an 'id' property.",
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri",
+          "description": "DID or HTTPS URL identifying the issuer."
+        },
+        {
+          "type": "object",
+          "required": ["id"],
+          "properties": {
+            "id": {"type": "string", "format": "uri"},
+            "name": {"type": "string"}
+          },
+          "additionalProperties": true
+        }
+      ]
+    }
+  }
+}

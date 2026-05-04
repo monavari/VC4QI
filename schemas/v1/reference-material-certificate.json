@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/qi-vc/schemas/v1/reference-material-certificate.json",
+  "title": "ReferenceMaterialCertificate",
+  "description": "W3C VC 2.0 credential encoding a Reference Material Certificate per ISO 17034:2016, ISO Guide 31:2015, and DRMD XSD v0.3.0. Issued by an ISO 17034-accredited Reference Material Producer (RMP) to a lot DID.",
+  "type": "object",
+  "required": [
+    "@context",
+    "type",
+    "issuer",
+    "validFrom",
+    "validUntil",
+    "credentialSubject",
+    "evidence",
+    "proof"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "@context": {
+      "$ref": "#/$defs/VcContext",
+      "description": "JSON-LD context array. First item MUST be 'https://www.w3.org/ns/credentials/v2'. Second item SHOULD be the QI-VC reference material context."
+    },
+    "type": {
+      "allOf": [
+        {"$ref": "#/$defs/VcType"},
+        {
+          "contains": {"const": "ReferenceMaterialCertificate"}
+        }
+      ],
+      "description": "Credential type array. MUST contain 'VerifiableCredential' and 'ReferenceMaterialCertificate'."
+    },
+    "id": {
+      "type": "string",
+      "format": "uri",
+      "description": "Optional globally unique URI for this credential."
+    },
+    "issuer": {
+      "$ref": "#/$defs/Issuer",
+      "description": "DID of the Reference Material Producer (RMP) issuing this certificate. ISO 17034:2016 §4.1."
+    },
+    "validFrom": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime from which this credential is valid. Set to the certification date when property values were formally assigned."
+    },
+    "validUntil": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime after which this credential is no longer valid. Set to the expiry of the certified property values. ISO Guide 31:2015 §10 (period of validity). Required for reference material certificates."
+    },
+    "credentialStatus": {
+      "$ref": "#/$defs/BitstringStatusListEntry",
+      "description": "Revocation or suspension status. An RMP may revoke a certificate if post-certification homogeneity or stability issues are identified."
+    },
+    "credentialSchema": {
+      "type": "object",
+      "description": "Reference to this schema for validation purposes.",
+      "properties": {
+        "id": {"type": "string", "format": "uri"},
+        "type": {"type": "string"}
+      }
+    },
+    "credentialSubject": {
+      "$ref": "#/$defs/RmcCredentialSubject",
+      "description": "The RMC domain payload. Contains all certified property data per DRMD XSD v0.3.0 and ISO Guide 31:2015."
+    },
+    "evidence": {
+      "type": "array",
+      "description": "Evidence that the issuing RMP was authorized to issue this credential. MUST contain a reference to the CapabilityCredential with a cryptographic hashBinding. W3C VC 2.0 §4.9.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/CapabilityCredentialReference"
+      }
+    },
+    "proof": {
+      "$ref": "#/$defs/DataIntegrityProof",
+      "description": "Cryptographic proof over the credential. In M1 this is a structural placeholder; real EdDSA proofs are added in M2."
+    }
+  },
+  "$defs": {
+    "VcContext": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/VcContext"},
+    "VcType": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/VcType"},
+    "Issuer": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Issuer"},
+    "BitstringStatusListEntry": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/BitstringStatusListEntry"},
+    "DataIntegrityProof": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/DataIntegrityProof"},
+    "DigestBinding": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/DigestBinding"},
+    "Unit": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Unit"},
+    "MeasurementUncertainty": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/MeasurementUncertainty"},
+    "Quantity": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Quantity"},
+    "ContactInfo": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/ContactInfo"},
+    "CapabilityCredentialReference": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/CapabilityCredentialReference"},
+
+    "RmcCredentialSubject": {
+      "title": "RmcCredentialSubject",
+      "description": "The subject of a ReferenceMaterialCertificate. The subject is the specific lot of reference material. Maps to DRMD XSD v0.3.0.",
+      "type": "object",
+      "required": ["administrativeData", "materials", "materialPropertiesList"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uri",
+          "description": "DID of the reference material lot, e.g. did:example:lot-rm-001. The lot is the subject because certified values are properties of a specific production batch."
+        },
+        "administrativeData": {
+          "$ref": "#/$defs/RmcAdministrativeData"
+        },
+        "materials": {
+          "type": "array",
+          "description": "Descriptions of the reference material(s). Maps to DRMD materials. ISO Guide 31:2015 §5 (description of the material).",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/Material"
+          }
+        },
+        "materialPropertiesList": {
+          "type": "array",
+          "description": "Certified property values with uncertainties. Maps to DRMD materialPropertiesList. ISO Guide 31:2015 §6 (certified values and uncertainties).",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/MaterialPropertyGroup"
+          }
+        },
+        "statements": {
+          "$ref": "#/$defs/RmcStatements",
+          "description": "Mandatory statements per ISO Guide 31:2015 §§7-10."
+        }
+      }
+    },
+
+    "RmcAdministrativeData": {
+      "title": "RmcAdministrativeData",
+      "description": "Administrative metadata for the reference material certificate. Maps to DRMD administrativeData.",
+      "type": "object",
+      "required": ["coreData", "validity", "referenceMaterialProducer"],
+      "additionalProperties": true,
+      "properties": {
+        "coreData": {
+          "title": "RmcCoreData",
+          "description": "Core document identification. Maps to DRMD coreData.",
+          "type": "object",
+          "required": ["uniqueIdentifier", "titleOfTheDocument"],
+          "additionalProperties": true,
+          "properties": {
+            "titleOfTheDocument": {
+              "type": "string",
+              "description": "Title identifying the type of certificate, e.g. 'Certificate of Analysis', 'Certified Reference Material Certificate'. Maps to DRMD coreData.titleOfTheDocument. ISO Guide 31:2015 §4.1."
+            },
+            "uniqueIdentifier": {
+              "type": "string",
+              "description": "Unique certificate identifier. Maps to DRMD coreData.uniqueIdentifier. ISO Guide 31:2015 §4."
+            }
+          }
+        },
+        "validity": {
+          "title": "RmcValidity",
+          "description": "Validity period of the certified property values as declared by the RMP. Maps to DRMD validity. ISO Guide 31:2015 §10. Distinct from VC validFrom/validUntil which govern cryptographic validity.",
+          "type": "object",
+          "required": ["validFrom", "validUntil"],
+          "additionalProperties": false,
+          "properties": {
+            "validFrom": {
+              "type": "string",
+              "format": "date",
+              "description": "Start date of certified value validity. ISO 8601 date."
+            },
+            "validUntil": {
+              "type": "string",
+              "format": "date",
+              "description": "Expiry date of certified value validity. ISO 8601 date. ISO Guide 31:2015 §10."
+            }
+          }
+        },
+        "referenceMaterialProducer": {
+          "title": "ReferenceMaterialProducer",
+          "description": "The Reference Material Producer. Maps to DRMD referenceMaterialProducer. ISO 17034:2016 §4.1.",
+          "allOf": [
+            {"$ref": "#/$defs/ContactInfo"},
+            {
+              "properties": {
+                "accreditationNumber": {
+                  "type": "string",
+                  "description": "ISO 17034:2016 accreditation reference number of the RMP."
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    "Material": {
+      "title": "Material",
+      "description": "Description of a reference material. Maps to DRMD materials entry. ISO Guide 31:2015 §5.",
+      "type": "object",
+      "required": ["name", "materialIdentifiers"],
+      "additionalProperties": true,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the reference material, e.g. 'pH Buffer Solution 7.00'. Maps to DRMD materials.name."
+        },
+        "lotNumber": {
+          "type": "string",
+          "description": "Production lot or batch number. Maps to DRMD materials.lotNumber. ISO Guide 31:2015 §5.1."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the material composition. Maps to DRMD materials.description. ISO Guide 31:2015 §5.2."
+        },
+        "materialIdentifiers": {
+          "type": "array",
+          "description": "Typed identifiers for this material. Maps to DRMD materialIdentifiers. Supports multiple schemes (CAS, IUPAC, InChI, lot number, etc.). ISO Guide 31:2015 §5.1.",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/MaterialIdentifier"
+          }
+        }
+      }
+    },
+
+    "MaterialIdentifier": {
+      "title": "MaterialIdentifier",
+      "description": "A typed identifier for a reference material. Maps to DRMD materialIdentifiers entry.",
+      "type": "object",
+      "required": ["type", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Identifier scheme, e.g. 'CAS', 'IUPAC', 'InChI', 'lotNumber', 'catalogNumber', 'ERM'.",
+          "examples": ["CAS", "IUPAC", "InChI", "lotNumber", "catalogNumber", "ERM"]
+        },
+        "value": {
+          "type": "string",
+          "description": "The identifier value, e.g. '7732-18-5' for CAS of water."
+        }
+      }
+    },
+
+    "MaterialPropertyGroup": {
+      "title": "MaterialPropertyGroup",
+      "description": "Certified values for one or more related properties of the reference material. Maps to DRMD materialPropertiesList entry. ISO Guide 31:2015 §6.",
+      "type": "object",
+      "required": ["propertyIdentifiers", "results"],
+      "additionalProperties": true,
+      "properties": {
+        "propertyIdentifiers": {
+          "type": "array",
+          "description": "Names or identifiers for the property being certified. Maps to DRMD propertyIdentifiers. Used by the verifier to check Rule 6 (scope check) against the CapabilityCredential. Multiple identifiers allow matching across naming conventions.",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "examples": [["pH"], ["massConcentration", "mass fraction"], ["purity"]]
+        },
+        "results": {
+          "type": "array",
+          "description": "Certified values for this property. Maps to DRMD results. ISO Guide 31:2015 §6.1 (certified values and uncertainties).",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/RmcMeasurementReading"
+          }
+        }
+      }
+    },
+
+    "RmcMeasurementReading": {
+      "title": "RmcMeasurementReading",
+      "description": "A single certified property value. Nested as results[].data.quantity to match DRMD XSD nesting and allow future qualitative or count-type property values.",
+      "type": "object",
+      "required": ["data"],
+      "additionalProperties": true,
+      "properties": {
+        "data": {
+          "type": "object",
+          "required": ["quantity"],
+          "additionalProperties": true,
+          "properties": {
+            "quantity": {
+              "$ref": "#/$defs/Quantity",
+              "description": "The certified property value: quantityKind, value, unit, uncertainty. Maps to DRMD results.data.quantity."
+            }
+          }
+        }
+      }
+    },
+
+    "RmcStatements": {
+      "title": "RmcStatements",
+      "description": "Mandatory statements required by ISO Guide 31:2015. Maps to DRMD statements.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "intendedUse": {
+          "type": "string",
+          "description": "Intended use of the reference material. ISO Guide 31:2015 §7. Maps to DRMD statements.intendedUse."
+        },
+        "storageConditions": {
+          "type": "string",
+          "description": "Storage conditions to maintain certified property values. ISO Guide 31:2015 §9. Maps to DRMD statements.storageConditions."
+        },
+        "handlingInstructions": {
+          "type": "string",
+          "description": "Instructions for use and handling. ISO Guide 31:2015 §7. Maps to DRMD statements.handlingInstructions."
+        },
+        "metrologicalTraceability": {
+          "type": "string",
+          "description": "Statement of metrological traceability of the certified values to SI units or other reference standards. ISO Guide 31:2015 §8. ISO 17034:2016 §7.7. Maps to DRMD statements.metrologicalTraceability."
+        }
+      }
+    }
+  }
+}

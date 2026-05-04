@@ -1,0 +1,66 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+
+    "id": "@id",
+    "type": "@type",
+
+    "qudt": "http://qudt.org/schema/qudt#",
+    "quantitykind": "http://qudt.org/vocab/quantitykind/",
+    "qunit": "http://qudt.org/vocab/unit/",
+    "qi": "https://w3id.org/qi-vc/vocab/v1#",
+    "drmd": "https://w3id.org/qi-vc/vocab/drmd/v1#",
+    "si": "https://ptb.de/si#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+
+    "ReferenceMaterialCertificate": "qi:ReferenceMaterialCertificate",
+
+    "CapabilityCredentialReference": "qi:CapabilityCredentialReference",
+    "hashBinding": "qi:hashBinding",
+    "digestAlgorithm": "qi:digestAlgorithm",
+    "digestMultibase": "qi:digestMultibase",
+
+    "administrativeData": "drmd:administrativeData",
+    "coreData": "drmd:coreData",
+    "titleOfTheDocument": "drmd:titleOfTheDocument",
+    "uniqueIdentifier": "drmd:uniqueIdentifier",
+    "validity": "drmd:validity",
+    "validFrom": {"@id": "drmd:validFrom", "@type": "xsd:date"},
+    "validUntil": {"@id": "drmd:validUntil", "@type": "xsd:date"},
+    "referenceMaterialProducer": "drmd:referenceMaterialProducer",
+    "accreditationNumber": "qi:accreditationNumber",
+
+    "materials": {"@id": "drmd:materials", "@container": "@set"},
+    "materialIdentifiers": {"@id": "drmd:materialIdentifiers", "@container": "@set"},
+    "lotNumber": "drmd:lotNumber",
+    "name": "drmd:name",
+    "description": "drmd:description",
+    "location": "drmd:location",
+
+    "materialPropertiesList": {"@id": "drmd:materialPropertiesList", "@container": "@set"},
+    "propertyIdentifiers": {"@id": "drmd:propertyIdentifiers", "@container": "@set"},
+    "results": {"@id": "drmd:results", "@container": "@set"},
+
+    "data": "qi:data",
+    "quantity": {"@id": "qudt:quantity", "@type": "@json"},
+
+    "quantityKind": {"@id": "qudt:quantityKind", "@type": "@id"},
+    "value": {"@id": "qudt:numericValue", "@type": "xsd:decimal"},
+    "unit": "qudt:unit",
+    "ucumCode": "qi:ucumCode",
+    "unitIri": {"@id": "qi:unitIri", "@type": "@id"},
+
+    "uncertainty": "qi:uncertainty",
+    "standardUncertainty": {"@id": "si:standardUncertainty", "@type": "xsd:decimal"},
+    "expandedUncertainty": {"@id": "si:expandedUncertainty", "@type": "xsd:decimal"},
+    "coverageFactor": {"@id": "si:coverageFactor", "@type": "xsd:decimal"},
+    "coverageProbability": {"@id": "si:coverageProbability", "@type": "xsd:decimal"},
+
+    "statements": "drmd:statements",
+    "intendedUse": "drmd:intendedUse",
+    "storageConditions": "drmd:storageConditions",
+    "handlingInstructions": "drmd:handlingInstructions",
+    "metrologicalTraceability": "drmd:metrologicalTraceability"
+  }
+}
