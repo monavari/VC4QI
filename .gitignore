@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.eggs/
+.venv/
+venv/
+.Python
+
+# Coverage
+coverage/
+.coverage
+.coverage.*
+htmlcov/
+lcov.info
+*.lcov
+
+# Testing
+.vitest/
+
+# Environment files — never commit secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+*.iml
+.vscode/
+!.vscode/extensions.json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Temporary
+*.tmp
+*.temp
+.cache/
+
+# Docker
+.docker/
+
+# Astro / Docusaurus build
+.astro/

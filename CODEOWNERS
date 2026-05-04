@@ -1,0 +1,9 @@
+# Default owner for everything
+* @monavari
+
+# Schema, context, and policy changes require maintainer review
+/schemas/ @monavari
+/contexts/ @monavari
+/policies/ @monavari
+/SECURITY.md @monavari
+/docs/adrs/ @monavari

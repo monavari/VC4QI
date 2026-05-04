@@ -1,0 +1,23 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "test-key-material"
+description = "Detects private key PEM blocks outside the designated test fixtures directory"
+regex = '''-----BEGIN (EC |RSA |OPENSSH )?PRIVATE KEY-----'''
+[rules.allowlist]
+paths = ['''tests/fixtures/keys/''']
+
+[[rules]]
+id = "generic-api-key-extended"
+description = "Generic high-entropy API key pattern"
+regex = '''(?i)(api[_-]?key|apikey|secret[_-]?key)\s*[:=]\s*["\']?[A-Za-z0-9/+]{32,}["\']?'''
+[rules.allowlist]
+paths = ['''tests/''', '''examples/''']
+
+[allowlist]
+description = "Global allowlist"
+paths = [
+  '''\.gitleaks\.toml''',
+  '''SECURITY\.md''',
+]
