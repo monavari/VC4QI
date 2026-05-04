@@ -1,0 +1,7 @@
+{
+  "WARNING": "TEST ONLY — NOT FOR PRODUCTION USE",
+  "id": "did:web:test.example.com#key-1",
+  "controller": "did:web:test.example.com",
+  "privateKeyHex": "4242424242424242424242424242424242424242424242424242424242424242",
+  "publicKeyHex": "2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12"
+}
