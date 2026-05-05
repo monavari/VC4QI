@@ -8,7 +8,7 @@ product carbon footprint, and Digital Product Passport use cases.
 
 Built on the three-layer credential architecture
 (AccreditationCredential → CapabilityCredential → Domain Credentials)
-described in [Mottaghi et al., 2026].
+described in [Monavari et al., 2026].
 
 [![CI](https://github.com/monavari/qi-vc-poc/actions/workflows/ci.yml/badge.svg)](https://github.com/monavari/qi-vc-poc/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/monavari/qi-vc-poc/actions/workflows/codeql.yml/badge.svg)](https://github.com/monavari/qi-vc-poc/actions/workflows/codeql.yml)
