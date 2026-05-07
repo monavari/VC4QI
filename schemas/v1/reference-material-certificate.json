@@ -74,7 +74,7 @@
     },
     "proof": {
       "$ref": "#/$defs/DataIntegrityProof",
-      "description": "Cryptographic proof over the credential. In M1 this is a structural placeholder; real EdDSA proofs are added in M2."
+      "description": "eddsa-rdfc-2022 Data Integrity proof over the credential."
     }
   },
   "$defs": {

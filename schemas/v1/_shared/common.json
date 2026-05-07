@@ -73,7 +73,7 @@
         },
         "proofValue": {
           "type": "string",
-          "description": "Multibase-encoded proof value (base58btc, prefix 'z'). In M1: structural placeholder; real values in M2."
+          "description": "Multibase-encoded proof value (base58btc, prefix 'z'). eddsa-rdfc-2022 Data Integrity proof implemented in M2."
         }
       }
     },
