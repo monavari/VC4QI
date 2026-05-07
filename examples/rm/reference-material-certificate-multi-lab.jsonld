@@ -226,7 +226,7 @@
       "type": "CapabilityCredentialReference",
       "hashBinding": {
         "digestAlgorithm": "sha-256",
-        "digestMultibase": "zBAM_CAPABILITY_HASH_PLACEHOLDER_REPLACE_BEFORE_USE"
+        "digestMultibase": "zCufEiAwEbQyCUDzno14GakRwdGfVtpdAvWZ9zTVyw2rb"
       }
     },
     {
@@ -234,7 +234,7 @@
       "type": "AccreditationCredentialReference",
       "hashBinding": {
         "digestAlgorithm": "sha-256",
-        "digestMultibase": "zLAB_A_HASH_PLACEHOLDER_REPLACE_BEFORE_USE"
+        "digestMultibase": "zFICTIONAL_LAB_A_CREDENTIAL_NOT_IN_REPO"
       },
       "characterisationOf": ["Cu", "Zn", "Pb"]
     },
@@ -243,7 +243,7 @@
       "type": "AccreditationCredentialReference",
       "hashBinding": {
         "digestAlgorithm": "sha-256",
-        "digestMultibase": "zLAB_B_HASH_PLACEHOLDER_REPLACE_BEFORE_USE"
+        "digestMultibase": "zFICTIONAL_LAB_B_CREDENTIAL_NOT_IN_REPO"
       },
       "characterisationOf": ["Sn", "Ni", "Fe", "Mn"]
     },
@@ -252,7 +252,7 @@
       "type": "AccreditationCredentialReference",
       "hashBinding": {
         "digestAlgorithm": "sha-256",
-        "digestMultibase": "zLAB_C_HASH_PLACEHOLDER_REPLACE_BEFORE_USE"
+        "digestMultibase": "zFICTIONAL_LAB_C_CREDENTIAL_NOT_IN_REPO"
       },
       "characterisationOf": ["Ag", "Cd", "Sb", "Te"]
     }
