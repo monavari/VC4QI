@@ -2,17 +2,22 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
 title: "qi-vc-poc: Verifiable Credentials for Quality Infrastructure"
-version: 0.1.0
-date-released: 2026-04-30
+version: 0.3.0
+date-released: 2026-05-07
 license: Apache-2.0
-repository-code: https://github.com/monavari/qi-vc-poc
+repository-code: https://github.com/monavari/VC4QI
 abstract: >
   A polyglot (TypeScript + Python) reference implementation of W3C Verifiable
   Credentials 2.0 for quality infrastructure use cases including calibration
-  certificates, reference material certificates, and GS type approval.
-  Implements the three-layer credential architecture (AccreditationCredential,
-  CapabilityCredential, Domain Credentials) with eddsa-rdfc-2022 Data Integrity
-  proofs, URDNA2015 canonicalization, and Bitstring Status List v1.0.
+  certificates (DCC) and reference material certificates (DRMD).
+  Implements the three-layer credential architecture (AccreditationCredential →
+  CapabilityCredential → Domain Credentials) with eddsa-rdfc-2022 Data Integrity
+  proofs, URDNA2015 canonicalization, Bitstring Status List v1.0, and a
+  scope-bounded verification engine (six deterministic rules). Includes 160
+  automated tests (87 TypeScript + 12 scenario + 61 Python) and serves as the
+  reference implementation for the paper "A Scope-Bounded Verifiable Credentials
+  Architecture for Digital Calibration and Reference Material Certificates"
+  (Monavari et al., MDPI Sensors, 2026).
 authors:
   - family-names: Monavari
     given-names: Mehran

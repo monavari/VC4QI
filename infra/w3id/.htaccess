@@ -1,0 +1,38 @@
+# w3id.org/qi-vc redirect rules
+# Place this file at: https://github.com/perma-id/w3id.org/tree/master/qi-vc/
+# Maintainer: monavari.mehran@gmail.com
+# Source repo: https://github.com/monavari/VC4QI
+
+Options -Indexes
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Headers "Authorization, User-Agent, Slug, Content-Type, Link, If-Match, Accept"
+Header always set Access-Control-Expose-Headers "Location, WWW-Authenticate"
+
+# ── JSON-LD contexts ──────────────────────────────────────────────────────────
+RewriteEngine on
+
+RewriteRule ^contexts/v1/qi-calibration\.jsonld$
+  https://raw.githubusercontent.com/monavari/VC4QI/main/contexts/v1/qi-calibration.jsonld [R=302,L]
+
+RewriteRule ^contexts/v1/qi-rm\.jsonld$
+  https://raw.githubusercontent.com/monavari/VC4QI/main/contexts/v1/qi-rm.jsonld [R=302,L]
+
+# ── JSON Schemas ──────────────────────────────────────────────────────────────
+RewriteRule ^schemas/v1/digital-calibration-certificate\.json$
+  https://raw.githubusercontent.com/monavari/VC4QI/main/schemas/v1/digital-calibration-certificate.json [R=302,L]
+
+RewriteRule ^schemas/v1/reference-material-certificate\.json$
+  https://raw.githubusercontent.com/monavari/VC4QI/main/schemas/v1/reference-material-certificate.json [R=302,L]
+
+# ── Vocabulary (HTML redirect for human browsers) ─────────────────────────────
+RewriteCond %{HTTP_ACCEPT} text/html
+RewriteRule ^vocab/v1(.*)$
+  https://monavari.github.io/VC4QI/vocab/v1$1 [R=302,L]
+
+# ── Policies ──────────────────────────────────────────────────────────────────
+RewriteRule ^policies/verification-policy/v1$
+  https://raw.githubusercontent.com/monavari/VC4QI/main/policies/verification-policy-v1.json [R=302,L]
+
+# ── Catch-all: redirect root to repo ─────────────────────────────────────────
+RewriteRule ^(.*)$
+  https://github.com/monavari/VC4QI [R=302,L]

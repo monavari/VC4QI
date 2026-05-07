@@ -10,14 +10,23 @@ Built on the three-layer credential architecture
 (AccreditationCredential → CapabilityCredential → Domain Credentials)
 described in [Monavari et al., 2026].
 
-[![CI](https://github.com/monavari/qi-vc-poc/actions/workflows/ci.yml/badge.svg)](https://github.com/monavari/qi-vc-poc/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/monavari/qi-vc-poc/actions/workflows/codeql.yml/badge.svg)](https://github.com/monavari/qi-vc-poc/actions/workflows/codeql.yml)
+[![CI](https://github.com/monavari/VC4QI/actions/workflows/ci.yml/badge.svg)](https://github.com/monavari/VC4QI/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/monavari/VC4QI/actions/workflows/codeql.yml/badge.svg)](https://github.com/monavari/VC4QI/actions/workflows/codeql.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](LICENSE-docs)
 
 ## Status
 
-Active development. See [CHANGELOG.md](CHANGELOG.md) for release notes.
+Active development — paper reference implementation.
+See [CHANGELOG.md](CHANGELOG.md) for milestone notes.
+
+| Milestone | Description | Tests |
+|-----------|-------------|-------|
+| M0 | Repository scaffolding | — |
+| M1 | DCC and DRMD schemas + JSON-LD contexts | — |
+| M2 | TypeScript core library (`@qi-vc/core`) | 87 |
+| M3 | Python core library (`qi_vc_core`) | 61 |
+| Paper | Scope algorithm, T1–T12 scenario tests | 12 |
 
 ## Architecture
 
@@ -33,8 +42,8 @@ Accreditation Authority (AA)
 ## Quickstart
 
 ```bash
-git clone https://github.com/monavari/qi-vc-poc.git
-cd qi-vc-poc
+git clone https://github.com/monavari/VC4QI.git
+cd VC4QI
 make setup           # install toolchain (Node 20 + Python 3.12 + pnpm + uv)
 make test            # run all tests
 make demo            # open the demo at localhost:5173
