@@ -11,6 +11,7 @@ DocumentLoader = Callable[[str], dict[str, Any]]
 _REPO_ROOT = Path(__file__).parents[4]
 
 _LOCAL_CONTEXT_MAP: dict[str, str] = {
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld": "contexts/v1/qi-core.jsonld",
     "https://w3id.org/qi-vc/contexts/v1/qi-calibration.jsonld": "contexts/v1/qi-calibration.jsonld",
     "https://w3id.org/qi-vc/contexts/v1/qi-rm.jsonld": "contexts/v1/qi-rm.jsonld",
 }

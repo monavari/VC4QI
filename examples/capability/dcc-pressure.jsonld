@@ -1,10 +1,12 @@
 {
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
-    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld",
-    "https://w3id.org/qi-vc/contexts/v1/qi-calibration.jsonld"
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld"
   ],
-  "type": ["VerifiableCredential", "CapabilityCredential"],
+  "type": [
+    "VerifiableCredential",
+    "CapabilityCredential"
+  ],
   "id": "https://dakks.de/credentials/capability/D-K-12345-67-89/dcc",
   "issuer": {
     "id": "did:web:dakks.de",
@@ -27,7 +29,10 @@
         {
           "measurand": "pressure",
           "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
-          "allowedMethods": ["DKD-R 6-1:2014", "EA-10/17"],
+          "allowedMethods": [
+            "DKD-R 6-1:2014",
+            "EA-10/17"
+          ],
           "range": {
             "from": 0,
             "to": 600,
@@ -52,7 +57,7 @@
       "type": "CapabilityCredentialReference",
       "hashBinding": {
         "digestAlgorithm": "sha-256",
-        "digestMultibase": "zACCREDITATION_HASH_PLACEHOLDER_REPLACE_BEFORE_USE"
+        "digestMultibase": "zE5SDxsUcBajJwrWmD9AE17qzF4SnwcepVGkWVp9p1EKk"
       }
     }
   ],

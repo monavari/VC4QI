@@ -1,10 +1,12 @@
 {
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
-    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld",
-    "https://w3id.org/qi-vc/contexts/v1/qi-rm.jsonld"
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld"
   ],
-  "type": ["VerifiableCredential", "CapabilityCredential"],
+  "type": [
+    "VerifiableCredential",
+    "CapabilityCredential"
+  ],
   "id": "https://dakks.de/credentials/capability/D-RM-11075-01-00/drmd",
   "issuer": {
     "id": "did:web:dakks.de",
@@ -23,12 +25,33 @@
     "id": "did:web:bam.de",
     "constraints": {
       "credentialType": "ReferenceMaterialCertificate",
-      "matrix": ["non-ferrous metals and alloys"],
-      "allowedForms": ["disc", "powder", "chips"],
+      "matrix": [
+        "non-ferrous metals and alloys"
+      ],
+      "allowedForms": [
+        "disc",
+        "powder",
+        "chips"
+      ],
       "allowedProperties": [
-        "Cu", "Zn", "Pb", "Sn", "Ni", "Fe",
-        "Mn", "Ag", "Al", "As", "Bi", "Cd",
-        "Co", "Cr", "Sb", "Te", "In", "P"
+        "Cu",
+        "Zn",
+        "Pb",
+        "Sn",
+        "Ni",
+        "Fe",
+        "Mn",
+        "Ag",
+        "Al",
+        "As",
+        "Bi",
+        "Cd",
+        "Co",
+        "Cr",
+        "Sb",
+        "Te",
+        "In",
+        "P"
       ],
       "uncertaintyBound": {
         "type": "relativeExpanded",
@@ -36,12 +59,33 @@
       },
       "scopeEntries": [
         {
-          "matrix": ["non-ferrous metals and alloys"],
-          "allowedForms": ["disc", "powder", "chips"],
+          "matrix": [
+            "non-ferrous metals and alloys"
+          ],
+          "allowedForms": [
+            "disc",
+            "powder",
+            "chips"
+          ],
           "allowedProperties": [
-            "Cu", "Zn", "Pb", "Sn", "Ni", "Fe",
-            "Mn", "Ag", "Al", "As", "Bi", "Cd",
-            "Co", "Cr", "Sb", "Te", "In", "P"
+            "Cu",
+            "Zn",
+            "Pb",
+            "Sn",
+            "Ni",
+            "Fe",
+            "Mn",
+            "Ag",
+            "Al",
+            "As",
+            "Bi",
+            "Cd",
+            "Co",
+            "Cr",
+            "Sb",
+            "Te",
+            "In",
+            "P"
           ],
           "uncertainty": {
             "type": "relativeExpanded",
@@ -57,7 +101,7 @@
       "type": "CapabilityCredentialReference",
       "hashBinding": {
         "digestAlgorithm": "sha-256",
-        "digestMultibase": "zBAM_ACCREDITATION_HASH_PLACEHOLDER_REPLACE_BEFORE_USE"
+        "digestMultibase": "zCufEiAwEbQyCUDzno14GakRwdGfVtpdAvWZ9zTVyw2rb"
       }
     }
   ],

@@ -1,7 +1,6 @@
 {
   "@context": {
     "@version": 1.1,
-    "@protected": true,
 
     "id": "@id",
     "type": "@type",
@@ -19,7 +18,6 @@
     "CapabilityCredentialReference": "qi:CapabilityCredentialReference",
     "hashBinding": "qi:hashBinding",
     "digestAlgorithm": "qi:digestAlgorithm",
-    "digestMultibase": "qi:digestMultibase",
 
     "administrativeData": "drmd:administrativeData",
     "coreData": "drmd:coreData",

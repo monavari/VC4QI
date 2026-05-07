@@ -20,6 +20,8 @@ function loadLocal(filePath: string): unknown {
 
 /** Map from context URL to local file path (relative to repo root) */
 const LOCAL_CONTEXT_MAP: Record<string, string> = {
+  'https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld':
+    'contexts/v1/qi-core.jsonld',
   'https://w3id.org/qi-vc/contexts/v1/qi-calibration.jsonld':
     'contexts/v1/qi-calibration.jsonld',
   'https://w3id.org/qi-vc/contexts/v1/qi-rm.jsonld':
