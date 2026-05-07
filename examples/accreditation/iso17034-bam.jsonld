@@ -1,0 +1,67 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-rm.jsonld"
+  ],
+  "type": ["VerifiableCredential", "AccreditationCredential"],
+  "id": "https://dakks.de/credentials/accreditation/D-RM-11075-01-00",
+  "issuer": {
+    "id": "did:web:dakks.de",
+    "name": "Deutsche Akkreditierungsstelle GmbH (DAkkS)"
+  },
+  "validFrom": "2016-01-01T00:00:00Z",
+  "validUntil": "2030-12-31T23:59:59Z",
+  "credentialStatus": {
+    "id": "https://dakks.de/status/lists/1#101",
+    "type": "BitstringStatusListEntry",
+    "statusPurpose": "revocation",
+    "statusListIndex": "101",
+    "statusListCredential": "https://dakks.de/status/lists/1"
+  },
+  "credentialSubject": {
+    "id": "did:web:bam.de",
+    "type": "ConformityAssessmentBody",
+    "name": "Bundesanstalt für Materialforschung und -prüfung (BAM)",
+    "scheme": "ISO 17034:2016",
+    "accreditationReference": "D-RM-11075-01-00",
+    "scope": [
+      {
+        "id": "scope-nfma",
+        "matrix": ["non-ferrous metals and alloys"],
+        "allowedForms": ["disc", "powder", "chips", "rod", "sheet"],
+        "allowedProperties": [
+          "Cu", "Zn", "Pb", "Sn", "Ni", "Fe",
+          "Mn", "Ag", "Al", "As", "Bi", "Cd",
+          "Co", "Cr", "Sb", "Te", "In", "P",
+          "Si", "Ge", "Au", "Pt", "Pd"
+        ],
+        "uncertainty": {
+          "type": "relativeExpanded",
+          "maxRelativeU_k2": 0.10
+        }
+      },
+      {
+        "id": "scope-steel",
+        "matrix": ["iron and steel", "ferrous metals"],
+        "allowedForms": ["disc", "chips"],
+        "allowedProperties": [
+          "Fe", "C", "Mn", "Si", "P", "S", "Cr", "Ni", "Mo", "V",
+          "Cu", "Al", "Co", "Nb", "Ti", "W", "B", "N"
+        ],
+        "uncertainty": {
+          "type": "relativeExpanded",
+          "maxRelativeU_k2": 0.10
+        }
+      }
+    ]
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:web:dakks.de#key-1",
+    "created": "2025-01-01T08:00:00Z",
+    "proofValue": "zBAM_ACCREDITATION_PROOF_PLACEHOLDER_REPLACE_WITH_REAL_SIGNATURE"
+  }
+}

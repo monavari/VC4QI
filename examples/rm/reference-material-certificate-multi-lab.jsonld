@@ -1,0 +1,268 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-rm.jsonld"
+  ],
+  "type": ["VerifiableCredential", "ReferenceMaterialCertificate"],
+  "id": "https://bam.de/credentials/rm/M375a/multi-lab",
+  "issuer": {
+    "id": "did:web:bam.de",
+    "name": "Bundesanstalt für Materialforschung und -prüfung (BAM)"
+  },
+  "validFrom": "2025-01-01T00:00:00Z",
+  "validUntil": "2099-12-31T23:59:59Z",
+  "credentialStatus": {
+    "id": "https://bam.de/status/lists/1#43",
+    "type": "BitstringStatusListEntry",
+    "statusPurpose": "revocation",
+    "statusListIndex": "43",
+    "statusListCredential": "https://bam.de/status/lists/1"
+  },
+  "credentialSchema": {
+    "id": "https://w3id.org/qi-vc/schemas/v1/reference-material-certificate.json",
+    "type": "JsonSchema"
+  },
+  "credentialSubject": {
+    "id": "did:web:bam.de:crm:M375a",
+    "administrativeData": {
+      "coreData": {
+        "titleOfTheDocument": "referenceMaterialCertificate",
+        "uniqueIdentifier": "7d7e1a89-bad4-4fc7-bd8a-4b7c5d5d224b",
+        "documentIdentifiers": [
+          { "type": "BAM-CERT", "value": "M375a" }
+        ]
+      },
+      "validity": {
+        "validFrom": "2025-01-01",
+        "validUntil": "2099-12-31"
+      },
+      "referenceMaterialProducer": {
+        "name": "Bundesanstalt für Materialforschung und -prüfung (BAM)",
+        "id": "did:web:bam.de",
+        "accreditationNumber": "D-RM-11075-01-00"
+      }
+    },
+    "materials": [
+      {
+        "name": "CuZn39Pb3",
+        "description": "Certified Reference Material — brass alloy disc (approx. 38 mm diameter × 30 mm height). Certified for mass fractions of major and trace elements by ICP-OES, ICP-MS, and spark OES across 10 laboratories.",
+        "materialIdentifiers": [
+          { "type": "BAM-RM",   "value": "371-a" },
+          { "type": "BAM-CERT", "value": "M375a" }
+        ],
+        "minimumSampleSize": "0.2 g"
+      }
+    ],
+    "materialPropertiesList": [
+      {
+        "propertyIdentifiers": ["massFraction"],
+        "isCertified": true,
+        "name": "Certified mass fractions — lab-A characterization (Cu, Zn, Pb)",
+        "description": "Characterized by Lab-A (ICP-OES). Unweighted mean; U at k=2.",
+        "results": [
+          {
+            "name": "Copper (Cu)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 57.68,
+                "unit": { "ucumCode": "%", "unitIri": "http://qudt.org/vocab/unit/PERCENT" },
+                "uncertainty": { "expandedUncertainty": 0.14, "coverageFactor": 2, "coverageProbability": 0.95 }
+              }
+            }
+          },
+          {
+            "name": "Zinc (Zn)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 38.2,
+                "unit": { "ucumCode": "%", "unitIri": "http://qudt.org/vocab/unit/PERCENT" },
+                "uncertainty": { "expandedUncertainty": 0.4, "coverageFactor": 2, "coverageProbability": 0.95 }
+              }
+            }
+          },
+          {
+            "name": "Lead (Pb)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 3.07,
+                "unit": { "ucumCode": "%", "unitIri": "http://qudt.org/vocab/unit/PERCENT" },
+                "uncertainty": { "expandedUncertainty": 0.06, "coverageFactor": 2, "coverageProbability": 0.95 }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "propertyIdentifiers": ["massFraction"],
+        "isCertified": true,
+        "name": "Certified mass fractions — lab-B characterization (Sn, Ni, Fe, Mn)",
+        "description": "Characterized by Lab-B (ICP-MS). Unweighted mean; U at k=2.",
+        "results": [
+          {
+            "name": "Tin (Sn)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 0.158,
+                "unit": { "ucumCode": "%", "unitIri": "http://qudt.org/vocab/unit/PERCENT" },
+                "uncertainty": { "expandedUncertainty": 0.004, "coverageFactor": 2, "coverageProbability": 0.95 }
+              }
+            }
+          },
+          {
+            "name": "Nickel (Ni)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 0.1174,
+                "unit": { "ucumCode": "%", "unitIri": "http://qudt.org/vocab/unit/PERCENT" },
+                "uncertainty": { "expandedUncertainty": 0.0020, "coverageFactor": 2, "coverageProbability": 0.95 }
+              }
+            }
+          },
+          {
+            "name": "Iron (Fe)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 0.175,
+                "unit": { "ucumCode": "%", "unitIri": "http://qudt.org/vocab/unit/PERCENT" },
+                "uncertainty": { "expandedUncertainty": 0.005, "coverageFactor": 2, "coverageProbability": 0.95 }
+              }
+            }
+          },
+          {
+            "name": "Manganese (Mn)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 139.5,
+                "unit": { "ucumCode": "mg/kg", "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM" },
+                "uncertainty": { "expandedUncertainty": 1.7, "coverageFactor": 2, "coverageProbability": 0.95 }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "propertyIdentifiers": ["massFraction"],
+        "isCertified": true,
+        "name": "Certified mass fractions — lab-C characterization (Ag, Cd, Sb, Te)",
+        "description": "Characterized by Lab-C (ICP-MS, spark OES). Unweighted mean; U at k=2.",
+        "results": [
+          {
+            "name": "Silver (Ag)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 50.6,
+                "unit": { "ucumCode": "mg/kg", "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM" },
+                "uncertainty": { "expandedUncertainty": 1.4, "coverageFactor": 2, "coverageProbability": 0.95 }
+              }
+            }
+          },
+          {
+            "name": "Cadmium (Cd)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 62.4,
+                "unit": { "ucumCode": "mg/kg", "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM" },
+                "uncertainty": { "expandedUncertainty": 1.5, "coverageFactor": 2, "coverageProbability": 0.95 }
+              }
+            }
+          },
+          {
+            "name": "Antimony (Sb)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 120,
+                "unit": { "ucumCode": "mg/kg", "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM" },
+                "uncertainty": { "expandedUncertainty": 4, "coverageFactor": 2, "coverageProbability": 0.95 }
+              }
+            }
+          },
+          {
+            "name": "Tellurium (Te)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 42.9,
+                "unit": { "ucumCode": "mg/kg", "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM" },
+                "uncertainty": { "expandedUncertainty": 1.4, "coverageFactor": 2, "coverageProbability": 0.95 }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "propertyIdentifiers": ["massFraction"],
+        "isCertified": false,
+        "name": "Informative values (not certified)",
+        "description": "Inter-laboratory spread too high for certification. For information only.",
+        "results": [
+          {
+            "name": "Silicon (Si)",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 103,
+                "unit": { "ucumCode": "mg/kg", "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM" },
+                "uncertainty": { "expandedUncertainty": 12, "coverageFactor": 2, "coverageProbability": 0.95 }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "id": "https://dakks.de/credentials/capability/D-RM-11075-01-00/drmd",
+      "type": "CapabilityCredentialReference",
+      "hashBinding": {
+        "digestAlgorithm": "sha-256",
+        "digestMultibase": "zBAM_CAPABILITY_HASH_PLACEHOLDER_REPLACE_BEFORE_USE"
+      }
+    },
+    {
+      "id": "https://lab-a.example/credentials/iso17025-accreditation",
+      "type": "AccreditationCredentialReference",
+      "hashBinding": {
+        "digestAlgorithm": "sha-256",
+        "digestMultibase": "zLAB_A_HASH_PLACEHOLDER_REPLACE_BEFORE_USE"
+      },
+      "characterisationOf": ["Cu", "Zn", "Pb"]
+    },
+    {
+      "id": "https://lab-b.example/credentials/iso17025-accreditation",
+      "type": "AccreditationCredentialReference",
+      "hashBinding": {
+        "digestAlgorithm": "sha-256",
+        "digestMultibase": "zLAB_B_HASH_PLACEHOLDER_REPLACE_BEFORE_USE"
+      },
+      "characterisationOf": ["Sn", "Ni", "Fe", "Mn"]
+    },
+    {
+      "id": "https://lab-c.example/credentials/iso17025-accreditation",
+      "type": "AccreditationCredentialReference",
+      "hashBinding": {
+        "digestAlgorithm": "sha-256",
+        "digestMultibase": "zLAB_C_HASH_PLACEHOLDER_REPLACE_BEFORE_USE"
+      },
+      "characterisationOf": ["Ag", "Cd", "Sb", "Te"]
+    }
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:web:bam.de#key-1",
+    "created": "2025-01-01T09:00:00Z",
+    "proofValue": "zMULTI_LAB_PROOF_PLACEHOLDER_REPLACE_WITH_REAL_SIGNATURE"
+  }
+}

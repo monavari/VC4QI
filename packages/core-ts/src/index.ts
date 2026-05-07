@@ -8,3 +8,4 @@ export * as status from './status/index.js';
 export * as trustRegistry from './trust-registry/index.js';
 export * as issuer from './issuer/index.js';
 export * as verifier from './verifier/index.js';
+export * as scope from './scope/index.js';
