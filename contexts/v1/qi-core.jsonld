@@ -1,0 +1,80 @@
+{
+  "@context": {
+    "@version": 1.1,
+
+    "AccreditationCredential":          "https://w3id.org/qi-vc/vocab/v1#AccreditationCredential",
+    "CapabilityCredential":             "https://w3id.org/qi-vc/vocab/v1#CapabilityCredential",
+    "ConformityAssessmentBody":         "https://w3id.org/qi-vc/vocab/v1#ConformityAssessmentBody",
+    "TrustRegistryCredential":          "https://w3id.org/qi-vc/vocab/v1#TrustRegistryCredential",
+
+    "AccreditationCredentialReference": "https://w3id.org/qi-vc/vocab/v1#AccreditationCredentialReference",
+    "characterisationOf": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#characterisationOf",
+      "@container": "@set"
+    },
+
+    "scheme":                 "https://w3id.org/qi-vc/vocab/v1#scheme",
+    "accreditationReference": "https://w3id.org/qi-vc/vocab/v1#accreditationReference",
+
+    "scope": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#scope",
+      "@container": "@set"
+    },
+    "quantityKindIri": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#quantityKindIri",
+      "@type": "@id"
+    },
+    "allowedMethods": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#allowedMethods",
+      "@container": "@set"
+    },
+    "range": "https://w3id.org/qi-vc/vocab/v1#range",
+    "from": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#rangeFrom",
+      "@type": "http://www.w3.org/2001/XMLSchema#decimal"
+    },
+    "to": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#rangeTo",
+      "@type": "http://www.w3.org/2001/XMLSchema#decimal"
+    },
+
+    "matrix": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#matrix",
+      "@container": "@set"
+    },
+    "allowedForms": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#allowedForms",
+      "@container": "@set"
+    },
+    "allowedProperties": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#allowedProperties",
+      "@container": "@set"
+    },
+
+    "maxRelativePercent": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#maxRelativePercent",
+      "@type": "http://www.w3.org/2001/XMLSchema#decimal"
+    },
+    "maxRelativeU_k2": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#maxRelativeU_k2",
+      "@type": "http://www.w3.org/2001/XMLSchema#decimal"
+    },
+    "maxAbsoluteMgKg": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#maxAbsoluteMgKg",
+      "@type": "http://www.w3.org/2001/XMLSchema#decimal"
+    },
+    "expression": "https://w3id.org/qi-vc/vocab/v1#uncertaintyExpression",
+
+    "constraints":    "https://w3id.org/qi-vc/vocab/v1#constraints",
+    "credentialType": "https://w3id.org/qi-vc/vocab/v1#credentialType",
+    "scopeEntries": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#scopeEntries",
+      "@container": "@set"
+    },
+
+    "registryEntries": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#registryEntries",
+      "@container": "@set"
+    }
+  }
+}

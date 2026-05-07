@@ -11,6 +11,9 @@ Header always set Access-Control-Expose-Headers "Location, WWW-Authenticate"
 # ── JSON-LD contexts ──────────────────────────────────────────────────────────
 RewriteEngine on
 
+RewriteRule ^contexts/v1/qi-core\.jsonld$
+  https://raw.githubusercontent.com/monavari/VC4QI/main/contexts/v1/qi-core.jsonld [R=302,L]
+
 RewriteRule ^contexts/v1/qi-calibration\.jsonld$
   https://raw.githubusercontent.com/monavari/VC4QI/main/contexts/v1/qi-calibration.jsonld [R=302,L]
 

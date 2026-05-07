@@ -1,8 +1,7 @@
 {
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
-    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld",
-    "https://w3id.org/qi-vc/contexts/v1/qi-calibration.jsonld"
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld"
   ],
   "type": ["VerifiableCredential", "AccreditationCredential"],
   "id": "https://dakks.de/credentials/accreditation/D-K-12345-67-89",
