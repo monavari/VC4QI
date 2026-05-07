@@ -5,6 +5,13 @@ import { verifyProof } from '../proofs/index.js';
 import { verifyHashBinding } from '../canonicalize/index.js';
 import { checkStatusBit } from '../status/index.js';
 import { isTrustedIssuer, parseTrustRegistryCredential } from '../trust-registry/index.js';
+import {
+  checkDccScopeInclusion,
+  checkDrmdScopeInclusion,
+  checkDerivation,
+  type DccScopeEntry,
+  type DrmdScopeEntry,
+} from '../scope/index.js';
 import type {
   JsonObject,
   DocumentLoader,
@@ -247,12 +254,21 @@ export async function verify(
     }
   }
 
+  // ── Rule 2b: derivation check (capability constraints ⊆ accreditation scope)
+  if (!skip_.has(2)) {
+    const derivResult = checkDerivation(capabilityCredential, accreditationCredential);
+    if (!derivResult.passed) {
+      for (const v of derivResult.violations) {
+        results.push(fail(2, 'derivation-valid', `[${v.code}] ${v.detail}`));
+      }
+    }
+  }
+
   // ── Rule 6: scope-covers-payload ──────────────────────────────────────
   if (skip_.has(6)) {
     results.push(skip(6, 'scope-covers-payload', 'Skipped by caller'));
   } else {
-    const scopeResult = checkScopeCoverage(domainCredential, capabilityCredential);
-    results.push(scopeResult);
+    results.push(...checkScopeRule(domainCredential, capabilityCredential));
   }
 
   const verified = results.every(r => r.status !== 'FAIL');
@@ -316,29 +332,59 @@ async function checkHashBinding(
   }
 }
 
-function checkScopeCoverage(
+function checkScopeRule(
   domainCredential: JsonObject,
   capabilityCredential: JsonObject,
-): RuleResult {
+): RuleResult[] {
   const capSubject = capabilityCredential.credentialSubject as JsonObject | undefined;
-  const scope = capSubject?.scope as JsonObject | undefined;
+  const constraints = capSubject?.constraints as JsonObject | undefined;
 
-  if (!scope) {
-    return skip(6, 'scope-covers-payload',
-      'CapabilityCredential has no scope — check skipped');
+  if (!constraints) {
+    // Fall back to simple type check when no constraints object
+    const scope = capSubject?.scope as JsonObject | undefined;
+    if (!scope) {
+      return [skip(6, 'scope-covers-payload', 'CapabilityCredential has no scope — check skipped')];
+    }
+    const authorizedTypes = scope.authorizedCredentialTypes as string[] | undefined ?? [];
+    const domainTypes = (domainCredential.type as string[] | undefined) ?? [];
+    const domainType = domainTypes.find(t => t !== 'VerifiableCredential');
+    if (domainType && authorizedTypes.length > 0 && !authorizedTypes.includes(domainType)) {
+      return [fail(6, 'scope-covers-payload',
+        `Domain type '${domainType}' not in capability authorizedCredentialTypes: [${authorizedTypes.join(', ')}]`)];
+    }
+    return [pass(6, 'scope-covers-payload', 'Domain credential type is within CapabilityCredential scope')];
   }
 
-  const authorizedTypes = scope.authorizedCredentialTypes as string[] | undefined ?? [];
   const domainTypes = (domainCredential.type as string[] | undefined) ?? [];
-  const domainType = domainTypes.find(t => t !== 'VerifiableCredential');
+  const isDcc = domainTypes.includes('DigitalCalibrationCertificate');
+  const isDrmd = domainTypes.includes('ReferenceMaterialCertificate');
 
-  if (domainType && authorizedTypes.length > 0 && !authorizedTypes.includes(domainType)) {
-    return fail(6, 'scope-covers-payload',
-      `Domain type '${domainType}' not in capability authorizedCredentialTypes: [${authorizedTypes.join(', ')}]`);
+  if (isDcc) {
+    const scopeEntries = (constraints.scopeEntries as DccScopeEntry[] | undefined) ?? [];
+    const result = checkDccScopeInclusion(domainCredential, scopeEntries);
+    if (!result.passed) {
+      return result.violations.map(v => fail(6, 'scope-covers-payload', `[${v.code}] ${v.detail}`));
+    }
+    return [pass(6, 'scope-covers-payload', 'DCC measurement results within CapabilityCredential scope')];
   }
 
-  return pass(6, 'scope-covers-payload',
-    'Domain credential type is within CapabilityCredential scope');
+  if (isDrmd) {
+    const scopeEntries = (constraints.scopeEntries as DrmdScopeEntry[] | undefined) ?? [];
+    const result = checkDrmdScopeInclusion(domainCredential, scopeEntries);
+    if (!result.passed) {
+      return result.violations.map(v => fail(6, 'scope-covers-payload', `[${v.code}] ${v.detail}`));
+    }
+    return [pass(6, 'scope-covers-payload', 'DRMD certified properties within CapabilityCredential scope')];
+  }
+
+  // Generic type-based check for other credential types
+  const authorizedTypes = constraints.authorizedCredentialTypes as string[] | undefined ?? [];
+  const domainType = domainTypes.find(t => t !== 'VerifiableCredential');
+  if (domainType && authorizedTypes.length > 0 && !authorizedTypes.includes(domainType)) {
+    return [fail(6, 'scope-covers-payload',
+      `Domain type '${domainType}' not in capability authorizedCredentialTypes: [${authorizedTypes.join(', ')}]`)];
+  }
+  return [pass(6, 'scope-covers-payload', 'Domain credential type is within CapabilityCredential scope')];
 }
 
 function deriveRegistryUrl(issuerDid: string): string {

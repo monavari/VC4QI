@@ -1,0 +1,67 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-calibration.jsonld"
+  ],
+  "type": ["VerifiableCredential", "CapabilityCredential"],
+  "id": "https://dakks.de/credentials/capability/D-K-12345-67-89/dcc",
+  "issuer": {
+    "id": "did:web:dakks.de",
+    "name": "Deutsche Akkreditierungsstelle GmbH (DAkkS)"
+  },
+  "validFrom": "2025-09-01T00:00:00Z",
+  "validUntil": "2030-09-01T00:00:00Z",
+  "credentialStatus": {
+    "id": "https://dakks.de/status/lists/1#200",
+    "type": "BitstringStatusListEntry",
+    "statusPurpose": "revocation",
+    "statusListIndex": "200",
+    "statusListCredential": "https://dakks.de/status/lists/1"
+  },
+  "credentialSubject": {
+    "id": "did:web:testlab.example",
+    "constraints": {
+      "credentialType": "DigitalCalibrationCertificate",
+      "scopeEntries": [
+        {
+          "measurand": "pressure",
+          "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+          "allowedMethods": ["DKD-R 6-1:2014", "EA-10/17"],
+          "range": {
+            "from": 0,
+            "to": 600,
+            "unit": {
+              "ucumCode": "kPa",
+              "unitIri": "http://qudt.org/vocab/unit/KiloPA"
+            }
+          },
+          "uncertainty": {
+            "type": "relativePercent",
+            "maxRelativePercent": 0.05,
+            "expression": "0.05% of reading + 0.01 kPa",
+            "coverageFactor": 2
+          }
+        }
+      ]
+    }
+  },
+  "evidence": [
+    {
+      "id": "https://dakks.de/credentials/accreditation/D-K-12345-67-89",
+      "type": "CapabilityCredentialReference",
+      "hashBinding": {
+        "digestAlgorithm": "sha-256",
+        "digestMultibase": "zACCREDITATION_HASH_PLACEHOLDER_REPLACE_BEFORE_USE"
+      }
+    }
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:web:dakks.de#key-1",
+    "created": "2025-09-01T08:05:00Z",
+    "proofValue": "zDCC_CAPABILITY_PROOF_PLACEHOLDER_REPLACE_WITH_REAL_SIGNATURE"
+  }
+}

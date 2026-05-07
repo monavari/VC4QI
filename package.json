@@ -12,6 +12,7 @@
   "scripts": {
     "lint": "pnpm -r --if-present lint",
     "test": "pnpm -r --if-present test",
+    "test:scenarios": "vitest run --config vitest.config.ts",
     "build": "pnpm -r --if-present build",
     "validate:schemas": "node scripts/validate-schemas.js"
   },
