@@ -128,6 +128,24 @@ export async function verify(
     };
   }
 
+  // ── Rule 0: cryptographic proof verification (optional) ──────────────
+  // When resolveKey is provided, verifies the eddsa-rdfc-2022 Data Integrity proof
+  // on the domain credential.  When omitted (e.g. in test fixtures that carry
+  // placeholder proofValues) the rule is skipped — this gap is documented in
+  // the paper §9 Limitation 2.
+  if (opts.resolveKey && !skip_.has(0)) {
+    try {
+      const vm = ((domainCredential.proof as JsonObject | undefined)?.verificationMethod as string | undefined) ?? '';
+      const publicKey = await opts.resolveKey(vm);
+      const proofOk = await verifyProof(domainCredential, publicKey, opts.documentLoader);
+      results.push(proofOk
+        ? pass(0, 'proof-valid', 'eddsa-rdfc-2022 Data Integrity proof verified')
+        : fail(0, 'proof-valid', 'eddsa-rdfc-2022 Data Integrity proof invalid'));
+    } catch (err) {
+      results.push(fail(0, 'proof-valid', `Proof verification error: ${err}`));
+    }
+  }
+
   // ── Rule 1: issuer-matches-capability-subject ─────────────────────────
   {
     const domainIssuer = issuerId(domainCredential);
