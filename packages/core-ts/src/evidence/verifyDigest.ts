@@ -25,7 +25,7 @@ export function computeDigestSRI(
   algorithm: 'sha256' | 'sha384' | 'sha512' = 'sha384',
 ): string {
   const digest = createHash(algorithm).update(stableStringify(unsecuredDocument(document))).digest('base64');
-  return `${algorithm.replace('sha', 'sha')}-${digest}`;
+  return `${algorithm}-${digest}`;
 }
 
 export function computeDigestMultibase(document: JsonObject): string {
