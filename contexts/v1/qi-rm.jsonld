@@ -15,9 +15,17 @@
 
     "ReferenceMaterialCertificate": "qi:ReferenceMaterialCertificate",
 
-    "CapabilityCredentialReference": "qi:CapabilityCredentialReference",
-    "hashBinding": "qi:hashBinding",
-    "digestAlgorithm": "qi:digestAlgorithm",
+    "CredentialEvidenceReference": "qi:CredentialEvidenceReference",
+    "relation": "qi:relation",
+    "role": "qi:role",
+    "authorizationBasis": "qi:authorizationBasis",
+    "kind": "qi:kind",
+    "issuerRole": "qi:issuerRole",
+    "legalBasis": "qi:legalBasis",
+    "scheme": "qi:scheme",
+    "scopeRef": "qi:scopeRef",
+    "digestMultibase": "qi:digestMultibase",
+    "digestSRI": "qi:digestSRI",
 
     "administrativeData": "drmd:administrativeData",
     "coreData": "drmd:coreData",
