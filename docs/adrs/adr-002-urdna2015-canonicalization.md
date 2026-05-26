@@ -17,7 +17,7 @@ interoperate with the broader W3C Data Integrity ecosystem.
 ## Decision
 
 Use **URDNA2015** (RDF Dataset Normalization 1.0,
-https://www.w3.org/TR/rdf-canon/) via `jsonld.js` / `pyld` as the sole
+<https://www.w3.org/TR/rdf-canon/>) via `jsonld.js` / `pyld` as the sole
 canonicalization algorithm. This is the algorithm required by the
 `eddsa-rdfc-2022` and `ecdsa-rdfc-2019` cryptosuites.
 
