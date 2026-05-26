@@ -48,6 +48,6 @@ def verify_hash_binding(
     digest_multibase: str,
     document_loader: DocumentLoader | None = None,
 ) -> bool:
-    """Verify a hashBinding against a document."""
+    """Verify a digest binding against a document."""
     expected = compute_hash_binding(document, document_loader)
     return expected == digest_multibase

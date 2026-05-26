@@ -86,5 +86,28 @@ def test_is_trusted_unknown_did():
     assert not is_trusted_issuer(registry, "did:web:unknown.example.com")
 
 
+def test_is_trusted_basis_aware():
+    cred = make_registry_credential([
+        {
+            "id": "did:web:ptb.example",
+            "issuerRole": "qi:nationalMetrologyInstitute",
+            "authorizationBasisKinds": ["qi:legalMandate"],
+        }
+    ])
+    registry = parse_trust_registry_credential(cred)
+    assert is_trusted_issuer(
+        registry,
+        "did:web:ptb.example",
+        "qi:legalMandate",
+        "qi:nationalMetrologyInstitute",
+    )
+    assert not is_trusted_issuer(
+        registry,
+        "did:web:ptb.example",
+        "qi:accreditation",
+        "qi:nationalAccreditationBody",
+    )
+
+
 def test_clear_cache():
     clear_registry_cache()  # just must not raise
