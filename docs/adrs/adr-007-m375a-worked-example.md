@@ -21,7 +21,7 @@ Two variants are needed (paper §5.3):
   by BAM directly.
 - **Variant B** — multi-lab characterization; three fictional ISO/IEC 17025
   labs (lab-A, lab-B, lab-C) each contribute a subset of elements, linked via
-  `AccreditationCredentialReference` evidence entries with `characterisationOf`
+  `CredentialEvidenceReference` evidence entries with `characterisationOf`
   arrays.
 
 ## Decision

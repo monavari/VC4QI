@@ -1,42 +1,11 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
-type: software
-title: "qi-vc-poc: Verifiable Credentials for Quality Infrastructure"
-version: 0.3.0
-date-released: 2026-05-07
-license: Apache-2.0
-repository-code: https://github.com/monavari/VC4QI
-abstract: >
-  A polyglot (TypeScript + Python) reference implementation of W3C Verifiable
-  Credentials 2.0 for quality infrastructure use cases including calibration
-  certificates (DCC) and reference material certificates (DRMD).
-  Implements the three-layer credential architecture (AccreditationCredential →
-  CapabilityCredential → Domain Credentials) with eddsa-rdfc-2022 Data Integrity
-  proofs, URDNA2015 canonicalization, Bitstring Status List v1.0, and a
-  scope-bounded verification engine (six deterministic rules). Includes 160
-  automated tests (87 TypeScript + 12 scenario + 61 Python) and serves as the
-  reference implementation for the paper "A Scope-Bounded Verifiable Credentials
-  Architecture for Digital Calibration and Reference Material Certificates"
-  (Monavari et al., MDPI Sensors, 2026).
+message: "If you use VC4QI, please cite the associated manuscript."
+title: "VC4QI: Verifiable Credentials for Quality Infrastructure"
+abstract: >-
+  Reference implementation of a policy-resolved evidence-graph verifier for
+  Quality Infrastructure credentials using W3C VC 2.0 primitives.
 authors:
   - family-names: Monavari
     given-names: Mehran
-    email: monavari.mehran@gmail.com
-keywords:
-  - verifiable-credentials
-  - quality-infrastructure
-  - calibration
-  - accreditation
-  - w3c-vc
-  - data-integrity
-references:
-  - type: software
-    title: "VC-calibration-chain"
-    version: 0.1.0
-    authors:
-      - family-names: Monavari
-        given-names: Mehran
-    repository-code: https://github.com/mehranmo/VC-calibration-chain
-    notes: >
-      Prior art v0.1; qi-vc-poc is the successor implementation. Schemas and
-      verification policy architecture derive from this work.
+license: Apache-2.0
+repository-code: "https://github.com/monavari/VC4QI"
