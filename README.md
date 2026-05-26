@@ -1,14 +1,9 @@
-# qi-vc-poc
+# VC4QI
 
-> Verifiable Credentials reference implementation for Quality Infrastructure
-
-A polyglot (TypeScript + Python) reference implementation of W3C Verifiable
-Credentials 2.0 for accreditation, calibration, reference materials, GS mark,
-product carbon footprint, and Digital Product Passport use cases.
-
-Built on the three-layer credential architecture
-(AccreditationCredential → CapabilityCredential → Domain Credentials)
-described in [Monavari et al., 2026].
+VC4QI is a reference implementation of a policy-resolved evidence-graph verifier
+for Quality Infrastructure credentials. It builds on W3C VC 2.0 primitives and
+adds QI-specific evidence relations, policy profiles, scope checks, derivation
+checks, and verification traces.
 
 [![CI](https://github.com/monavari/VC4QI/actions/workflows/ci.yml/badge.svg)](https://github.com/monavari/VC4QI/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/monavari/VC4QI/actions/workflows/codeql.yml/badge.svg)](https://github.com/monavari/VC4QI/actions/workflows/codeql.yml)
@@ -17,62 +12,97 @@ described in [Monavari et al., 2026].
 
 ## Status
 
-Active development — paper reference implementation.
-See [CHANGELOG.md](CHANGELOG.md) for milestone notes.
+`main` tracks the manuscript v2.0 / v2.1 model: QI credentials are verified by
+resolving typed evidence edges and applying a policy profile. The v0.1 chain
+implementation is archived in `archive/three-layer-capability-model`.
 
-| Milestone | Description | Tests |
-|-----------|-------------|-------|
-| M0 | Repository scaffolding | — |
-| M1 | DCC and DRMD schemas + JSON-LD contexts | — |
-| M2 | TypeScript core library (`@qi-vc/core`) | 87 |
-| M3 | Python core library (`qi_vc_core`) | 61 |
-| Paper | Scope algorithm, T1–T12 scenario tests | 12 |
+TypeScript is canonical. Python mirrors public behavior using shared JSON
+fixtures in `testdata/`.
 
 ## Architecture
 
-The three-layer credential model:
+Domain credentials keep established artifact types such as
+`DigitalCalibrationCertificate`, `ReferenceMaterialCertificate`, `TestReport`,
+`InspectionReport`, and `ConformityCertificate`.
 
+Authorizing and supporting relationships are expressed through
+`CredentialEvidenceReference` entries in VC `evidence`:
+
+```json
+{
+  "type": "CredentialEvidenceReference",
+  "id": "urn:uuid:accreditation-direct-001",
+  "relation": "qi:authorizedBy",
+  "role": "authorizing",
+  "authorizationBasis": {
+    "kind": "qi:accreditation"
+  },
+  "digestSRI": "sha384-..."
+}
 ```
-Accreditation Authority (AA)
-  └─ AccreditationCredential → issued to CAB
-       └─ CapabilityCredential → scope-bounded issuance authorization
-            └─ Domain Credentials (DCC, RMC, GS, PCF, DPP) → issued to subjects
-```
+
+Verifier policy determines whether accreditation, legal mandate, notification,
+scheme authorization, capability evidence, recognition, or recursive supporting
+credentials are sufficient for a use case.
 
 ## Quickstart
 
 ```bash
-git clone https://github.com/monavari/VC4QI.git
-cd VC4QI
-make setup           # install toolchain (Node 20 + Python 3.12 + pnpm + uv)
-make test            # run all tests
-make demo            # open the demo at localhost:5173
+pnpm install
+pnpm -r build
+pnpm -r test
+pnpm validate:schemas
+pytest packages/core-py/tests
 ```
 
 ## Structure
 
 | Directory | Description |
 |-----------|-------------|
-| `schemas/v1/` | JSON Schema 2020-12 credential schemas |
-| `contexts/v1/` | JSON-LD contexts |
-| `policies/` | Verification policy + PEX presentation definitions |
-| `packages/core-ts/` | TypeScript reference implementation |
-| `packages/core-py/` | Python reference implementation |
-| `apps/demo-web/` | React demo application |
-| `apps/procurement-agent/` | Agentic procurement compliance scenario |
-| `examples/` | Golden-path example credentials |
-| `docs/` | Architecture docs, scenarios, ADRs |
+| `schemas/v1/` | JSON Schema 2020-12 credential and policy schemas |
+| `contexts/v1/` | JSON-LD contexts and QI evidence context |
+| `policies/profiles/` | v0.2 policy profiles |
+| `testdata/` | Shared fixtures used by TypeScript and Python |
+| `packages/core-ts/` | Canonical TypeScript implementation |
+| `packages/core-py/` | Python parity implementation |
+| `docs/` | Architecture, vocabulary, policy, and parity docs |
 
-## Prior Art
+## Core API
 
-This repository builds on [mehranmo/VC-calibration-chain](https://github.com/mehranmo/VC-calibration-chain),
-the v0.1 implementation of the same conceptual framework. We acknowledge that
-prior work as the foundation for schemas and verification policy architecture.
+TypeScript:
+
+```ts
+import { verifier } from '@qi-vc/core';
+
+const trace = await verifier.verifyCredentialGraph(targetCredential, policy, {
+  fetchDocument,
+  resolveTrustRegistry,
+  skipProof: true,
+});
+```
+
+Python:
+
+```py
+from qi_vc_core.verifier import VerifyGraphOptions, verify_credential_graph
+
+trace = verify_credential_graph(
+    target_credential,
+    policy,
+    VerifyGraphOptions(fetch_document=fetch_document, skip_proof=True),
+)
+```
+
+## Documentation
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Vocabulary](docs/VOCABULARY.md)
+- [Policy Profiles](docs/POLICY_PROFILES.md)
+- [Presentation Query](docs/PRESENTATION_QUERY.md)
+- [Python Parity](docs/PYTHON_PARITY.md)
+- [Non-goals](docs/NON_GOALS.md)
+- [Implementation Status](docs/IMPLEMENTATION_STATUS.md)
 
 ## License
 
 Code: [Apache-2.0](LICENSE). Documentation: [CC-BY-4.0](LICENSE-docs).
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md). By contributing you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).

@@ -20,8 +20,10 @@ jobs:
           node-version: '20'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm -r build
       - run: pnpm --if-present -r lint
       - run: pnpm --if-present -r test
+      - run: pnpm test:scenarios
 
   test-py:
     name: Python tests
@@ -31,12 +33,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install uv
-        run: pip install uv
-      - name: Sync workspace
-        run: uv sync --all-packages || true
+      - name: Install core package
+        run: python -m pip install -e "packages/core-py[dev]"
       - name: Run pytest
-        run: uv run pytest || true
+        run: pytest packages/core-py/tests
 
   validate-schemas:
     name: Validate JSON schemas
