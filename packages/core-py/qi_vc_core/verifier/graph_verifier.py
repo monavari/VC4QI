@@ -41,7 +41,7 @@ def _credential_types(credential: JsonObject) -> list[str]:
 
 
 def _evaluate_schema(credential: JsonObject, policy: PolicyProfile) -> list[dict[str, Any]]:
-    mode = policy.checks.schema or "optional"
+    mode = policy.checks.schema_ or "optional"
     if mode == "ignored":
         return []
     cid = _credential_id(credential)
