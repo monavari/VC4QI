@@ -18,7 +18,7 @@ Use `BitstringStatusListEntry` and `BitstringStatusList` throughout:
 - `credentialStatus.type` = `"BitstringStatusListEntry"`
 - Status list credentials use `type` = `"BitstringStatusListCredential"`
 - Encoding: gzip-compressed bitstring, base64url-encoded, per the W3C Recommendation
-  (https://www.w3.org/TR/vc-bitstring-status-list/)
+  (<https://www.w3.org/TR/vc-bitstring-status-list/>)
 
 `StatusList2021Entry` is not used anywhere in this repository.
 

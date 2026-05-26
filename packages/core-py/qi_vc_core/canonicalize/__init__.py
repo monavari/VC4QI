@@ -9,6 +9,7 @@ from typing import Any, Callable
 from pyld import jsonld  # type: ignore[import-untyped]
 
 from ..utils.base58btc import to_multibase, from_multibase
+from ..utils.document_loader import default_document_loader
 
 JsonObject = dict[str, Any]
 DocumentLoader = Callable[[str], dict[str, Any]]
@@ -23,8 +24,7 @@ def canonicalize(
         "algorithm": "URDNA2015",
         "format": "application/n-quads",
     }
-    if document_loader is not None:
-        options["documentLoader"] = document_loader
+    options["documentLoader"] = document_loader or default_document_loader
 
     result = jsonld.normalize(document, options)
     return result  # type: ignore[no-any-return]
