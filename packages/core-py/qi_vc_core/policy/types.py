@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from ..evidence.types import AuthorizationBasis, EvidenceRelation, EvidenceRole
 
@@ -26,7 +26,7 @@ class PolicyChecks(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     proof: CheckMode | None = None
-    schema: CheckMode | None = None
+    schema_: CheckMode | None = Field(default=None, alias="schema")
     status: CheckMode | None = None
     digest: CheckMode | None = None
     scopeInclusion: str | None = None
