@@ -17,6 +17,9 @@ ScopeReasonCode = Literal[
     "MATRIX_PROPERTY_MISMATCH",
     "NO_SCOPE_ENTRY",
     "DERIVATION_VIOLATION",
+    "SUBJECT_BINDING_MISMATCH",
+    "VALIDITY_WINDOW_VIOLATION",
+    "UNKNOWN_SCOPE_CHECK",
 ]
 
 
@@ -217,8 +220,9 @@ def check_drmd_scope_inclusion(
     materials: list[JsonObject] = subject.get("materials") or []
     properties_list: list[JsonObject] = subject.get("materialPropertiesList") or []
 
-    derived_matrix = matrix or str((materials[0].get("name") or "") if materials else "").lower()
-    derived_form = form or "disc"
+    first_material = materials[0] if materials else {}
+    derived_matrix = matrix or str(first_material.get("matrix") or "").lower()
+    derived_form = form or str(first_material.get("form") or "").lower()
 
     if not scope_entries:
         return ScopeCheckResult(passed=True)
@@ -237,17 +241,17 @@ def check_drmd_scope_inclusion(
             violations=[ScopeViolation(code="MATRIX_PROPERTY_MISMATCH", detail=f"Matrix '{derived_matrix}' not in scope")],
         )
 
-    # Form check
-    form_ok = any(
-        not e.allowed_forms or derived_form.lower() in [f.lower() for f in e.allowed_forms]
-        for e in matching
-    )
-    if not form_ok:
-        all_forms = [f for e in matching for f in e.allowed_forms]
-        violations.append(ScopeViolation(
-            code="MATRIX_PROPERTY_MISMATCH",
-            detail=f"Form '{derived_form}' not in allowedForms [{', '.join(all_forms)}]",
-        ))
+    if derived_form:
+        form_ok = any(
+            not e.allowed_forms or derived_form.lower() in [f.lower() for f in e.allowed_forms]
+            for e in matching
+        )
+        if not form_ok:
+            all_forms = [f for e in matching for f in e.allowed_forms]
+            violations.append(ScopeViolation(
+                code="MATRIX_PROPERTY_MISMATCH",
+                detail=f"Form '{derived_form}' not in allowedForms [{', '.join(all_forms)}]",
+            ))
 
     import re
     for group in properties_list:
@@ -300,18 +304,18 @@ def check_drmd_scope_inclusion(
 # ── Derivation check (F9 / Stage 2) ──────────────────────────────────────────
 
 def check_derivation(
-    capability_credential: JsonObject,
-    accreditation_credential: JsonObject,
+    child_credential: JsonObject,
+    parent_credential: JsonObject,
 ) -> ScopeCheckResult:
-    """Verify CapabilityCredential constraints ⊆ AccreditationCredential scope."""
+    """Compatibility wrapper for checking child evidence constraints against parent scope."""
     violations: list[ScopeViolation] = []
-    cap_subject = capability_credential.get("credentialSubject") or {}
+    cap_subject = child_credential.get("credentialSubject") or {}
     constraints: JsonObject = cap_subject.get("constraints") or {}
 
     if not constraints:
         return ScopeCheckResult(passed=True)
 
-    acc_subject = accreditation_credential.get("credentialSubject") or {}
+    acc_subject = parent_credential.get("credentialSubject") or {}
     acc_scope: list[JsonObject] = acc_subject.get("scope") or []
 
     if not acc_scope:
@@ -332,7 +336,7 @@ def check_derivation(
                 if cap_to_pa is not None and acc_to_pa is not None and cap_to_pa > acc_to_pa:
                     violations.append(ScopeViolation(
                         code="DERIVATION_VIOLATION",
-                        detail=f"CapabilityCredential range.to {cap_to} {cap_unit.get('ucumCode','')} exceeds AccreditationCredential scope range.to {acc_to} {acc_unit.get('ucumCode','')}",
+                        detail=f"Child range.to {cap_to} {cap_unit.get('ucumCode','')} exceeds parent scope range.to {acc_to} {acc_unit.get('ucumCode','')}",
                     ))
 
     # DRMD property derivation check
@@ -346,7 +350,164 @@ def check_derivation(
             if extra:
                 violations.append(ScopeViolation(
                     code="DERIVATION_VIOLATION",
-                    detail=f"CapabilityCredential allowedProperties [{', '.join(extra)}] not in AccreditationCredential scope",
+                    detail=f"Child allowedProperties [{', '.join(extra)}] not in parent scope",
                 ))
 
     return ScopeCheckResult(passed=len(violations) == 0, violations=violations)
+
+
+def _credential_types(credential: JsonObject) -> list[str]:
+    value = credential.get("type")
+    if isinstance(value, list):
+        return [str(item) for item in value]
+    return [str(value)] if isinstance(value, str) else []
+
+
+def _scope_entries(credential: JsonObject) -> list[JsonObject]:
+    subject = credential.get("credentialSubject") or {}
+    constraints = subject.get("constraints") or {}
+    if isinstance(constraints.get("scopeEntries"), list):
+        return constraints["scopeEntries"]
+    scope = subject.get("scope")
+    if isinstance(scope, list):
+        return scope
+    if isinstance(scope, dict) and isinstance(scope.get("scopeEntries"), list):
+        return scope["scopeEntries"]
+    if isinstance(subject.get("scopeEntries"), list):
+        return subject["scopeEntries"]
+    return []
+
+
+def _authorized_types(credential: JsonObject) -> list[str]:
+    subject = credential.get("credentialSubject") or {}
+    constraints = subject.get("constraints") or {}
+    if isinstance(constraints.get("authorizedCredentialTypes"), list):
+        return [str(v) for v in constraints["authorizedCredentialTypes"]]
+    scope = subject.get("scope") or {}
+    if isinstance(scope, dict) and isinstance(scope.get("authorizedCredentialTypes"), list):
+        return [str(v) for v in scope["authorizedCredentialTypes"]]
+    return []
+
+
+def _validity_violations(child: JsonObject, parent: JsonObject) -> list[ScopeViolation]:
+    violations: list[ScopeViolation] = []
+    child_from = child.get("validFrom")
+    parent_from = parent.get("validFrom")
+    if child_from and parent_from and str(child_from) < str(parent_from):
+        violations.append(ScopeViolation(
+            code="VALIDITY_WINDOW_VIOLATION",
+            detail=f"Child validFrom {child_from} is before parent validFrom {parent_from}.",
+        ))
+    child_until = child.get("validUntil")
+    parent_until = parent.get("validUntil")
+    if child_until and parent_until and str(child_until) > str(parent_until):
+        violations.append(ScopeViolation(
+            code="VALIDITY_WINDOW_VIOLATION",
+            detail=f"Child validUntil {child_until} is after parent validUntil {parent_until}.",
+        ))
+    return violations
+
+
+def check_derived_edge(
+    child_credential: JsonObject,
+    parent_credential: JsonObject,
+    edge: Any | None = None,
+    policy: Any | None = None,
+) -> ScopeCheckResult:
+    violations = _validity_violations(child_credential, parent_credential)
+    child_types = _authorized_types(child_credential)
+    parent_types = _authorized_types(parent_credential)
+    extras = [t for t in child_types if parent_types and t not in parent_types]
+    if extras:
+        violations.append(ScopeViolation(
+            code="DERIVATION_VIOLATION",
+            detail=f"Child evidence authorizes credential types [{', '.join(extras)}] not present in parent scope.",
+        ))
+
+    child_entries = _scope_entries(child_credential)
+    parent_entries = _scope_entries(parent_credential)
+    if child_entries and parent_entries:
+        for child_entry in child_entries:
+            child_range = child_entry.get("range") or {}
+            if child_range:
+                child_to = child_range.get("to")
+                child_unit = child_range.get("unit") or {}
+                covered = False
+                for parent_entry in parent_entries:
+                    child_measurand = str(child_entry.get("measurand", "")).lower()
+                    parent_measurand = str(parent_entry.get("measurand", "")).lower()
+                    if child_measurand and parent_measurand and child_measurand != parent_measurand:
+                        continue
+                    parent_range = parent_entry.get("range") or {}
+                    parent_to = parent_range.get("to")
+                    parent_unit = parent_range.get("unit") or {}
+                    if child_to is None or parent_to is None:
+                        covered = True
+                        continue
+                    child_pa = _to_pa(float(child_to), child_unit)
+                    parent_pa = _to_pa(float(parent_to), parent_unit)
+                    if child_pa is None or parent_pa is None or child_pa <= parent_pa:
+                        covered = True
+                if not covered:
+                    violations.append(ScopeViolation(
+                        code="DERIVATION_VIOLATION",
+                        detail=f"Child range.to {child_to} exceeds parent scope.",
+                    ))
+
+            child_props = child_entry.get("allowedProperties") or []
+            parent_props = [p for entry in parent_entries for p in (entry.get("allowedProperties") or [])]
+            extra_props = [p for p in child_props if parent_props and p not in parent_props]
+            if extra_props:
+                violations.append(ScopeViolation(
+                    code="DERIVATION_VIOLATION",
+                    detail=f"Child allowedProperties [{', '.join(extra_props)}] not present in parent scope.",
+                ))
+    return ScopeCheckResult(passed=len(violations) == 0, violations=violations)
+
+
+def check_scope_inclusion(
+    target_credential: JsonObject,
+    authorizing_evidence: JsonObject,
+    policy: Any | None = None,
+) -> ScopeCheckResult:
+    types = _credential_types(target_credential)
+    entries = _scope_entries(authorizing_evidence)
+    mode = getattr(getattr(policy, "checks", None), "scopeInclusion", "optional")
+    if not entries:
+        if mode in ("ignored", "optional", None):
+            return ScopeCheckResult(passed=True)
+        return ScopeCheckResult(passed=False, violations=[
+            ScopeViolation(code="NO_SCOPE_ENTRY", detail="Authorizing evidence has no scope entries.")
+        ])
+
+    if "DigitalCalibrationCertificate" in types:
+        dcc_entries = [
+            DccScopeEntry(
+                measurand=e.get("measurand"),
+                allowed_methods=e.get("allowedMethods") or [],
+                range_from=(e.get("range") or {}).get("from"),
+                range_to=(e.get("range") or {}).get("to"),
+                range_unit=(e.get("range") or {}).get("unit") or {},
+                uncertainty_max_absolute=(e.get("uncertainty") or {}).get("maxAbsolute"),
+                uncertainty_max_relative_percent=(e.get("uncertainty") or {}).get("maxRelativePercent"),
+            )
+            for e in entries
+        ]
+        return check_dcc_scope_inclusion(target_credential, dcc_entries)
+    if "ReferenceMaterialCertificate" in types:
+        drmd_entries = [
+            DrmdScopeEntry(
+                matrix=e.get("matrix") or [],
+                allowed_properties=e.get("allowedProperties") or [],
+                allowed_forms=e.get("allowedForms") or [],
+                uncertainty_max_absolute_mg_kg=(e.get("uncertainty") or {}).get("maxAbsoluteMgKg"),
+                uncertainty_max_relative_u_k2=(e.get("uncertainty") or {}).get("maxRelativeU_k2"),
+            )
+            for e in entries
+        ]
+        return check_drmd_scope_inclusion(target_credential, drmd_entries)
+    if mode == "required":
+        return ScopeCheckResult(passed=False, violations=[
+            ScopeViolation(code="UNKNOWN_SCOPE_CHECK", detail=f"No scope checker for target types [{', '.join(types)}].")
+        ])
+    return ScopeCheckResult(passed=True)

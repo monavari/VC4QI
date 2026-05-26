@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from typing import Literal, Any
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 JsonObject = dict[str, Any]
 
@@ -56,28 +56,30 @@ class BitstringStatusListEntry:
 
 
 @dataclass
-class DigestBinding:
-    digest_algorithm: Literal["sha-256", "sha-384", "sha-512"] = "sha-256"
-    digest_multibase: str = ""
-
-
-@dataclass
-class CapabilityCredentialReference:
+class TraceEntry:
     id: str
-    type: Literal["CapabilityCredentialReference"] = "CapabilityCredentialReference"
-    hash_binding: DigestBinding = field(default_factory=DigestBinding)
-
-
-@dataclass
-class RuleResult:
-    rule: int
-    id: str
-    status: Literal["PASS", "FAIL", "SKIP"]
+    level: Literal["credential", "edge", "graph", "policy", "scope", "presentation"]
+    status: Literal["PASS", "FAIL", "SKIP", "WARN"]
+    code: str
     detail: str
+    target: str | None = None
+    from_: str | None = None
+    to: str | None = None
+    relation: str | None = None
 
 
 @dataclass
-class VerificationResult:
+class VerificationSummary:
+    nodes_resolved: int
+    edges_evaluated: int
+    failures: int
+    warnings: int
+
+
+@dataclass
+class VerificationTrace:
     verified: bool
-    results: list[RuleResult]
-    error: str | None = None
+    profile: str
+    target: str
+    summary: VerificationSummary
+    results: list[TraceEntry]
