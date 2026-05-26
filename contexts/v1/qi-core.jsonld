@@ -2,12 +2,27 @@
   "@context": {
     "@version": 1.1,
 
-    "AccreditationCredential":          "https://w3id.org/qi-vc/vocab/v1#AccreditationCredential",
-    "CapabilityCredential":             "https://w3id.org/qi-vc/vocab/v1#CapabilityCredential",
     "ConformityAssessmentBody":         "https://w3id.org/qi-vc/vocab/v1#ConformityAssessmentBody",
     "TrustRegistryCredential":          "https://w3id.org/qi-vc/vocab/v1#TrustRegistryCredential",
 
-    "AccreditationCredentialReference": "https://w3id.org/qi-vc/vocab/v1#AccreditationCredentialReference",
+    "CredentialEvidenceReference": "https://w3id.org/qi-vc/vocab/v1#CredentialEvidenceReference",
+    "relation": "https://w3id.org/qi-vc/vocab/v1#relation",
+    "role": "https://w3id.org/qi-vc/vocab/v1#role",
+    "authorizationBasis": "https://w3id.org/qi-vc/vocab/v1#authorizationBasis",
+    "kind": "https://w3id.org/qi-vc/vocab/v1#kind",
+    "issuerRole": "https://w3id.org/qi-vc/vocab/v1#issuerRole",
+    "legalBasis": "https://w3id.org/qi-vc/vocab/v1#legalBasis",
+    "scopeRef": "https://w3id.org/qi-vc/vocab/v1#scopeRef",
+    "digestMultibase": "https://w3id.org/qi-vc/vocab/v1#digestMultibase",
+    "digestSRI": "https://w3id.org/qi-vc/vocab/v1#digestSRI",
+
+    "authorizedBy": "https://w3id.org/qi-vc/vocab/v1#authorizedBy",
+    "derivedFrom": "https://w3id.org/qi-vc/vocab/v1#derivedFrom",
+    "recognizedBy": "https://w3id.org/qi-vc/vocab/v1#recognizedBy",
+    "notifiedBy": "https://w3id.org/qi-vc/vocab/v1#notifiedBy",
+    "supportedBy": "https://w3id.org/qi-vc/vocab/v1#supportedBy",
+    "statusProvidedBy": "https://w3id.org/qi-vc/vocab/v1#statusProvidedBy",
+
     "characterisationOf": {
       "@id": "https://w3id.org/qi-vc/vocab/v1#characterisationOf",
       "@container": "@set"

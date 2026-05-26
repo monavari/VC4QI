@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://w3id.org/qi-vc/schemas/v1/reference-material-certificate.json",
   "title": "ReferenceMaterialCertificate",
-  "description": "W3C VC 2.0 credential encoding a Reference Material Certificate per ISO 17034:2016, ISO Guide 31:2015, and DRMD XSD v0.3.0. Issued by an ISO 17034-accredited Reference Material Producer (RMP) to a lot DID.",
+  "description": "W3C VC 2.0 credential encoding a Reference Material Certificate per ISO 17034:2016, ISO Guide 31:2015, and DRMD XSD v0.3.0. Issued by a Reference Material Producer to a lot DID; verifier policy determines the sufficient authorizing and supporting evidence.",
   "type": "object",
   "required": [
     "@context",
@@ -66,10 +66,10 @@
     },
     "evidence": {
       "type": "array",
-      "description": "Evidence that the issuing RMP was authorized to issue this credential. MUST contain a reference to the CapabilityCredential with a cryptographic hashBinding. W3C VC 2.0 §4.9.",
+      "description": "Evidence that supports or authorizes the credential. Entries use QI evidence relations; no capability layer is required by default. W3C VC 2.0 §4.9.",
       "minItems": 1,
       "items": {
-        "$ref": "#/$defs/CapabilityCredentialReference"
+        "$ref": "#/$defs/CredentialEvidenceReference"
       }
     },
     "proof": {
@@ -83,12 +83,11 @@
     "Issuer": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Issuer"},
     "BitstringStatusListEntry": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/BitstringStatusListEntry"},
     "DataIntegrityProof": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/DataIntegrityProof"},
-    "DigestBinding": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/DigestBinding"},
     "Unit": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Unit"},
     "MeasurementUncertainty": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/MeasurementUncertainty"},
     "Quantity": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Quantity"},
     "ContactInfo": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/ContactInfo"},
-    "CapabilityCredentialReference": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/CapabilityCredentialReference"},
+    "CredentialEvidenceReference": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/CredentialEvidenceReference"},
 
     "RmcCredentialSubject": {
       "title": "RmcCredentialSubject",
@@ -247,7 +246,7 @@
       "properties": {
         "propertyIdentifiers": {
           "type": "array",
-          "description": "Names or identifiers for the property being certified. Maps to DRMD propertyIdentifiers. Used by the verifier to check Rule 6 (scope check) against the CapabilityCredential. Multiple identifiers allow matching across naming conventions.",
+          "description": "Names or identifiers for the property being certified. Maps to DRMD propertyIdentifiers. Used by policy-driven scope checks. Multiple identifiers allow matching across naming conventions.",
           "minItems": 1,
           "items": {
             "type": "string"

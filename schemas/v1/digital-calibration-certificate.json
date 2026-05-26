@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://w3id.org/qi-vc/schemas/v1/digital-calibration-certificate.json",
   "title": "DigitalCalibrationCertificate",
-  "description": "W3C VC 2.0 credential encoding a Digital Calibration Certificate per ISO/IEC 17025:2017 and PTB DCC XSD v3.3.0 (https://ptb.de/dcc). Issued by an ISO/IEC 17025-accredited Conformity Assessment Body (CAB) to a customer.",
+      "description": "W3C VC 2.0 credential encoding a Digital Calibration Certificate per ISO/IEC 17025:2017 and PTB DCC XSD v3.3.0 (https://ptb.de/dcc). Issued by a calibration laboratory to a customer; verifier policy determines the sufficient authorizing evidence.",
   "type": "object",
   "required": [
     "@context",
@@ -65,10 +65,10 @@
     },
     "evidence": {
       "type": "array",
-      "description": "Evidence that the issuing CAB was authorized to issue this credential. MUST contain a reference to the CapabilityCredential with a cryptographic hashBinding. W3C VC 2.0 §4.9.",
+      "description": "Evidence that supports or authorizes the credential. Entries use QI evidence relations; no capability layer is required by default. W3C VC 2.0 §4.9.",
       "minItems": 1,
       "items": {
-        "$ref": "#/$defs/CapabilityCredentialReference"
+        "$ref": "#/$defs/CredentialEvidenceReference"
       }
     },
     "proof": {
@@ -82,14 +82,13 @@
     "Issuer": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Issuer"},
     "BitstringStatusListEntry": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/BitstringStatusListEntry"},
     "DataIntegrityProof": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/DataIntegrityProof"},
-    "DigestBinding": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/DigestBinding"},
     "Unit": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Unit"},
     "MeasurementUncertainty": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/MeasurementUncertainty"},
     "Quantity": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Quantity"},
     "PhysicalQuantity": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/PhysicalQuantity"},
     "ContactInfo": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/ContactInfo"},
     "Identification": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/Identification"},
-    "CapabilityCredentialReference": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/CapabilityCredentialReference"},
+    "CredentialEvidenceReference": {"$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/CredentialEvidenceReference"},
 
     "DccCredentialSubject": {
       "title": "DccCredentialSubject",

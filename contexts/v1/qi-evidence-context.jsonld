@@ -1,0 +1,19 @@
+{
+  "@context": {
+    "qi": "https://w3id.org/qi-vc/vocab/v1#",
+    "relation": "qi:relation",
+    "role": "qi:role",
+    "authorizationBasis": "qi:authorizationBasis",
+    "kind": "qi:kind",
+    "issuerRole": "qi:issuerRole",
+    "legalBasis": "qi:legalBasis",
+    "scheme": "qi:scheme",
+    "scopeRef": "qi:scopeRef",
+    "authorizedBy": "qi:authorizedBy",
+    "derivedFrom": "qi:derivedFrom",
+    "recognizedBy": "qi:recognizedBy",
+    "notifiedBy": "qi:notifiedBy",
+    "supportedBy": "qi:supportedBy",
+    "statusProvidedBy": "qi:statusProvidedBy"
+  }
+}
