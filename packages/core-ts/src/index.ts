@@ -9,3 +9,8 @@ export * as trustRegistry from './trust-registry/index.js';
 export * as issuer from './issuer/index.js';
 export * as verifier from './verifier/index.js';
 export * as scope from './scope/index.js';
+export * as evidence from './evidence/index.js';
+export * as policy from './policy/index.js';
+export * as edge from './edge/index.js';
+export * as terms from './terms/index.js';
+export * as presentationQuery from './presentation-query/index.js';

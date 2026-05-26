@@ -1,0 +1,13 @@
+{
+  "id": "calibration-direct-accreditation-presentation-submission",
+  "descriptor_map": [
+    {
+      "id": "target-credential",
+      "path": "$.verifiableCredential[0]"
+    },
+    {
+      "id": "direct-accreditation",
+      "path": "$.verifiableCredential[1]"
+    }
+  ]
+}

@@ -78,7 +78,7 @@ describe('isTrustedIssuer', () => {
       validUntil: '2030-01-01T00:00:00Z',
     }]);
     const asOf = new Date('2025-06-01');
-    expect(isTrustedIssuer(r, ENTRY_DID, asOf)).toBe(true);
+    expect(isTrustedIssuer(r, ENTRY_DID, undefined, undefined, undefined, asOf)).toBe(true);
   });
 
   it('returns false before validFrom', () => {
@@ -87,7 +87,7 @@ describe('isTrustedIssuer', () => {
       validFrom: '2026-01-01T00:00:00Z',
     }]);
     const asOf = new Date('2025-01-01');
-    expect(isTrustedIssuer(r, ENTRY_DID, asOf)).toBe(false);
+    expect(isTrustedIssuer(r, ENTRY_DID, undefined, undefined, undefined, asOf)).toBe(false);
   });
 
   it('returns false after validUntil', () => {
@@ -97,7 +97,17 @@ describe('isTrustedIssuer', () => {
       validUntil: '2023-12-31T23:59:59Z',
     }]);
     const asOf = new Date('2025-01-01');
-    expect(isTrustedIssuer(r, ENTRY_DID, asOf)).toBe(false);
+    expect(isTrustedIssuer(r, ENTRY_DID, undefined, undefined, undefined, asOf)).toBe(false);
+  });
+
+  it('filters by authorization basis and issuer role', () => {
+    const r = makeRegistry([{
+      id: ENTRY_DID,
+      issuerRole: 'qi:nationalMetrologyInstitute',
+      authorizationBasisKinds: ['qi:legalMandate'],
+    }]);
+    expect(isTrustedIssuer(r, ENTRY_DID, 'qi:legalMandate', 'qi:nationalMetrologyInstitute')).toBe(true);
+    expect(isTrustedIssuer(r, ENTRY_DID, 'qi:accreditation', 'qi:nationalAccreditationBody')).toBe(false);
   });
 });
 

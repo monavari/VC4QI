@@ -48,12 +48,14 @@ const minimalDcc = {
   },
   evidence: [
     {
-      id: 'https://accreditor.example.com/cap/001',
-      type: 'CapabilityCredentialReference',
-      hashBinding: {
-        digestAlgorithm: 'sha-256',
-        digestMultibase: VALID_DIGEST_1,
+      id: 'https://accreditor.example.com/evidence/001',
+      type: 'CredentialEvidenceReference',
+      relation: 'qi:authorizedBy',
+      role: 'authorizing',
+      authorizationBasis: {
+        kind: 'qi:accreditation',
       },
+      digestMultibase: VALID_DIGEST_1,
     },
   ],
   proof: {
@@ -115,12 +117,14 @@ const minimalRmc = {
   },
   evidence: [
     {
-      id: 'https://accreditor.example.com/cap/002',
-      type: 'CapabilityCredentialReference',
-      hashBinding: {
-        digestAlgorithm: 'sha-256',
-        digestMultibase: VALID_DIGEST_2,
+      id: 'https://accreditor.example.com/evidence/002',
+      type: 'CredentialEvidenceReference',
+      relation: 'qi:authorizedBy',
+      role: 'authorizing',
+      authorizationBasis: {
+        kind: 'qi:operationalScope',
       },
+      digestMultibase: VALID_DIGEST_2,
     },
   ],
   proof: {
@@ -227,5 +231,29 @@ describe('schema validation — error cases', () => {
     const doc = { ...minimalDcc, $schema: SCHEMA_IDS.DCC };
     const result = validate(doc);
     expect(result.valid).toBe(true);
+  });
+
+  it('rejects unsupported evidence relation', () => {
+    const bad = {
+      ...minimalDcc,
+      evidence: [{
+        ...minimalDcc.evidence[0],
+        relation: 'qi:unsupportedRelation',
+      }],
+    };
+    const result = validate(bad, SCHEMA_IDS.DCC);
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects unknown authorizationBasis.kind', () => {
+    const bad = {
+      ...minimalDcc,
+      evidence: [{
+        ...minimalDcc.evidence[0],
+        authorizationBasis: { kind: 'qi:unknownKind' },
+      }],
+    };
+    const result = validate(bad, SCHEMA_IDS.DCC);
+    expect(result.valid).toBe(false);
   });
 });

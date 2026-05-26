@@ -1,0 +1,41 @@
+{
+  "verified": true,
+  "profile": "reference-material-recursive",
+  "target": "",
+  "summary": {
+    "nodesResolved": 0,
+    "edgesEvaluated": 0,
+    "failures": 0,
+    "warnings": 0
+  },
+  "results": [
+    {
+      "id": "reference-material-recursive-0",
+      "level": "policy",
+      "status": "PASS",
+      "code": "DERIVATION_VALID",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "reference-material-recursive-1",
+      "level": "policy",
+      "status": "PASS",
+      "code": "SUPPORTING_EVIDENCE_RESOLVED",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "reference-material-recursive-2",
+      "level": "policy",
+      "status": "PASS",
+      "code": "SCOPE_INCLUSION_VALID",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "reference-material-recursive-3",
+      "level": "policy",
+      "status": "PASS",
+      "code": "REQUIRED_EVIDENCE_PRESENT",
+      "detail": "Expected trace code for fixture parity."
+    }
+  ]
+}

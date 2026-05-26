@@ -1,0 +1,33 @@
+{
+  "$schema": "https://w3id.org/qi-vc/schemas/v1/policy-profile.schema.json",
+  "id": "ptb-legal-mandate",
+  "targetCredentialTypes": [
+    "DigitalCalibrationCertificate"
+  ],
+  "requiredEvidence": [
+    {
+      "id": "legal-mandate",
+      "relation": "qi:authorizedBy",
+      "role": "authorizing",
+      "authorizationBasis": {
+        "kind": "qi:legalMandate",
+        "issuerRole": "qi:nationalMetrologyInstitute"
+      },
+      "required": true
+    }
+  ],
+  "checks": {
+    "proof": "optional",
+    "schema": "optional",
+    "status": "optional",
+    "digest": "required",
+    "scopeInclusion": "dccScopeInclusion",
+    "derivation": "scopeSubset",
+    "cycleDetection": "required",
+    "termsOfUse": "optional"
+  },
+  "limits": {
+    "maxDepth": 8,
+    "maxEvidenceNodes": 32
+  }
+}

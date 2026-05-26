@@ -1,0 +1,13 @@
+{
+  "id": "test-report-supported-dcc-presentation-submission",
+  "descriptor_map": [
+    {
+      "id": "target-credential",
+      "path": "$.verifiableCredential[0]"
+    },
+    {
+      "id": "test-report-dcc-support",
+      "path": "$.verifiableCredential[1]"
+    }
+  ]
+}

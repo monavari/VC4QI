@@ -1,0 +1,14 @@
+{
+  "id": "gs-scheme-authorization-presentation-definition",
+  "input_descriptors": [
+    {
+      "id": "target-credential"
+    },
+    {
+      "id": "gs-scheme"
+    },
+    {
+      "id": "gs-competence"
+    }
+  ]
+}

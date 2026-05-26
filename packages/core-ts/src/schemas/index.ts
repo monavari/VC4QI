@@ -3,12 +3,15 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import Ajv from 'ajv/dist/2020.js';
-import addFormats from 'ajv-formats';
+import Ajv2020 from 'ajv/dist/2020.js';
+import addFormatsModule from 'ajv-formats';
 import type { JsonObject } from '../types.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SCHEMAS_DIR = join(__dirname, '..', '..', '..', '..', 'schemas', 'v1');
+
+const Ajv = Ajv2020 as unknown as typeof import('ajv/dist/2020.js').default;
+const addFormats = addFormatsModule as unknown as (ajv: InstanceType<typeof Ajv>) => void;
 
 let _ajv: InstanceType<typeof Ajv> | null = null;
 
@@ -70,7 +73,7 @@ export function validate(document: JsonObject, schemaId?: string): ValidationRes
   const valid = schema(document) as boolean;
   if (valid) return { valid: true, errors: [] };
 
-  const errors = (schema.errors ?? []).map(e => {
+  const errors = (schema.errors ?? []).map((e: { instancePath?: string; message?: string }) => {
     const path = e.instancePath || '/';
     return `${path}: ${e.message}`;
   });

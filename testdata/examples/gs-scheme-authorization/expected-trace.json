@@ -1,0 +1,27 @@
+{
+  "verified": true,
+  "profile": "gs-scheme-authorization",
+  "target": "",
+  "summary": {
+    "nodesResolved": 0,
+    "edgesEvaluated": 0,
+    "failures": 0,
+    "warnings": 0
+  },
+  "results": [
+    {
+      "id": "gs-scheme-authorization-0",
+      "level": "policy",
+      "status": "PASS",
+      "code": "TRUSTED_ISSUER",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "gs-scheme-authorization-1",
+      "level": "policy",
+      "status": "PASS",
+      "code": "REQUIRED_EVIDENCE_PRESENT",
+      "detail": "Expected trace code for fixture parity."
+    }
+  ]
+}

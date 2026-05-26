@@ -1,0 +1,21 @@
+{
+  "id": "reference-material-recursive-presentation-submission",
+  "descriptor_map": [
+    {
+      "id": "target-credential",
+      "path": "$.verifiableCredential[0]"
+    },
+    {
+      "id": "rm-authority",
+      "path": "$.verifiableCredential[1]"
+    },
+    {
+      "id": "operational-scope-parent",
+      "path": "$.verifiableCredential[2]"
+    },
+    {
+      "id": "rm-study-support",
+      "path": "$.verifiableCredential[3]"
+    }
+  ]
+}

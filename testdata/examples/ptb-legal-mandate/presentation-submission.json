@@ -1,0 +1,13 @@
+{
+  "id": "ptb-legal-mandate-presentation-submission",
+  "descriptor_map": [
+    {
+      "id": "target-credential",
+      "path": "$.verifiableCredential[0]"
+    },
+    {
+      "id": "legal-mandate",
+      "path": "$.verifiableCredential[1]"
+    }
+  ]
+}

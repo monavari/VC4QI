@@ -1,0 +1,11 @@
+{
+  "id": "test-report-supported-dcc-presentation-definition",
+  "input_descriptors": [
+    {
+      "id": "target-credential"
+    },
+    {
+      "id": "test-report-dcc-support"
+    }
+  ]
+}

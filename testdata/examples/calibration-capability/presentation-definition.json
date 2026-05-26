@@ -1,0 +1,14 @@
+{
+  "id": "calibration-capability-presentation-definition",
+  "input_descriptors": [
+    {
+      "id": "target-credential"
+    },
+    {
+      "id": "capability-authority"
+    },
+    {
+      "id": "capability-parent"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "reference-material-recursive-presentation-definition",
+  "input_descriptors": [
+    {
+      "id": "target-credential"
+    },
+    {
+      "id": "rm-authority"
+    },
+    {
+      "id": "operational-scope-parent"
+    },
+    {
+      "id": "rm-study-support"
+    }
+  ]
+}

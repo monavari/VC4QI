@@ -30,7 +30,7 @@ export async function canonicalize(
  * Compute SHA-256 of the URDNA2015 canonical form and return as a
  * multibase base58btc string (prefix 'z').
  *
- * Used for hashBinding between credential layers per ADR-005.
+ * Internal helper for digest binding of referenced evidence.
  * The proof block MUST be removed from the document before calling this.
  */
 export async function computeHashBinding(
@@ -43,7 +43,7 @@ export async function computeHashBinding(
 }
 
 /**
- * Verify a hashBinding against a document.
+ * Verify a digest binding against a document.
  * Returns true if the binding matches, false otherwise.
  */
 export async function verifyHashBinding(

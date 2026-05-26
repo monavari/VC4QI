@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Scope-inclusion algorithm for DCC and DRMD credentials.
-// Implements Section 6.2 of the paper (Listing 4).
+// Scope-inclusion and derivation checks for DCC, DRMD/RM, and evidence edges.
 //
 // Reason-code vocabulary (Table 3 of the paper):
 //   RANGE_OUT_OF_SCOPE        — DCC range exceeds accredited range
@@ -8,9 +7,11 @@
 //   UNCERTAINTY_WIDENING      — uncertainty wider than scope bound
 //   MATRIX_PROPERTY_MISMATCH  — DRMD matrix/property/form outside scope
 //   NO_SCOPE_ENTRY            — no scope entry covers the claim
-//   DERIVATION_VIOLATION      — CapabilityCredential constraints exceed AccreditationCredential scope
+//   DERIVATION_VIOLATION      — child evidence scope exceeds parent evidence scope
 
 import type { JsonObject } from '../types.js';
+import type { EvidenceEdge } from '../evidence/types.js';
+import type { PolicyProfile } from '../policy/types.js';
 
 // ── Reason codes ──────────────────────────────────────────────────────────────
 
@@ -20,7 +21,10 @@ export type ScopeReasonCode =
   | 'UNCERTAINTY_WIDENING'
   | 'MATRIX_PROPERTY_MISMATCH'
   | 'NO_SCOPE_ENTRY'
-  | 'DERIVATION_VIOLATION';
+  | 'DERIVATION_VIOLATION'
+  | 'SUBJECT_BINDING_MISMATCH'
+  | 'VALIDITY_WINDOW_VIOLATION'
+  | 'UNKNOWN_SCOPE_CHECK';
 
 export interface ScopeViolation {
   code: ScopeReasonCode;
@@ -375,28 +379,206 @@ export function checkDrmdScopeInclusion(
   return { passed: violations.length === 0, violations };
 }
 
-// ── Derivation check (Section 6, Stage 2 / F9) ───────────────────────────────
+// ── Evidence-graph derivation and scope dispatch ─────────────────────────────
+
+function getCredentialTypes(credential: JsonObject): string[] {
+  const type = credential.type;
+  if (Array.isArray(type)) return type.map(String);
+  if (typeof type === 'string') return [type];
+  return [];
+}
+
+function getScopeEntries(credential: JsonObject): JsonObject[] {
+  const subject = credential.credentialSubject as JsonObject | undefined;
+  const constraints = subject?.constraints as JsonObject | undefined;
+  const constraintEntries = constraints?.scopeEntries;
+  if (Array.isArray(constraintEntries)) return constraintEntries as JsonObject[];
+
+  const subjectScope = subject?.scope;
+  if (Array.isArray(subjectScope)) return subjectScope as JsonObject[];
+  if (typeof subjectScope === 'object' && subjectScope !== null) {
+    const scoped = subjectScope as JsonObject;
+    if (Array.isArray(scoped.scopeEntries)) return scoped.scopeEntries as JsonObject[];
+  }
+
+  const directEntries = subject?.scopeEntries;
+  if (Array.isArray(directEntries)) return directEntries as JsonObject[];
+  return [];
+}
+
+function getAuthorizedCredentialTypes(credential: JsonObject): string[] {
+  const subject = credential.credentialSubject as JsonObject | undefined;
+  const constraints = subject?.constraints as JsonObject | undefined;
+  const fromConstraints = constraints?.authorizedCredentialTypes;
+  if (Array.isArray(fromConstraints)) return fromConstraints.map(String);
+  const scope = subject?.scope as JsonObject | undefined;
+  const fromScope = scope?.authorizedCredentialTypes;
+  if (Array.isArray(fromScope)) return fromScope.map(String);
+  return [];
+}
+
+function asDccScopeEntries(entries: JsonObject[]): DccScopeEntry[] {
+  return entries as DccScopeEntry[];
+}
+
+function asDrmdScopeEntries(entries: JsonObject[]): DrmdScopeEntry[] {
+  return entries as DrmdScopeEntry[];
+}
+
+function validityWindowViolations(child: JsonObject, parent: JsonObject): ScopeViolation[] {
+  const violations: ScopeViolation[] = [];
+  const childFrom = child.validFrom ? new Date(String(child.validFrom)) : null;
+  const childUntil = child.validUntil ? new Date(String(child.validUntil)) : null;
+  const parentFrom = parent.validFrom ? new Date(String(parent.validFrom)) : null;
+  const parentUntil = parent.validUntil ? new Date(String(parent.validUntil)) : null;
+
+  if (childFrom && parentFrom && childFrom < parentFrom) {
+    violations.push({
+      code: 'VALIDITY_WINDOW_VIOLATION',
+      detail: `Child validFrom ${String(child.validFrom)} is before parent validFrom ${String(parent.validFrom)}.`,
+    });
+  }
+  if (childUntil && parentUntil && childUntil > parentUntil) {
+    violations.push({
+      code: 'VALIDITY_WINDOW_VIOLATION',
+      detail: `Child validUntil ${String(child.validUntil)} is after parent validUntil ${String(parent.validUntil)}.`,
+    });
+  }
+  return violations;
+}
+
+export function checkDerivedEdge(
+  childCredential: JsonObject,
+  parentCredential: JsonObject,
+  _edge?: EvidenceEdge,
+  _policy?: PolicyProfile,
+): ScopeCheckResult {
+  const violations: ScopeViolation[] = validityWindowViolations(childCredential, parentCredential);
+
+  const childTypes = getAuthorizedCredentialTypes(childCredential);
+  const parentTypes = getAuthorizedCredentialTypes(parentCredential);
+  if (childTypes.length > 0 && parentTypes.length > 0) {
+    const extras = childTypes.filter(type => !parentTypes.includes(type));
+    if (extras.length > 0) {
+      violations.push({
+        code: 'DERIVATION_VIOLATION',
+        detail: `Child evidence authorizes credential types [${extras.join(', ')}] not present in parent scope.`,
+      });
+    }
+  }
+
+  const childEntries = getScopeEntries(childCredential);
+  const parentEntries = getScopeEntries(parentCredential);
+  if (childEntries.length > 0 && parentEntries.length > 0) {
+    for (const childEntry of childEntries) {
+      const childRange = childEntry.range as JsonObject | undefined;
+      if (childRange) {
+        const matchingParents = parentEntries.filter(parentEntry => {
+          const childMeasurand = String(childEntry.measurand ?? '').toLowerCase();
+          const parentMeasurand = String(parentEntry.measurand ?? '').toLowerCase();
+          return !childMeasurand || !parentMeasurand || childMeasurand === parentMeasurand;
+        });
+        const childTo = childRange.to as number | undefined;
+        const childUnit = childRange.unit as JsonObject | undefined;
+        const covered = matchingParents.some(parentEntry => {
+          const parentRange = parentEntry.range as JsonObject | undefined;
+          const parentTo = parentRange?.to as number | undefined;
+          const parentUnit = parentRange?.unit as JsonObject | undefined;
+          if (childTo === undefined || parentTo === undefined || !childUnit || !parentUnit) return true;
+          const childToPa = toPa(childTo, childUnit);
+          const parentToPa = toPa(parentTo, parentUnit);
+          return childToPa === null || parentToPa === null || childToPa <= parentToPa;
+        });
+        if (!covered) {
+          violations.push({
+            code: 'DERIVATION_VIOLATION',
+            detail: `Child range.to ${String(childTo)} exceeds parent scope.`,
+          });
+        }
+      }
+
+      const childProperties = childEntry.allowedProperties as string[] | undefined;
+      if (childProperties?.length) {
+        const parentProperties = parentEntries.flatMap(entry =>
+          (entry.allowedProperties as string[] | undefined) ?? []
+        );
+        if (parentProperties.length > 0) {
+          const extras = childProperties.filter(property => !parentProperties.includes(property));
+          if (extras.length > 0) {
+            violations.push({
+              code: 'DERIVATION_VIOLATION',
+              detail: `Child allowedProperties [${extras.join(', ')}] not present in parent scope.`,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  return { passed: violations.length === 0, violations };
+}
+
+export function checkScopeInclusion(
+  targetCredential: JsonObject,
+  authorizingEvidence: JsonObject,
+  policy?: PolicyProfile,
+): ScopeCheckResult {
+  const types = getCredentialTypes(targetCredential);
+  const scopeEntries = getScopeEntries(authorizingEvidence);
+  const mode = policy?.checks.scopeInclusion ?? 'optional';
+
+  if (scopeEntries.length === 0) {
+    return mode === 'ignored' || mode === 'optional'
+      ? { passed: true, violations: [] }
+      : {
+          passed: false,
+          violations: [{ code: 'NO_SCOPE_ENTRY', detail: 'Authorizing evidence has no scope entries.' }],
+        };
+  }
+
+  if (types.includes('DigitalCalibrationCertificate')) {
+    return checkDccScopeInclusion(targetCredential, asDccScopeEntries(scopeEntries));
+  }
+
+  if (types.includes('ReferenceMaterialCertificate') || types.includes('DRMDCertificate')) {
+    return checkDrmdScopeInclusion(targetCredential, asDrmdScopeEntries(scopeEntries));
+  }
+
+  return mode === 'required'
+    ? {
+        passed: false,
+        violations: [{ code: 'UNKNOWN_SCOPE_CHECK', detail: `No scope checker for target types [${types.join(', ')}].` }],
+      }
+    : { passed: true, violations: [] };
+}
+
+// ── Legacy compatibility wrapper ─────────────────────────────────────────────
 
 /**
- * Verify that a CapabilityCredential's constraints do not exceed the
- * AccreditationCredential's scope (DERIVATION_VIOLATION check).
- *
- * For DCC: capability range must be ⊆ accreditation scope range.
- * For DRMD: capability allowedProperties must be ⊆ accreditation scope allowedProperties.
+ * Verify that child evidence constraints do not exceed parent evidence scope.
+ * Kept as a compatibility wrapper for code that has not yet moved to
+ * checkDerivedEdge.
  */
 export function checkDerivation(
-  capabilityCredential: JsonObject,
-  accreditationCredential: JsonObject,
+  childCredential: JsonObject,
+  parentCredential: JsonObject,
+): ScopeCheckResult {
+  return checkDerivedEdge(childCredential, parentCredential);
+}
+
+export function checkLegacyCapabilityDerivation(
+  childCredential: JsonObject,
+  parentCredential: JsonObject,
 ): ScopeCheckResult {
   const violations: ScopeViolation[] = [];
-  const capSubject = capabilityCredential.credentialSubject as JsonObject | undefined;
+  const capSubject = childCredential.credentialSubject as JsonObject | undefined;
   const constraints = capSubject?.constraints as JsonObject | undefined;
 
   if (!constraints) {
     return { passed: true, violations: [] };
   }
 
-  const accSubject = accreditationCredential.credentialSubject as JsonObject | undefined;
+  const accSubject = parentCredential.credentialSubject as JsonObject | undefined;
   const accScope = (accSubject?.scope as JsonObject[] | undefined) ?? [];
 
   if (accScope.length === 0) {
@@ -427,7 +609,7 @@ export function checkDerivation(
         if (capToPa !== null && accToPa !== null && capToPa > accToPa) {
           violations.push({
             code: 'DERIVATION_VIOLATION',
-            detail: `CapabilityCredential range.to ${capTo} ${capUnit['ucumCode'] ?? ''} exceeds AccreditationCredential scope range.to ${accTo} ${accUnit['ucumCode'] ?? ''}`,
+            detail: `Child range.to ${capTo} ${capUnit['ucumCode'] ?? ''} exceeds parent scope range.to ${accTo} ${accUnit['ucumCode'] ?? ''}`,
           });
         }
       }
@@ -447,7 +629,7 @@ export function checkDerivation(
       if (extraProperties.length > 0) {
         violations.push({
           code: 'DERIVATION_VIOLATION',
-          detail: `CapabilityCredential allowedProperties [${extraProperties.join(', ')}] not present in AccreditationCredential scope`,
+          detail: `Child allowedProperties [${extraProperties.join(', ')}] not present in parent scope`,
         });
       }
     }

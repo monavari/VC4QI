@@ -1,0 +1,17 @@
+{
+  "id": "calibration-capability-presentation-submission",
+  "descriptor_map": [
+    {
+      "id": "target-credential",
+      "path": "$.verifiableCredential[0]"
+    },
+    {
+      "id": "capability-authority",
+      "path": "$.verifiableCredential[1]"
+    },
+    {
+      "id": "capability-parent",
+      "path": "$.verifiableCredential[2]"
+    }
+  ]
+}

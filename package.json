@@ -1,8 +1,8 @@
 {
   "name": "qi-vc-poc",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Verifiable Credentials reference implementation for Quality Infrastructure",
+  "description": "Policy-resolved evidence-graph verifier for Quality Infrastructure credentials",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=20.0.0",

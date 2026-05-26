@@ -1,0 +1,17 @@
+{
+  "id": "gs-scheme-authorization-presentation-submission",
+  "descriptor_map": [
+    {
+      "id": "target-credential",
+      "path": "$.verifiableCredential[0]"
+    },
+    {
+      "id": "gs-scheme",
+      "path": "$.verifiableCredential[1]"
+    },
+    {
+      "id": "gs-competence",
+      "path": "$.verifiableCredential[2]"
+    }
+  ]
+}
