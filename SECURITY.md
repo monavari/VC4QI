@@ -12,7 +12,7 @@
 
 Report vulnerabilities by email to
 [monavari.mehran@gmail.com](mailto:monavari.mehran@gmail.com) with the subject
-line `[SECURITY] qi-vc-poc`.
+line `[SECURITY] VC4QI`.
 
 Please include:
 
