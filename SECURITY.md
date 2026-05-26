@@ -10,8 +10,9 @@
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Report vulnerabilities by email to **monavari.mehran@gmail.com** with the
-subject line `[SECURITY] qi-vc-poc`.
+Report vulnerabilities by email to
+[monavari.mehran@gmail.com](mailto:monavari.mehran@gmail.com) with the subject
+line `[SECURITY] qi-vc-poc`.
 
 Please include:
 
