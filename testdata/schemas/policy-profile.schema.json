@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/qi-vc/schemas/v1/policy-profile.schema.json",
+  "title": "QI-VC Policy Profile",
+  "type": "object",
+  "required": [
+    "id",
+    "targetCredentialTypes",
+    "requiredEvidence",
+    "checks"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "targetCredentialTypes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "requiredEvidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/RequiredEvidence"
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "proof": {
+          "$ref": "#/$defs/CheckMode"
+        },
+        "schema": {
+          "$ref": "#/$defs/CheckMode"
+        },
+        "status": {
+          "$ref": "#/$defs/CheckMode"
+        },
+        "digest": {
+          "$ref": "#/$defs/CheckMode"
+        },
+        "scopeInclusion": {
+          "type": "string"
+        },
+        "derivation": {
+          "type": "string"
+        },
+        "cycleDetection": {
+          "$ref": "#/$defs/CheckMode"
+        },
+        "termsOfUse": {
+          "$ref": "#/$defs/CheckMode"
+        }
+      }
+    },
+    "statusPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/CheckMode"
+        },
+        "authorizingEvidence": {
+          "$ref": "#/$defs/CheckMode"
+        },
+        "supportingEvidence": {
+          "$ref": "#/$defs/CheckMode"
+        },
+        "historical": {
+          "$ref": "#/$defs/CheckMode"
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxDepth": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxEvidenceNodes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  },
+  "$defs": {
+    "CheckMode": {
+      "type": "string",
+      "enum": [
+        "required",
+        "optional",
+        "ignored",
+        "unsupported"
+      ]
+    },
+    "RequiredEvidence": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "relation": {
+          "$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/EvidenceRelation"
+        },
+        "role": {
+          "$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/EvidenceRole"
+        },
+        "authorizationBasis": {
+          "$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/AuthorizationBasis"
+        },
+        "targetCredentialTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "required": {
+          "type": "boolean",
+          "default": true
+        },
+        "anyOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RequiredEvidence"
+          }
+        }
+      }
+    }
+  }
+}

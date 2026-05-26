@@ -1,0 +1,11 @@
+{
+  "id": "ptb-legal-mandate-presentation-definition",
+  "input_descriptors": [
+    {
+      "id": "target-credential"
+    },
+    {
+      "id": "legal-mandate"
+    }
+  ]
+}

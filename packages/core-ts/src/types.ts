@@ -39,30 +39,39 @@ export interface BitstringStatusListEntry {
   statusListCredential: string;
 }
 
-/** DigestBinding linking a credential to a referenced credential */
-export interface DigestBinding {
-  digestAlgorithm: 'sha-256' | 'sha-384' | 'sha-512';
-  digestMultibase: string;
-}
+export type TraceLevel =
+  | 'credential'
+  | 'edge'
+  | 'graph'
+  | 'policy'
+  | 'scope'
+  | 'presentation';
 
-/** Evidence reference from a domain credential to a CapabilityCredential */
-export interface CapabilityCredentialReference {
-  id: string;
-  type: 'CapabilityCredentialReference';
-  hashBinding: DigestBinding;
-}
+export type TraceStatus = 'PASS' | 'FAIL' | 'SKIP' | 'WARN';
 
-/** Six-rule verification result for one rule */
-export interface RuleResult {
-  rule: number;
+export interface TraceEntry {
   id: string;
-  status: 'PASS' | 'FAIL' | 'SKIP';
+  level: TraceLevel;
+  target?: string;
+  from?: string;
+  to?: string;
+  relation?: string;
+  status: TraceStatus;
+  code: string;
   detail: string;
 }
 
-/** Full verification trace returned by the verifier */
-export interface VerificationResult {
+export interface VerificationSummary {
+  nodesResolved: number;
+  edgesEvaluated: number;
+  failures: number;
+  warnings: number;
+}
+
+export interface VerificationTrace {
   verified: boolean;
-  results: RuleResult[];
-  error?: string;
+  profile: string;
+  target: string;
+  summary: VerificationSummary;
+  results: TraceEntry[];
 }

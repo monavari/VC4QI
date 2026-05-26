@@ -1,0 +1,41 @@
+{
+  "verified": true,
+  "profile": "calibration-capability",
+  "target": "",
+  "summary": {
+    "nodesResolved": 0,
+    "edgesEvaluated": 0,
+    "failures": 0,
+    "warnings": 0
+  },
+  "results": [
+    {
+      "id": "calibration-capability-0",
+      "level": "policy",
+      "status": "PASS",
+      "code": "DIGEST_VALID",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "calibration-capability-1",
+      "level": "policy",
+      "status": "PASS",
+      "code": "DERIVATION_VALID",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "calibration-capability-2",
+      "level": "policy",
+      "status": "PASS",
+      "code": "SCOPE_INCLUSION_VALID",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "calibration-capability-3",
+      "level": "policy",
+      "status": "PASS",
+      "code": "REQUIRED_EVIDENCE_PRESENT",
+      "detail": "Expected trace code for fixture parity."
+    }
+  ]
+}

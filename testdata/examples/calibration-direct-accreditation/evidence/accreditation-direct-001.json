@@ -1,0 +1,46 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld"
+  ],
+  "type": [
+    "VerifiableCredential",
+    "AccreditationCertificate"
+  ],
+  "id": "urn:uuid:accreditation-direct-001",
+  "issuer": "did:web:dakks.example",
+  "validFrom": "2024-01-01T00:00:00Z",
+  "validUntil": "2028-01-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "did:web:lab.example",
+    "authorizationBasisKind": "qi:accreditation",
+    "scope": [
+      {
+        "measurand": "Pressure",
+        "allowedMethods": [
+          "EURAMET cg-17"
+        ],
+        "range": {
+          "from": 0,
+          "to": 1000,
+          "unit": {
+            "ucumCode": "kPa"
+          }
+        },
+        "uncertainty": {
+          "maxAbsolute": 2,
+          "maxRelativePercent": 0.5
+        }
+      }
+    ]
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:web:dakks.example#key-1",
+    "created": "2026-01-01T00:00:00Z",
+    "proofValue": "zPlaceholderProof"
+  }
+}

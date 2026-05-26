@@ -1,0 +1,31 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld"
+  ],
+  "type": [
+    "VerifiableCredential",
+    "TrustRegistryCredential"
+  ],
+  "id": "urn:uuid:trust-registry",
+  "issuer": "did:web:root.example",
+  "validFrom": "2024-01-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "urn:uuid:trust-registry#entries",
+    "registryEntries": [
+      {
+        "status": "active",
+        "id": "did:web:dakks.example",
+        "issuerRole": "qi:nationalAccreditationBody",
+        "authorizationBasisKinds": [
+          "qi:accreditation",
+          "qi:operationalScope"
+        ],
+        "credentialTypes": [
+          "AccreditationCertificate",
+          "OperationalScopeEvidence"
+        ]
+      }
+    ]
+  }
+}

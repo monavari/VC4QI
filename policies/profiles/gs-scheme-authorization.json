@@ -1,0 +1,41 @@
+{
+  "$schema": "https://w3id.org/qi-vc/schemas/v1/policy-profile.schema.json",
+  "id": "gs-scheme-authorization",
+  "targetCredentialTypes": [
+    "GSCertificate"
+  ],
+  "requiredEvidence": [
+    {
+      "id": "gs-scheme",
+      "relation": "qi:authorizedBy",
+      "role": "authorizing",
+      "authorizationBasis": {
+        "kind": "qi:schemeAuthorization"
+      },
+      "required": true
+    },
+    {
+      "id": "gs-competence",
+      "relation": "qi:authorizedBy",
+      "role": "authorizing",
+      "authorizationBasis": {
+        "kind": "qi:accreditation"
+      },
+      "required": true
+    }
+  ],
+  "checks": {
+    "proof": "optional",
+    "schema": "optional",
+    "status": "optional",
+    "digest": "required",
+    "scopeInclusion": "ignored",
+    "derivation": "scopeSubset",
+    "cycleDetection": "required",
+    "termsOfUse": "optional"
+  },
+  "limits": {
+    "maxDepth": 8,
+    "maxEvidenceNodes": 32
+  }
+}

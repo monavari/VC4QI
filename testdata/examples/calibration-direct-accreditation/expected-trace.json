@@ -1,0 +1,48 @@
+{
+  "verified": true,
+  "profile": "calibration-direct-accreditation",
+  "target": "",
+  "summary": {
+    "nodesResolved": 0,
+    "edgesEvaluated": 0,
+    "failures": 0,
+    "warnings": 0
+  },
+  "results": [
+    {
+      "id": "calibration-direct-accreditation-0",
+      "level": "policy",
+      "status": "PASS",
+      "code": "DIGEST_VALID",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "calibration-direct-accreditation-1",
+      "level": "policy",
+      "status": "PASS",
+      "code": "SCHEMA_VALID",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "calibration-direct-accreditation-2",
+      "level": "policy",
+      "status": "PASS",
+      "code": "TRUSTED_ISSUER",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "calibration-direct-accreditation-3",
+      "level": "policy",
+      "status": "PASS",
+      "code": "SCOPE_INCLUSION_VALID",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "calibration-direct-accreditation-4",
+      "level": "policy",
+      "status": "PASS",
+      "code": "REQUIRED_EVIDENCE_PRESENT",
+      "detail": "Expected trace code for fixture parity."
+    }
+  ]
+}

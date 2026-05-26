@@ -1,7 +1,7 @@
 {
   "name": "@qi-vc/core",
-  "version": "0.1.0",
-  "description": "TypeScript reference implementation for QI-VC credential operations",
+  "version": "0.2.0",
+  "description": "Canonical TypeScript evidence-graph verifier for QI-VC credentials",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
@@ -12,7 +12,12 @@
     "./status": "./src/status/index.ts",
     "./trust-registry": "./src/trust-registry/index.ts",
     "./issuer": "./src/issuer/index.ts",
-    "./verifier": "./src/verifier/index.ts"
+    "./verifier": "./src/verifier/index.ts",
+    "./evidence": "./src/evidence/index.ts",
+    "./policy": "./src/policy/index.ts",
+    "./edge": "./src/edge/index.ts",
+    "./presentation-query": "./src/presentation-query/index.ts",
+    "./terms": "./src/terms/index.ts"
   },
   "scripts": {
     "test": "vitest run",

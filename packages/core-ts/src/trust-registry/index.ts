@@ -3,13 +3,18 @@
 // The trust registry is a signed VC (TrustRegistryCredential) served at the
 // root authority's did:web endpoint. See ADR-004.
 import type { JsonObject, DocumentLoader } from '../types.js';
+import type { AuthorizationBasisKind } from '../evidence/types.js';
 
 /** A single entry in a TrustRegistryCredential */
 export interface TrustRegistryEntry {
   id: string;
   name?: string;
+  issuerRole?: string;
+  authorizationBasisKinds?: AuthorizationBasisKind[];
+  credentialTypes?: string[];
   validFrom?: string;
   validUntil?: string;
+  status?: 'active' | 'suspended' | 'revoked';
 }
 
 /** Parsed trust registry */
@@ -65,12 +70,21 @@ export function parseTrustRegistryCredential(credential: JsonObject): TrustRegis
   if (!subject) throw new Error('TrustRegistryCredential missing credentialSubject');
 
   const rawEntries = (subject.registryEntries as JsonObject[] | undefined) ?? [];
-  const entries: TrustRegistryEntry[] = rawEntries.map(e => ({
-    id: String(e.id ?? ''),
-    name: e.name != null ? String(e.name) : undefined,
-    validFrom: e.validFrom != null ? String(e.validFrom) : undefined,
-    validUntil: e.validUntil != null ? String(e.validUntil) : undefined,
-  }));
+  const entries: TrustRegistryEntry[] = rawEntries.map(e => {
+    const entry: TrustRegistryEntry = {
+      id: String(e.id ?? ''),
+      status: e.status === 'suspended' || e.status === 'revoked' ? e.status : 'active',
+    };
+    if (e.name != null) entry.name = String(e.name);
+    if (e.issuerRole != null) entry.issuerRole = String(e.issuerRole);
+    if (Array.isArray(e.authorizationBasisKinds)) {
+      entry.authorizationBasisKinds = e.authorizationBasisKinds.map(String) as AuthorizationBasisKind[];
+    }
+    if (Array.isArray(e.credentialTypes)) entry.credentialTypes = e.credentialTypes.map(String);
+    if (e.validFrom != null) entry.validFrom = String(e.validFrom);
+    if (e.validUntil != null) entry.validUntil = String(e.validUntil);
+    return entry;
+  });
 
   return {
     id: String(credential.id ?? ''),
@@ -82,15 +96,31 @@ export function parseTrustRegistryCredential(credential: JsonObject): TrustRegis
 }
 
 /**
- * Check whether a DID is an active entry in the trust registry.
- * An entry is active if it has no validUntil or validUntil is in the future.
+ * Check whether a DID is trusted for a specific authorization basis and credential type.
+ * An entry is active if status is active and the verification time is inside its validity window.
  */
-export function isTrustedIssuer(registry: TrustRegistry, did: string, asOf = new Date()): boolean {
-  const asOfMs = asOf.getTime();
+export function isTrustedIssuer(
+  registry: TrustRegistry,
+  issuerId: string,
+  authorizationBasisKind?: AuthorizationBasisKind,
+  issuerRole?: string,
+  credentialType?: string,
+  verificationTime = new Date(),
+): boolean {
+  const asOfMs = verificationTime.getTime();
   return registry.entries.some(entry => {
-    if (entry.id !== did) return false;
+    if (entry.id !== issuerId) return false;
+    if (entry.status && entry.status !== 'active') return false;
     if (entry.validFrom && new Date(entry.validFrom).getTime() > asOfMs) return false;
     if (entry.validUntil && new Date(entry.validUntil).getTime() < asOfMs) return false;
+    if (authorizationBasisKind && entry.authorizationBasisKinds?.length &&
+        !entry.authorizationBasisKinds.includes(authorizationBasisKind)) {
+      return false;
+    }
+    if (issuerRole && entry.issuerRole && entry.issuerRole !== issuerRole) return false;
+    if (credentialType && entry.credentialTypes?.length && !entry.credentialTypes.includes(credentialType)) {
+      return false;
+    }
     return true;
   });
 }

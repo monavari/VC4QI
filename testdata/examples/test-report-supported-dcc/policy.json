@@ -1,0 +1,32 @@
+{
+  "$schema": "https://w3id.org/qi-vc/schemas/v1/policy-profile.schema.json",
+  "id": "test-report-supported-dcc",
+  "targetCredentialTypes": [
+    "TestReport"
+  ],
+  "requiredEvidence": [
+    {
+      "id": "test-report-dcc-support",
+      "relation": "qi:supportedBy",
+      "role": "supporting",
+      "targetCredentialTypes": [
+        "DigitalCalibrationCertificate"
+      ],
+      "required": true
+    }
+  ],
+  "checks": {
+    "proof": "optional",
+    "schema": "optional",
+    "status": "optional",
+    "digest": "required",
+    "scopeInclusion": "ignored",
+    "derivation": "scopeSubset",
+    "cycleDetection": "required",
+    "termsOfUse": "optional"
+  },
+  "limits": {
+    "maxDepth": 8,
+    "maxEvidenceNodes": 32
+  }
+}

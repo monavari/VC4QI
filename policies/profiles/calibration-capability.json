@@ -1,0 +1,40 @@
+{
+  "$schema": "https://w3id.org/qi-vc/schemas/v1/policy-profile.schema.json",
+  "id": "calibration-capability",
+  "targetCredentialTypes": [
+    "DigitalCalibrationCertificate"
+  ],
+  "requiredEvidence": [
+    {
+      "id": "capability-authority",
+      "relation": "qi:authorizedBy",
+      "role": "authorizing",
+      "authorizationBasis": {
+        "kind": "qi:capability"
+      },
+      "required": true
+    },
+    {
+      "id": "capability-parent",
+      "relation": "qi:derivedFrom",
+      "authorizationBasis": {
+        "kind": "qi:accreditation"
+      },
+      "required": true
+    }
+  ],
+  "checks": {
+    "proof": "optional",
+    "schema": "optional",
+    "status": "optional",
+    "digest": "required",
+    "scopeInclusion": "dccScopeInclusion",
+    "derivation": "scopeSubset",
+    "cycleDetection": "required",
+    "termsOfUse": "optional"
+  },
+  "limits": {
+    "maxDepth": 8,
+    "maxEvidenceNodes": 32
+  }
+}

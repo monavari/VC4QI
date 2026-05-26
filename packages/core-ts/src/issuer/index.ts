@@ -42,7 +42,10 @@ export async function issue(
     }
   }
 
-  const proof = await createProof(credential, keyPair, { created, documentLoader });
+  const proofOptions: { created?: string; documentLoader?: DocumentLoader } = {};
+  if (created !== undefined) proofOptions.created = created;
+  if (documentLoader !== undefined) proofOptions.documentLoader = documentLoader;
+  const proof = await createProof(credential, keyPair, proofOptions);
 
   return { ...credential, proof };
 }
