@@ -1,4 +1,4 @@
-# Contributing to qi-vc-poc
+# Contributing to VC4QI
 
 Thank you for considering a contribution. This document describes the process
 for submitting changes.
@@ -6,8 +6,8 @@ for submitting changes.
 ## Development setup
 
 ```bash
-git clone https://github.com/monavari/qi-vc-poc.git
-cd qi-vc-poc
+git clone https://github.com/monavari/VC4QI.git
+cd VC4QI
 make setup
 ```
 

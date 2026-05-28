@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a bug in qi-vc-poc
+about: Report a bug in VC4QI
 title: '[BUG] '
 labels: bug
 assignees: ''

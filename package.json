@@ -1,5 +1,5 @@
 {
-  "name": "qi-vc-poc",
+  "name": "vc4qi",
   "version": "0.2.0",
   "private": true,
   "description": "Policy-resolved evidence-graph verifier for Quality Infrastructure credentials",
