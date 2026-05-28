@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-Significant design choices in qi-vc-poc need to be documented in a way that
+Significant design choices in VC4QI need to be documented in a way that
 is auditable, linkable from code and PRs, and stable over time. Without this,
 the rationale for non-obvious decisions is lost as the project evolves.
 
