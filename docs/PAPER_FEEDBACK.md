@@ -106,3 +106,33 @@ removed `role`. No code or schema change — this is documentation drift, fixed.
 to ensure they show the bare-token relations, the six bare basis kinds, and **no**
 `role` field, matching Figure 3 / §2 as implemented. This is editorial alignment,
 not a model change.
+
+---
+
+## F-5 — §6.4 policy-expressibility claim overstated; now being addressed in implementation
+
+**Where:** §6.4 states that the structural half of a policy "is expressible today" as
+a SHACL shape or a presentation query (DCQL / DIF Presentation Exchange).
+
+**Problem:** At the time of the manuscript review (2026-06-08), the
+`policyToDcql` and `policyToPresentationDefinition` translators emit only credential
+type and evidence relation. They do not emit `authorizationBasis.kind` constraints or
+handle `anyOf` alternation. `validatePresentationSubmission` checks descriptor
+presence only — it does not evaluate field-value predicates. A wallet receiving the
+DCQL output of `policyToDcql` cannot determine which `authorizationBasis.kind` is
+required, so the claim is only partially true in v0.3.0.
+
+**Resolution (in progress):** Added to project scope. The translators will be
+completed to emit `authorizationBasis.kind` as a claims/filter constraint and handle
+`anyOf`; `validatePresentationSubmission` will evaluate field values against the three
+known path patterns (`$.type`, `$.evidence[*].relation`,
+`$.evidence[*].authorizationBasis.kind`) without an external JSONPath dependency.
+This is TypeScript only — Python parity for presentation query is not in scope.
+
+**Suggested manuscript note:** Update §6.4 in two ways:
+1. Add a sentence scoping the claim: "the query-language translations cover credential
+   type, evidence relation, and authorization basis kind; guard-band evaluation (B5)
+   and trust-registry resolution (B2) remain outside the query layer."
+2. Once the updated translators are released, cite the DCQL output of
+   `policyToDcql(profile)` as a concrete demonstration that the structural policy half
+   is machine-expressible.
