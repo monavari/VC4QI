@@ -82,3 +82,27 @@ to an absolute IRI under a safe-mode processor.
 — adopting a disclosure-capable cryptosuite is not just a proof-format swap; it
 disciplines the vocabulary to be fully and correctly defined against the W3C base
 context. F-1 and F-2 are instances of this.
+
+---
+
+## F-4 — Manuscript prose/figures must use the locked v2.1 edge form (no `qi:` prefix, no `role`)
+
+**Where:** Surfaced during Phase 8 release prep. The repo `README.md` carried an
+evidence example that still showed the **pre-v2.1** form: a `qi:`-prefixed relation
+(`"relation": "qi:authorizedBy"`), a `"role": "authorizing"` field, and a
+`qi:`-prefixed basis kind (`"kind": "qi:accreditation"`).
+
+**Problem:** The locked v2.1 model (`MODEL_SPEC.md` §2, Table 7) defines edges as
+**three bare context-mapped tokens** (`authorizedBy`, `derivedFrom`, `supportedBy`)
+via `@type: @vocab`, with **no `role` field** (the relation already encodes
+authorizing-vs-supporting) and **bare** basis kinds. Any place in the manuscript
+that still depicts the prefixed/`role`-bearing form is now inconsistent with the
+implementation and with §2.
+
+**Resolution (taken):** Updated the README example to the bare-token form and
+removed `role`. No code or schema change — this is documentation drift, fixed.
+
+**Suggested manuscript note:** audit §6.2 prose and any edge-object figures/listings
+to ensure they show the bare-token relations, the six bare basis kinds, and **no**
+`role` field, matching Figure 3 / §2 as implemented. This is editorial alignment,
+not a model change.
