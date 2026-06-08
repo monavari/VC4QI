@@ -5,41 +5,27 @@ import type {
   AuthorizationBasisKind,
   CredentialEvidenceReference,
   EvidenceRelation,
-  EvidenceRole,
 } from './types.js';
 
 const RELATIONS = new Set<EvidenceRelation>([
-  'qi:authorizedBy',
-  'qi:derivedFrom',
-  'qi:recognizedBy',
-  'qi:notifiedBy',
-  'qi:supportedBy',
-  'qi:statusProvidedBy',
-]);
-
-const ROLES = new Set<EvidenceRole>([
-  'authorizing',
-  'supporting',
-  'recognition',
-  'status',
+  'authorizedBy',
+  'derivedFrom',
+  'supportedBy',
 ]);
 
 const BASIS_KINDS = new Set<AuthorizationBasisKind>([
-  'qi:accreditation',
-  'qi:capability',
-  'qi:legalMandate',
-  'qi:notification',
-  'qi:schemeAuthorization',
-  'qi:operationalScope',
-  'qi:recognition',
-  'qi:domainEvidence',
+  'accreditation',
+  'legalMandate',
+  'notification',
+  'schemeAuthorization',
+  'recognition',
+  'operationalScope',
 ]);
 
+// supportedBy must NOT carry authorizationBasis; authorizedBy and derivedFrom require it
 const BASIS_REQUIRED = new Set<EvidenceRelation>([
-  'qi:authorizedBy',
-  'qi:derivedFrom',
-  'qi:recognizedBy',
-  'qi:notifiedBy',
+  'authorizedBy',
+  'derivedFrom',
 ]);
 
 function isObject(value: unknown): value is JsonObject {
@@ -79,7 +65,6 @@ export function normalizeEvidence(
     }
 
     const relation = entry.relation;
-    const role = entry.role;
     const id = entry.id;
 
     if (typeof id !== 'string' || id.length === 0) {
@@ -102,18 +87,6 @@ export function normalizeEvidence(
         status: 'FAIL',
         code: 'UNSUPPORTED_EVIDENCE_RELATION',
         detail: `Unsupported evidence relation '${String(relation)}'.`,
-      }));
-      continue;
-    }
-
-    if (typeof role !== 'string' || !ROLES.has(role as EvidenceRole)) {
-      results.push(traceEntry({
-        id: `evidence-${index}-role`,
-        level: 'credential',
-        target,
-        status: 'FAIL',
-        code: 'UNSUPPORTED_EVIDENCE_ROLE',
-        detail: `Unsupported evidence role '${String(role)}'.`,
       }));
       continue;
     }
@@ -150,7 +123,6 @@ export function normalizeEvidence(
       id,
       type: 'CredentialEvidenceReference',
       relation: relation as EvidenceRelation,
-      role: role as EvidenceRole,
     };
     if (isObject(authorizationBasis)) {
       normalized.authorizationBasis = {
