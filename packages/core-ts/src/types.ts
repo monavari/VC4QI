@@ -23,11 +23,25 @@ export interface Ed25519KeyPair {
 /** W3C VC 2.0 Data Integrity proof */
 export interface DataIntegrityProof {
   type: 'DataIntegrityProof';
-  cryptosuite: 'eddsa-rdfc-2022' | 'ecdsa-rdfc-2019';
+  cryptosuite: 'eddsa-rdfc-2022' | 'ecdsa-rdfc-2019' | 'ecdsa-sd-2023';
   proofPurpose: 'assertionMethod';
   verificationMethod: string;
-  created: string;
+  /** Present for eddsa-rdfc-2022; ecdsa-sd-2023 base/derived proofs may omit it. */
+  created?: string;
   proofValue: string;
+}
+
+/**
+ * ECDSA P-256 multikey, used by the ecdsa-sd-2023 selective-disclosure path.
+ * Distinct from the Ed25519 key used by eddsa-rdfc-2022 (see proofs/sd.ts).
+ */
+export interface EcdsaMultikeyPair {
+  id: string;
+  controller: string;
+  type: 'Multikey';
+  publicKeyMultibase: string;
+  /** Present only for issuance (the secret half). */
+  secretKeyMultibase?: string;
 }
 
 /** Bitstring Status List entry embedded in a credential */

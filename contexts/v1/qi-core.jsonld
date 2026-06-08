@@ -12,8 +12,6 @@
     "issuerRole": "https://w3id.org/qi-vc/vocab/v1#issuerRole",
     "legalBasis": "https://w3id.org/qi-vc/vocab/v1#legalBasis",
     "scopeRef": "https://w3id.org/qi-vc/vocab/v1#scopeRef",
-    "digestMultibase": "https://w3id.org/qi-vc/vocab/v1#digestMultibase",
-    "digestSRI": "https://w3id.org/qi-vc/vocab/v1#digestSRI",
 
     "authorizedBy": "https://w3id.org/qi-vc/vocab/v1#authorizedBy",
     "derivedFrom": "https://w3id.org/qi-vc/vocab/v1#derivedFrom",

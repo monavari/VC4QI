@@ -7,6 +7,7 @@ import type { PolicyProfile } from '../policy/types.js';
 import { validate, SCHEMA_IDS } from '../schemas/index.js';
 import { checkStatusBit } from '../status/index.js';
 import { verifyProof } from '../proofs/index.js';
+import { verifySd } from '../proofs/sd.js';
 import { evaluateTermsOfUse } from '../terms/index.js';
 import type {
   BitstringStatusListEntry,
@@ -21,6 +22,12 @@ export interface VerifyGraphOptions {
   fetchDocument?: (uri: string) => Promise<JsonObject>;
   documentLoader?: DocumentLoader;
   resolveKey?: (verificationMethod: string) => Promise<Uint8Array>;
+  /**
+   * Document loader used only for ecdsa-sd-2023 selective-disclosure verification.
+   * Must resolve the proof's verificationMethod to the issuer's P-256 Multikey
+   * document and its controller document. Defaults to `documentLoader` when omitted.
+   */
+  sdDocumentLoader?: DocumentLoader;
   resolveTrustRegistry?: (issuerDid: string, context?: unknown) => Promise<JsonObject>;
   resolveStatusList?: (url: string) => Promise<JsonObject>;
   maxDepth?: number;
@@ -83,6 +90,22 @@ async function evaluateSchema(
   })];
 }
 
+/**
+ * Test-facing wrapper around the internal proof evaluation, so the cryptosuite
+ * dispatch (eddsa-rdfc-2022 vs ecdsa-sd-2023) can be exercised in isolation
+ * without building a full evidence graph. Returns the single proof TraceEntry.
+ */
+export async function evaluateProofForTest(
+  credential: JsonObject,
+  policy: PolicyProfile,
+  options: VerifyGraphOptions = {},
+): Promise<TraceEntry> {
+  const entries = await evaluateProof(credential, policy, options);
+  const entry = entries[0];
+  if (!entry) throw new Error('proof evaluation returned no trace entry');
+  return entry;
+}
+
 async function evaluateProof(
   credential: JsonObject,
   policy: PolicyProfile,
@@ -113,6 +136,45 @@ async function evaluateProof(
           detail: 'Policy requires a proof.',
         })]
       : [];
+  }
+  // Dispatch on cryptosuite. The ecdsa-sd-2023 selective-disclosure path is
+  // verified by proofs/sd.ts (Digital Bazaar) over a document loader that resolves
+  // the issuer's P-256 multikey; the eddsa-rdfc-2022 path below is unchanged and
+  // still uses the hand-rolled verifier with raw Ed25519 key bytes from resolveKey.
+  if (proof.cryptosuite === 'ecdsa-sd-2023') {
+    const sdLoader = options.sdDocumentLoader ?? options.documentLoader;
+    if (!sdLoader) {
+      return [traceEntry({
+        id: `proof-${id}`,
+        level: 'credential',
+        target: id,
+        status: mode === 'required' ? 'FAIL' : 'WARN',
+        code: 'PROOF_RESOLVER_MISSING',
+        detail: 'No document loader was provided for ecdsa-sd-2023 verification.',
+      })];
+    }
+    try {
+      const { verified, error } = await verifySd(credential, { documentLoader: sdLoader });
+      return [traceEntry({
+        id: `proof-${id}`,
+        level: 'credential',
+        target: id,
+        status: verified ? 'PASS' : 'FAIL',
+        code: verified ? 'PROOF_VALID' : 'PROOF_INVALID',
+        detail: verified
+          ? 'Selective-disclosure (ecdsa-sd-2023) proof verified over disclosed subset.'
+          : `Selective-disclosure proof failed verification: ${error ?? 'unknown error'}`,
+      })];
+    } catch (error) {
+      return [traceEntry({
+        id: `proof-${id}`,
+        level: 'credential',
+        target: id,
+        status: 'FAIL',
+        code: 'PROOF_VERIFICATION_ERROR',
+        detail: `Proof verification failed: ${String(error)}`,
+      })];
+    }
   }
   if (!options.resolveKey) {
     return [traceEntry({

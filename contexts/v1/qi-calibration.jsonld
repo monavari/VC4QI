@@ -23,8 +23,6 @@
     "legalBasis": "qi:legalBasis",
     "scheme": "qi:scheme",
     "scopeRef": "qi:scopeRef",
-    "digestMultibase": "qi:digestMultibase",
-    "digestSRI": "qi:digestSRI",
 
     "administrativeData": "dcc:administrativeData",
     "coreData": "dcc:coreData",
@@ -64,12 +62,9 @@
     "coverageFactor": {"@id": "si:coverageFactor", "@type": "xsd:decimal"},
     "coverageProbability": {"@id": "si:coverageProbability", "@type": "xsd:decimal"},
 
-    "name": "dcc:name",
-    "description": "dcc:description",
     "location": "dcc:location",
     "manufacturer": "dcc:manufacturer",
     "owner": "dcc:owner",
-    "issuer": {"@id": "dcc:issuer"},
     "reference": "dcc:reference",
     "serialNumber": "dcc:serialNumber",
     "model": "dcc:model",
