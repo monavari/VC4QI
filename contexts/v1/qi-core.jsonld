@@ -7,7 +7,6 @@
 
     "CredentialEvidenceReference": "https://w3id.org/qi-vc/vocab/v1#CredentialEvidenceReference",
     "relation": "https://w3id.org/qi-vc/vocab/v1#relation",
-    "role": "https://w3id.org/qi-vc/vocab/v1#role",
     "authorizationBasis": "https://w3id.org/qi-vc/vocab/v1#authorizationBasis",
     "kind": "https://w3id.org/qi-vc/vocab/v1#kind",
     "issuerRole": "https://w3id.org/qi-vc/vocab/v1#issuerRole",
@@ -18,10 +17,7 @@
 
     "authorizedBy": "https://w3id.org/qi-vc/vocab/v1#authorizedBy",
     "derivedFrom": "https://w3id.org/qi-vc/vocab/v1#derivedFrom",
-    "recognizedBy": "https://w3id.org/qi-vc/vocab/v1#recognizedBy",
-    "notifiedBy": "https://w3id.org/qi-vc/vocab/v1#notifiedBy",
     "supportedBy": "https://w3id.org/qi-vc/vocab/v1#supportedBy",
-    "statusProvidedBy": "https://w3id.org/qi-vc/vocab/v1#statusProvidedBy",
 
     "characterisationOf": {
       "@id": "https://w3id.org/qi-vc/vocab/v1#characterisationOf",

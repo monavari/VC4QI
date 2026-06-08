@@ -1,61 +1,60 @@
 {
-  "@context": [
-    "https://www.w3.org/ns/credentials/v2",
-    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld"
-  ],
-  "type": [
-    "VerifiableCredential",
-    "CalibrationCapabilityAuthorization"
-  ],
-  "id": "urn:uuid:capability-exceeds-001",
-  "issuer": "did:web:dakks.example",
-  "validFrom": "2024-06-01T00:00:00Z",
-  "validUntil": "2027-06-01T00:00:00Z",
-  "credentialSubject": {
-    "id": "did:web:lab.example",
-    "constraints": {
-      "authorizedCredentialTypes": [
-        "DigitalCalibrationCertificate"
-      ],
-      "scopeEntries": [
-        {
-          "measurand": "Pressure",
-          "allowedMethods": [
-            "EURAMET cg-17"
-          ],
-          "range": {
-            "from": 0,
-            "to": 2000,
-            "unit": {
-              "ucumCode": "kPa"
-            }
-          },
-          "uncertainty": {
-            "maxAbsolute": 2,
-            "maxRelativePercent": 0.5
-          }
+    "@context": [
+        "https://www.w3.org/ns/credentials/v2",
+        "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld"
+    ],
+    "type": [
+        "VerifiableCredential",
+        "CalibrationCapabilityAuthorization"
+    ],
+    "id": "urn:uuid:capability-exceeds-001",
+    "issuer": "did:web:dakks.example",
+    "validFrom": "2024-06-01T00:00:00Z",
+    "validUntil": "2027-06-01T00:00:00Z",
+    "credentialSubject": {
+        "id": "did:web:lab.example",
+        "constraints": {
+            "authorizedCredentialTypes": [
+                "DigitalCalibrationCertificate"
+            ],
+            "scopeEntries": [
+                {
+                    "measurand": "Pressure",
+                    "allowedMethods": [
+                        "EURAMET cg-17"
+                    ],
+                    "range": {
+                        "from": 0,
+                        "to": 2000,
+                        "unit": {
+                            "ucumCode": "kPa"
+                        }
+                    },
+                    "uncertainty": {
+                        "maxAbsolute": 2,
+                        "maxRelativePercent": 0.5
+                    }
+                }
+            ]
         }
-      ]
+    },
+    "evidence": [
+        {
+            "type": "CredentialEvidenceReference",
+            "id": "urn:uuid:accreditation-capability-001",
+            "relation": "derivedFrom",
+            "authorizationBasis": {
+                "kind": "accreditation"
+            },
+            "digestSRI": "sha384-RDUIL+MnLI1Hr7tucPRfB4k9nOnTROemeaVsZDUH/Fgp/xWMf7wu1KVh83RFxCcv"
+        }
+    ],
+    "proof": {
+        "type": "DataIntegrityProof",
+        "cryptosuite": "eddsa-rdfc-2022",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:dakks.example#key-1",
+        "created": "2026-01-01T00:00:00Z",
+        "proofValue": "zPlaceholderProof"
     }
-  },
-  "evidence": [
-    {
-      "type": "CredentialEvidenceReference",
-      "id": "urn:uuid:accreditation-capability-001",
-      "relation": "qi:derivedFrom",
-      "role": "authorizing",
-      "authorizationBasis": {
-        "kind": "qi:accreditation"
-      },
-      "digestSRI": "sha384-nAjpUtjzBgV9YtsZbNmd4tzbuZFiVvxO6F0RRf1XgqMGbn+H6lO6RXZXZsbOqYMT"
-    }
-  ],
-  "proof": {
-    "type": "DataIntegrityProof",
-    "cryptosuite": "eddsa-rdfc-2022",
-    "proofPurpose": "assertionMethod",
-    "verificationMethod": "did:web:dakks.example#key-1",
-    "created": "2026-01-01T00:00:00Z",
-    "proofValue": "zPlaceholderProof"
-  }
 }

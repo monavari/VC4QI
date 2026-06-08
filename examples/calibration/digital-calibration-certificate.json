@@ -71,10 +71,9 @@
     {
       "type": "CredentialEvidenceReference",
       "id": "urn:uuid:accreditation-direct-001",
-      "relation": "qi:authorizedBy",
-      "role": "authorizing",
+      "relation": "authorizedBy",
       "authorizationBasis": {
-        "kind": "qi:accreditation",
+        "kind": "accreditation",
         "issuerRole": "qi:nationalAccreditationBody",
         "scopeRef": "pressure-scope"
       },

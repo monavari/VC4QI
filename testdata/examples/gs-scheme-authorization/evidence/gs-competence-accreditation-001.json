@@ -14,7 +14,7 @@
   "validUntil": "2028-01-01T00:00:00Z",
   "credentialSubject": {
     "id": "did:web:gs-body.example",
-    "authorizationBasisKind": "qi:accreditation",
+    "authorizationBasisKind": "accreditation",
     "scope": []
   },
   "proof": {

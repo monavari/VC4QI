@@ -18,8 +18,8 @@
         "id": "did:web:dakks.example",
         "issuerRole": "qi:nationalAccreditationBody",
         "authorizationBasisKinds": [
-          "qi:accreditation",
-          "qi:operationalScope"
+          "accreditation",
+          "operationalScope"
         ],
         "credentialTypes": [
           "AccreditationCertificate",
