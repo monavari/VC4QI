@@ -1,6 +1,6 @@
 {
   "name": "@qi-vc/core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Canonical TypeScript evidence-graph verifier for QI-VC credentials",
   "license": "Apache-2.0",
   "type": "module",

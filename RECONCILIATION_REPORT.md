@@ -194,7 +194,59 @@ To enable continuation on a cheaper model, the following landing spots were adde
   `cryptography` + `cbor2`, no VC framework) would be a genuinely useful standalone
   library, since the Python VC ecosystem currently lacks one — worth spinning out
   as its own repo rather than vendoring here.
-- **Phase 7 fixtures** — finish `testdata/examples/gs-profile-d/` per its README
-  (real scope values, recomputed digests, expected-trace), then un-skip the two
-  tests. Low-judgment; suitable for Sonnet/Codex.
-- **Phase 8** — release prep (version bumps, `CITATION.cff`, README); mechanical.
+- ~~**Phase 7 fixtures**~~ — **DONE** (commit `411ea30`). See "Phase 7 & 8" below.
+- ~~**Phase 8** — release prep~~ — **DONE** (code only; tag/Zenodo remain human
+  steps). See "Phase 7 & 8" below.
+
+---
+
+# Part B — Phase 7 (Profile D vector) & Phase 8 (release prep)
+
+## Phase 7 — Profile D test vector (`testdata/examples/gs-profile-d/`)
+
+Completed the skeleton left in handoff. Profile D's purpose is to exercise the
+**per-edge** derivation check: a single issuing-scope credential carries one
+`derivedFrom` (accreditation, subset-checked) edge **and** one `authorizedBy`
+(schemeAuthorization, independent) edge, and the GS certificate is authorized by
+that issuing-scope credential.
+
+- **Domain chosen:** GS product-safety mark for a household electrical appliance.
+  Scope dimension is electrical-safety voltage range under IEC test standards.
+- **Subset relation (the point of the vector):** accreditation scope =
+  `ElectricalSafety`, methods `IEC 60335-1` + `IEC 60950-1`, range 0–1000 V;
+  issuing-scope = `ElectricalSafety`, method `IEC 60335-1` only, range 0–**250 V**.
+  The issuing scope is a genuine subset on both the method set and the range, so
+  the `derivedFrom` edge yields `DERIVATION_VALID`.
+- **digestSRI:** recomputed (sha384 over the stable-stringified unsecured
+  document) bottom-up — accreditation and scheme-authorization digests embedded
+  into the issuing-scope credential first, then the issuing-scope digest embedded
+  into the target. All three verified to match the kernel's `computeDigestSRI`.
+- **expected-trace.json:** captured from the live verifier. Asserts
+  `verified: true`, `DERIVATION_VALID` on the `derivedFrom` accreditation edge,
+  and the independent `authorizedBy` schemeAuthorization edge accepted with
+  `TRUSTED_ISSUER` / `SUBJECT_BOUND` only — **no `DERIVATION_*` code on it**,
+  confirming the independent edge is not subset-bounded.
+- **Tests un-skipped:** `verifier.test.ts` and `test_verifier.py` (TS↔Python
+  parity preserved). No failing variant was added (it was optional in the README).
+
+## Phase 8 — release prep (code only)
+
+- **Version → 0.3.0** in `package.json`, `packages/core-ts/package.json`, and
+  `packages/core-py/pyproject.toml`. (`lims-adapter` and `verifier-service` are
+  empty placeholder dirs with no manifest — nothing to bump.)
+- **`CITATION.cff`:** added `version: 0.3.0`, `date-released: 2026-06-08`, a
+  `doi:` field with a `TODO(human)` placeholder for the Zenodo DOI, and a
+  `preferred-citation` block pointing to the manuscript.
+- **`README.md`:** Status section now notes the `0.3.0` tag corresponds to the
+  manuscript submission; also fixed a stale evidence example that still showed
+  the pre-Part-A model (`qi:` prefixes + the removed `role` field) — see
+  `docs/PAPER_FEEDBACK.md` F-4.
+- **Not done (deliberate, human steps per §12):** no git tag, no push of a tag,
+  no Zenodo archive, no DOI minting.
+
+## Final acceptance (Part B §13)
+
+- TS **113** tests green (includes the un-skipped Profile D vector), Python **105**
+  green (1 unrelated skip), `pnpm validate:schemas` 6/6.
+- G2 SD path and the `eddsa-rdfc-2022` path both still pass unchanged.
+- No new runtime dependencies beyond the three Digital Bazaar SD packages (TS).

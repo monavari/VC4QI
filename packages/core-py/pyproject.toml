@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 [project]
 name = "qi-vc-core"
-version = "0.2.0"
+version = "0.3.0"
 description = "Python parity implementation of the QI-VC evidence-graph verifier"
 requires-python = ">=3.12"
 dependencies = [

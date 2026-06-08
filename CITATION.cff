@@ -9,3 +9,15 @@ authors:
     given-names: Mehran
 license: Apache-2.0
 repository-code: "https://github.com/monavari/VC4QI"
+version: 0.3.0
+date-released: 2026-06-08
+doi: "TODO(human): Zenodo DOI assigned at release time"
+preferred-citation:
+  type: article
+  title: >-
+    Verifiable Credentials for Quality Infrastructure: a policy-resolved
+    evidence-graph model for accreditation, calibration, and conformity
+  authors:
+    - family-names: Monavari
+      given-names: Mehran
+  year: 2026
