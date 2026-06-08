@@ -11,24 +11,23 @@
   "id": "urn:uuid:rm-accreditation-001",
   "issuer": "did:web:dakks.example",
   "validFrom": "2024-01-01T00:00:00Z",
-  "validUntil": "2028-01-01T00:00:00Z",
+  "validUntil": "2029-01-01T00:00:00Z",
   "credentialSubject": {
-    "id": "did:web:rm.example",
+    "id": "did:web:rm-producer.example",
     "authorizationBasisKind": "accreditation",
     "scope": [
       {
         "matrix": [
-          "non-ferrous metals and alloys"
+          "CuZn39Pb3 (leaded brass)"
         ],
         "allowedProperties": [
-          "Pb",
-          "Cd"
+          "As"
         ],
         "allowedForms": [
           "disc"
         ],
         "uncertainty": {
-          "maxAbsoluteMgKg": 5
+          "maxAbsoluteMgKg": 6
         }
       }
     ]

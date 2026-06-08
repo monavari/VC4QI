@@ -7,10 +7,9 @@
   "requiredEvidence": [
     {
       "id": "direct-accreditation",
-      "relation": "qi:authorizedBy",
-      "role": "authorizing",
+      "relation": "authorizedBy",
       "authorizationBasis": {
-        "kind": "qi:accreditation"
+        "kind": "accreditation"
       },
       "required": true
     }

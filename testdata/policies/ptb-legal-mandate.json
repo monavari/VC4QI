@@ -10,7 +10,7 @@
       "relation": "authorizedBy",
       "authorizationBasis": {
         "kind": "legalMandate",
-        "issuerRole": "qi:nationalMetrologyInstitute"
+        "issuerRole": "nationalMetrologyInstitute"
       },
       "required": true
     }
