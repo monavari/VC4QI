@@ -6,9 +6,6 @@ import type { PolicyProfile } from '../policy/types.js';
 import { evaluateAuthorizedBy, type EdgeEvaluationOptions } from './evaluateAuthorizedBy.js';
 import { evaluateDerivedFrom } from './evaluateDerivedFrom.js';
 import { evaluateSupportedBy } from './evaluateSupportedBy.js';
-import { evaluateRecognizedBy } from './evaluateRecognizedBy.js';
-import { evaluateNotifiedBy } from './evaluateNotifiedBy.js';
-import { evaluateStatusProvidedBy } from './evaluateStatusProvidedBy.js';
 
 export interface EvaluateEdgeOptions extends EdgeEvaluationOptions {
   resolveTrustRegistry?: (issuerDid: string, context?: unknown) => Promise<JsonObject>;
@@ -22,18 +19,12 @@ export async function evaluateEdge(
   options: EvaluateEdgeOptions = {},
 ): Promise<TraceEntry[]> {
   switch (edge.relation) {
-    case 'qi:authorizedBy':
+    case 'authorizedBy':
       return evaluateAuthorizedBy(edge, graph, policy, options);
-    case 'qi:derivedFrom':
+    case 'derivedFrom':
       return evaluateDerivedFrom(edge, graph, policy);
-    case 'qi:supportedBy':
+    case 'supportedBy':
       return evaluateSupportedBy(edge, graph, policy);
-    case 'qi:recognizedBy':
-      return evaluateRecognizedBy(edge, graph, policy);
-    case 'qi:notifiedBy':
-      return evaluateNotifiedBy(edge, graph, policy, options);
-    case 'qi:statusProvidedBy':
-      return evaluateStatusProvidedBy(edge, graph, policy);
     default:
       return [traceEntry({
         id: `edge-unsupported-${edge.from}-to-${edge.to}`,

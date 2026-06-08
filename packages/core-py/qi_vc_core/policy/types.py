@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from ..evidence.types import AuthorizationBasis, EvidenceRelation, EvidenceRole
+from ..evidence.types import AuthorizationBasis, EvidenceRelation
 
 CheckMode = Literal["required", "optional", "ignored", "unsupported"]
 
@@ -15,7 +15,6 @@ class RequiredEvidence(BaseModel):
 
     id: str
     relation: EvidenceRelation | None = None
-    role: EvidenceRole | None = None
     authorizationBasis: AuthorizationBasis | None = None
     targetCredentialTypes: list[str] | None = None
     required: bool = True

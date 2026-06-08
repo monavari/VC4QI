@@ -10,7 +10,6 @@ function edgeMatchesRequirement(
   requirement: RequiredEvidence,
 ): boolean {
   if (requirement.relation && edge.relation !== requirement.relation) return false;
-  if (requirement.role && edge.role !== requirement.role) return false;
 
   const expectedKind = requirement.authorizationBasis?.kind;
   if (expectedKind && edge.authorizationBasis?.kind !== expectedKind) return false;

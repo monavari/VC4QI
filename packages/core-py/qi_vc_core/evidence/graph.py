@@ -103,7 +103,6 @@ def build_evidence_graph(
                     "from": from_id,
                     "to": to_id,
                     "relation": evidence.relation,
-                    "role": evidence.role,
                     "authorizationBasis": evidence.authorizationBasis,
                     "digestMultibase": evidence.digestMultibase,
                     "digestSRI": evidence.digestSRI,
