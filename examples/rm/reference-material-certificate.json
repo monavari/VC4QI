@@ -77,18 +77,16 @@
     {
       "type": "CredentialEvidenceReference",
       "id": "urn:uuid:operational-scope-001",
-      "relation": "qi:authorizedBy",
-      "role": "authorizing",
+      "relation": "authorizedBy",
       "authorizationBasis": {
-        "kind": "qi:operationalScope"
+        "kind": "operationalScope"
       },
       "digestSRI": "sha384-+lxdpVZbLGJJLB0x9IKsVLWR/rXsJcwnvCt/I5IVg+DBtD/9g8+pryjs3W+sP71Q"
     },
     {
       "type": "CredentialEvidenceReference",
       "id": "urn:uuid:rm-study-001",
-      "relation": "qi:supportedBy",
-      "role": "supporting",
+      "relation": "supportedBy",
       "digestSRI": "sha384-XO5qZRtvj5nzTSqysRxpn0l1V2mjEv2AUk9aIkDYSTXJuKr2T/GaIZkynm8QTaCh"
     }
   ],

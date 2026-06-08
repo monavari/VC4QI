@@ -17,7 +17,6 @@
 
     "CredentialEvidenceReference": "qi:CredentialEvidenceReference",
     "relation": "qi:relation",
-    "role": "qi:role",
     "authorizationBasis": "qi:authorizationBasis",
     "kind": "qi:kind",
     "issuerRole": "qi:issuerRole",

@@ -241,9 +241,9 @@
 
     "CredentialEvidenceReference": {
       "title": "CredentialEvidenceReference",
-      "description": "Evidence reference from a credential to authorizing, supporting, recognition, notification, or status-provider evidence.",
+      "description": "Evidence reference from a credential to authorizing or supporting evidence. Relation implies role: authorizedBy/derivedFrom are authorizing; supportedBy is non-authorizing.",
       "type": "object",
-      "required": ["id", "type", "relation", "role"],
+      "required": ["id", "type", "relation"],
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -258,9 +258,6 @@
         },
         "relation": {
           "$ref": "#/$defs/EvidenceRelation"
-        },
-        "role": {
-          "$ref": "#/$defs/EvidenceRole"
         },
         "authorizationBasis": {
           "$ref": "#/$defs/AuthorizationBasis"
@@ -279,18 +276,26 @@
           "if": {
             "properties": {
               "relation": {
-                "enum": [
-                  "qi:authorizedBy",
-                  "qi:derivedFrom",
-                  "qi:recognizedBy",
-                  "qi:notifiedBy"
-                ]
+                "enum": ["authorizedBy", "derivedFrom"]
               }
             },
             "required": ["relation"]
           },
           "then": {
             "required": ["authorizationBasis"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "relation": {
+                "const": "supportedBy"
+              }
+            },
+            "required": ["relation"]
+          },
+          "then": {
+            "not": {"required": ["authorizationBasis"]}
           }
         }
       ]
@@ -300,33 +305,22 @@
       "title": "EvidenceRelation",
       "type": "string",
       "enum": [
-        "qi:authorizedBy",
-        "qi:derivedFrom",
-        "qi:recognizedBy",
-        "qi:notifiedBy",
-        "qi:supportedBy",
-        "qi:statusProvidedBy"
+        "authorizedBy",
+        "derivedFrom",
+        "supportedBy"
       ]
-    },
-
-    "EvidenceRole": {
-      "title": "EvidenceRole",
-      "type": "string",
-      "enum": ["authorizing", "supporting", "recognition", "status"]
     },
 
     "AuthorizationBasisKind": {
       "title": "AuthorizationBasisKind",
       "type": "string",
       "enum": [
-        "qi:accreditation",
-        "qi:capability",
-        "qi:legalMandate",
-        "qi:notification",
-        "qi:schemeAuthorization",
-        "qi:operationalScope",
-        "qi:recognition",
-        "qi:domainEvidence"
+        "accreditation",
+        "legalMandate",
+        "notification",
+        "schemeAuthorization",
+        "recognition",
+        "operationalScope"
       ]
     },
 
