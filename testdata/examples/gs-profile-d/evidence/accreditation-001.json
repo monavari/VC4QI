@@ -14,10 +14,21 @@
   "validUntil": "2029-01-01T00:00:00Z",
   "credentialSubject": {
     "id": "did:web:gs-body.example",
-    "comment": "TODO(human): the accredited scope. The issuing-scope (gs-issuing-scope-001) must be ⊑ this. Define concrete scope entries (range/allowedMethods/uncertainty) using qi-core.jsonld vocabulary.",
+    "authorizationBasisKind": "accreditation",
     "scope": [
       {
-        "TODO(human)": "accredited scope entries that bound the issuing scope"
+        "measurand": "ElectricalSafety",
+        "allowedMethods": [
+          "IEC 60335-1",
+          "IEC 60950-1"
+        ],
+        "range": {
+          "from": 0,
+          "to": 1000,
+          "unit": {
+            "ucumCode": "V"
+          }
+        }
       }
     ]
   },

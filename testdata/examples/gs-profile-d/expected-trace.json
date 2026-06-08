@@ -1,20 +1,197 @@
 {
   "verified": true,
   "profile": "gs-profile-d",
-  "target": "",
+  "target": "urn:uuid:gs-cert-profile-d-001",
   "summary": {
-    "nodesResolved": 0,
-    "edgesEvaluated": 0,
+    "nodesResolved": 4,
+    "edgesEvaluated": 3,
     "failures": 0,
     "warnings": 0
   },
   "results": [
     {
-      "id": "gs-profile-d-todo",
-      "level": "policy",
+      "id": "resolve-urn:uuid:gs-issuing-scope-001",
+      "level": "graph",
+      "target": "urn:uuid:gs-issuing-scope-001",
       "status": "PASS",
-      "code": "TODO(human): set to the real codes the verifier emits. Must include DERIVATION_VALID (issuing-scope ⊑ accreditation, per-edge) and the independent schemeAuthorization edge accepted WITHOUT any DERIVATION_* code on it.",
-      "detail": "Placeholder — run the verifier and capture the actual trace codes."
+      "code": "EVIDENCE_RESOLVED",
+      "detail": "Resolved evidence urn:uuid:gs-issuing-scope-001."
+    },
+    {
+      "id": "digest-urn:uuid:gs-cert-profile-d-001-to-urn:uuid:gs-issuing-scope-001",
+      "level": "edge",
+      "from": "urn:uuid:gs-cert-profile-d-001",
+      "to": "urn:uuid:gs-issuing-scope-001",
+      "relation": "authorizedBy",
+      "status": "PASS",
+      "code": "DIGEST_VALID",
+      "detail": "Evidence digest matches referenced evidence."
+    },
+    {
+      "id": "resolve-urn:uuid:accreditation-001",
+      "level": "graph",
+      "target": "urn:uuid:accreditation-001",
+      "status": "PASS",
+      "code": "EVIDENCE_RESOLVED",
+      "detail": "Resolved evidence urn:uuid:accreditation-001."
+    },
+    {
+      "id": "digest-urn:uuid:gs-issuing-scope-001-to-urn:uuid:accreditation-001",
+      "level": "edge",
+      "from": "urn:uuid:gs-issuing-scope-001",
+      "to": "urn:uuid:accreditation-001",
+      "relation": "derivedFrom",
+      "status": "PASS",
+      "code": "DIGEST_VALID",
+      "detail": "Evidence digest matches referenced evidence."
+    },
+    {
+      "id": "resolve-urn:uuid:scheme-authorization-001",
+      "level": "graph",
+      "target": "urn:uuid:scheme-authorization-001",
+      "status": "PASS",
+      "code": "EVIDENCE_RESOLVED",
+      "detail": "Resolved evidence urn:uuid:scheme-authorization-001."
+    },
+    {
+      "id": "digest-urn:uuid:gs-issuing-scope-001-to-urn:uuid:scheme-authorization-001",
+      "level": "edge",
+      "from": "urn:uuid:gs-issuing-scope-001",
+      "to": "urn:uuid:scheme-authorization-001",
+      "relation": "authorizedBy",
+      "status": "PASS",
+      "code": "DIGEST_VALID",
+      "detail": "Evidence digest matches referenced evidence."
+    },
+    {
+      "id": "schema-urn:uuid:gs-cert-profile-d-001",
+      "level": "credential",
+      "target": "urn:uuid:gs-cert-profile-d-001",
+      "status": "SKIP",
+      "code": "SCHEMA_NOT_DECLARED",
+      "detail": "No schema is declared for this evidence node."
+    },
+    {
+      "id": "proof-urn:uuid:gs-cert-profile-d-001",
+      "level": "credential",
+      "target": "urn:uuid:gs-cert-profile-d-001",
+      "status": "SKIP",
+      "code": "PROOF_SKIPPED",
+      "detail": "Proof verification skipped by caller."
+    },
+    {
+      "id": "schema-urn:uuid:gs-issuing-scope-001",
+      "level": "credential",
+      "target": "urn:uuid:gs-issuing-scope-001",
+      "status": "SKIP",
+      "code": "SCHEMA_NOT_DECLARED",
+      "detail": "No schema is declared for this evidence node."
+    },
+    {
+      "id": "proof-urn:uuid:gs-issuing-scope-001",
+      "level": "credential",
+      "target": "urn:uuid:gs-issuing-scope-001",
+      "status": "SKIP",
+      "code": "PROOF_SKIPPED",
+      "detail": "Proof verification skipped by caller."
+    },
+    {
+      "id": "schema-urn:uuid:accreditation-001",
+      "level": "credential",
+      "target": "urn:uuid:accreditation-001",
+      "status": "SKIP",
+      "code": "SCHEMA_NOT_DECLARED",
+      "detail": "No schema is declared for this evidence node."
+    },
+    {
+      "id": "proof-urn:uuid:accreditation-001",
+      "level": "credential",
+      "target": "urn:uuid:accreditation-001",
+      "status": "SKIP",
+      "code": "PROOF_SKIPPED",
+      "detail": "Proof verification skipped by caller."
+    },
+    {
+      "id": "schema-urn:uuid:scheme-authorization-001",
+      "level": "credential",
+      "target": "urn:uuid:scheme-authorization-001",
+      "status": "SKIP",
+      "code": "SCHEMA_NOT_DECLARED",
+      "detail": "No schema is declared for this evidence node."
+    },
+    {
+      "id": "proof-urn:uuid:scheme-authorization-001",
+      "level": "credential",
+      "target": "urn:uuid:scheme-authorization-001",
+      "status": "SKIP",
+      "code": "PROOF_SKIPPED",
+      "detail": "Proof verification skipped by caller."
+    },
+    {
+      "id": "trusted-did:web:gs-body.example",
+      "level": "edge",
+      "from": "urn:uuid:gs-cert-profile-d-001",
+      "to": "urn:uuid:gs-issuing-scope-001",
+      "relation": "authorizedBy",
+      "status": "PASS",
+      "code": "TRUSTED_ISSUER",
+      "detail": "did:web:gs-body.example is trusted for schemeAuthorization."
+    },
+    {
+      "id": "subject-binding-urn:uuid:gs-cert-profile-d-001-to-urn:uuid:gs-issuing-scope-001",
+      "level": "edge",
+      "from": "urn:uuid:gs-cert-profile-d-001",
+      "to": "urn:uuid:gs-issuing-scope-001",
+      "relation": "authorizedBy",
+      "status": "PASS",
+      "code": "SUBJECT_BOUND",
+      "detail": "Authorizing evidence subject matches source credential issuer."
+    },
+    {
+      "id": "edge-derivedFrom-urn:uuid:gs-issuing-scope-001-to-urn:uuid:accreditation-001",
+      "level": "edge",
+      "from": "urn:uuid:gs-issuing-scope-001",
+      "to": "urn:uuid:accreditation-001",
+      "relation": "derivedFrom",
+      "status": "PASS",
+      "code": "DERIVATION_VALID",
+      "detail": "Child authority or scope is within parent evidence."
+    },
+    {
+      "id": "trusted-did:web:scheme-authority.example",
+      "level": "edge",
+      "from": "urn:uuid:gs-issuing-scope-001",
+      "to": "urn:uuid:scheme-authorization-001",
+      "relation": "authorizedBy",
+      "status": "PASS",
+      "code": "TRUSTED_ISSUER",
+      "detail": "did:web:scheme-authority.example is trusted for schemeAuthorization."
+    },
+    {
+      "id": "subject-binding-urn:uuid:gs-issuing-scope-001-to-urn:uuid:scheme-authorization-001",
+      "level": "edge",
+      "from": "urn:uuid:gs-issuing-scope-001",
+      "to": "urn:uuid:scheme-authorization-001",
+      "relation": "authorizedBy",
+      "status": "PASS",
+      "code": "SUBJECT_BOUND",
+      "detail": "Authorizing evidence subject matches source credential issuer."
+    },
+    {
+      "id": "target-type-match",
+      "level": "policy",
+      "target": "urn:uuid:gs-cert-profile-d-001",
+      "status": "PASS",
+      "code": "TARGET_TYPE_MATCH",
+      "detail": "Target credential type matches policy gs-profile-d."
+    },
+    {
+      "id": "gs-issuing-scope",
+      "level": "policy",
+      "target": "urn:uuid:gs-cert-profile-d-001",
+      "status": "PASS",
+      "code": "REQUIRED_EVIDENCE_PRESENT",
+      "detail": "Required evidence 'gs-issuing-scope' is present."
     }
   ]
 }

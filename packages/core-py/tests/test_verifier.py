@@ -52,7 +52,6 @@ def test_capability_exceeds_accreditation_scope_fails():
 # directory's README. Must accept, with DERIVATION_VALID for the
 # issuing-scope -> accreditation (derivedFrom) edge and the independent
 # schemeAuthorization edge accepted without a subset check. Keep TS<->Py parity.
-@pytest.mark.skip(reason="Phase 7 Profile D skeleton: fixture has TODO(human) placeholders")
 def test_gs_profile_d_derived_and_independent_edges_pass():
     trace = verify_fixture("gs-profile-d")
     assert trace["verified"] is True
