@@ -37,14 +37,17 @@ make lint                            # pnpm lint + ruff + mypy
 | Digest helper (Py) | `packages/core-py/qi_vc_core/evidence/digest.py` |
 | ADRs | `docs/adrs/` |
 
-## Current migration state (v0.2.0)
+## Current migration state (v0.3.0 — Part A complete)
 
-The following are **wrong in the current code** and must be fixed in the migration:
-- `EvidenceRelation` has 6 values with `qi:` prefixes — target is 3 bare tokens.
-- `EvidenceRole` enum exists — delete it entirely.
-- `AuthorizationBasisKind` has 8 values with `qi:` prefixes — target is 6 bare tokens.
-- Edge files for `recognizedBy`, `notifiedBy`, `statusProvidedBy` exist — delete them.
-- `contexts/v1/qi-evidence-context.jsonld` has `role` and removed terms — replace.
+Part A (Phases 1–5) is complete. The following have been fixed:
+- `EvidenceRelation` is now 3 bare tokens: `authorizedBy`, `derivedFrom`, `supportedBy`.
+- `EvidenceRole` enum deleted; `role` field removed everywhere.
+- `AuthorizationBasisKind` is now 6 bare tokens: `accreditation`, `legalMandate`,
+  `notification`, `schemeAuthorization`, `recognition`, `operationalScope`.
+- Edge modules for `recognizedBy`, `notifiedBy`, `statusProvidedBy` deleted.
+- `contexts/v1/qi-evidence-context.jsonld` rewritten per §1.5 with `@type: @vocab`.
+
+**Next**: Part B (Phase 6 — selective disclosure). Use Claude Opus.
 
 ## Guardrails (read before touching anything)
 
@@ -67,4 +70,4 @@ The following are **wrong in the current code** and must be fixed in the migrati
 
 ## Branch
 
-`refactor/manuscript-v2.1`. Do not push, tag, or create releases.
+`refactor/manuscript-v2.1`. Do not tag or create releases.

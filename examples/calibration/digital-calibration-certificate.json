@@ -74,10 +74,10 @@
       "relation": "authorizedBy",
       "authorizationBasis": {
         "kind": "accreditation",
-        "issuerRole": "qi:nationalAccreditationBody",
+        "issuerRole": "nationalAccreditationBody",
         "scopeRef": "pressure-scope"
       },
-      "digestSRI": "sha384-sdkrQRbnFOkX5iKdlRll4eB7bsq+S6w7M8UKE952OpwFfdvN1mpwIfkIJZINv53u"
+      "digestSRI": "sha384-ZpErLpBHKR8tzfyTiRcvj6ehSRGHJ9u6Js5h5L3o8BuXOOSww3WN/pqnbu+6EKR5"
     }
   ],
   "proof": {

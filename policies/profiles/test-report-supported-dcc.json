@@ -7,8 +7,7 @@
   "requiredEvidence": [
     {
       "id": "test-report-dcc-support",
-      "relation": "qi:supportedBy",
-      "role": "supporting",
+      "relation": "supportedBy",
       "targetCredentialTypes": [
         "DigitalCalibrationCertificate"
       ],

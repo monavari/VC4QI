@@ -16,7 +16,7 @@
       {
         "status": "active",
         "id": "did:web:dakks.example",
-        "issuerRole": "qi:nationalAccreditationBody",
+        "issuerRole": "nationalAccreditationBody",
         "authorizationBasisKinds": [
           "accreditation",
           "operationalScope"

@@ -7,11 +7,10 @@
   "requiredEvidence": [
     {
       "id": "legal-mandate",
-      "relation": "qi:authorizedBy",
-      "role": "authorizing",
+      "relation": "authorizedBy",
       "authorizationBasis": {
-        "kind": "qi:legalMandate",
-        "issuerRole": "qi:nationalMetrologyInstitute"
+        "kind": "legalMandate",
+        "issuerRole": "nationalMetrologyInstitute"
       },
       "required": true
     }

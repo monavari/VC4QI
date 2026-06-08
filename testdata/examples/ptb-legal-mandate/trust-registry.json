@@ -16,7 +16,7 @@
       {
         "status": "active",
         "id": "did:web:ptb.example",
-        "issuerRole": "qi:nationalMetrologyInstitute",
+        "issuerRole": "nationalMetrologyInstitute",
         "authorizationBasisKinds": [
           "legalMandate"
         ],

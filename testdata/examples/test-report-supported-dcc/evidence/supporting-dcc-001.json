@@ -1,89 +1,89 @@
 {
-    "$schema": "https://w3id.org/qi-vc/schemas/v1/digital-calibration-certificate.json",
-    "@context": [
-        "https://www.w3.org/ns/credentials/v2",
-        "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld",
-        "https://w3id.org/qi-vc/contexts/v1/qi-calibration.jsonld"
-    ],
-    "type": [
-        "VerifiableCredential",
-        "DigitalCalibrationCertificate"
-    ],
-    "id": "urn:uuid:supporting-dcc-001",
-    "issuer": "did:web:lab.example",
-    "validFrom": "2026-01-15T00:00:00Z",
-    "credentialSchema": {
-        "id": "https://w3id.org/qi-vc/schemas/v1/digital-calibration-certificate.json",
-        "type": "JsonSchema"
-    },
-    "credentialSubject": {
-        "id": "urn:example:item:pressure-001",
-        "administrativeData": {
-            "coreData": {
-                "uniqueIdentifier": "supporting-dcc-001",
-                "beginPerformanceDate": "2026-01-14T08:00:00Z",
-                "endPerformanceDate": "2026-01-14T16:00:00Z"
-            },
-            "items": [
-                {
-                    "name": "Pressure transmitter"
-                }
-            ],
-            "calibrationLaboratory": {
-                "id": "did:web:lab.example",
-                "name": "Calibration laboratory"
-            },
-            "customer": {
-                "name": "Example customer"
-            }
-        },
-        "measurementResults": [
-            {
-                "measurand": "Pressure",
-                "usedMethods": [
-                    {
-                        "name": "Pressure calibration",
-                        "reference": "EURAMET cg-17"
-                    }
-                ],
-                "results": [
-                    {
-                        "name": "Pressure at nominal point",
-                        "data": {
-                            "quantity": {
-                                "quantityKind": "http://qudt.org/vocab/quantitykind/Pressure",
-                                "value": 500,
-                                "unit": {
-                                    "ucumCode": "kPa"
-                                },
-                                "uncertainty": {
-                                    "expandedUncertainty": 1,
-                                    "coverageFactor": 2
-                                }
-                            }
-                        }
-                    }
-                ]
-            }
-        ]
-    },
-    "evidence": [
+  "$schema": "https://w3id.org/qi-vc/schemas/v1/digital-calibration-certificate.json",
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-calibration.jsonld"
+  ],
+  "type": [
+    "VerifiableCredential",
+    "DigitalCalibrationCertificate"
+  ],
+  "id": "urn:uuid:supporting-dcc-001",
+  "issuer": "did:web:lab.example",
+  "validFrom": "2026-01-15T00:00:00Z",
+  "credentialSchema": {
+    "id": "https://w3id.org/qi-vc/schemas/v1/digital-calibration-certificate.json",
+    "type": "JsonSchema"
+  },
+  "credentialSubject": {
+    "id": "urn:example:item:pressure-001",
+    "administrativeData": {
+      "coreData": {
+        "uniqueIdentifier": "supporting-dcc-001",
+        "beginPerformanceDate": "2026-01-14T08:00:00Z",
+        "endPerformanceDate": "2026-01-14T16:00:00Z"
+      },
+      "items": [
         {
-            "type": "CredentialEvidenceReference",
-            "id": "urn:uuid:test-report-dcc-accreditation-001",
-            "relation": "authorizedBy",
-            "authorizationBasis": {
-                "kind": "accreditation"
-            },
-            "digestSRI": "sha384-LX6VR868d02/ncZHpUmI+Xxfw0mT6KJ39nLcDHDiH5QW2thlmB42cNpIb46p76NA"
+          "name": "Pressure transmitter"
         }
-    ],
-    "proof": {
-        "type": "DataIntegrityProof",
-        "cryptosuite": "eddsa-rdfc-2022",
-        "proofPurpose": "assertionMethod",
-        "verificationMethod": "did:web:lab.example#key-1",
-        "created": "2026-01-01T00:00:00Z",
-        "proofValue": "zPlaceholderProof"
+      ],
+      "calibrationLaboratory": {
+        "id": "did:web:lab.example",
+        "name": "Calibration laboratory"
+      },
+      "customer": {
+        "name": "Example customer"
+      }
+    },
+    "measurementResults": [
+      {
+        "measurand": "Pressure",
+        "usedMethods": [
+          {
+            "name": "Pressure calibration",
+            "reference": "EURAMET cg-17"
+          }
+        ],
+        "results": [
+          {
+            "name": "Pressure at nominal point",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/Pressure",
+                "value": 500,
+                "unit": {
+                  "ucumCode": "kPa"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 1,
+                  "coverageFactor": 2
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "type": "CredentialEvidenceReference",
+      "id": "urn:uuid:test-report-dcc-accreditation-001",
+      "relation": "authorizedBy",
+      "authorizationBasis": {
+        "kind": "accreditation"
+      },
+      "digestSRI": "sha384-ZfLnFjjl5Sc5Awm04wGUBtcLLvsWdq5RHxoapwgb1QkQt3MOyhXhxGl1uaI85FRl"
     }
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:web:lab.example#key-1",
+    "created": "2026-01-01T00:00:00Z",
+    "proofValue": "zPlaceholderProof"
+  }
 }

@@ -15,15 +15,25 @@
     "registryEntries": [
       {
         "status": "active",
-        "id": "did:web:dakks.example",
-        "issuerRole": "qi:nationalAccreditationBody",
+        "id": "did:web:rm-producer.example",
+        "issuerRole": "referenceMaterialProducer",
         "authorizationBasisKinds": [
-          "accreditation",
           "operationalScope"
         ],
         "credentialTypes": [
-          "AccreditationCertificate",
-          "OperationalScopeEvidence"
+          "OperationalScopeEvidence",
+          "ReferenceMaterialCertificate"
+        ]
+      },
+      {
+        "status": "active",
+        "id": "did:web:dakks.example",
+        "issuerRole": "nationalAccreditationBody",
+        "authorizationBasisKinds": [
+          "accreditation"
+        ],
+        "credentialTypes": [
+          "AccreditationCertificate"
         ]
       }
     ]
