@@ -1,0 +1,54 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld"
+  ],
+  "type": [
+    "VerifiableCredential",
+    "IssuingScopeCredential"
+  ],
+  "id": "urn:uuid:gs-issuing-scope-001",
+  "issuer": "did:web:gs-body.example",
+  "validFrom": "2026-01-01T00:00:00Z",
+  "validUntil": "2027-01-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "did:web:gs-body.example",
+    "comment": "TODO(human): the issuing scope MUST be a subset of accreditation-001's scope (so the derivedFrom derivation check passes). Use the scope/range/allowedMethods vocabulary from qi-core.jsonld; model on testdata/examples/calibration-capability.",
+    "scope": [
+      {
+        "TODO(human)": "one or more scope entries that are ⊑ the accreditation scope"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "type": "CredentialEvidenceReference",
+      "id": "urn:uuid:accreditation-001",
+      "relation": "derivedFrom",
+      "authorizationBasis": {
+        "kind": "accreditation"
+      },
+      "digestSRI": "sha384-TODO-recompute-binding-to-accreditation-001"
+    },
+    {
+      "type": "CredentialEvidenceReference",
+      "id": "urn:uuid:scheme-authorization-001",
+      "relation": "authorizedBy",
+      "authorizationBasis": {
+        "kind": "schemeAuthorization",
+        "issuerRole": "schemeAuthority",
+        "scheme": "TODO(human): scheme name (e.g. GS)"
+      },
+      "digestSRI": "sha384-TODO-recompute-binding-to-scheme-authorization-001"
+    }
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:web:gs-body.example#key-1",
+    "created": "2026-01-01T00:00:00Z",
+    "proofValue": "zPlaceholderProof"
+  }
+}

@@ -26,6 +26,15 @@ const LOCAL_CONTEXT_MAP: Record<string, string> = {
     'contexts/v1/qi-calibration.jsonld',
   'https://w3id.org/qi-vc/contexts/v1/qi-rm.jsonld':
     'contexts/v1/qi-rm.jsonld',
+  'https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld':
+    'contexts/v1/qi-evidence-context.jsonld',
+  // Vendored W3C contexts. Required for deterministic, offline selective-disclosure
+  // (ecdsa-sd-2023) sign/derive/verify, which runs jsonld in safe mode and therefore
+  // needs every term to resolve. Also used by the qi-evidence context.
+  'https://www.w3.org/ns/credentials/v2':
+    'contexts/v1/vendor/credentials-v2.jsonld',
+  'https://w3id.org/security/multikey/v1':
+    'contexts/v1/vendor/security-multikey-v1.jsonld',
 };
 
 /**

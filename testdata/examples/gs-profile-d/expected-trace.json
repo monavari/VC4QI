@@ -1,0 +1,20 @@
+{
+  "verified": true,
+  "profile": "gs-profile-d",
+  "target": "",
+  "summary": {
+    "nodesResolved": 0,
+    "edgesEvaluated": 0,
+    "failures": 0,
+    "warnings": 0
+  },
+  "results": [
+    {
+      "id": "gs-profile-d-todo",
+      "level": "policy",
+      "status": "PASS",
+      "code": "TODO(human): set to the real codes the verifier emits. Must include DERIVATION_VALID (issuing-scope ⊑ accreditation, per-edge) and the independent schemeAuthorization edge accepted WITHOUT any DERIVATION_* code on it.",
+      "detail": "Placeholder — run the verifier and capture the actual trace codes."
+    }
+  ]
+}
