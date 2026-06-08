@@ -53,7 +53,7 @@ describe('verifyCredentialGraph shared fixtures', () => {
   // directory's README. The vector must accept, with DERIVATION_VALID for the
   // issuing-scope -> accreditation (derivedFrom) edge and the independent
   // schemeAuthorization edge accepted without a subset check.
-  it.skip('passes GS Profile D: derivedFrom accreditation + authorizedBy scheme (per-edge)', async () => {
+  it('passes GS Profile D: derivedFrom accreditation + authorizedBy scheme (per-edge)', async () => {
     const trace = await verifyFixture('gs-profile-d');
     expect(trace.verified).toBe(true);
     expect(codes(trace)).toContain('DERIVATION_VALID');

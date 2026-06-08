@@ -14,10 +14,19 @@
   "validUntil": "2027-01-01T00:00:00Z",
   "credentialSubject": {
     "id": "did:web:gs-body.example",
-    "comment": "TODO(human): the issuing scope MUST be a subset of accreditation-001's scope (so the derivedFrom derivation check passes). Use the scope/range/allowedMethods vocabulary from qi-core.jsonld; model on testdata/examples/calibration-capability.",
     "scope": [
       {
-        "TODO(human)": "one or more scope entries that are ⊑ the accreditation scope"
+        "measurand": "ElectricalSafety",
+        "allowedMethods": [
+          "IEC 60335-1"
+        ],
+        "range": {
+          "from": 0,
+          "to": 250,
+          "unit": {
+            "ucumCode": "V"
+          }
+        }
       }
     ]
   },
@@ -29,7 +38,7 @@
       "authorizationBasis": {
         "kind": "accreditation"
       },
-      "digestSRI": "sha384-TODO-recompute-binding-to-accreditation-001"
+      "digestSRI": "sha384-2fEjkhbxYhi50UKeKjJh+VQA6IZYYxV0vLZfxT7wmNvULv8FazzLIRicDEMy13qR"
     },
     {
       "type": "CredentialEvidenceReference",
@@ -38,9 +47,9 @@
       "authorizationBasis": {
         "kind": "schemeAuthorization",
         "issuerRole": "schemeAuthority",
-        "scheme": "TODO(human): scheme name (e.g. GS)"
+        "scheme": "GS"
       },
-      "digestSRI": "sha384-TODO-recompute-binding-to-scheme-authorization-001"
+      "digestSRI": "sha384-AZZ2M8EmAGFGmbLcbZntTA07OH6sVIU4f/F++LUF9Xhvb0ORBrFpomFrfKLxMhRo"
     }
   ],
   "proof": {

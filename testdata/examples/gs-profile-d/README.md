@@ -1,8 +1,8 @@
-# gs-profile-d — Profile D test vector (Phase 7) — SKELETON
+# gs-profile-d — Profile D test vector (Phase 7) — complete
 
-**Status: skeleton with `TODO(human)` placeholders. Not yet wired into the passing
-test suite** (the verifier test for it is `skip`-marked until the fixtures are
-finished). See `RECONCILIATION_TASK.md` §11 and `docs/MODEL_SPEC.md` §7 (Profile D).
+**Status: complete.** All fixtures are finalized, digestSRI values are real, and
+the verifier tests pass (un-skipped in both TS and Python). See `RECONCILIATION_TASK.md`
+§11 and `docs/MODEL_SPEC.md` §7 (Profile D).
 
 ## What this vector must demonstrate
 
