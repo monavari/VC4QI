@@ -7,11 +7,11 @@
     "VerifiableCredential",
     "LegalMandateEvidence"
   ],
-  "id": "urn:uuid:ptb-legal-mandate-001",
-  "issuer": "did:web:ptb.example",
+  "id": "urn:uuid:nmi-legal-mandate-001",
+  "issuer": "did:web:nmi.example",
   "validFrom": "2020-01-01T00:00:00Z",
   "credentialSubject": {
-    "id": "did:web:ptb.example",
+    "id": "did:web:nmi.example",
     "legalBasis": "Units and Time Act",
     "scope": [
       {
@@ -37,7 +37,7 @@
     "type": "DataIntegrityProof",
     "cryptosuite": "eddsa-rdfc-2022",
     "proofPurpose": "assertionMethod",
-    "verificationMethod": "did:web:ptb.example#key-1",
+    "verificationMethod": "did:web:nmi.example#key-1",
     "created": "2026-01-01T00:00:00Z",
     "proofValue": "zPlaceholderProof"
   }

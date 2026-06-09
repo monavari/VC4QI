@@ -7,7 +7,7 @@ import { codes, fixturePath, readJson, verifyFixture } from './fixture-helpers.j
 const FIXTURE_NAMES = [
   'calibration-direct-accreditation',
   'calibration-capability',
-  'ptb-legal-mandate',
+  'nmi-legal-mandate',
   'reference-material-recursive',
   'gs-scheme-authorization',
   'test-report-supported-dcc',

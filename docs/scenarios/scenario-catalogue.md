@@ -7,7 +7,7 @@ graphs:
 |----------|-----------------|
 | DCC directly authorized by accreditation | pass |
 | DCC authorized by capability evidence derived from accreditation | pass |
-| DCC authorized by PTB-like legal mandate | pass |
+| DCC authorized by an NMI legal mandate | pass |
 | Reference material certificate supported by an RM study | pass |
 | Test report supported by a DCC | pass |
 | GS certificate missing scheme authorization | fail `REQUIRED_EVIDENCE_MISSING` |

@@ -89,7 +89,7 @@ def test_is_trusted_unknown_did():
 def test_is_trusted_basis_aware():
     cred = make_registry_credential([
         {
-            "id": "did:web:ptb.example",
+            "id": "did:web:nmi.example",
             "issuerRole": "nationalMetrologyInstitute",
             "authorizationBasisKinds": ["legalMandate"],
         }
@@ -97,13 +97,13 @@ def test_is_trusted_basis_aware():
     registry = parse_trust_registry_credential(cred)
     assert is_trusted_issuer(
         registry,
-        "did:web:ptb.example",
+        "did:web:nmi.example",
         "legalMandate",
         "nationalMetrologyInstitute",
     )
     assert not is_trusted_issuer(
         registry,
-        "did:web:ptb.example",
+        "did:web:nmi.example",
         "accreditation",
         "nationalAccreditationBody",
     )

@@ -15,7 +15,7 @@
     "registryEntries": [
       {
         "status": "active",
-        "id": "did:web:ptb.example",
+        "id": "did:web:nmi.example",
         "issuerRole": "nationalMetrologyInstitute",
         "authorizationBasisKinds": [
           "legalMandate"

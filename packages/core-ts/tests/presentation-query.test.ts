@@ -58,10 +58,10 @@ describe('policyToDcql', () => {
   });
 
   it('emits both relation and kind claims for profile D (schemeAuthorization)', () => {
-    const fixture = loadFixture('gs-profile-d');
+    const fixture = loadFixture('gs-scheme-authorization');
     const dcql = policyToDcql(fixture.policy);
     const creds = dcqlCredentials(dcql);
-    const evidence = creds.find(c => c.id === 'gs-issuing-scope');
+    const evidence = creds.find(c => c.id === 'gs-scheme');
     expect(evidence).toBeDefined();
     const claims = evidence?.claims as Array<{ path: string[]; values: string[] }>;
     const kinds = claims.filter(c => c.path.includes('kind')).flatMap(c => c.values);
@@ -137,10 +137,10 @@ describe('policyToPresentationDefinition', () => {
   });
 
   it('emits schemeAuthorization kind for profile D', () => {
-    const fixture = loadFixture('gs-profile-d');
+    const fixture = loadFixture('gs-scheme-authorization');
     const pd = policyToPresentationDefinition(fixture.policy);
     const descs = descriptors(pd);
-    const evidence = descs.find(d => d.id === 'gs-issuing-scope');
+    const evidence = descs.find(d => d.id === 'gs-scheme');
     const fields = evidence?.constraints?.fields as Array<{ path: string[]; filter: { const?: string } }>;
     const kindField = fields.find(f => f.path.some(p => p.includes('kind')));
     expect(kindField?.filter?.const).toBe('schemeAuthorization');
