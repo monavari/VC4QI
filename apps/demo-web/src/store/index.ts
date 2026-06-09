@@ -4,8 +4,10 @@ import type { Scenario } from '../scenarios/index.js';
 import { SCENARIOS } from '../scenarios/index.js';
 
 export type VerifyMode = 'passing' | 'failing';
+export type DemoView = 'verifier' | 'disclosure';
 
 interface DemoState {
+  view: DemoView;
   activeScenario: Scenario;
   mode: VerifyMode;
   trace: VerificationTrace | null;
@@ -13,6 +15,7 @@ interface DemoState {
   selectedNodeId: string | null;
   selectedEdgeKey: string | null;
 
+  setView: (view: DemoView) => void;
   setScenario: (id: string) => void;
   setMode: (mode: VerifyMode) => void;
   setTrace: (trace: VerificationTrace | null) => void;
@@ -22,6 +25,7 @@ interface DemoState {
 }
 
 export const useDemoStore = create<DemoState>((set) => ({
+  view: 'verifier',
   activeScenario: SCENARIOS[0]!,
   mode: 'passing',
   trace: null,
@@ -29,6 +33,7 @@ export const useDemoStore = create<DemoState>((set) => ({
   selectedNodeId: null,
   selectedEdgeKey: null,
 
+  setView: (view) => set({ view }),
   setScenario: (id) => set((s) => {
     const scenario = SCENARIOS.find((sc) => sc.id === id) ?? s.activeScenario;
     return { activeScenario: scenario, trace: null, selectedNodeId: null, selectedEdgeKey: null };

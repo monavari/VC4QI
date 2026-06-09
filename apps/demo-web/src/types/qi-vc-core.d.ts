@@ -45,6 +45,14 @@ export interface VerificationTrace {
   results: TraceEntry[];
 }
 
+export interface EcdsaMultikeyPair {
+  id: string;
+  controller: string;
+  type: string;
+  publicKeyMultibase: string;
+  secretKeyMultibase?: string;
+}
+
 export declare const verifier: {
   verifyCredentialGraph: (
     targetCredential: JsonObject,
