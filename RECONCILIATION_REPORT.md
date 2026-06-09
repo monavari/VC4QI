@@ -69,7 +69,7 @@ No additional dead branches found beyond what was removed in Phase 1.
 ## Issues encountered
 
 | Issue | Resolution |
-|---|---|
+| --- | --- |
 | Tests failed after Phase 1 due to `qi:` prefixed values in fixture JSON | Stripped prefix from all testdata with `sed`; recomputed digests |
 | `DIGEST_MISMATCH` after removing `role` fields from fixtures | Recomputed all `digestSRI` values via inline Node.js script |
 | Trust registry listed `"capability"` not `"operationalScope"` | Updated fixture; generator now uses `operationalScope` |
@@ -77,7 +77,7 @@ No additional dead branches found beyond what was removed in Phase 1.
 
 ## Acceptance check
 
-```
+```text
 ✓ 105 TypeScript tests (pnpm vitest run in packages/core-ts)
 ✓ 96 Python tests (python3 -m pytest in packages/core-py)
 ✓ No escalated TODOs
@@ -86,7 +86,7 @@ No additional dead branches found beyond what was removed in Phase 1.
 
 ---
 
-# Part B — Phase 6 (Selective disclosure / G2)
+## Part B — Phase 6 (Selective disclosure / G2)
 
 Status: **COMPLETE.** G2 is implemented end-to-end: an `ecdsa-sd-2023`-secured RM
 credential is derived to a disclosed subset and that subset verifies (and tamper-
@@ -98,7 +98,7 @@ JSON-LD context conflict with W3C VC 2.0) are both resolved and recorded below.
 ## D-SD decisions taken
 
 | Decision | Resolution | Notes |
-|---|---|---|
+| --- | --- | --- |
 | **D-SD-1** disclosable fields | Mandatory: issuer, validity, credentialSchema, subject id, administrativeData (coreData/validity), producer **id+name**, materials, materialPropertiesList (property + value + unit + uncertainty + scopeRef), and the `evidence[]` edges. Selectively disclosable: producer **contact `location`** and **`respPersons`** (certifying committee). | Real values from BAM-M375a (Cu/Pb/As). Encoded as `MANDATORY_POINTERS` in `gen-sd-fixtures.ts`. |
 | **D-SD-2** cryptosuite | **RESOLVED: `ecdsa-sd-2023` (no BBS).** Institutional holders have no anti-correlation need; ECDSA Cryptosuites is a finished W3C Recommendation (BBS is still Candidate-Rec); P-256 aligns with HSM/qualified-seal (§8.5) where BLS12-381 does not; same Data Integrity family as the existing `eddsa-rdfc-2022`. BBS noted as a future option only if an individual-level/anti-correlation use case appears. | `sd.ts` still isolates the cryptosuite to a single swap point should that ever change. |
 | **D-SD-3** issuer key | Add a P-256 multikey `did:web:rm-producer.example#key-2` alongside the Ed25519 `#key-1`. Verifier dispatches on `proof.cryptosuite`; Ed25519/eddsa-rdfc-2022 path untouched. | Deterministic frozen key embedded in the generator (DB lib has no seeded gen). |
@@ -200,7 +200,7 @@ To enable continuation on a cheaper model, the following landing spots were adde
 
 ---
 
-# Part B — Phase 7 (Profile D vector) & Phase 8 (release prep)
+## Part B — Phase 7 (Profile D vector) & Phase 8 (release prep)
 
 ## Phase 7 — Profile D test vector (`testdata/examples/gs-profile-d/`)
 
@@ -250,3 +250,60 @@ that issuing-scope credential.
   green (1 unrelated skip), `pnpm validate:schemas` 6/6.
 - G2 SD path and the `eddsa-rdfc-2022` path both still pass unchanged.
 - No new runtime dependencies beyond the three Digital Bazaar SD packages (TS).
+
+---
+
+## Part B re-verification run (2026-06-09)
+
+Re-ran the full §0.5 matrix to confirm the Phase-6 claims above against the
+actual tree (reports can drift from disk). Phase 6 SD code, deps, fixtures, and
+tests were all present as described. **However the suite was not green:** 12
+`core-ts` verifier tests failed, all with `DIGEST_MISMATCH`.
+
+## Root cause (a pre-existing Part-A regression, not SD)
+
+Commit `a95d375` ("rename DAkkS → NAB") edited the bytes of the accreditation /
+capability **evidence documents** (`did:web:dakks.example` → `did:web:nab.example`)
+and the generator's `DAKKS`/`NAB` variable, **but the fixture generator was never
+re-run.** Every parent credential's `digestSRI` therefore still pinned the old
+(pre-rename) evidence bytes, so each chain failed the evidence-digest check. The
+SD tests passed throughout (they sign freshly-generated fixtures), confirming the
+breakage was unrelated to Phase 6.
+
+## Fix
+
+Re-ran `node scripts/generate-v02-fixtures.js` (the canonical, deterministic
+generator — verified byte-stable across runs; frozen eddsa key, no proof churn).
+This recomputed `digestSRI` across 16 fixtures. Diff is **digest-only** on 15 of
+them.
+
+- **GS scope conflict (the 16th file) — decision recorded.**
+  `testdata/examples/gs-scheme-authorization/evidence/gs-competence-accreditation-001.json`
+  carried a hand-added `Mass / OIML R 111` scope (introduced post-generator in
+  commit `108f4de` to give the demo-web UI something to render). The generator
+  emits `scope: []` for this fixture. The GS policy uses
+  `scopeInclusion: 'ignored'`, so scope content does not affect verification.
+  **Decision (human, 2026-06-09): generator wins — `scope: []`.** The Mass scope
+  was calibration boilerplate, semantically wrong for a GS product-safety
+  competence accreditation. The demo-web GS accreditation card now renders with
+  no scope.
+
+The SD fixtures (`*.sd.json`, `*.sd-derived.json`, Python SD parity fixtures)
+were intentionally **not** regenerated/committed: `ecdsa-sd-2023` proofs are
+non-deterministic (fresh per-signature HMAC/nonce), so regenerating them only
+adds churn — they were never broken (the digest drift was confined to the
+deterministic eddsa chains).
+
+## Re-verification result (current tree)
+
+```text
+✓ pnpm -r build              (core-ts + demo-web)
+✓ 140 TS tests (15 files)    (was 12 failing)
+✓ 2 scenario tests
+✓ pnpm validate:schemas      6 passed, 0 failed
+✓ 110 Python tests, 1 skip   (the intentional Python-SD-out-of-scope skip, D-SD-4)
+```
+
+No new dependencies added. No source code changed — the fix was fixture
+regeneration only. All D-SD-* decisions stand as recorded above; the one new
+decision in this run (GS scope) is logged here.

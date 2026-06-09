@@ -15,24 +15,7 @@
   "credentialSubject": {
     "id": "did:web:gs-body.example",
     "authorizationBasisKind": "accreditation",
-    "scope": [
-      {
-        "measurand": "Mass",
-        "allowedMethods": [
-          "OIML R 111"
-        ],
-        "range": {
-          "from": 1,
-          "to": 50000,
-          "unit": {
-            "ucumCode": "g"
-          }
-        },
-        "uncertainty": {
-          "maxRelativePercent": 0.02
-        }
-      }
-    ]
+    "scope": []
   },
   "proof": {
     "type": "DataIntegrityProof",
