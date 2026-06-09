@@ -77,7 +77,7 @@
         "issuerRole": "nationalAccreditationBody",
         "scopeRef": "pressure-scope"
       },
-      "digestSRI": "sha384-ZpErLpBHKR8tzfyTiRcvj6ehSRGHJ9u6Js5h5L3o8BuXOOSww3WN/pqnbu+6EKR5"
+      "digestSRI": "sha384-gHooHPXYGuu4lg3Ykq4O8C5WknQciCtOSz7mGXuB2xipI97FnX+syUW+VbNcKWN1"
     }
   ],
   "proof": {

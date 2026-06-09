@@ -75,7 +75,7 @@
       "authorizationBasis": {
         "kind": "accreditation"
       },
-      "digestSRI": "sha384-ZfLnFjjl5Sc5Awm04wGUBtcLLvsWdq5RHxoapwgb1QkQt3MOyhXhxGl1uaI85FRl"
+      "digestSRI": "sha384-e2/OQmtfg0yankDvWC79DXkNAmqxzZcZw2kd3QhXANYl2Xk+zmQqF0bhYlxiQlui"
     }
   ],
   "proof": {
