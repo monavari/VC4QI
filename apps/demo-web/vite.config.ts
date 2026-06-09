@@ -28,10 +28,23 @@ const nodeStubPlugin: Plugin = {
   load(id) { return STUBS[id] ?? undefined; },
 };
 
+// Load .jsonld context files as JSON modules (rollup treats unknown extensions
+// as JS otherwise). Needed for the in-browser selective-disclosure document loader.
+const jsonldPlugin: Plugin = {
+  name: 'qi-jsonld',
+  enforce: 'pre',
+  transform(code, id) {
+    if (!id.endsWith('.jsonld')) return undefined;
+    return { code: `export default ${code.trim()};`, map: null };
+  },
+};
+
 export default defineConfig({
-  plugins: [react(), tailwindcss(), nodeStubPlugin],
+  plugins: [jsonldPlugin, react(), tailwindcss(), nodeStubPlugin],
   resolve: {
     alias: {
+      // Subpath must precede the bare specifier so it matches first.
+      '@qi-vc/core/proofs/sd': r('../../packages/core-ts/src/proofs/sd.ts'),
       '@qi-vc/core': r('../../packages/core-ts/src/index.ts'),
       ...NODE_ALIASES,
     },
