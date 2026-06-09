@@ -108,11 +108,53 @@ that. See `docs/PAPER_FEEDBACK.md` (F-1..F-3).
 
 Per-decision rationale (D-SD-1..D-SD-5) is in `RECONCILIATION_REPORT.md` (Part B).
 
+## Demo web app (`apps/demo-web`)
+
+A Vite + React 19 + Tailwind v4 browser demo. Run with:
+
+```bash
+cd apps/demo-web && pnpm dev    # dev server at http://localhost:5173
+pnpm exec vite build            # production build check
+```
+
+Architecture:
+- **`src/scenarios/index.ts`** — five scenario definitions (A–E) mapping fixtures to
+  React Flow graph metadata. Each scenario has `nodes`, `edges`, `policy`,
+  `documents`, `trustRegistry`, and `failingTarget`.
+- **`src/store/index.ts`** — Zustand store + `runVerifier()` which calls
+  `verifyCredentialGraph` from `@qi-vc/core` with `skipProof: true`.
+- **`src/components/CredentialGraph.tsx`** — React Flow graph. BFS layout puts
+  authority roots at top, target credential at bottom (matching paper Fig. 2).
+  Node badge driven by both `level='credential'` and `level='edge'` trace entries —
+  edge-level FAILs (e.g. DIGEST_MISMATCH) mark the `from` node.
+- **`src/components/Sidebar.tsx`** — profile selector, pass/fail variant toggle,
+  run button, result badge.
+- **`src/components/Inspector.tsx`** — per-node/edge trace viewer + JSON display.
+- **`vite.config.ts`** — inline stubs for three Node-only core-ts modules (schemas,
+  status, document-loader) via Vite `load` hook on absolute paths; `node:crypto`
+  aliased to `src/stubs/crypto.ts` using `@noble/hashes`.
+
+Visual conventions (match paper figures):
+- `authorizedBy`: solid blue (#2563eb)
+- `derivedFrom`: dashed green (#16a34a)
+- `supportedBy`: dotted grey (#94a3b8)
+- Node fill: light pastel per actor role (blue/violet/amber/teal/rose)
+- Theme: light (white canvas, slate sidebars)
+
+Guardrails:
+- Do **not** add new runtime dependencies without discussion.
+- Do **not** hand-edit fixture JSON in `testdata/`; synthetic demo fixtures (bad
+  digestSRI) are defined inline in `src/scenarios/index.ts`.
+- Vite stubs must stay in sync with `packages/core-ts` API surface if that changes.
+
 ## Current state & task
 
-Part A (Phases 1–5) and Part B **Phase 6** (selective disclosure / G2) are
-**complete and green** (112 TS tests, 101 Python). See `RECONCILIATION_TASK.md` for
-the full brief. Next, both optional and low-judgment:
+Part A (Phases 1–5), Part B **Phase 6** (selective disclosure / G2), and **B1**
+(full policy expressibility — `policyToDcql`, `policyToPresentationDefinition`,
+`validatePresentationSubmission`) are **complete and green** (129 TS tests, 101 Python).
+The **demo web app** (P1) is live at `apps/demo-web` with all five profiles, pass/fail
+variants, light theme, and paper-matching edge colours. See `RECONCILIATION_TASK.md`
+for the full brief. Next, both optional and low-judgment:
 
 - **Phase 7** — GS / Profile D test vector. Skeleton is stubbed under
   `examples/gs/` with TODO(human) placeholders; see `RECONCILIATION_TASK.md` §11
