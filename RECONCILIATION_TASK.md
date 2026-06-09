@@ -12,6 +12,7 @@ v0.1 "three-layer capability model." Everything you need is in this file — you
 **not** need the manuscript. Treat the values in **§1** as authoritative.
 
 **The work is split into two parts. Do PART A first; do PART B only in a separate run.**
+
 - **PART A (Phases 1–5): deterministic reconciliation.** Vocabulary cleanup + canonical
   values. Fully specified, low-judgment — safe for a cheaper model to execute end-to-end.
 - **PART B (Phases 6–8): finishing work.** Selective disclosure (a real missing feature),
@@ -100,6 +101,7 @@ The repo is ~8,000 LOC of working, dual-language, parity-tested code. Two layers
   spec-referenced, and works.
 
 **Current types snapshot (as of v0.2.0) — what you will be changing:**
+
 - `EvidenceRelation` has 6 values with `qi:` prefix — reduce to 3 bare tokens.
 - `EvidenceRole` enum exists and is used — delete it entirely.
 - `AuthorizationBasisKind` has 8 values with `qi:` prefix — reduce to 6 bare tokens.
@@ -109,6 +111,7 @@ The repo is ~8,000 LOC of working, dual-language, parity-tested code. Two layers
   relations — replace entirely with §1.5 content.
 
 **Dependency policy:**
+
 - **Part A adds NO new runtime dependencies.** Current deps stay: TS = `@noble/ed25519`,
   `@noble/hashes`, `jsonld`, `ajv`; Python = `pyld`, `PyNaCl`, `pydantic`, `httpx`.
 - **Part B adds dependencies ONLY for selective disclosure**, and only on the TS side:
@@ -135,6 +138,7 @@ or in code type-literals).
   carry `authorizationBasis`**.
 
 **Remove** these relations entirely: `recognizedBy`, `notifiedBy`, `statusProvidedBy`.
+
 - recognition → `authorizedBy` with `authorizationBasis.kind = recognition`
 - notification → `authorizedBy` with `authorizationBasis.kind = notification`
 - status → carried on the standard `credentialStatus` property
@@ -163,7 +167,7 @@ existing rich (DRMD-aligned) `credentialSubject` structure — do NOT flatten it
 change the values below, add `scopeRef`, and remove `role`.
 
 | Field | Target value |
-|---|---|
+| --- | --- |
 | issuer / producer id | `did:web:rm-producer.example` (replace **all** `did:web:rm.example`) |
 | credential type | `["VerifiableCredential", "ReferenceMaterialCertificate"]` |
 | `validFrom` | `2026-02-01T00:00:00Z` |
@@ -261,7 +265,7 @@ type-literal.
 
 ---
 
-# PART A — Deterministic reconciliation (safe for a cheaper model)
+## PART A — Deterministic reconciliation (safe for a cheaper model)
 
 ## 4. Phase 1 — Type definitions (keystone; do `core-ts` first, then `core-py`)
 
@@ -351,8 +355,7 @@ type-literal.
 
 ---
 
-# PART B — Finishing work (separate run; needs decisions / a more capable model or
-# human-in-loop)
+## PART B — Finishing work (separate run; needs decisions / a more capable model or human-in-loop)
 
 > Do not start Part B until Part A passes §9. Part B adds a real feature and makes
 > design decisions — work in small steps and surface every decision as `TODO(human)`.

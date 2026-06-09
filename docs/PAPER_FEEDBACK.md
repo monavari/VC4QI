@@ -177,6 +177,7 @@ fully machine-expressible. Guard-band evaluation (B5) and trust-registry resolut
 (B2) remain outside the query layer, as expected.
 
 **Suggested manuscript note:** Update §6.4:
+
 1. Replace the hedged claim with: "the `policyToDcql` translator produces a DCQL query
    capturing credential type, evidence relation, and authorization basis kind for each
    required evidence entry (see Listing X); guard-band evaluation (B5) and trust-registry

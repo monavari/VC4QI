@@ -12,7 +12,7 @@ cryptosuite, added **alongside** the existing `eddsa-rdfc-2022` proof path — i
 does not replace it. The two paths coexist:
 
 | Path | Cryptosuite | Key | Use |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Base / full | `eddsa-rdfc-2022` (hand-rolled, `proofs/index.ts`) | Ed25519 `#key-1` | Whole-credential integrity. |
 | Selective disclosure | `ecdsa-sd-2023` (`proofs/sd.ts`, via Digital Bazaar) | ECDSA P-256 `#key-2` | Disclose a subset; verify over the subset. |
 

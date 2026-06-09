@@ -21,7 +21,7 @@ to their full IRIs at the semantic layer.
 Three `relation` values are defined:
 
 | Token | Semantics |
-|---|---|
+| --- | --- |
 | `authorizedBy` | Independent grant on the issuer's own terms. Requires `authorizationBasis`. |
 | `derivedFrom` | Subset of a parent scope. Requires `authorizationBasis`. Triggers derivation check. |
 | `supportedBy` | Non-authorizing supporting evidence. Must NOT carry `authorizationBasis`. |
@@ -32,7 +32,7 @@ Three `relation` values are defined:
 It does not itself grant permission. Six values are defined:
 
 | Token | Meaning |
-|---|---|
+| --- | --- |
 | `accreditation` | Formal third-party accreditation (e.g., ISO/IEC 17025). |
 | `legalMandate` | Statutory or regulatory authority. |
 | `notification` | Notified body status under EU legislation. |

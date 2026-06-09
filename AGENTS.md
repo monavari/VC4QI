@@ -8,6 +8,7 @@ the working rules, commands, and guardrails for this repository.
 ## Repository overview
 
 pnpm + uv monorepo. Packages:
+
 - `packages/core-ts` — TypeScript canonical implementation
 - `packages/core-py` — Python parity implementation
 - `packages/lims-adapter` — LIMS adapter
@@ -17,6 +18,7 @@ Contexts, schemas, examples, and docs live at the repo root level.
 **TypeScript is canonical; Python mirrors it** over shared JSON fixtures.
 
 Read these for context (they sit *under* this file):
+
 - `RECONCILIATION_TASK.md` — the phased migration brief (what to do next).
 - `docs/MODEL_SPEC.md` — the normative model from the manuscript (§4–§8: what the
   code must satisfy). **Where spec and repo disagree, the spec wins.**
@@ -118,6 +120,7 @@ pnpm exec vite build            # production build check
 ```
 
 Architecture:
+
 - **`src/scenarios/index.ts`** — five scenario definitions (A–E) mapping fixtures to
   React Flow graph metadata. Each scenario has `nodes`, `edges`, `policy`,
   `documents`, `trustRegistry`, and `failingTarget`.
@@ -135,6 +138,7 @@ Architecture:
   aliased to `src/stubs/crypto.ts` using `@noble/hashes`.
 
 Visual conventions (match paper figures):
+
 - `authorizedBy`: solid blue (#2563eb)
 - `derivedFrom`: dashed green (#16a34a)
 - `supportedBy`: dotted grey (#94a3b8)
@@ -142,6 +146,7 @@ Visual conventions (match paper figures):
 - Theme: light (white canvas, slate sidebars)
 
 Guardrails:
+
 - Do **not** add new runtime dependencies without discussion.
 - Do **not** hand-edit fixture JSON in `testdata/`; synthetic demo fixtures (bad
   digestSRI) are defined inline in `src/scenarios/index.ts`.
@@ -167,7 +172,7 @@ for the full brief. Next, both optional and low-judgment:
 
 ## Commit style
 
-```
+```text
 refactor(phase-N): short description
 ```
 

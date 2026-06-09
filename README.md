@@ -62,7 +62,7 @@ pytest packages/core-py/tests
 ## Structure
 
 | Directory | Description |
-|-----------|-------------|
+| --- | --- |
 | `schemas/v1/` | JSON Schema 2020-12 credential and policy schemas |
 | `contexts/v1/` | JSON-LD contexts and QI evidence context |
 | `policies/profiles/` | v0.2 policy profiles |
