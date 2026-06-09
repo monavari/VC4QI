@@ -109,30 +109,78 @@ not a model change.
 
 ---
 
-## F-5 — §6.4 policy-expressibility claim overstated; now being addressed in implementation
+## F-5 — §6.4 policy-expressibility claim — resolved in v0.3.0
 
 **Where:** §6.4 states that the structural half of a policy "is expressible today" as
 a SHACL shape or a presentation query (DCQL / DIF Presentation Exchange).
 
-**Problem:** At the time of the manuscript review (2026-06-08), the
-`policyToDcql` and `policyToPresentationDefinition` translators emit only credential
-type and evidence relation. They do not emit `authorizationBasis.kind` constraints or
-handle `anyOf` alternation. `validatePresentationSubmission` checks descriptor
-presence only — it does not evaluate field-value predicates. A wallet receiving the
-DCQL output of `policyToDcql` cannot determine which `authorizationBasis.kind` is
-required, so the claim is only partially true in v0.3.0.
+**Problem (was):** At the time of the manuscript review (2026-06-08), the
+`policyToDcql` and `policyToPresentationDefinition` translators emitted only credential
+type and evidence relation — missing `authorizationBasis.kind` constraints and `anyOf`
+alternation. `validatePresentationSubmission` checked descriptor presence only.
 
-**Resolution (in progress):** Added to project scope. The translators will be
-completed to emit `authorizationBasis.kind` as a claims/filter constraint and handle
-`anyOf`; `validatePresentationSubmission` will evaluate field values against the three
-known path patterns (`$.type`, `$.evidence[*].relation`,
-`$.evidence[*].authorizationBasis.kind`) without an external JSONPath dependency.
-This is TypeScript only — Python parity for presentation query is not in scope.
+**Resolution (taken, 2026-06-09):** Both translators now emit the full structural
+policy: credential type, evidence relation, `authorizationBasis.kind`, and `issuerRole`
+where present. `anyOf` requirements are expressed as enum filters. `validatePresentationSubmission`
+gains a narrow in-house field-value evaluator for the three QI path patterns with no
+external JSONPath dependency. 129 TS tests green.
 
-**Suggested manuscript note:** Update §6.4 in two ways:
-1. Add a sentence scoping the claim: "the query-language translations cover credential
-   type, evidence relation, and authorization basis kind; guard-band evaluation (B5)
-   and trust-registry resolution (B2) remain outside the query layer."
-2. Once the updated translators are released, cite the DCQL output of
-   `policyToDcql(profile)` as a concrete demonstration that the structural policy half
-   is machine-expressible.
+The complete DCQL output for the GS Profile D policy (`gs-profile-d`) is now:
+
+```json
+{
+  "credentials": [
+    {
+      "id": "target",
+      "format": "vc+ld",
+      "claims": [{ "path": ["type"], "values": ["GSCertificate"] }]
+    },
+    {
+      "id": "gs-issuing-scope",
+      "format": "vc+ld",
+      "optional": false,
+      "claims": [
+        { "path": ["evidence", "relation"], "values": ["authorizedBy"] },
+        { "path": ["evidence", "authorizationBasis", "kind"], "values": ["schemeAuthorization"] }
+      ]
+    }
+  ]
+}
+```
+
+And for the two-requirement calibration-capability profile:
+
+```json
+{
+  "credentials": [
+    { "id": "target", "format": "vc+ld",
+      "claims": [{ "path": ["type"], "values": ["DigitalCalibrationCertificate"] }] },
+    { "id": "capability-authority", "format": "vc+ld", "optional": false,
+      "claims": [
+        { "path": ["evidence", "relation"], "values": ["authorizedBy"] },
+        { "path": ["evidence", "authorizationBasis", "kind"], "values": ["operationalScope"] }
+      ]
+    },
+    { "id": "capability-parent", "format": "vc+ld", "optional": false,
+      "claims": [
+        { "path": ["evidence", "relation"], "values": ["derivedFrom"] },
+        { "path": ["evidence", "authorizationBasis", "kind"], "values": ["accreditation"] }
+      ]
+    }
+  ]
+}
+```
+
+A wallet receiving either query can now determine exactly which credential types,
+relations, and authority kinds are required — the structural half of the policy is
+fully machine-expressible. Guard-band evaluation (B5) and trust-registry resolution
+(B2) remain outside the query layer, as expected.
+
+**Suggested manuscript note:** Update §6.4:
+1. Replace the hedged claim with: "the `policyToDcql` translator produces a DCQL query
+   capturing credential type, evidence relation, and authorization basis kind for each
+   required evidence entry (see Listing X); guard-band evaluation (B5) and trust-registry
+   resolution (B2) remain outside the query layer."
+2. Add a listing showing the GS Profile D DCQL output above as Listing X — it is the
+   clearest concrete demonstration that the structural policy half is fully
+   machine-expressible in the v0.3.0 implementation.
