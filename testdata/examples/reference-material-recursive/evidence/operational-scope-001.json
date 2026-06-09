@@ -8,11 +8,11 @@
     "OperationalScopeEvidence"
   ],
   "id": "urn:uuid:operational-scope-001",
-  "issuer": "did:web:dakks.example",
-  "validFrom": "2025-01-01T00:00:00Z",
-  "validUntil": "2027-01-01T00:00:00Z",
+  "issuer": "did:web:rm-producer.example",
+  "validFrom": "2025-06-01T00:00:00Z",
+  "validUntil": "2028-06-01T00:00:00Z",
   "credentialSubject": {
-    "id": "did:web:rm.example",
+    "id": "did:web:rm-producer.example",
     "constraints": {
       "authorizedCredentialTypes": [
         "ReferenceMaterialCertificate"
@@ -20,16 +20,16 @@
       "scopeEntries": [
         {
           "matrix": [
-            "non-ferrous metals and alloys"
+            "CuZn39Pb3 (leaded brass)"
           ],
           "allowedProperties": [
-            "Pb"
+            "As"
           ],
           "allowedForms": [
             "disc"
           ],
           "uncertainty": {
-            "maxAbsoluteMgKg": 4
+            "maxAbsoluteMgKg": 5
           }
         }
       ]
@@ -39,19 +39,18 @@
     {
       "type": "CredentialEvidenceReference",
       "id": "urn:uuid:rm-accreditation-001",
-      "relation": "qi:derivedFrom",
-      "role": "authorizing",
+      "relation": "derivedFrom",
       "authorizationBasis": {
-        "kind": "qi:accreditation"
+        "kind": "accreditation"
       },
-      "digestSRI": "sha384-KxwNBqwyZZrGE18mlsljd8CXaB0aFN+JeW7QruuFDn3G3MX0xkEY9ulQ22VMkdwv"
+      "digestSRI": "sha384-XpNotmcIbcP6dMpWwKuN82IO2tUhrbcmgbZ4t8S1Bpy0R5HKQHGNIn6oNu9oXfhS"
     }
   ],
   "proof": {
     "type": "DataIntegrityProof",
     "cryptosuite": "eddsa-rdfc-2022",
     "proofPurpose": "assertionMethod",
-    "verificationMethod": "did:web:dakks.example#key-1",
+    "verificationMethod": "did:web:rm-producer.example#key-1",
     "created": "2026-01-01T00:00:00Z",
     "proofValue": "zPlaceholderProof"
   }

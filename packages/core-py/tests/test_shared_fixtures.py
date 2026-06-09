@@ -4,7 +4,7 @@ from .fixture_helpers import codes, fixture_path, read_json, verify_fixture
 FIXTURES = [
     "calibration-direct-accreditation",
     "calibration-capability",
-    "ptb-legal-mandate",
+    "nmi-legal-mandate",
     "reference-material-recursive",
     "gs-scheme-authorization",
     "test-report-supported-dcc",

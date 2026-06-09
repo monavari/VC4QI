@@ -15,10 +15,10 @@
     "registryEntries": [
       {
         "status": "active",
-        "id": "did:web:dakks.example",
-        "issuerRole": "qi:nationalAccreditationBody",
+        "id": "did:web:nab.example",
+        "issuerRole": "nationalAccreditationBody",
         "authorizationBasisKinds": [
-          "qi:accreditation"
+          "accreditation"
         ],
         "credentialTypes": [
           "AccreditationCertificate"

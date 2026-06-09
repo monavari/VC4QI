@@ -21,9 +21,8 @@ def test_cycle_detection_fails():
     acc["evidence"] = [{
         "type": "CredentialEvidenceReference",
         "id": target["id"],
-        "relation": "qi:derivedFrom",
-        "role": "authorizing",
-        "authorizationBasis": {"kind": "qi:domainEvidence"},
+        "relation": "derivedFrom",
+        "authorizationBasis": {"kind": "accreditation"},
     }]
     graph, results = build_evidence_graph(
         target,
@@ -39,9 +38,8 @@ def test_max_depth_fails():
     acc["evidence"] = [{
         "type": "CredentialEvidenceReference",
         "id": tail["id"],
-        "relation": "qi:derivedFrom",
-        "role": "authorizing",
-        "authorizationBasis": {"kind": "qi:domainEvidence"},
+        "relation": "derivedFrom",
+        "authorizationBasis": {"kind": "accreditation"},
     }]
     documents[tail["id"]] = tail
     graph, results = build_evidence_graph(

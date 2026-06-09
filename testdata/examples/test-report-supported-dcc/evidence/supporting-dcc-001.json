@@ -71,12 +71,11 @@
     {
       "type": "CredentialEvidenceReference",
       "id": "urn:uuid:test-report-dcc-accreditation-001",
-      "relation": "qi:authorizedBy",
-      "role": "authorizing",
+      "relation": "authorizedBy",
       "authorizationBasis": {
-        "kind": "qi:accreditation"
+        "kind": "accreditation"
       },
-      "digestSRI": "sha384-E9Cppn0HwXX9+cdlU1iwNjwwNXZIOkUf9WFOiYUw5cniqKBSTapPYpyoOScbo2NZ"
+      "digestSRI": "sha384-e2/OQmtfg0yankDvWC79DXkNAmqxzZcZw2kd3QhXANYl2Xk+zmQqF0bhYlxiQlui"
     }
   ],
   "proof": {

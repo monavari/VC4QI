@@ -103,11 +103,11 @@ describe('isTrustedIssuer', () => {
   it('filters by authorization basis and issuer role', () => {
     const r = makeRegistry([{
       id: ENTRY_DID,
-      issuerRole: 'qi:nationalMetrologyInstitute',
-      authorizationBasisKinds: ['qi:legalMandate'],
+      issuerRole: 'nationalMetrologyInstitute',
+      authorizationBasisKinds: ['legalMandate'],
     }]);
-    expect(isTrustedIssuer(r, ENTRY_DID, 'qi:legalMandate', 'qi:nationalMetrologyInstitute')).toBe(true);
-    expect(isTrustedIssuer(r, ENTRY_DID, 'qi:accreditation', 'qi:nationalAccreditationBody')).toBe(false);
+    expect(isTrustedIssuer(r, ENTRY_DID, 'legalMandate', 'nationalMetrologyInstitute')).toBe(true);
+    expect(isTrustedIssuer(r, ENTRY_DID, 'accreditation', 'nationalAccreditationBody')).toBe(false);
   });
 });
 

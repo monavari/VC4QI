@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
+import pytest
+
 from .fixture_helpers import codes, verify_fixture
 
 
@@ -15,7 +17,7 @@ def test_dcc_capability_passes():
 
 
 def test_legal_mandate_passes_without_accreditation():
-    trace = verify_fixture("ptb-legal-mandate")
+    trace = verify_fixture("nmi-legal-mandate")
     assert trace["verified"] is True
     assert "TRUSTED_ISSUER" in codes(trace)
 
@@ -42,3 +44,14 @@ def test_capability_exceeds_accreditation_scope_fails():
     trace = verify_fixture("calibration-capability", "failing-target-credential.json")
     assert trace["verified"] is False
     assert "DERIVATION_VIOLATION" in codes(trace)
+
+
+# Profile D — GS certificate authorized jointly by an independent scheme
+# authorization (kind: schemeAuthorization, no subset check) and a competence
+# accreditation (kind: accreditation). Both authorizing edges must resolve and
+# the required-evidence set must be satisfied. Keep TS<->Py parity.
+def test_gs_profile_d_scheme_and_accreditation_edges_pass():
+    trace = verify_fixture("gs-scheme-authorization")
+    assert trace["verified"] is True
+    assert "REQUIRED_EVIDENCE_PRESENT" in codes(trace)
+    assert "TRUSTED_ISSUER" in codes(trace)

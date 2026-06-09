@@ -17,15 +17,12 @@
 
     "CredentialEvidenceReference": "qi:CredentialEvidenceReference",
     "relation": "qi:relation",
-    "role": "qi:role",
     "authorizationBasis": "qi:authorizationBasis",
     "kind": "qi:kind",
     "issuerRole": "qi:issuerRole",
     "legalBasis": "qi:legalBasis",
     "scheme": "qi:scheme",
     "scopeRef": "qi:scopeRef",
-    "digestMultibase": "qi:digestMultibase",
-    "digestSRI": "qi:digestSRI",
 
     "administrativeData": "drmd:administrativeData",
     "coreData": "drmd:coreData",
@@ -35,17 +32,20 @@
     "validFrom": {"@id": "drmd:validFrom", "@type": "xsd:date"},
     "validUntil": {"@id": "drmd:validUntil", "@type": "xsd:date"},
     "referenceMaterialProducer": "drmd:referenceMaterialProducer",
+    "respPersons": {"@id": "drmd:respPersons", "@container": "@set"},
+    "role": "drmd:role",
     "accreditationNumber": "qi:accreditationNumber",
 
     "materials": {"@id": "drmd:materials", "@container": "@set"},
     "materialIdentifiers": {"@id": "drmd:materialIdentifiers", "@container": "@set"},
     "lotNumber": "drmd:lotNumber",
-    "name": "drmd:name",
-    "description": "drmd:description",
+    "matrix": "drmd:matrix",
+    "form": "drmd:form",
     "location": "drmd:location",
 
     "materialPropertiesList": {"@id": "drmd:materialPropertiesList", "@container": "@set"},
     "propertyIdentifiers": {"@id": "drmd:propertyIdentifiers", "@container": "@set"},
+    "isCertified": {"@id": "drmd:isCertified", "@type": "xsd:boolean"},
     "results": {"@id": "drmd:results", "@container": "@set"},
 
     "data": "qi:data",

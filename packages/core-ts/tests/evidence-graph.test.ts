@@ -24,9 +24,8 @@ describe('evidence graph builder', () => {
     acc.evidence = [{
       type: 'CredentialEvidenceReference',
       id: fixture.target.id,
-      relation: 'qi:derivedFrom',
-      role: 'authorizing',
-      authorizationBasis: { kind: 'qi:domainEvidence' },
+      relation: 'derivedFrom',
+      authorizationBasis: { kind: 'accreditation' },
     }];
     fixture.documents.set(String(acc.id), acc);
     const result = await buildEvidenceGraph(fixture.target, {
@@ -43,9 +42,8 @@ describe('evidence graph builder', () => {
     first.evidence = [{
       type: 'CredentialEvidenceReference',
       id: tail.id,
-      relation: 'qi:derivedFrom',
-      role: 'authorizing',
-      authorizationBasis: { kind: 'qi:domainEvidence' },
+      relation: 'derivedFrom',
+      authorizationBasis: { kind: 'accreditation' },
     }];
     fixture.documents.set(String(first.id), first);
     fixture.documents.set(String(tail.id), tail);

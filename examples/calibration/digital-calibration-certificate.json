@@ -71,14 +71,13 @@
     {
       "type": "CredentialEvidenceReference",
       "id": "urn:uuid:accreditation-direct-001",
-      "relation": "qi:authorizedBy",
-      "role": "authorizing",
+      "relation": "authorizedBy",
       "authorizationBasis": {
-        "kind": "qi:accreditation",
-        "issuerRole": "qi:nationalAccreditationBody",
+        "kind": "accreditation",
+        "issuerRole": "nationalAccreditationBody",
         "scopeRef": "pressure-scope"
       },
-      "digestSRI": "sha384-sdkrQRbnFOkX5iKdlRll4eB7bsq+S6w7M8UKE952OpwFfdvN1mpwIfkIJZINv53u"
+      "digestSRI": "sha384-gHooHPXYGuu4lg3Ykq4O8C5WknQciCtOSz7mGXuB2xipI97FnX+syUW+VbNcKWN1"
     }
   ],
   "proof": {

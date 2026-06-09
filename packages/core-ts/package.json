@@ -1,6 +1,6 @@
 {
   "name": "@qi-vc/core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Canonical TypeScript evidence-graph verifier for QI-VC credentials",
   "license": "Apache-2.0",
   "type": "module",
@@ -9,6 +9,7 @@
     "./schemas": "./src/schemas/index.ts",
     "./canonicalize": "./src/canonicalize/index.ts",
     "./proofs": "./src/proofs/index.ts",
+    "./proofs/sd": "./src/proofs/sd.ts",
     "./status": "./src/status/index.ts",
     "./trust-registry": "./src/trust-registry/index.ts",
     "./issuer": "./src/issuer/index.ts",
@@ -27,11 +28,15 @@
     "build": "tsc --noEmit"
   },
   "dependencies": {
+    "@digitalbazaar/data-integrity": "^2.5.0",
+    "@digitalbazaar/ecdsa-multikey": "^1.8.0",
+    "@digitalbazaar/ecdsa-sd-2023-cryptosuite": "^3.4.1",
     "@noble/ed25519": "^2.1.0",
     "@noble/hashes": "^1.4.0",
     "ajv": "^8.16.0",
     "ajv-formats": "^3.0.1",
-    "jsonld": "^8.3.2"
+    "jsonld": "^8.3.2",
+    "jsonld-signatures": "^11.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

@@ -11,7 +11,7 @@ def test_missing_required_evidence_fails():
 
 
 def test_legal_mandate_policy_allows_no_accreditation():
-    trace = verify_fixture("ptb-legal-mandate")
+    trace = verify_fixture("nmi-legal-mandate")
     assert trace["verified"] is True
 
 

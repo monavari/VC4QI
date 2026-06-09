@@ -12,9 +12,11 @@ checks, and verification traces.
 
 ## Status
 
-`main` tracks the manuscript v2.0 / v2.1 model: QI credentials are verified by
+`main` tracks the manuscript v2.1 model: QI credentials are verified by
 resolving typed evidence edges and applying a policy profile. The v0.1 chain
 implementation is archived in `archive/three-layer-capability-model`.
+
+The `0.3.0` tagged release corresponds to the manuscript submission.
 
 TypeScript is canonical. Python mirrors public behavior using shared JSON
 fixtures in `testdata/`.
@@ -32,18 +34,20 @@ Authorizing and supporting relationships are expressed through
 {
   "type": "CredentialEvidenceReference",
   "id": "urn:uuid:accreditation-direct-001",
-  "relation": "qi:authorizedBy",
-  "role": "authorizing",
+  "relation": "authorizedBy",
   "authorizationBasis": {
-    "kind": "qi:accreditation"
+    "kind": "accreditation"
   },
   "digestSRI": "sha384-..."
 }
 ```
 
-Verifier policy determines whether accreditation, legal mandate, notification,
-scheme authorization, capability evidence, recognition, or recursive supporting
-credentials are sufficient for a use case.
+The three evidence relations are `authorizedBy` (independent authority),
+`derivedFrom` (subset-checked projection), and `supportedBy` (supporting
+evidence). On authorizing edges, `authorizationBasis.kind` is one of six bare
+tokens: `accreditation`, `legalMandate`, `notification`, `schemeAuthorization`,
+`recognition`, `operationalScope`. Verifier policy determines which are
+sufficient for a use case.
 
 ## Quickstart
 
@@ -58,7 +62,7 @@ pytest packages/core-py/tests
 ## Structure
 
 | Directory | Description |
-|-----------|-------------|
+| --- | --- |
 | `schemas/v1/` | JSON Schema 2020-12 credential and policy schemas |
 | `contexts/v1/` | JSON-LD contexts and QI evidence context |
 | `policies/profiles/` | v0.2 policy profiles |
