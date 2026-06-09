@@ -24,13 +24,69 @@ import ptbTarget from '../../../../testdata/examples/ptb-legal-mandate/target-cr
 import ptbTrust from '../../../../testdata/examples/ptb-legal-mandate/trust-registry.json';
 import ptbMandate from '../../../../testdata/examples/ptb-legal-mandate/evidence/ptb-legal-mandate-001.json';
 
+import gsSchemeAuthFailing from '../../../../testdata/examples/gs-scheme-authorization/failing-target-credential.json';
+
 import rmPolicy from '../../../../testdata/examples/reference-material-recursive/policy.json';
 import rmTarget from '../../../../testdata/examples/reference-material-recursive/target-credential.json';
 import rmTrust from '../../../../testdata/examples/reference-material-recursive/trust-registry.json';
 import rmAcc from '../../../../testdata/examples/reference-material-recursive/evidence/rm-accreditation-001.json';
 import rmOpScope from '../../../../testdata/examples/reference-material-recursive/evidence/operational-scope-001.json';
+import rmStudy from '../../../../testdata/examples/reference-material-recursive/evidence/rm-study-001.json';
+import rmStudyLabAcc from '../../../../testdata/examples/reference-material-recursive/evidence/rm-study-lab-accreditation-001.json';
 
 import type { JsonObject } from '@qi-vc/core';
+
+// Synthetic failing targets for demo — bad digestSRI triggers DIGEST_VALID: FAIL.
+// These are intentionally broken credentials used only in the demo failing variant.
+const BROKEN_DIGEST = 'sha384-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+
+const calibrationDirectFailing: JsonObject = {
+  ...(calibrationDirectTarget as JsonObject),
+  id: 'urn:uuid:dcc-direct-fail-demo',
+  evidence: [
+    {
+      type: 'CredentialEvidenceReference',
+      id: 'urn:uuid:accreditation-direct-001',
+      relation: 'authorizedBy',
+      authorizationBasis: { kind: 'accreditation' },
+      digestSRI: BROKEN_DIGEST,
+    },
+  ],
+} as JsonObject;
+
+const ptbFailing: JsonObject = {
+  ...(ptbTarget as JsonObject),
+  id: 'urn:uuid:dcc-ptb-fail-demo',
+  evidence: [
+    {
+      type: 'CredentialEvidenceReference',
+      id: 'urn:uuid:ptb-legal-mandate-001',
+      relation: 'authorizedBy',
+      authorizationBasis: { kind: 'legalMandate' },
+      digestSRI: BROKEN_DIGEST,
+    },
+  ],
+} as JsonObject;
+
+const rmFailing: JsonObject = {
+  ...(rmTarget as JsonObject),
+  id: 'urn:uuid:rm-cert-fail-demo',
+  evidence: [
+    {
+      type: 'CredentialEvidenceReference',
+      id: 'urn:uuid:operational-scope-001',
+      relation: 'authorizedBy',
+      authorizationBasis: { kind: 'operationalScope' },
+      digestSRI: BROKEN_DIGEST,
+    },
+    {
+      type: 'CredentialEvidenceReference',
+      id: 'urn:uuid:rm-study-001',
+      relation: 'supportedBy',
+      digestSRI: BROKEN_DIGEST,
+    },
+  ],
+} as JsonObject;
 
 // PolicyProfile is imported from the core-ts source directly (type-only)
 export interface PolicyProfile {
@@ -120,6 +176,7 @@ export const scenarioA: Scenario = {
   policy: calibrationDirectPolicy as unknown as PolicyProfile,
   documents: { 'urn:uuid:accreditation-direct-001': calibrationDirectAcc as JsonObject },
   trustRegistry: calibrationDirectTrust as JsonObject,
+  failingTarget: calibrationDirectFailing,
 };
 
 // ── B: Operational scope (derived) ───────────────────────────────────────────
@@ -215,6 +272,7 @@ export const scenarioC: Scenario = {
   policy: ptbPolicy as unknown as PolicyProfile,
   documents: { 'urn:uuid:ptb-legal-mandate-001': ptbMandate as JsonObject },
   trustRegistry: ptbTrust as JsonObject,
+  failingTarget: ptbFailing,
 };
 
 // ── D: Notification / Scheme (GS mark) ───────────────────────────────────────
@@ -280,6 +338,7 @@ export const scenarioD: Scenario = {
     'urn:uuid:gs-issuing-scope-001': gsProfileDScope as JsonObject,
   },
   trustRegistry: gsProfileDTrust as JsonObject,
+  failingTarget: gsSchemeAuthFailing as JsonObject,
 };
 
 // ── E: Recursive RM chain ─────────────────────────────────────────────────────
@@ -329,10 +388,13 @@ export const scenarioE: Scenario = {
   ],
   policy: rmPolicy as unknown as PolicyProfile,
   documents: {
-    'urn:uuid:rm-accreditation-001': rmAcc as JsonObject,
-    'urn:uuid:operational-scope-001': rmOpScope as JsonObject,
+    'urn:uuid:rm-accreditation-001':         rmAcc as JsonObject,
+    'urn:uuid:operational-scope-001':        rmOpScope as JsonObject,
+    'urn:uuid:rm-study-001':                 rmStudy as JsonObject,
+    'urn:uuid:rm-study-lab-accreditation-001': rmStudyLabAcc as JsonObject,
   },
   trustRegistry: rmTrust as JsonObject,
+  failingTarget: rmFailing,
 };
 
 export const SCENARIOS: Scenario[] = [scenarioA, scenarioB, scenarioC, scenarioD, scenarioE];

@@ -16,8 +16,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@qi-vc/core": ["../../packages/core-ts/src/index.ts"],
-      "@qi-vc/core/*": ["../../packages/core-ts/src/*.ts"]
+      "@qi-vc/core": ["./src/types/qi-vc-core.d.ts"]
     }
   },
   "include": ["src"]

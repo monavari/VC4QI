@@ -46,13 +46,14 @@ export async function runVerifier(
   mode: VerifyMode,
 ): Promise<VerificationTrace> {
   const { verifyCredentialGraph } = await import('@qi-vc/core').then(m => m.verifier);
+  const passingTarget = scenario.nodes.find((n) => n.isTarget)!.credential;
   const target: JsonObject =
     mode === 'failing' && scenario.failingTarget
       ? scenario.failingTarget
-      : scenario.nodes.find((n) => n.isTarget)!.credential;
+      : passingTarget;
 
   const docs = scenario.documents;
-  return verifyCredentialGraph(
+  const result = await verifyCredentialGraph(
     target,
     scenario.policy as Parameters<typeof verifyCredentialGraph>[1],
     {
@@ -65,4 +66,22 @@ export async function runVerifier(
       resolveTrustRegistry: async () => scenario.trustRegistry,
     },
   );
+
+  // Remap failing-target ID back to the graph node ID so CredentialGraph
+  // can match trace entries to displayed nodes (which always use passing IDs).
+  if (mode === 'failing' && scenario.failingTarget) {
+    const failId = (scenario.failingTarget as JsonObject).id as string;
+    const passId = (passingTarget as JsonObject).id as string;
+    if (failId && passId && failId !== passId) {
+      result.results = result.results.map((r) => ({
+        ...r,
+        target: r.target === failId ? passId : r.target,
+        from:   r.from   === failId ? passId : r.from,
+        to:     r.to     === failId ? passId : r.to,
+      }));
+      if (result.target === failId) (result as { target: string }).target = passId;
+    }
+  }
+
+  return result;
 }
