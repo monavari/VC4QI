@@ -269,7 +269,7 @@ function writeExample(name, target, evidenceDocuments, registry, profile, codes)
   writeJson(`policies/profiles/${profile.id}.json`, profile);
 }
 
-const DAKKS = 'did:web:dakks.example';
+const NAB = 'did:web:nab.example';
 const NMI = 'did:web:nmi.example';
 const ZLS = 'did:web:zls.example';
 const LAB = 'did:web:lab.example';
@@ -278,7 +278,7 @@ const RM_LAB = 'did:web:rm-lab.example';
 const GS_BODY = 'did:web:gs-body.example';
 
 function directCalibration() {
-  const acc = accreditation('urn:uuid:accreditation-direct-001', DAKKS, LAB, pressureScope());
+  const acc = accreditation('urn:uuid:accreditation-direct-001', NAB, LAB, pressureScope());
   const targetEvidence = [evidenceRef(acc.id, 'authorizedBy', 'accreditation', {
     authorizationBasis: { issuerRole: 'nationalAccreditationBody', scopeRef: 'pressure-scope' },
     digestSRI: digestSRI(acc),
@@ -291,7 +291,7 @@ function directCalibration() {
     required: true,
   }], { scopeInclusion: 'dccScopeInclusion' });
   const registry = trustRegistry([{
-    id: DAKKS,
+    id: NAB,
     issuerRole: 'nationalAccreditationBody',
     authorizationBasisKinds: ['accreditation'],
     credentialTypes: ['AccreditationCertificate'],
@@ -317,12 +317,12 @@ function directCalibration() {
 }
 
 function calibrationCapability() {
-  const acc = accreditation('urn:uuid:accreditation-capability-001', DAKKS, LAB, pressureScope(1000));
+  const acc = accreditation('urn:uuid:accreditation-capability-001', NAB, LAB, pressureScope(1000));
   const cap = {
     '@context': [VC_CONTEXT, QI_CONTEXT],
     type: ['VerifiableCredential', 'CalibrationCapabilityAuthorization'],
     id: 'urn:uuid:capability-001',
-    issuer: DAKKS,
+    issuer: NAB,
     validFrom: '2024-06-01T00:00:00Z',
     validUntil: '2027-06-01T00:00:00Z',
     credentialSubject: {
@@ -333,7 +333,7 @@ function calibrationCapability() {
       },
     },
     evidence: [evidenceRef(acc.id, 'derivedFrom', 'accreditation', { digestSRI: digestSRI(acc) })],
-    proof: proof(DAKKS),
+    proof: proof(NAB),
   };
   const target = dcc('urn:uuid:dcc-capability-001', LAB, [
     evidenceRef(cap.id, 'authorizedBy', 'operationalScope', { digestSRI: digestSRI(cap) }),
@@ -343,7 +343,7 @@ function calibrationCapability() {
     { id: 'capability-parent', relation: 'derivedFrom', authorizationBasis: { kind: 'accreditation' }, required: true },
   ], { scopeInclusion: 'dccScopeInclusion' });
   const registry = trustRegistry([{
-    id: DAKKS,
+    id: NAB,
     issuerRole: 'nationalAccreditationBody',
     authorizationBasisKinds: ['accreditation', 'operationalScope'],
     credentialTypes: ['AccreditationCertificate', 'CalibrationCapabilityAuthorization'],
@@ -413,7 +413,7 @@ function legalMandate() {
 
 function referenceMaterial() {
   // AccreditationAttestation — root, no authorizing edge; scope: As in CuZn39Pb3
-  const acc = accreditation('urn:uuid:rm-accreditation-001', DAKKS, RM_PRODUCER, [{
+  const acc = accreditation('urn:uuid:rm-accreditation-001', NAB, RM_PRODUCER, [{
     matrix: ['CuZn39Pb3 (leaded brass)'],
     allowedProperties: ['As'],
     allowedForms: ['disc'],
@@ -444,7 +444,7 @@ function referenceMaterial() {
     proof: proof(RM_PRODUCER),
   };
 
-  const labAcc = accreditation('urn:uuid:rm-study-lab-accreditation-001', DAKKS, RM_LAB, [{
+  const labAcc = accreditation('urn:uuid:rm-study-lab-accreditation-001', NAB, RM_LAB, [{
     matrix: ['CuZn39Pb3 (leaded brass)'],
     allowedProperties: ['As'],
     allowedForms: ['disc'],
@@ -538,7 +538,7 @@ function referenceMaterial() {
     authorizationBasisKinds: ['operationalScope'],
     credentialTypes: ['OperationalScopeEvidence', 'ReferenceMaterialCertificate'],
   }, {
-    id: DAKKS,
+    id: NAB,
     issuerRole: 'nationalAccreditationBody',
     authorizationBasisKinds: ['accreditation'],
     credentialTypes: ['AccreditationCertificate'],
@@ -563,7 +563,7 @@ function gsScheme() {
     credentialSubject: { id: GS_BODY, scheme: 'GS' },
     proof: proof(ZLS),
   };
-  const acc = accreditation('urn:uuid:gs-competence-accreditation-001', DAKKS, GS_BODY, []);
+  const acc = accreditation('urn:uuid:gs-competence-accreditation-001', NAB, GS_BODY, []);
   const target = {
     '@context': [VC_CONTEXT, QI_CONTEXT],
     type: ['VerifiableCredential', 'GSCertificate'],
@@ -586,7 +586,7 @@ function gsScheme() {
   ], { scopeInclusion: 'ignored' });
   const registry = trustRegistry([
     { id: ZLS, issuerRole: 'schemeAuthority', authorizationBasisKinds: ['schemeAuthorization'], credentialTypes: ['SchemeAuthorizationEvidence'] },
-    { id: DAKKS, issuerRole: 'nationalAccreditationBody', authorizationBasisKinds: ['accreditation'], credentialTypes: ['AccreditationCertificate'] },
+    { id: NAB, issuerRole: 'nationalAccreditationBody', authorizationBasisKinds: ['accreditation'], credentialTypes: ['AccreditationCertificate'] },
   ]);
   writeExample('gs-scheme-authorization', target, [scheme, acc], registry, profile, [
     'TRUSTED_ISSUER',
@@ -599,7 +599,7 @@ function gsScheme() {
 }
 
 function testReportSupportedByDcc() {
-  const acc = accreditation('urn:uuid:test-report-dcc-accreditation-001', DAKKS, LAB, pressureScope());
+  const acc = accreditation('urn:uuid:test-report-dcc-accreditation-001', NAB, LAB, pressureScope());
   const supportingDcc = dcc('urn:uuid:supporting-dcc-001', LAB, [
     evidenceRef(acc.id, 'authorizedBy', 'accreditation', { digestSRI: digestSRI(acc) }),
   ]);
@@ -620,7 +620,7 @@ function testReportSupportedByDcc() {
     required: true,
   }], { scopeInclusion: 'ignored' });
   const registry = trustRegistry([{
-    id: DAKKS,
+    id: NAB,
     issuerRole: 'nationalAccreditationBody',
     authorizationBasisKinds: ['accreditation'],
     credentialTypes: ['AccreditationCertificate'],

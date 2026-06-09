@@ -15,7 +15,7 @@
     "registryEntries": [
       {
         "status": "active",
-        "id": "did:web:dakks.example",
+        "id": "did:web:nab.example",
         "issuerRole": "nationalAccreditationBody",
         "authorizationBasisKinds": [
           "accreditation",
