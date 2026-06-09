@@ -53,7 +53,7 @@ No additional dead branches found beyond what was removed in Phase 1.
   - `referenceMaterial()` rewritten with Profile B canonical values:
     matrix CuZn39Pb3 brass, property As (arsenic), value 178 mg/kg, U=5 mg/kg, k=2.
   - OperationalScope self-issued by `RM_PRODUCER`.
-  - Trust registry: `RM_PRODUCER` → `operationalScope`; DAKKS → `accreditation`.
+  - Trust registry: `RM_PRODUCER` → `operationalScope`; NAB → `accreditation`.
   - `accreditation()` builder: `validUntil` made configurable (default `2029-01-01`).
     Fixed a validity-window violation where `opScope.validUntil > acc.validUntil`.
 - Generator rerun; fixtures regenerated including updated `digestSRI` values.

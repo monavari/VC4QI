@@ -8,7 +8,7 @@
     "CalibrationCapabilityAuthorization"
   ],
   "id": "urn:uuid:capability-exceeds-001",
-  "issuer": "did:web:dakks.example",
+  "issuer": "did:web:nab.example",
   "validFrom": "2024-06-01T00:00:00Z",
   "validUntil": "2027-06-01T00:00:00Z",
   "credentialSubject": {
@@ -53,7 +53,7 @@
     "type": "DataIntegrityProof",
     "cryptosuite": "eddsa-rdfc-2022",
     "proofPurpose": "assertionMethod",
-    "verificationMethod": "did:web:dakks.example#key-1",
+    "verificationMethod": "did:web:nab.example#key-1",
     "created": "2026-01-01T00:00:00Z",
     "proofValue": "zPlaceholderProof"
   }
