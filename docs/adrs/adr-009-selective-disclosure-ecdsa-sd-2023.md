@@ -21,9 +21,17 @@ the Digital Bazaar SD packages (`@digitalbazaar/ecdsa-sd-2023-cryptosuite`,
 Per-decision rationale (D-SD-1..D-SD-5) is recorded in
 `RECONCILIATION_REPORT.md` (Part B). Summary:
 
-- **D-SD-1** — mandatory: certified property/value/unit/uncertainty/scopeRef,
-  producer id+name, materials, evidence edges; selectively disclosable: producer
-  contact and personnel (`respPersons`).
+- **D-SD-1** — two showcases. (a) **DCC (headline, per-customer privacy):**
+  mandatory = measured value/unit/uncertainty/measurand, scopeRef, calibration
+  lab, item *name*, evidence edges; selectively disclosable = the **customer**
+  identity and the calibrated instrument's **serial/manufacturer**. A DCC is
+  issued to one customer and is commercially sensitive, so SD is substantive
+  here. (b) **RM cert (reference implementation):** mandatory = certified
+  property/value/unit/uncertainty/scopeRef, producer id+name, materials, evidence
+  edges; selectively disclosable = producer contact and personnel
+  (`respPersons`). RM certs are publicly published, so SD is illustrative there;
+  the DCC is the realistic case. SD applies identically to any VC — the generic
+  `sd.ts` is reused unchanged for both.
 - **D-SD-2** — `ecdsa-sd-2023`, not BBS: Recommendation-track, no unlinkability
   requirement for institutional holders, P-256 aligns with HSM/eIDAS seal.
 - **D-SD-3** — a P-256 multikey `#key-2` alongside the Ed25519 `#key-1`; the

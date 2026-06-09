@@ -1,0 +1,103 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-calibration.jsonld"
+  ],
+  "type": [
+    "VerifiableCredential",
+    "DigitalCalibrationCertificate"
+  ],
+  "id": "urn:uuid:dcc-sd-001",
+  "issuer": "did:web:lab.example",
+  "validFrom": "2026-01-15T00:00:00Z",
+  "credentialSchema": {
+    "id": "https://w3id.org/qi-vc/schemas/v1/digital-calibration-certificate.json",
+    "type": "JsonSchema"
+  },
+  "credentialSubject": {
+    "id": "urn:example:item:pressure-001",
+    "administrativeData": {
+      "coreData": {
+        "uniqueIdentifier": "dcc-sd-001",
+        "beginPerformanceDate": "2026-01-14T08:00:00Z",
+        "endPerformanceDate": "2026-01-14T16:00:00Z"
+      },
+      "items": [
+        {
+          "name": "Pressure transmitter",
+          "manufacturer": {
+            "name": "Acme Instruments GmbH"
+          },
+          "identifications": [
+            {
+              "type": "serialNumber",
+              "value": "SN-77F3-22914"
+            },
+            {
+              "type": "model",
+              "value": "PT-9000"
+            }
+          ]
+        }
+      ],
+      "calibrationLaboratory": {
+        "id": "did:web:lab.example",
+        "name": "Calibration laboratory"
+      },
+      "customer": {
+        "name": "Contoso Pharma Ltd",
+        "location": "Basel, CH"
+      }
+    },
+    "measurementResults": [
+      {
+        "measurand": "Pressure",
+        "usedMethods": [
+          {
+            "name": "Pressure calibration",
+            "reference": "EURAMET cg-17"
+          }
+        ],
+        "results": [
+          {
+            "name": "Pressure at nominal point",
+            "scopeRef": "pressure-scope",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/Pressure",
+                "value": 500,
+                "unit": {
+                  "ucumCode": "kPa"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 1,
+                  "coverageFactor": 2
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "type": "CredentialEvidenceReference",
+      "id": "urn:uuid:accreditation-direct-001",
+      "relation": "authorizedBy",
+      "authorizationBasis": {
+        "kind": "accreditation",
+        "issuerRole": "nationalAccreditationBody"
+      }
+    }
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "created": "2026-06-09T09:54:47Z",
+    "verificationMethod": "did:web:lab.example#key-2",
+    "cryptosuite": "ecdsa-sd-2023",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "u2V0AhVhALz6KwBDJCV8R5XhykozALFWJ2Hb8hekQ_sZcZsOIHS7ILVMdCZxSeY13yPJJS66BNvnR5K-bQLr_WSB8UJ8fR1gjgCQCg3scsqVAfgswJXpGtyTpXDu0GB2Y8KarbQr8BRr_lXFYIGdlLIHgTqm7Zj7MdzSWqKK5fJ1-Wfr_UMtlwy9_gW3ci1hANdCGM4HXRkCICRauc-vKk3OpIvbWw4vusPlTQOSjWJqn7N0hO-1AlG_1XFqPZZMqSutQGe4wKiFQV4xD4PhRsVhAl7XHkKRHRVG9LJlBg3gbleU-65SG3MP7tYl1u6OGGk5V05GLCDm1UAq4lKdVayT82ro5Qtar-v354kXKpV2IsFhA6qosGuCBVcwr_vydPQfOrvYfX8d5lzk41z9Ybk-rPQlh0-wbqa0lgbwA6Kqgu6ZNmmTrbLVAca5thclBbSU1VlhAWJTQQuPS83j56HcdNNDeHJnaYmoL0ETwtlRPHTAkZZbNgG36iNtWwComBhTyxNuT8KneW4r0o7Ho-i3IRMhYv1hA3mFafMXzQUEVt2ybP0lQyP9qlfkwKMFVY3qP10ZEtYWupRt6eUpHVVwwbGP9mRqF7Jp1ECdaLpbbLdjgBh4DY1hApH4r1TlIUBdcRL8gZWCkb-XAgyhW5Z85s4iybTUwelxec9cwPfc_oOtUUfg4KMkx1oKm9l4y8a6kU8FiUdbleVhAG961Bm_qU8Pkp3jZncZrGpWRAVOzQhMKzLIrrAiVKZY4KE33IUfUrY0XVGJykVCE3B_IYSNToe92AXgnzEdKdlhA6PzN5Kqtks6vb1Y4MbJQVNzJPfOHNBvzjF5XSNH4qXMY2Me1kYvbYK6pj9Po2UEs2yjXIHShmqta0_lLclIgJFhAPEdXJsC9obF1bw89FvpU5n6jAiHVB1jhgjH4xs-SZK2NvK2TurKmUFa-rxTrNZIXaZEWOkA-MB4tJYtFevhD8lhAhBGJ7QF7xHHCoXW14W6Yv9utj4D2bTbWDgIIEiNrppcKsdzMytThAtaP3SuoTPOEc-zCAJ9B_Y-FkRwIBvg531hAqxuVVLVrXGTHCSJpaneOCibSARs7J1n8YzxkqeDg5nLDwsaMfO4ggBsrAY3KCR9nvsfv595o0Y91nXQhkqJdIIlnL2lzc3VlcmovdmFsaWRGcm9tcS9jcmVkZW50aWFsU2NoZW1hdS9jcmVkZW50aWFsU3ViamVjdC9pZHguL2NyZWRlbnRpYWxTdWJqZWN0L2FkbWluaXN0cmF0aXZlRGF0YS9jb3JlRGF0YXgyL2NyZWRlbnRpYWxTdWJqZWN0L2FkbWluaXN0cmF0aXZlRGF0YS9pdGVtcy8wL25hbWV4Oy9jcmVkZW50aWFsU3ViamVjdC9hZG1pbmlzdHJhdGl2ZURhdGEvY2FsaWJyYXRpb25MYWJvcmF0b3J5eCUvY3JlZGVudGlhbFN1YmplY3QvbWVhc3VyZW1lbnRSZXN1bHRzaS9ldmlkZW5jZQ"
+  }
+}
