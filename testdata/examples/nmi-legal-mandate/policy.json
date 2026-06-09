@@ -1,6 +1,6 @@
 {
   "$schema": "https://w3id.org/qi-vc/schemas/v1/policy-profile.schema.json",
-  "id": "ptb-legal-mandate",
+  "id": "nmi-legal-mandate",
   "targetCredentialTypes": [
     "DigitalCalibrationCertificate"
   ],

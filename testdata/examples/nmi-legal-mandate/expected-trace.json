@@ -1,6 +1,6 @@
 {
   "verified": true,
-  "profile": "ptb-legal-mandate",
+  "profile": "nmi-legal-mandate",
   "target": "",
   "summary": {
     "nodesResolved": 0,
@@ -10,21 +10,21 @@
   },
   "results": [
     {
-      "id": "ptb-legal-mandate-0",
+      "id": "nmi-legal-mandate-0",
       "level": "policy",
       "status": "PASS",
       "code": "TRUSTED_ISSUER",
       "detail": "Expected trace code for fixture parity."
     },
     {
-      "id": "ptb-legal-mandate-1",
+      "id": "nmi-legal-mandate-1",
       "level": "policy",
       "status": "PASS",
       "code": "SCOPE_INCLUSION_VALID",
       "detail": "Expected trace code for fixture parity."
     },
     {
-      "id": "ptb-legal-mandate-2",
+      "id": "nmi-legal-mandate-2",
       "level": "policy",
       "status": "PASS",
       "code": "REQUIRED_EVIDENCE_PRESENT",

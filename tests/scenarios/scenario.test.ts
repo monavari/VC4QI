@@ -33,7 +33,7 @@ async function verifyFixture(name: string, targetFile = 'target-credential.json'
 describe('v0.2 evidence-graph scenarios', () => {
   it('passes direct accreditation and legal mandate profiles', async () => {
     expect((await verifyFixture('calibration-direct-accreditation')).verified).toBe(true);
-    expect((await verifyFixture('ptb-legal-mandate')).verified).toBe(true);
+    expect((await verifyFixture('nmi-legal-mandate')).verified).toBe(true);
   });
 
   it('keeps presentation sufficiency separate from QI policy failures', async () => {

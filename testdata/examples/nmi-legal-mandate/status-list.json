@@ -6,10 +6,10 @@
     "VerifiableCredential",
     "BitstringStatusListCredential"
   ],
-  "id": "urn:uuid:ptb-legal-mandate:status-list",
+  "id": "urn:uuid:nmi-legal-mandate:status-list",
   "issuer": "did:web:status.example",
   "credentialSubject": {
-    "id": "urn:uuid:ptb-legal-mandate:status-list#list",
+    "id": "urn:uuid:nmi-legal-mandate:status-list#list",
     "encodedList": "eJztwTEBAAAAwqD1T20KP6AAAAAAAAAAAAAAAAAA4G0BIQAB"
   }
 }

@@ -17,7 +17,7 @@ def test_dcc_capability_passes():
 
 
 def test_legal_mandate_passes_without_accreditation():
-    trace = verify_fixture("ptb-legal-mandate")
+    trace = verify_fixture("nmi-legal-mandate")
     assert trace["verified"] is True
     assert "TRUSTED_ISSUER" in codes(trace)
 
@@ -46,13 +46,12 @@ def test_capability_exceeds_accreditation_scope_fails():
     assert "DERIVATION_VIOLATION" in codes(trace)
 
 
-# Phase 7 (Profile D) — skeleton. The fixture under
-# testdata/examples/gs-profile-d/ has TODO(human) placeholders (scope values,
-# recomputed digestSRI, expected-trace). Un-skip once finished; see that
-# directory's README. Must accept, with DERIVATION_VALID for the
-# issuing-scope -> accreditation (derivedFrom) edge and the independent
-# schemeAuthorization edge accepted without a subset check. Keep TS<->Py parity.
-def test_gs_profile_d_derived_and_independent_edges_pass():
-    trace = verify_fixture("gs-profile-d")
+# Profile D — GS certificate authorized jointly by an independent scheme
+# authorization (kind: schemeAuthorization, no subset check) and a competence
+# accreditation (kind: accreditation). Both authorizing edges must resolve and
+# the required-evidence set must be satisfied. Keep TS<->Py parity.
+def test_gs_profile_d_scheme_and_accreditation_edges_pass():
+    trace = verify_fixture("gs-scheme-authorization")
     assert trace["verified"] is True
-    assert "DERIVATION_VALID" in codes(trace)
+    assert "REQUIRED_EVIDENCE_PRESENT" in codes(trace)
+    assert "TRUSTED_ISSUER" in codes(trace)

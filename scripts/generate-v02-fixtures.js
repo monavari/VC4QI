@@ -270,7 +270,7 @@ function writeExample(name, target, evidenceDocuments, registry, profile, codes)
 }
 
 const DAKKS = 'did:web:dakks.example';
-const PTB = 'did:web:ptb.example';
+const NMI = 'did:web:nmi.example';
 const ZLS = 'did:web:zls.example';
 const LAB = 'did:web:lab.example';
 const RM_PRODUCER = 'did:web:rm-producer.example';
@@ -304,6 +304,16 @@ function directCalibration() {
     'REQUIRED_EVIDENCE_PRESENT',
   ]);
   writeJson('examples/calibration/digital-calibration-certificate.json', target);
+
+  // Failing variant: the DCC's evidence digest does not match the referenced
+  // accreditation (tampered/stale reference) → DIGEST_MISMATCH.
+  const failTarget = dcc('urn:uuid:dcc-direct-tampered-001', LAB, [
+    evidenceRef(acc.id, 'authorizedBy', 'accreditation', {
+      authorizationBasis: { issuerRole: 'nationalAccreditationBody', scopeRef: 'pressure-scope' },
+      digestSRI: 'sha384-' + 'A'.repeat(64),
+    }),
+  ]);
+  writeJson('testdata/examples/calibration-direct-accreditation/failing-target-credential.json', failTarget);
 }
 
 function calibrationCapability() {
@@ -360,35 +370,45 @@ function legalMandate() {
   const mandate = {
     '@context': [VC_CONTEXT, QI_CONTEXT],
     type: ['VerifiableCredential', 'LegalMandateEvidence'],
-    id: 'urn:uuid:ptb-legal-mandate-001',
-    issuer: PTB,
+    id: 'urn:uuid:nmi-legal-mandate-001',
+    issuer: NMI,
     validFrom: '2020-01-01T00:00:00Z',
-    credentialSubject: { id: PTB, legalBasis: 'Units and Time Act', scope: pressureScope(1000) },
-    proof: proof(PTB),
+    credentialSubject: { id: NMI, legalBasis: 'Units and Time Act', scope: pressureScope(1000) },
+    proof: proof(NMI),
   };
-  const target = dcc('urn:uuid:dcc-ptb-001', PTB, [
+  const target = dcc('urn:uuid:dcc-nmi-001', NMI, [
     evidenceRef(mandate.id, 'authorizedBy', 'legalMandate', {
       authorizationBasis: { issuerRole: 'nationalMetrologyInstitute', legalBasis: 'Units and Time Act' },
       digestSRI: digestSRI(mandate),
     }),
   ]);
-  const profile = policy('ptb-legal-mandate', ['DigitalCalibrationCertificate'], [{
+  const profile = policy('nmi-legal-mandate', ['DigitalCalibrationCertificate'], [{
     id: 'legal-mandate',
     relation: 'authorizedBy',
     authorizationBasis: { kind: 'legalMandate', issuerRole: 'nationalMetrologyInstitute' },
     required: true,
   }], { scopeInclusion: 'dccScopeInclusion' });
   const registry = trustRegistry([{
-    id: PTB,
+    id: NMI,
     issuerRole: 'nationalMetrologyInstitute',
     authorizationBasisKinds: ['legalMandate'],
     credentialTypes: ['LegalMandateEvidence'],
   }]);
-  writeExample('ptb-legal-mandate', target, [mandate], registry, profile, [
+  writeExample('nmi-legal-mandate', target, [mandate], registry, profile, [
     'TRUSTED_ISSUER',
     'SCOPE_INCLUSION_VALID',
     'REQUIRED_EVIDENCE_PRESENT',
   ]);
+
+  // Failing variant: the DCC reports a measured value (1500 kPa) outside the
+  // pressure scope the legal mandate authorizes (≤ 1000 kPa) → scope inclusion fails.
+  const failTarget = dcc('urn:uuid:dcc-nmi-out-of-scope-001', NMI, [
+    evidenceRef(mandate.id, 'authorizedBy', 'legalMandate', {
+      authorizationBasis: { issuerRole: 'nationalMetrologyInstitute', legalBasis: 'Units and Time Act' },
+      digestSRI: digestSRI(mandate),
+    }),
+  ], 1500);
+  writeJson('testdata/examples/nmi-legal-mandate/failing-target-credential.json', failTarget);
 }
 
 function referenceMaterial() {
@@ -491,11 +511,12 @@ function referenceMaterial() {
     proof: proof(RM_PRODUCER),
   };
 
-  // Reject fixture — value outside accredited range (As = 250 mg/kg >> max 5 mg/kg U)
+  // Reject fixture — certified uncertainty (U = 8 mg/kg) widened beyond the
+  // accredited bound for As in CuZn39Pb3 (maxAbsoluteMgKg = 6) → UNCERTAINTY_WIDENING.
   const rmcReject = structuredClone(rmcAccept);
   rmcReject.id = 'urn:uuid:rm-cert-reject-001';
-  rmcReject.credentialSubject.materialPropertiesList[0].results[0].name = 'Arsenic (As) - out of range';
-  rmcReject.credentialSubject.materialPropertiesList[0].results[0].data.quantity.value = 250.0;
+  rmcReject.credentialSubject.materialPropertiesList[0].results[0].name = 'Arsenic (As) - uncertainty out of scope';
+  rmcReject.credentialSubject.materialPropertiesList[0].results[0].data.quantity.uncertainty.expandedUncertainty = 8.0;
   rmcReject.credentialSubject.administrativeData.coreData.uniqueIdentifier = 'RMC-CuZn-As-REJECT-001';
   rmcReject.evidence = [
     evidenceRef(opScope.id, 'authorizedBy', 'operationalScope', {
@@ -631,6 +652,6 @@ referenceMaterial();
 gsScheme();
 testReportSupportedByDcc();
 
-for (const profile of ['calibration-direct-accreditation', 'calibration-capability', 'ptb-legal-mandate', 'reference-material-recursive', 'gs-scheme-authorization']) {
+for (const profile of ['calibration-direct-accreditation', 'calibration-capability', 'nmi-legal-mandate', 'reference-material-recursive', 'gs-scheme-authorization']) {
   writeJson(`testdata/policies/${profile}.json`, JSON.parse(readFileSync(join(ROOT, `policies/profiles/${profile}.json`), 'utf8')));
 }
