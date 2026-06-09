@@ -75,7 +75,7 @@ export interface ScenarioEdge {
 
 export interface Scenario {
   id: string;
-  profile: 'A' | 'B' | 'C' | 'D' | 'E';
+  profile: 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
   title: string;
   subtitle: string;
   description: string;
@@ -107,6 +107,7 @@ interface ScenarioSpec {
 // ── Derivation helpers ─────────────────────────────────────────────────────────
 
 const DEFAULT_TYPE_LABELS: Record<string, string> = {
+  TestReport: 'Test Report',
   DigitalCalibrationCertificate: 'Calibration Certificate',
   AccreditationCertificate: 'Accreditation',
   LegalMandateEvidence: 'Legal Mandate',
@@ -263,7 +264,7 @@ const SPECS: ScenarioSpec[] = [
       'Single authorizedBy edge from the certificate to the accreditation body. ' +
       'Baseline case — no derivation check.',
     actors: {
-      'did:web:dakks.example': { label: 'Accreditation Body', role: 'accreditationBody' },
+      'did:web:nab.example': { label: 'Accreditation Body', role: 'accreditationBody' },
       'did:web:lab.example': { label: 'Calibration Lab', role: 'lab' },
     },
   },
@@ -278,7 +279,7 @@ const SPECS: ScenarioSpec[] = [
       '(subset-checked: scope ⊑ accreditation). The DCC is then authorizedBy that ' +
       'operational scope. Shows the per-edge derivation check in action.',
     actors: {
-      'did:web:dakks.example': { label: 'Accreditation Body', role: 'accreditationBody' },
+      'did:web:nab.example': { label: 'Accreditation Body', role: 'accreditationBody' },
       'did:web:lab.example': { label: 'Calibration Lab', role: 'lab' },
     },
   },
@@ -307,7 +308,7 @@ const SPECS: ScenarioSpec[] = [
       '(independent authority, no subset check) and a competence accreditation. ' +
       'Key structural test: the independent scheme edge is not subset-bounded by accreditation.',
     actors: {
-      'did:web:dakks.example': { label: 'Accreditation Body', role: 'accreditationBody' },
+      'did:web:nab.example': { label: 'Accreditation Body', role: 'accreditationBody' },
       'did:web:scheme-authority.example': { label: 'Scheme Authority', role: 'schemeAuthority' },
       'did:web:gs-body.example': { label: 'Notified Body (GS)', role: 'lab' },
     },
@@ -328,6 +329,22 @@ const SPECS: ScenarioSpec[] = [
       'did:web:rm-producer.example': { label: 'RM Producer', role: 'rmProducer' },
     },
   },
+  {
+    id: 'test-report-supported-dcc',
+    profile: 'F',
+    dir: 'test-report-supported-dcc',
+    title: 'Profile F — Test report with supporting DCC',
+    subtitle: 'supportedBy relation — non-authorizing evidence',
+    description:
+      'A test report supported by a DCC (non-authorizing evidence). The supportedBy ' +
+      'edge does not grant authority — it links corroborating evidence. The DCC itself ' +
+      'is still authorized by an accreditation. Demonstrates the three-edge-type model: ' +
+      'authorizedBy, derivedFrom, and supportedBy each have distinct semantics.',
+    actors: {
+      'did:web:nab.example': { label: 'Accreditation Body', role: 'accreditationBody' },
+      'did:web:lab.example': { label: 'Calibration / Test Lab', role: 'lab' },
+    },
+  },
 ];
 
 export const SCENARIOS: Scenario[] = SPECS.map(buildScenario);
@@ -337,3 +354,4 @@ export const scenarioB = SCENARIOS[1]!;
 export const scenarioC = SCENARIOS[2]!;
 export const scenarioD = SCENARIOS[3]!;
 export const scenarioE = SCENARIOS[4]!;
+export const scenarioF = SCENARIOS[5]!;
