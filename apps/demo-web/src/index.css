@@ -2,10 +2,10 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
   }
   body {
-    @apply bg-zinc-950 text-zinc-100 font-sans antialiased;
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
   }
   * {
     @apply box-border;
@@ -18,4 +18,31 @@
 }
 .react-flow__handle {
   opacity: 0;
+}
+
+/* Graph canvas — white background */
+.react-flow__renderer,
+.react-flow__pane {
+  background: #ffffff;
+}
+
+/* Controls light theme */
+.react-flow__controls {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.react-flow__controls-button {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+  border-radius: 6px !important;
+  margin-bottom: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.react-flow__controls-button:hover {
+  background: #f1f5f9 !important;
+}
+.react-flow__controls-button svg {
+  fill: #475569;
 }
