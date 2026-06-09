@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -7,6 +7,7 @@ import {
   Position,
   type NodeProps,
   type EdgeProps,
+  type ReactFlowInstance,
   getBezierPath,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -95,20 +96,21 @@ function CredentialNode({ data, id }: NodeProps) {
         background: roleBg,
         outline: `${ringWidth}px solid ${ringHex}`,
         outlineOffset: '0px',
-        minWidth: 170,
+        minWidth: 130,
+        maxWidth: 200,
       }}
-      className="rounded-xl px-4 py-3 cursor-pointer transition-all shadow-sm bg-white relative"
+      className="rounded-lg px-2.5 py-2 cursor-pointer transition-all shadow-sm bg-white relative"
     >
       <Handle type="source" position={Position.Top} />
       <Handle type="target" position={Position.Bottom} />
 
-      {/* Status icon — shown after verifier runs */}
+      {/* Status icon */}
       {d.traceStatus && (
         <span
           style={{
             background: d.traceStatus === 'pass' ? '#16a34a' : d.traceStatus === 'fail' ? C.ver : C.indep,
           }}
-          className="absolute -top-2.5 -right-2.5 w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow"
+          className="absolute -top-2 -right-2 w-4 h-4 rounded-full flex items-center justify-center text-white text-[8px] font-bold shadow"
         >
           {d.traceStatus === 'pass' ? '✓' : d.traceStatus === 'fail' ? '✗' : '~'}
         </span>
@@ -117,19 +119,19 @@ function CredentialNode({ data, id }: NodeProps) {
       {d.isTarget && (
         <span
           style={{ color: C.dom }}
-          className="text-[10px] font-bold uppercase tracking-widest block mb-1"
+          className="text-[8px] font-bold uppercase tracking-widest block mb-0.5"
         >
           Target
         </span>
       )}
-      <p className="text-sm font-semibold text-slate-800 leading-tight">{d.label}</p>
-      <p className="text-[10px] text-slate-500 mt-0.5 font-mono">{d.credentialType}</p>
-      <div className="mt-2 flex items-center gap-1.5">
+      <p className="text-[11px] font-semibold text-slate-800 leading-tight">{d.label}</p>
+      <p className="text-[9px] text-slate-400 mt-0.5 font-mono truncate">{d.credentialType}</p>
+      <div className="mt-1 flex items-center gap-1">
         <span
           style={{ background: roleHex }}
           className="w-1.5 h-1.5 rounded-full shrink-0"
         />
-        <span className="text-[10px] text-slate-500 truncate">{d.actorLabel}</span>
+        <span className="text-[9px] text-slate-500 truncate">{d.actorLabel}</span>
       </div>
     </div>
   );
@@ -236,8 +238,8 @@ function autoLayout(
     byLayer.get(inv)!.push(n.id);
   }
 
-  const GAP_Y = 180;
-  const GAP_X = 240;
+  const GAP_Y = 140;
+  const GAP_X = 190;
 
   for (const [layerIdx, ids] of byLayer) {
     const totalWidth = (ids.length - 1) * GAP_X;
@@ -351,6 +353,21 @@ export function CredentialGraph() {
 
   const onNodeClick = useCallback(() => {}, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rfInstanceRef = useRef<ReactFlowInstance<any, any> | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onInit = useCallback((instance: ReactFlowInstance<any, any>) => {
+    rfInstanceRef.current = instance;
+  }, []);
+
+  // Re-fit the view whenever the active scenario changes so all nodes are visible.
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      rfInstanceRef.current?.fitView({ padding: 0.3, duration: 300 });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [activeScenario]);
+
   return (
     <div className="flex-1 relative bg-white">
       {/* Legend */}
@@ -387,6 +404,7 @@ export function CredentialGraph() {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onNodeClick={onNodeClick}
+        onInit={onInit}
         fitView
         fitViewOptions={{ padding: 0.3 }}
         proOptions={{ hideAttribution: true }}
