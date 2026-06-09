@@ -1,94 +1,44 @@
-// Scenario definitions — maps testdata/examples fixtures to display metadata.
-
-import calibrationDirectPolicy from '../../../../testdata/examples/calibration-direct-accreditation/policy.json';
-import calibrationDirectTarget from '../../../../testdata/examples/calibration-direct-accreditation/target-credential.json';
-import calibrationDirectTrust from '../../../../testdata/examples/calibration-direct-accreditation/trust-registry.json';
-import calibrationDirectAcc from '../../../../testdata/examples/calibration-direct-accreditation/evidence/accreditation-direct-001.json';
-
-import calibrationCapPolicy from '../../../../testdata/examples/calibration-capability/policy.json';
-import calibrationCapTarget from '../../../../testdata/examples/calibration-capability/target-credential.json';
-import calibrationCapFailing from '../../../../testdata/examples/calibration-capability/failing-target-credential.json';
-import calibrationCapTrust from '../../../../testdata/examples/calibration-capability/trust-registry.json';
-import calibrationCapAcc from '../../../../testdata/examples/calibration-capability/evidence/accreditation-capability-001.json';
-import calibrationCapScope from '../../../../testdata/examples/calibration-capability/evidence/capability-001.json';
-
-import gsProfileDPolicy from '../../../../testdata/examples/gs-profile-d/policy.json';
-import gsProfileDTarget from '../../../../testdata/examples/gs-profile-d/target-credential.json';
-import gsProfileDTrust from '../../../../testdata/examples/gs-profile-d/trust-registry.json';
-import gsProfileDAcc from '../../../../testdata/examples/gs-profile-d/evidence/accreditation-001.json';
-import gsProfileDScope from '../../../../testdata/examples/gs-profile-d/evidence/gs-issuing-scope-001.json';
-import gsProfileDScheme from '../../../../testdata/examples/gs-profile-d/evidence/scheme-authorization-001.json';
-
-import ptbPolicy from '../../../../testdata/examples/ptb-legal-mandate/policy.json';
-import ptbTarget from '../../../../testdata/examples/ptb-legal-mandate/target-credential.json';
-import ptbTrust from '../../../../testdata/examples/ptb-legal-mandate/trust-registry.json';
-import ptbMandate from '../../../../testdata/examples/ptb-legal-mandate/evidence/ptb-legal-mandate-001.json';
-
-import gsSchemeAuthFailing from '../../../../testdata/examples/gs-scheme-authorization/failing-target-credential.json';
-
-import rmPolicy from '../../../../testdata/examples/reference-material-recursive/policy.json';
-import rmTarget from '../../../../testdata/examples/reference-material-recursive/target-credential.json';
-import rmTrust from '../../../../testdata/examples/reference-material-recursive/trust-registry.json';
-import rmAcc from '../../../../testdata/examples/reference-material-recursive/evidence/rm-accreditation-001.json';
-import rmOpScope from '../../../../testdata/examples/reference-material-recursive/evidence/operational-scope-001.json';
-import rmStudy from '../../../../testdata/examples/reference-material-recursive/evidence/rm-study-001.json';
-import rmStudyLabAcc from '../../../../testdata/examples/reference-material-recursive/evidence/rm-study-lab-accreditation-001.json';
+// Scenario definitions — data-driven from testdata/examples fixtures.
+//
+// DESIGN: the graph (nodes/edges/documents) is DERIVED by walking each
+// credential's `evidence[]`, never hand-maintained. Editing a fixture's id,
+// evidence references, or adding/removing a credential can therefore not
+// desync the rendered picture from what the verifier actually walks.
+//
+// A scenario declares only what cannot be derived: which example directory to
+// load, the profile letter, display copy, and optional label/actor overrides.
+// The passing target, evidence docs, policy, trust registry, and the failing
+// variant are all loaded straight from the fixtures on disk.
 
 import type { JsonObject } from '@qi-vc/core';
 
-// Synthetic failing targets for demo — bad digestSRI triggers DIGEST_VALID: FAIL.
-// These are intentionally broken credentials used only in the demo failing variant.
-const BROKEN_DIGEST = 'sha384-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+// ── Eager-load every fixture JSON under testdata/examples ─────────────────────
+// Keyed by absolute-ish module path; we index into it by example dir + filename.
+const FIXTURES = import.meta.glob('../../../../testdata/examples/**/*.json', {
+  eager: true,
+  import: 'default',
+}) as Record<string, JsonObject>;
 
-const calibrationDirectFailing: JsonObject = {
-  ...(calibrationDirectTarget as JsonObject),
-  id: 'urn:uuid:dcc-direct-fail-demo',
-  evidence: [
-    {
-      type: 'CredentialEvidenceReference',
-      id: 'urn:uuid:accreditation-direct-001',
-      relation: 'authorizedBy',
-      authorizationBasis: { kind: 'accreditation' },
-      digestSRI: BROKEN_DIGEST,
-    },
-  ],
-} as JsonObject;
+function fixture(dir: string, ...parts: string[]): JsonObject | undefined {
+  const suffix = ['', dir, ...parts].join('/'); // e.g. /calibration-direct/target-credential.json
+  const key = Object.keys(FIXTURES).find((k) => k.endsWith(suffix));
+  return key ? FIXTURES[key] : undefined;
+}
 
-const ptbFailing: JsonObject = {
-  ...(ptbTarget as JsonObject),
-  id: 'urn:uuid:dcc-ptb-fail-demo',
-  evidence: [
-    {
-      type: 'CredentialEvidenceReference',
-      id: 'urn:uuid:ptb-legal-mandate-001',
-      relation: 'authorizedBy',
-      authorizationBasis: { kind: 'legalMandate' },
-      digestSRI: BROKEN_DIGEST,
-    },
-  ],
-} as JsonObject;
+function evidenceDocs(dir: string): Record<string, JsonObject> {
+  const prefix = `/${dir}/evidence/`;
+  const docs: Record<string, JsonObject> = {};
+  for (const [k, v] of Object.entries(FIXTURES)) {
+    if (k.includes(prefix)) {
+      const id = (v as JsonObject).id as string | undefined;
+      if (id) docs[id] = v;
+    }
+  }
+  return docs;
+}
 
-const rmFailing: JsonObject = {
-  ...(rmTarget as JsonObject),
-  id: 'urn:uuid:rm-cert-fail-demo',
-  evidence: [
-    {
-      type: 'CredentialEvidenceReference',
-      id: 'urn:uuid:operational-scope-001',
-      relation: 'authorizedBy',
-      authorizationBasis: { kind: 'operationalScope' },
-      digestSRI: BROKEN_DIGEST,
-    },
-    {
-      type: 'CredentialEvidenceReference',
-      id: 'urn:uuid:rm-study-001',
-      relation: 'supportedBy',
-      digestSRI: BROKEN_DIGEST,
-    },
-  ],
-} as JsonObject;
+// ── Public types ──────────────────────────────────────────────────────────────
 
-// PolicyProfile is imported from the core-ts source directly (type-only)
 export interface PolicyProfile {
   id: string;
   description?: string;
@@ -98,11 +48,12 @@ export interface PolicyProfile {
 }
 
 export type EdgeRelation = 'authorizedBy' | 'derivedFrom' | 'supportedBy';
+export type ActorRole = 'accreditationBody' | 'lab' | 'schemeAuthority' | 'nmi' | 'rmProducer';
 
 export interface ScenarioActor {
   id: string;
   label: string;
-  role: 'accreditationBody' | 'lab' | 'schemeAuthority' | 'nmi' | 'rmProducer';
+  role: ActorRole;
   did: string;
 }
 
@@ -137,264 +88,252 @@ export interface Scenario {
   failingTarget?: JsonObject;
 }
 
-// ── A: Accreditation-only ─────────────────────────────────────────────────────
+// ── Display-metadata declaration (the only hand-authored part) ─────────────────
 
-export const scenarioA: Scenario = {
-  id: 'calibration-direct',
-  profile: 'A',
-  title: 'Profile A — Accreditation only',
-  subtitle: 'Standard accredited calibration lab',
-  description:
-    'A calibration certificate issued directly under an accreditation. ' +
-    'Single authorizedBy edge from the certificate to the accreditation body. ' +
-    'Baseline case — no derivation check.',
-  actors: [
-    { id: 'acc-body', label: 'Accreditation Body', role: 'accreditationBody', did: 'did:web:dakks.example' },
-    { id: 'lab', label: 'Calibration Lab', role: 'lab', did: 'did:web:lab.example' },
-  ],
-  nodes: [
-    {
-      id: 'urn:uuid:accreditation-direct-001',
-      label: 'Accreditation',
-      credentialType: 'AccreditationCertificate',
-      actorId: 'acc-body',
-      credential: calibrationDirectAcc as JsonObject,
-      isTarget: false,
-    },
-    {
-      id: 'urn:uuid:dcc-direct-001',
-      label: 'Calibration Certificate',
-      credentialType: 'DigitalCalibrationCertificate',
-      actorId: 'lab',
-      credential: calibrationDirectTarget as JsonObject,
-      isTarget: true,
-    },
-  ],
-  edges: [
-    { from: 'urn:uuid:dcc-direct-001', to: 'urn:uuid:accreditation-direct-001', relation: 'authorizedBy', basisKind: 'accreditation' },
-  ],
-  policy: calibrationDirectPolicy as unknown as PolicyProfile,
-  documents: { 'urn:uuid:accreditation-direct-001': calibrationDirectAcc as JsonObject },
-  trustRegistry: calibrationDirectTrust as JsonObject,
-  failingTarget: calibrationDirectFailing,
+interface ScenarioSpec {
+  id: string;
+  profile: Scenario['profile'];
+  dir: string;                 // testdata/examples/<dir>
+  title: string;
+  subtitle: string;
+  description: string;
+  failingFile?: string;        // defaults to failing-target-credential.json, else reject-credential.json
+  /** Optional label override per credential type, e.g. { DigitalCalibrationCertificate: 'Calibration Certificate' }. */
+  typeLabels?: Record<string, string>;
+  /** Optional actor metadata per issuer DID. Role drives node colour; label is the display name. */
+  actors?: Record<string, { label: string; role: ActorRole }>;
+}
+
+// ── Derivation helpers ─────────────────────────────────────────────────────────
+
+const DEFAULT_TYPE_LABELS: Record<string, string> = {
+  DigitalCalibrationCertificate: 'Calibration Certificate',
+  AccreditationCertificate: 'Accreditation',
+  LegalMandateEvidence: 'Legal Mandate',
+  CalibrationCapabilityAuthorization: 'Operational Scope',
+  IssuingScopeCredential: 'Operational Scope',
+  OperationalScopeEvidence: 'Operational Scope',
+  SchemeAuthorizationCredential: 'Scheme Authorization',
+  SchemeAuthorizationEvidence: 'Scheme Authorization',
+  GSCertificate: 'GS Certificate',
+  ReferenceMaterialCertificate: 'RM Certificate',
+  ReferenceMaterialStudy: 'RM Study',
 };
 
-// ── B: Operational scope (derived) ───────────────────────────────────────────
+/** The substantive (non-VerifiableCredential) type of a credential. */
+function credentialType(cred: JsonObject): string {
+  const types = (cred.type as string[] | undefined) ?? [];
+  return types.find((t) => t !== 'VerifiableCredential') ?? 'Credential';
+}
 
-export const scenarioB: Scenario = {
-  id: 'calibration-capability',
-  profile: 'B',
-  title: 'Profile B — Accreditation + operational scope',
-  subtitle: 'Flexible-scope issuance with derivation check',
-  description:
-    'The lab holds an operational-scope credential derivedFrom its accreditation ' +
-    '(subset-checked: scope ⊑ accreditation). The DCC is then authorizedBy that ' +
-    'operational scope. Shows the per-edge derivation check in action.',
-  actors: [
-    { id: 'acc-body', label: 'Accreditation Body', role: 'accreditationBody', did: 'did:web:dakks.example' },
-    { id: 'lab', label: 'Calibration Lab', role: 'lab', did: 'did:web:lab.example' },
-  ],
-  nodes: [
-    {
-      id: 'urn:uuid:accreditation-capability-001',
-      label: 'Accreditation',
-      credentialType: 'AccreditationCertificate',
-      actorId: 'acc-body',
-      credential: calibrationCapAcc as JsonObject,
-      isTarget: false,
+function issuerDid(cred: JsonObject): string {
+  const iss = cred.issuer;
+  if (typeof iss === 'string') return iss;
+  if (iss && typeof iss === 'object') return ((iss as JsonObject).id as string) ?? 'unknown';
+  return 'unknown';
+}
+
+/** Guess an actor role from credential type — only used when no override is given. */
+function inferRole(type: string): ActorRole {
+  if (type === 'AccreditationCertificate') return 'accreditationBody';
+  if (type === 'SchemeAuthorizationCredential') return 'schemeAuthority';
+  if (type === 'LegalMandateEvidence') return 'nmi';
+  if (type === 'ReferenceMaterialCertificate' || type === 'ReferenceMaterialStudy') return 'rmProducer';
+  return 'lab';
+}
+
+interface DerivedGraph {
+  actors: ScenarioActor[];
+  nodes: ScenarioNode[];
+  edges: ScenarioEdge[];
+  documents: Record<string, JsonObject>;
+}
+
+/**
+ * Walk the target credential's evidence graph, collecting every reachable
+ * credential as a node and every evidence reference as an edge. The credential
+ * set is the source of truth — labels/actors are derived (with optional spec
+ * overrides) and the topology comes entirely from `evidence[]`.
+ */
+function deriveGraph(spec: ScenarioSpec, target: JsonObject, docs: Record<string, JsonObject>): DerivedGraph {
+  const typeLabels = { ...DEFAULT_TYPE_LABELS, ...(spec.typeLabels ?? {}) };
+  const actorOverrides = spec.actors ?? {};
+
+  const nodes: ScenarioNode[] = [];
+  const edges: ScenarioEdge[] = [];
+  const actorsByDid = new Map<string, ScenarioActor>();
+  const seen = new Set<string>();
+
+  function actorIdFor(cred: JsonObject): string {
+    const did = issuerDid(cred);
+    if (!actorsByDid.has(did)) {
+      const ov = actorOverrides[did];
+      const type = credentialType(cred);
+      actorsByDid.set(did, {
+        id: did,
+        did,
+        label: ov?.label ?? did.replace(/^did:web:/, '').replace(/\.example.*$/, ''),
+        role: ov?.role ?? inferRole(type),
+      });
+    }
+    return did;
+  }
+
+  function visit(cred: JsonObject, isTarget: boolean): void {
+    const id = cred.id as string;
+    if (!id || seen.has(id)) return;
+    seen.add(id);
+
+    const type = credentialType(cred);
+    nodes.push({
+      id,
+      label: typeLabels[type] ?? type,
+      credentialType: type,
+      actorId: actorIdFor(cred),
+      credential: cred,
+      isTarget,
+    });
+
+    const evidence = (cred.evidence as JsonObject[] | undefined) ?? [];
+    for (const ref of evidence) {
+      const toId = ref.id as string | undefined;
+      if (!toId) continue;
+      const relation = (ref.relation as EdgeRelation) ?? 'authorizedBy';
+      const basis = ref.authorizationBasis as JsonObject | undefined;
+      edges.push({
+        from: id,
+        to: toId,
+        relation,
+        ...(basis?.kind ? { basisKind: basis.kind as string } : {}),
+      });
+      const child = docs[toId];
+      if (child) visit(child, false);
+    }
+  }
+
+  visit(target, true);
+
+  return { actors: [...actorsByDid.values()], nodes, edges, documents: docs };
+}
+
+// ── Build a Scenario from a spec ────────────────────────────────────────────────
+
+function buildScenario(spec: ScenarioSpec): Scenario {
+  const target = fixture(spec.dir, 'target-credential.json');
+  if (!target) throw new Error(`Missing target-credential.json for ${spec.dir}`);
+  const policy = fixture(spec.dir, 'policy.json');
+  const trustRegistry = fixture(spec.dir, 'trust-registry.json');
+  if (!policy || !trustRegistry) throw new Error(`Missing policy/trust-registry for ${spec.dir}`);
+
+  const docs = evidenceDocs(spec.dir);
+  const { actors, nodes, edges, documents } = deriveGraph(spec, target, docs);
+
+  // Failing variant: load the real fixture if present (never synthesise corruption).
+  const failingTarget =
+    fixture(spec.dir, spec.failingFile ?? 'failing-target-credential.json') ??
+    fixture(spec.dir, 'reject-credential.json');
+
+  return {
+    id: spec.id,
+    profile: spec.profile,
+    title: spec.title,
+    subtitle: spec.subtitle,
+    description: spec.description,
+    actors,
+    nodes,
+    edges,
+    policy: policy as unknown as PolicyProfile,
+    documents,
+    trustRegistry,
+    ...(failingTarget ? { failingTarget } : {}),
+  };
+}
+
+// ── Scenario specs (display metadata only) ──────────────────────────────────────
+
+const SPECS: ScenarioSpec[] = [
+  {
+    id: 'calibration-direct',
+    profile: 'A',
+    dir: 'calibration-direct-accreditation',
+    title: 'Profile A — Accreditation only',
+    subtitle: 'Standard accredited calibration lab',
+    description:
+      'A calibration certificate issued directly under an accreditation. ' +
+      'Single authorizedBy edge from the certificate to the accreditation body. ' +
+      'Baseline case — no derivation check.',
+    actors: {
+      'did:web:dakks.example': { label: 'Accreditation Body', role: 'accreditationBody' },
+      'did:web:lab.example': { label: 'Calibration Lab', role: 'lab' },
     },
-    {
-      id: 'urn:uuid:capability-001',
-      label: 'Operational Scope',
-      credentialType: 'IssuingScopeCredential',
-      actorId: 'lab',
-      credential: calibrationCapScope as JsonObject,
-      isTarget: false,
-    },
-    {
-      id: 'urn:uuid:dcc-capability-001',
-      label: 'Calibration Certificate',
-      credentialType: 'DigitalCalibrationCertificate',
-      actorId: 'lab',
-      credential: calibrationCapTarget as JsonObject,
-      isTarget: true,
-    },
-  ],
-  edges: [
-    { from: 'urn:uuid:capability-001', to: 'urn:uuid:accreditation-capability-001', relation: 'derivedFrom', basisKind: 'accreditation' },
-    { from: 'urn:uuid:dcc-capability-001', to: 'urn:uuid:capability-001', relation: 'authorizedBy', basisKind: 'operationalScope' },
-  ],
-  policy: calibrationCapPolicy as unknown as PolicyProfile,
-  documents: {
-    'urn:uuid:accreditation-capability-001': calibrationCapAcc as JsonObject,
-    'urn:uuid:capability-001': calibrationCapScope as JsonObject,
   },
-  trustRegistry: calibrationCapTrust as JsonObject,
-  failingTarget: calibrationCapFailing as JsonObject,
-};
-
-// ── C: Legal mandate / NMI ───────────────────────────────────────────────────
-
-export const scenarioC: Scenario = {
-  id: 'ptb-legal-mandate',
-  profile: 'C',
-  title: 'Profile C — Legal mandate / Metrology Authority',
-  subtitle: 'National Metrology Institute — statutory authority',
-  description:
-    'A DCC from a National Metrology Institute (NMI). Authority derives from a ' +
-    'legal mandate — no accreditation root. The authorizedBy edge carries ' +
-    'kind: legalMandate. No derivation check — the mandate is independent authority.',
-  actors: [
-    { id: 'nmi', label: 'National Metrology Institute', role: 'nmi', did: 'did:web:nmi.example' },
-    { id: 'lab', label: 'NMI Lab', role: 'lab', did: 'did:web:nmi-lab.example' },
-  ],
-  nodes: [
-    {
-      id: 'urn:uuid:ptb-legal-mandate-001',
-      label: 'Legal Mandate',
-      credentialType: 'LegalMandateCredential',
-      actorId: 'nmi',
-      credential: ptbMandate as JsonObject,
-      isTarget: false,
+  {
+    id: 'calibration-capability',
+    profile: 'B',
+    dir: 'calibration-capability',
+    title: 'Profile B — Accreditation + operational scope',
+    subtitle: 'Flexible-scope issuance with derivation check',
+    description:
+      'The lab holds an operational-scope credential derivedFrom its accreditation ' +
+      '(subset-checked: scope ⊑ accreditation). The DCC is then authorizedBy that ' +
+      'operational scope. Shows the per-edge derivation check in action.',
+    actors: {
+      'did:web:dakks.example': { label: 'Accreditation Body', role: 'accreditationBody' },
+      'did:web:lab.example': { label: 'Calibration Lab', role: 'lab' },
     },
-    {
-      id: 'urn:uuid:dcc-ptb-001',
-      label: 'Calibration Certificate',
-      credentialType: 'DigitalCalibrationCertificate',
-      actorId: 'lab',
-      credential: ptbTarget as JsonObject,
-      isTarget: true,
-    },
-  ],
-  edges: [
-    { from: 'urn:uuid:dcc-ptb-001', to: 'urn:uuid:ptb-legal-mandate-001', relation: 'authorizedBy', basisKind: 'legalMandate' },
-  ],
-  policy: ptbPolicy as unknown as PolicyProfile,
-  documents: { 'urn:uuid:ptb-legal-mandate-001': ptbMandate as JsonObject },
-  trustRegistry: ptbTrust as JsonObject,
-  failingTarget: ptbFailing,
-};
-
-// ── D: Notification / Scheme (GS mark) ───────────────────────────────────────
-
-export const scenarioD: Scenario = {
-  id: 'gs-profile-d',
-  profile: 'D',
-  title: 'Profile D — Notification / Scheme (GS mark)',
-  subtitle: 'Notified body composing accreditation + scheme authority',
-  description:
-    'A GS product-safety certificate. The issuing-scope VC carries two edges: ' +
-    'derivedFrom the accreditation (subset-checked, DERIVATION_VALID expected) AND ' +
-    'authorizedBy the scheme authorization (independent, no subset check). ' +
-    'Key structural test: derivation runs per-edge.',
-  actors: [
-    { id: 'acc-body', label: 'Accreditation Body', role: 'accreditationBody', did: 'did:web:dakks.example' },
-    { id: 'scheme-auth', label: 'Scheme Authority', role: 'schemeAuthority', did: 'did:web:scheme-authority.example' },
-    { id: 'gs-body', label: 'Notified Body (GS)', role: 'lab', did: 'did:web:gs-body.example' },
-  ],
-  nodes: [
-    {
-      id: 'urn:uuid:accreditation-001',
-      label: 'Accreditation',
-      credentialType: 'AccreditationCertificate',
-      actorId: 'acc-body',
-      credential: gsProfileDAcc as JsonObject,
-      isTarget: false,
-    },
-    {
-      id: 'urn:uuid:scheme-authorization-001',
-      label: 'Scheme Authorization',
-      credentialType: 'SchemeAuthorizationCredential',
-      actorId: 'scheme-auth',
-      credential: gsProfileDScheme as JsonObject,
-      isTarget: false,
-    },
-    {
-      id: 'urn:uuid:gs-issuing-scope-001',
-      label: 'GS Issuing Scope',
-      credentialType: 'IssuingScopeCredential',
-      actorId: 'gs-body',
-      credential: gsProfileDScope as JsonObject,
-      isTarget: false,
-    },
-    {
-      id: 'urn:uuid:gs-cert-profile-d-001',
-      label: 'GS Certificate',
-      credentialType: 'GSCertificate',
-      actorId: 'gs-body',
-      credential: gsProfileDTarget as JsonObject,
-      isTarget: true,
-    },
-  ],
-  edges: [
-    { from: 'urn:uuid:gs-issuing-scope-001', to: 'urn:uuid:accreditation-001', relation: 'derivedFrom', basisKind: 'accreditation' },
-    { from: 'urn:uuid:gs-issuing-scope-001', to: 'urn:uuid:scheme-authorization-001', relation: 'authorizedBy', basisKind: 'schemeAuthorization' },
-    { from: 'urn:uuid:gs-cert-profile-d-001', to: 'urn:uuid:gs-issuing-scope-001', relation: 'authorizedBy', basisKind: 'schemeAuthorization' },
-  ],
-  policy: gsProfileDPolicy as unknown as PolicyProfile,
-  documents: {
-    'urn:uuid:accreditation-001': gsProfileDAcc as JsonObject,
-    'urn:uuid:scheme-authorization-001': gsProfileDScheme as JsonObject,
-    'urn:uuid:gs-issuing-scope-001': gsProfileDScope as JsonObject,
   },
-  trustRegistry: gsProfileDTrust as JsonObject,
-  failingTarget: gsSchemeAuthFailing as JsonObject,
-};
-
-// ── E: Recursive RM chain ─────────────────────────────────────────────────────
-
-export const scenarioE: Scenario = {
-  id: 'reference-material-recursive',
-  profile: 'E',
-  title: 'Profile E — Reference Material (recursive chain)',
-  subtitle: 'RM certificate with derived operational scope',
-  description:
-    'A reference material certificate. The RM producer derives an operational scope ' +
-    'from their RM accreditation (subset-checked), then issues the RM cert authorizedBy ' +
-    'that scope. Demonstrates recursive graph walk: RM cert → op-scope → accreditation.',
-  actors: [
-    { id: 'acc-body', label: 'Accreditation Body (RM)', role: 'accreditationBody', did: 'did:web:a2la.example' },
-    { id: 'rm-producer', label: 'RM Producer', role: 'rmProducer', did: 'did:web:rm-producer.example' },
-  ],
-  nodes: [
-    {
-      id: 'urn:uuid:rm-accreditation-001',
-      label: 'RM Accreditation',
-      credentialType: 'AccreditationCertificate',
-      actorId: 'acc-body',
-      credential: rmAcc as JsonObject,
-      isTarget: false,
+  {
+    id: 'nmi-legal-mandate',
+    profile: 'C',
+    dir: 'nmi-legal-mandate',
+    title: 'Profile C — Legal mandate / Metrology Authority',
+    subtitle: 'National Metrology Institute — statutory authority',
+    description:
+      'A DCC from a National Metrology Institute (NMI). Authority derives from a ' +
+      'legal mandate — no accreditation root. The authorizedBy edge carries ' +
+      'kind: legalMandate. No derivation check — the mandate is independent authority.',
+    actors: {
+      'did:web:nmi.example': { label: 'National Metrology Institute', role: 'nmi' },
     },
-    {
-      id: 'urn:uuid:operational-scope-001',
-      label: 'Operational Scope',
-      credentialType: 'IssuingScopeCredential',
-      actorId: 'rm-producer',
-      credential: rmOpScope as JsonObject,
-      isTarget: false,
-    },
-    {
-      id: 'urn:uuid:rm-cert-001',
-      label: 'RM Certificate',
-      credentialType: 'ReferenceMaterialCertificate',
-      actorId: 'rm-producer',
-      credential: rmTarget as JsonObject,
-      isTarget: true,
-    },
-  ],
-  edges: [
-    { from: 'urn:uuid:operational-scope-001', to: 'urn:uuid:rm-accreditation-001', relation: 'derivedFrom', basisKind: 'accreditation' },
-    { from: 'urn:uuid:rm-cert-001', to: 'urn:uuid:operational-scope-001', relation: 'authorizedBy', basisKind: 'operationalScope' },
-  ],
-  policy: rmPolicy as unknown as PolicyProfile,
-  documents: {
-    'urn:uuid:rm-accreditation-001':         rmAcc as JsonObject,
-    'urn:uuid:operational-scope-001':        rmOpScope as JsonObject,
-    'urn:uuid:rm-study-001':                 rmStudy as JsonObject,
-    'urn:uuid:rm-study-lab-accreditation-001': rmStudyLabAcc as JsonObject,
   },
-  trustRegistry: rmTrust as JsonObject,
-  failingTarget: rmFailing,
-};
+  {
+    id: 'gs-scheme-authorization',
+    profile: 'D',
+    dir: 'gs-scheme-authorization',
+    title: 'Profile D — Notification / Scheme (GS mark)',
+    subtitle: 'Notified body composing accreditation + scheme authority',
+    description:
+      'A GS product-safety certificate authorized jointly by a scheme authorization ' +
+      '(independent authority, no subset check) and a competence accreditation. ' +
+      'Key structural test: the independent scheme edge is not subset-bounded by accreditation.',
+    actors: {
+      'did:web:dakks.example': { label: 'Accreditation Body', role: 'accreditationBody' },
+      'did:web:scheme-authority.example': { label: 'Scheme Authority', role: 'schemeAuthority' },
+      'did:web:gs-body.example': { label: 'Notified Body (GS)', role: 'lab' },
+    },
+  },
+  {
+    id: 'reference-material-recursive',
+    profile: 'E',
+    dir: 'reference-material-recursive',
+    title: 'Profile E — Reference Material (recursive chain)',
+    subtitle: 'RM certificate with derived operational scope',
+    description:
+      'A reference material certificate. The RM producer derives an operational scope ' +
+      'from their RM accreditation (subset-checked), then issues the RM cert authorizedBy ' +
+      'that scope. Demonstrates recursive graph walk: RM cert → op-scope → accreditation.',
+    failingFile: 'reject-credential.json',
+    actors: {
+      'did:web:a2la.example': { label: 'Accreditation Body (RM)', role: 'accreditationBody' },
+      'did:web:rm-producer.example': { label: 'RM Producer', role: 'rmProducer' },
+    },
+  },
+];
 
-export const SCENARIOS: Scenario[] = [scenarioA, scenarioB, scenarioC, scenarioD, scenarioE];
+export const SCENARIOS: Scenario[] = SPECS.map(buildScenario);
+
+export const scenarioA = SCENARIOS[0]!;
+export const scenarioB = SCENARIOS[1]!;
+export const scenarioC = SCENARIOS[2]!;
+export const scenarioD = SCENARIOS[3]!;
+export const scenarioE = SCENARIOS[4]!;
