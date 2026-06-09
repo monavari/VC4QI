@@ -11,19 +11,18 @@
   "issuer": "did:web:rm-lab.example",
   "validFrom": "2026-01-15T00:00:00Z",
   "credentialSubject": {
-    "id": "urn:example:lot:rm-001",
+    "id": "urn:example:lot:rm-CuZn-As-001",
     "studyType": "homogeneity"
   },
   "evidence": [
     {
       "type": "CredentialEvidenceReference",
       "id": "urn:uuid:rm-study-lab-accreditation-001",
-      "relation": "qi:authorizedBy",
-      "role": "authorizing",
+      "relation": "authorizedBy",
       "authorizationBasis": {
-        "kind": "qi:accreditation"
+        "kind": "accreditation"
       },
-      "digestSRI": "sha384-A+0ixp+PeKs6K9Kyt7noUnJGVsT0Ow2wkjyXYDPvxr+utjCnH30/qnYYBccRiJ9y"
+      "digestSRI": "sha384-PEtmk3dtJhS/q1lM3XB5bOomMnLXF/f8pOrUyNlnxNHq7qdb1H2DhLb07rpSaUkn"
     }
   ],
   "proof": {

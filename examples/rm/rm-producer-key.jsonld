@@ -1,0 +1,7 @@
+{
+  "@context": "https://w3id.org/security/multikey/v1",
+  "id": "did:web:rm-producer.example#key-2",
+  "type": "Multikey",
+  "controller": "did:web:rm-producer.example",
+  "publicKeyMultibase": "zDnaeZKc83Lj4G69ikeWz1bEzn7t6SyjD9poBjqhXzAfxUwvr"
+}

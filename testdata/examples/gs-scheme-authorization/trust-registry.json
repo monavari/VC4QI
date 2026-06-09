@@ -16,9 +16,9 @@
       {
         "status": "active",
         "id": "did:web:zls.example",
-        "issuerRole": "qi:schemeAuthority",
+        "issuerRole": "schemeAuthority",
         "authorizationBasisKinds": [
-          "qi:schemeAuthorization"
+          "schemeAuthorization"
         ],
         "credentialTypes": [
           "SchemeAuthorizationEvidence"
@@ -26,10 +26,10 @@
       },
       {
         "status": "active",
-        "id": "did:web:dakks.example",
-        "issuerRole": "qi:nationalAccreditationBody",
+        "id": "did:web:nab.example",
+        "issuerRole": "nationalAccreditationBody",
         "authorizationBasisKinds": [
-          "qi:accreditation"
+          "accreditation"
         ],
         "credentialTypes": [
           "AccreditationCertificate"

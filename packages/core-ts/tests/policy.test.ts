@@ -11,7 +11,7 @@ describe('policy evaluation', () => {
   });
 
   it('allows legal mandate without accreditation when policy selects it', async () => {
-    const trace = await verifyFixture('ptb-legal-mandate');
+    const trace = await verifyFixture('nmi-legal-mandate');
     expect(trace.verified).toBe(true);
     expect(codes(trace)).toContain('REQUIRED_EVIDENCE_PRESENT');
   });

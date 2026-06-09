@@ -108,7 +108,6 @@ export async function buildEvidenceGraph(
         from,
         to,
         relation: evidence.relation,
-        role: evidence.role,
         authorizationBasis: evidence.authorizationBasis,
         digestMultibase: evidence.digestMultibase,
         digestSRI: evidence.digestSRI,

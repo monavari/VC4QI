@@ -2,7 +2,6 @@
 import type {
   AuthorizationBasis,
   EvidenceRelation,
-  EvidenceRole,
 } from '../evidence/types.js';
 
 export type CheckMode = 'required' | 'optional' | 'ignored' | 'unsupported';
@@ -10,7 +9,6 @@ export type CheckMode = 'required' | 'optional' | 'ignored' | 'unsupported';
 export interface RequiredEvidence {
   id: string;
   relation?: EvidenceRelation;
-  role?: EvidenceRole;
   authorizationBasis?: Partial<AuthorizationBasis>;
   targetCredentialTypes?: string[];
   required?: boolean;

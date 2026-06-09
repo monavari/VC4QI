@@ -7,25 +7,23 @@
   "requiredEvidence": [
     {
       "id": "rm-authority",
-      "relation": "qi:authorizedBy",
-      "role": "authorizing",
+      "relation": "authorizedBy",
       "authorizationBasis": {
-        "kind": "qi:operationalScope"
+        "kind": "operationalScope"
       },
       "required": true
     },
     {
       "id": "operational-scope-parent",
-      "relation": "qi:derivedFrom",
+      "relation": "derivedFrom",
       "authorizationBasis": {
-        "kind": "qi:accreditation"
+        "kind": "accreditation"
       },
       "required": true
     },
     {
       "id": "rm-study-support",
-      "relation": "qi:supportedBy",
-      "role": "supporting",
+      "relation": "supportedBy",
       "targetCredentialTypes": [
         "ReferenceMaterialStudy"
       ],

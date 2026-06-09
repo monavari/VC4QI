@@ -16,7 +16,7 @@ make setup
 ## Branch naming
 
 | Purpose | Pattern |
-|---------|---------|
+| --- | --- |
 | Milestone work | `m<N>-<short-name>` (e.g., `m1-schemas`) |
 | Feature | `feat/<short-name>` |
 | Bug fix | `fix/<short-name>` |

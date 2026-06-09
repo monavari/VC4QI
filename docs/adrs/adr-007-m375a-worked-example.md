@@ -29,7 +29,7 @@ Two variants are needed (paper §5.3):
 We include both variants as example files:
 
 | File | Variant |
-|------|---------|
+| --- | --- |
 | `examples/rm/reference-material-certificate.json` | Variant A |
 | `examples/rm/reference-material-certificate-multi-lab.jsonld` | Variant B |
 
@@ -39,7 +39,7 @@ The matching capability and accreditation credentials are at
 
 **Key data choices:**
 
-- BAM accreditation reference: `D-RM-11075-01-00` (real DAkkS number).
+- BAM accreditation reference: `D-RM-11075-01-00` (real NAB number).
 - Certified elements match the actual M375a certificate (Cu 57.68 %, Zn 38.2 %,
   Pb 3.07 % and trace elements).
 - Silicon (Si) is included as an informative-only result (`isCertified: false`)

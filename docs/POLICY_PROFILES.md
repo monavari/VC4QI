@@ -11,7 +11,7 @@ Profiles included in `policies/profiles/`:
 
 - `calibration-direct-accreditation`
 - `calibration-capability`
-- `ptb-legal-mandate`
+- `nmi-legal-mandate`
 - `reference-material-recursive`
 - `gs-scheme-authorization`
 

@@ -101,6 +101,9 @@ export async function verifyProof(
   if (proof.cryptosuite !== 'eddsa-rdfc-2022') {
     throw new Error(`Unsupported cryptosuite: ${proof.cryptosuite}`);
   }
+  if (proof.created === undefined) {
+    throw new Error('eddsa-rdfc-2022 proof is missing the required "created" property.');
+  }
 
   // Remove proof to get the unsecured document
   const { proof: _proof, ...unsecuredDocument } = signedCredential;

@@ -10,7 +10,7 @@
     "ReferenceMaterialCertificate"
   ],
   "id": "urn:uuid:rm-cert-001",
-  "issuer": "did:web:rm.example",
+  "issuer": "did:web:rm-producer.example",
   "validFrom": "2026-02-01T00:00:00Z",
   "validUntil": "2028-02-01T00:00:00Z",
   "credentialSchema": {
@@ -18,30 +18,30 @@
     "type": "JsonSchema"
   },
   "credentialSubject": {
-    "id": "urn:example:lot:rm-001",
+    "id": "urn:example:lot:rm-CuZn-As-001",
     "administrativeData": {
       "coreData": {
         "titleOfTheDocument": "Reference Material Certificate",
-        "uniqueIdentifier": "RMC-001"
+        "uniqueIdentifier": "RMC-CuZn-As-001"
       },
       "validity": {
         "validFrom": "2026-02-01",
         "validUntil": "2028-02-01"
       },
       "referenceMaterialProducer": {
-        "id": "did:web:rm.example",
+        "id": "did:web:rm-producer.example",
         "name": "Reference Material Producer"
       }
     },
     "materials": [
       {
-        "name": "Non-ferrous alloy disc",
-        "matrix": "non-ferrous metals and alloys",
+        "name": "CuZn39Pb3 (leaded brass)",
+        "matrix": "CuZn39Pb3 (leaded brass)",
         "form": "disc",
         "materialIdentifiers": [
           {
             "type": "lotNumber",
-            "value": "RM-001"
+            "value": "RM-CuZn-As-001"
           }
         ]
       }
@@ -49,21 +49,22 @@
     "materialPropertiesList": [
       {
         "propertyIdentifiers": [
-          "Pb"
+          "As"
         ],
         "isCertified": true,
         "results": [
           {
-            "name": "Lead (Pb)",
+            "name": "Arsenic (As)",
+            "scopeRef": "scope-entry-As-CuZn",
             "data": {
               "quantity": {
                 "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
-                "value": 120,
+                "value": 178,
                 "unit": {
                   "ucumCode": "mg/kg"
                 },
                 "uncertainty": {
-                  "expandedUncertainty": 3,
+                  "expandedUncertainty": 5,
                   "coverageFactor": 2
                 }
               }
@@ -77,26 +78,25 @@
     {
       "type": "CredentialEvidenceReference",
       "id": "urn:uuid:operational-scope-001",
-      "relation": "qi:authorizedBy",
-      "role": "authorizing",
+      "relation": "authorizedBy",
       "authorizationBasis": {
-        "kind": "qi:operationalScope"
+        "kind": "operationalScope",
+        "issuerRole": "referenceMaterialProducer"
       },
-      "digestSRI": "sha384-+lxdpVZbLGJJLB0x9IKsVLWR/rXsJcwnvCt/I5IVg+DBtD/9g8+pryjs3W+sP71Q"
+      "digestSRI": "sha384-fPp3NQG8ovPrsQ1SsyFu35dH9l2tORYWpKuayweXDe4RcaC4n6BUVe5kBXQZRk36"
     },
     {
       "type": "CredentialEvidenceReference",
       "id": "urn:uuid:rm-study-001",
-      "relation": "qi:supportedBy",
-      "role": "supporting",
-      "digestSRI": "sha384-XO5qZRtvj5nzTSqysRxpn0l1V2mjEv2AUk9aIkDYSTXJuKr2T/GaIZkynm8QTaCh"
+      "relation": "supportedBy",
+      "digestSRI": "sha384-ggisvel8CBgar+t+BUV+koqCYdg/WvyxsrDH6fOZQT7ovxgNYzerz866336DW+S0"
     }
   ],
   "proof": {
     "type": "DataIntegrityProof",
     "cryptosuite": "eddsa-rdfc-2022",
     "proofPurpose": "assertionMethod",
-    "verificationMethod": "did:web:rm.example#key-1",
+    "verificationMethod": "did:web:rm-producer.example#key-1",
     "created": "2026-01-01T00:00:00Z",
     "proofValue": "zPlaceholderProof"
   }

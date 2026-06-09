@@ -1,0 +1,86 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-calibration.jsonld"
+  ],
+  "id": "urn:uuid:dcc-sd-001",
+  "type": [
+    "VerifiableCredential",
+    "DigitalCalibrationCertificate"
+  ],
+  "issuer": "did:web:lab.example",
+  "validFrom": "2026-01-15T00:00:00Z",
+  "credentialSchema": {
+    "id": "https://w3id.org/qi-vc/schemas/v1/digital-calibration-certificate.json",
+    "type": "JsonSchema"
+  },
+  "credentialSubject": {
+    "id": "urn:example:item:pressure-001",
+    "administrativeData": {
+      "coreData": {
+        "uniqueIdentifier": "dcc-sd-001",
+        "beginPerformanceDate": "2026-01-14T08:00:00Z",
+        "endPerformanceDate": "2026-01-14T16:00:00Z"
+      },
+      "items": [
+        {
+          "name": "Pressure transmitter"
+        }
+      ],
+      "calibrationLaboratory": {
+        "id": "did:web:lab.example",
+        "name": "Calibration laboratory"
+      }
+    },
+    "measurementResults": [
+      {
+        "measurand": "Pressure",
+        "usedMethods": [
+          {
+            "name": "Pressure calibration",
+            "reference": "EURAMET cg-17"
+          }
+        ],
+        "results": [
+          {
+            "name": "Pressure at nominal point",
+            "scopeRef": "pressure-scope",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/Pressure",
+                "value": 500,
+                "unit": {
+                  "ucumCode": "kPa"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 1,
+                  "coverageFactor": 2
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "type": "CredentialEvidenceReference",
+      "id": "urn:uuid:accreditation-direct-001",
+      "relation": "authorizedBy",
+      "authorizationBasis": {
+        "kind": "accreditation",
+        "issuerRole": "nationalAccreditationBody"
+      }
+    }
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "created": "2026-06-09T09:54:47Z",
+    "verificationMethod": "did:web:lab.example#key-2",
+    "cryptosuite": "ecdsa-sd-2023",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "u2V0BhVhALz6KwBDJCV8R5XhykozALFWJ2Hb8hekQ_sZcZsOIHS7ILVMdCZxSeY13yPJJS66BNvnR5K-bQLr_WSB8UJ8fR1gjgCQCg3scsqVAfgswJXpGtyTpXDu0GB2Y8KarbQr8BRr_lXGAqABYIKINpt_Nj3sqWcUSLNd16MPPGnbS6XNQSR7DsO2kZxc4AVggibgM99I8e-44-zMY7cVPkVIG0Q5JC6PnYejY9hN1hLwCWCBJI_lMKGAgJg9m7hoig-8oYH18KxIee4DM5XFvWZpm-ANYID2Yw0vv2vhjQ0cgcJzY12kZ4Sf5K7YlTreySvtdyDaIBFggFHVZYUV3_kjmz96dxuhJO8wS28weTI_pQexDMpZbAz8FWCB1whPQ8ya9Xuh-aZPOdneB3PuL6EQkMf5E5cuXcQOvmwZYIL3FRFYw3vClGjwEoNzcZGDBQeKhIgdi3HIYWSSrJtbWB1gg41doaGUz8Pp6p7rJPxjEJgXvByhWaS48nNDBDyXJDB-YIAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgYGBkYGhgbGBwYHRgeGB8"
+  }
+}

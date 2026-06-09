@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='utf-8'?>
+<drmd:digitalReferenceMaterialDocument xmlns:dcc="https://ptb.de/dcc" xmlns:drmd="https://example.org/drmd" xmlns:si="https://ptb.de/si" schemaVersion="0.3.0">
+  <drmd:administrativeData>
+    <drmd:coreData>
+      <drmd:titleOfTheDocument>referenceMaterialCertificate</drmd:titleOfTheDocument>
+      <drmd:uniqueIdentifier>3014-6127-4075-5604</drmd:uniqueIdentifier>
+      <drmd:validity>
+        <drmd:untilRevoked>true</drmd:untilRevoked>
+      </drmd:validity>
+    </drmd:coreData>
+    <drmd:referenceMaterialProducer>
+      <drmd:name>
+        <dcc:content lang="en">Bundesanstalt für Materialforschung und -prüfung (BAM)</dcc:content>
+      </drmd:name>
+      <drmd:contact>
+        <dcc:name>
+          <dcc:content lang="en">Bundesanstalt für Materialforschung und -prüfung (BAM)</dcc:content>
+        </dcc:name>
+        <dcc:eMail>sales.crm@bam.de</dcc:eMail>
+        <dcc:phone>+49 30 8104 2061</dcc:phone>
+        <dcc:fax>+49 30 8104 72061</dcc:fax>
+        <dcc:location>
+          <dcc:street>Richard-Willstätter-Str</dcc:street>
+          <dcc:streetNo>11</dcc:streetNo>
+          <dcc:postCode>12489</dcc:postCode>
+          <dcc:city>Berlin</dcc:city>
+          <dcc:countryCode>DE</dcc:countryCode>
+        </dcc:location>
+      </drmd:contact>
+    </drmd:referenceMaterialProducer>
+    <drmd:respPersons>
+      <dcc:respPerson>
+        <dcc:person>
+          <dcc:name>
+            <dcc:content lang="en">Dr. S. Richter</dcc:content>
+          </dcc:name>
+        </dcc:person>
+        <dcc:description>
+          <dcc:content lang="en">Leader of the committee of autentication</dcc:content>
+        </dcc:description>
+        <dcc:role>Committee for Certification</dcc:role>
+        <dcc:mainSigner>true</dcc:mainSigner>
+      </dcc:respPerson>
+      <dcc:respPerson>
+        <dcc:person>
+          <dcc:name>
+            <dcc:content lang="en">Dr. S. Recknagel</dcc:content>
+          </dcc:name>
+        </dcc:person>
+        <dcc:description>
+          <dcc:content lang="en">Project Leader</dcc:content>
+        </dcc:description>
+        <dcc:role>Project Coordinator</dcc:role>
+        <dcc:mainSigner>true</dcc:mainSigner>
+      </dcc:respPerson>
+    </drmd:respPersons>
+  </drmd:administrativeData>
+  <drmd:materials>
+    <drmd:material>
+      <drmd:name>
+        <dcc:content lang="en">BAM-M375a</dcc:content>
+      </drmd:name>
+      <drmd:description>
+        <dcc:content lang="en">CuZn39Pb3</dcc:content>
+      </drmd:description>
+      <drmd:minimumSampleSize>
+        <dcc:itemQuantity>
+          <si:realListXMLList>
+            <si:valueXMLList>0.2</si:valueXMLList>
+            <si:unitXMLList>g</si:unitXMLList>
+          </si:realListXMLList>
+        </dcc:itemQuantity>
+      </drmd:minimumSampleSize>
+      <drmd:itemQuantities>
+        <dcc:itemQuantity>
+          <si:realListXMLList>
+            <si:valueXMLList>1</si:valueXMLList>
+            <si:unitXMLList/>
+          </si:realListXMLList>
+        </dcc:itemQuantity>
+      </drmd:itemQuantities>
+    </drmd:material>
+  </drmd:materials>
+  <drmd:materialPropertiesList>
+    <drmd:materialProperties isCertified="true">
+      <drmd:name>
+        <dcc:content lang="en">Certified Properties Set</dcc:content>
+      </drmd:name>
+      <drmd:description>
+        <dcc:content lang="en">1) Unweighted mean value of the means of accepted sets of data (consisting of at least 3 single results), each set being obtained by a different laboratory and/or a different method of measurement. 2) Estimated expanded uncertainty U with a coverage factor of k = 2, corresponding to a level of confidence of approx. 95 %, as defined in the Guide to the Expression of Uncertainty in Measurement, (GUM, ISO/IEC Guide 98-3:2008).</dcc:content>
+      </drmd:description>
+      <drmd:results>
+        <drmd:result>
+          <drmd:name>
+            <dcc:content lang="en">Certified Values</dcc:content>
+          </drmd:name>
+          <drmd:data>
+            <drmd:list>
+              <drmd:quantity>
+                <dcc:name>
+                  <dcc:content lang="en">Cu</dcc:content>
+                </dcc:name>
+                <si:real>
+                  <si:value>57.68</si:value>
+                  <si:unit>%</si:unit>
+                  <si:measurementUncertaintyUnivariate>
+                    <si:expandedMU>
+                      <si:valueExpandedMU>0.14</si:valueExpandedMU>
+                    </si:expandedMU>
+                  </si:measurementUncertaintyUnivariate>
+                </si:real>
+              </drmd:quantity>
+              <drmd:quantity>
+                <dcc:name>
+                  <dcc:content lang="en">Zn</dcc:content>
+                </dcc:name>
+                <si:real>
+                  <si:value>38.2</si:value>
+                  <si:unit>%</si:unit>
+                  <si:measurementUncertaintyUnivariate>
+                    <si:expandedMU>
+                      <si:valueExpandedMU>0.4</si:valueExpandedMU>
+                    </si:expandedMU>
+                  </si:measurementUncertaintyUnivariate>
+                </si:real>
+              </drmd:quantity>
+              <drmd:quantity>
+                <dcc:name>
+                  <dcc:content lang="en">Pb</dcc:content>
+                </dcc:name>
+                <si:real>
+                  <si:value>3.07</si:value>
+                  <si:unit>%</si:unit>
+                  <si:measurementUncertaintyUnivariate>
+                    <si:expandedMU>
+                      <si:valueExpandedMU>0.06</si:valueExpandedMU>
+                    </si:expandedMU>
+                  </si:measurementUncertaintyUnivariate>
+                </si:real>
+              </drmd:quantity>
+              <drmd:quantity>
+                <dcc:name>
+                  <dcc:content lang="en">As</dcc:content>
+                </dcc:name>
+                <si:real>
+                  <si:value>178.0</si:value>
+                  <si:unit>mg/kg</si:unit>
+                  <si:measurementUncertaintyUnivariate>
+                    <si:expandedMU>
+                      <si:valueExpandedMU>5.0</si:valueExpandedMU>
+                    </si:expandedMU>
+                  </si:measurementUncertaintyUnivariate>
+                </si:real>
+              </drmd:quantity>
+            </drmd:list>
+          </drmd:data>
+        </drmd:result>
+      </drmd:results>
+    </drmd:materialProperties>
+  </drmd:materialPropertiesList>
+  <drmd:statements>
+    <drmd:intendedUse>
+      <dcc:name>
+        <dcc:content lang="en">Intended Use</dcc:content>
+      </dcc:name>
+      <dcc:content lang="en">The CRM is intended for establishing or checking the calibration of spark optical emission and X-ray fluorescence spectrometers for the analysis of samples of similar matrix composition. The minimum sample size for wet chemical analysis is 0.2 g.</dcc:content>
+    </drmd:intendedUse>
+    <drmd:metrologicalTraceability>
+      <dcc:name>
+        <dcc:content lang="en">Metrological Traceability</dcc:content>
+      </dcc:name>
+      <dcc:content lang="en">To ensure traceability of the certified mass fractions to the SI (Système International d'Unités) calibration was performed using standard solutions prepared from pure metals or stoichiometric compounds or with traceable commercial calibration solutions.</dcc:content>
+    </drmd:metrologicalTraceability>
+    <drmd:referenceToCertificationReport>
+      <dcc:name>
+        <dcc:content lang="en">Reference to Certification Report</dcc:content>
+      </dcc:name>
+      <dcc:content lang="en">A detailed technical report describing the analysis procedures and the treatment of the analytical data used to certify BAM-M375a is available on request or can be downloaded from BAM website (https://rrr.bam.de).</dcc:content>
+    </drmd:referenceToCertificationReport>
+  </drmd:statements>
+</drmd:digitalReferenceMaterialDocument>

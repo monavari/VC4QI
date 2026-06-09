@@ -1,0 +1,142 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-rm.jsonld"
+  ],
+  "type": [
+    "VerifiableCredential",
+    "ReferenceMaterialCertificate"
+  ],
+  "id": "urn:uuid:rm-cert-sd-001",
+  "issuer": "did:web:rm-producer.example",
+  "validFrom": "2026-02-01T00:00:00Z",
+  "validUntil": "2028-02-01T00:00:00Z",
+  "credentialSchema": {
+    "id": "https://w3id.org/qi-vc/schemas/v1/reference-material-certificate.json",
+    "type": "JsonSchema"
+  },
+  "credentialSubject": {
+    "id": "urn:example:lot:rm-CuZn-001",
+    "administrativeData": {
+      "coreData": {
+        "titleOfTheDocument": "Reference Material Certificate",
+        "uniqueIdentifier": "BAM-M375a"
+      },
+      "validity": {
+        "validFrom": "2026-02-01",
+        "validUntil": "2028-02-01"
+      },
+      "referenceMaterialProducer": {
+        "id": "did:web:rm-producer.example",
+        "name": "Bundesanstalt für Materialforschung und -prüfung (BAM)",
+        "location": "Richard-Willstätter-Str 11, 12489 Berlin, DE"
+      }
+    },
+    "materials": [
+      {
+        "name": "BAM-M375a",
+        "matrix": "CuZn39Pb3 (leaded brass)",
+        "form": "disc",
+        "materialIdentifiers": [
+          {
+            "type": "lotNumber",
+            "value": "BAM-M375a"
+          }
+        ]
+      }
+    ],
+    "materialPropertiesList": [
+      {
+        "propertyIdentifiers": [
+          "Cu",
+          "Pb",
+          "As"
+        ],
+        "isCertified": true,
+        "results": [
+          {
+            "name": "Copper (Cu)",
+            "scopeRef": "scope-entry-Cu-CuZn",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 57.68,
+                "unit": {
+                  "ucumCode": "%"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 0.14,
+                  "coverageFactor": 2
+                }
+              }
+            }
+          },
+          {
+            "name": "Lead (Pb)",
+            "scopeRef": "scope-entry-Pb-CuZn",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 3.07,
+                "unit": {
+                  "ucumCode": "%"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 0.06,
+                  "coverageFactor": 2
+                }
+              }
+            }
+          },
+          {
+            "name": "Arsenic (As)",
+            "scopeRef": "scope-entry-As-CuZn",
+            "data": {
+              "quantity": {
+                "quantityKind": "http://qudt.org/vocab/quantitykind/MassFraction",
+                "value": 178,
+                "unit": {
+                  "ucumCode": "mg/kg"
+                },
+                "uncertainty": {
+                  "expandedUncertainty": 5,
+                  "coverageFactor": 2
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "respPersons": [
+      {
+        "name": "Dr. S. Richter",
+        "role": "Committee for Certification"
+      },
+      {
+        "name": "Dr. S. Recknagel",
+        "role": "Project Coordinator"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "type": "CredentialEvidenceReference",
+      "id": "urn:uuid:operational-scope-001",
+      "relation": "authorizedBy",
+      "authorizationBasis": {
+        "kind": "operationalScope",
+        "issuerRole": "referenceMaterialProducer"
+      }
+    }
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "created": "2026-06-08T19:08:09Z",
+    "verificationMethod": "did:web:rm-producer.example#key-2",
+    "cryptosuite": "ecdsa-sd-2023",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "u2V0AhVhASizYzRJeD5jrvK6Hjexb41a-lru73LlLFZncawLRyxjMvKGJ7ghZu3K2_oLWlzNIevepEbX2Gb1j8qDAZYxojlgjgCQC2eqQ4wdurZC_oVd9vfZlsIDsPJoaoiLisc6GBPQCluZYICWW4vjLz2n1_9QyqN-klAGR41EXeKRTlpMWP_IPWiNVh1hAs1JAU8peuGz-AZmj8XwRjaz-pUPN0qS46E6F1hkQx8bFmb48sHHo5FAF0xK_J1fkO1PjHcKGSOEDrrAbDfRDpFhAaPAYsuy7msiWkzY_flUrmeg0ipmlubfbXoivFh9YuKVwJZllu5YAr7aMm9dZvdclCAzX4Jbl8_DqnH2W722EMlhABEahiqIC9L6TN_N20q-5cZNknb-ih3kfsSEjnBl4bEMhLONUvGPDcHBt4VPUUS6gEQtDiSG_nWH-SGjPY9N_ClhAqGewltMurdEgY94UDYFFOP7d7W_1eukaxV1eDAU4E9S2ylxB16nLb99EVn8zT2fDdHYJ8L9_3SK-YJ8utXMnOFhAjwdN75c1UoEEguRWLdH2ZpscVXKtG5_zyK0Rm45y_4PiDeT0uBWmKjUtys3oQbUEPDS2_tK05R7dMaIsMSFTnFhAgmLL2hTm7VMPV44DYtei-iXdcaep3niIR1AJnUdsCLbdsmUeXmUaPISCY4AexOArX1SjKTI6UksvQuIDT39jVFhAhxkQN-F5XummRHYFGK6gORCOnUTtq8B32Jw6ccWhf_HZi5UwmrDahg2iDN-nv7x_yEZWQeY79hXWnCTblD7lAYxnL2lzc3VlcmovdmFsaWRGcm9tay92YWxpZFVudGlscS9jcmVkZW50aWFsU2NoZW1hdS9jcmVkZW50aWFsU3ViamVjdC9pZHguL2NyZWRlbnRpYWxTdWJqZWN0L2FkbWluaXN0cmF0aXZlRGF0YS9jb3JlRGF0YXguL2NyZWRlbnRpYWxTdWJqZWN0L2FkbWluaXN0cmF0aXZlRGF0YS92YWxpZGl0eXhCL2NyZWRlbnRpYWxTdWJqZWN0L2FkbWluaXN0cmF0aXZlRGF0YS9yZWZlcmVuY2VNYXRlcmlhbFByb2R1Y2VyL2lkeEQvY3JlZGVudGlhbFN1YmplY3QvYWRtaW5pc3RyYXRpdmVEYXRhL3JlZmVyZW5jZU1hdGVyaWFsUHJvZHVjZXIvbmFtZXgcL2NyZWRlbnRpYWxTdWJqZWN0L21hdGVyaWFsc3gpL2NyZWRlbnRpYWxTdWJqZWN0L21hdGVyaWFsUHJvcGVydGllc0xpc3RpL2V2aWRlbmNl"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://w3id.org/security/multikey/v1"
+  ],
+  "id": "did:web:lab.example",
+  "assertionMethod": [
+    {
+      "@context": "https://w3id.org/security/multikey/v1",
+      "id": "did:web:lab.example#key-2",
+      "type": "Multikey",
+      "controller": "did:web:lab.example",
+      "publicKeyMultibase": "zDnaeh4p6jGci8CSEywW65678rCbewEikbtkhaY5DuN6ZEUmE"
+    }
+  ]
+}

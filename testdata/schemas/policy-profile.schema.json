@@ -119,9 +119,6 @@
         "relation": {
           "$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/EvidenceRelation"
         },
-        "role": {
-          "$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/EvidenceRole"
-        },
         "authorizationBasis": {
           "$ref": "https://w3id.org/qi-vc/schemas/v1/_shared/common.json#/$defs/AuthorizationBasis"
         },

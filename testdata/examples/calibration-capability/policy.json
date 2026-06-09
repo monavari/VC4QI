@@ -7,18 +7,17 @@
   "requiredEvidence": [
     {
       "id": "capability-authority",
-      "relation": "qi:authorizedBy",
-      "role": "authorizing",
+      "relation": "authorizedBy",
       "authorizationBasis": {
-        "kind": "qi:capability"
+        "kind": "operationalScope"
       },
       "required": true
     },
     {
       "id": "capability-parent",
-      "relation": "qi:derivedFrom",
+      "relation": "derivedFrom",
       "authorizationBasis": {
-        "kind": "qi:accreditation"
+        "kind": "accreditation"
       },
       "required": true
     }

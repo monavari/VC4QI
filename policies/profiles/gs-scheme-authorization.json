@@ -7,19 +7,17 @@
   "requiredEvidence": [
     {
       "id": "gs-scheme",
-      "relation": "qi:authorizedBy",
-      "role": "authorizing",
+      "relation": "authorizedBy",
       "authorizationBasis": {
-        "kind": "qi:schemeAuthorization"
+        "kind": "schemeAuthorization"
       },
       "required": true
     },
     {
       "id": "gs-competence",
-      "relation": "qi:authorizedBy",
-      "role": "authorizing",
+      "relation": "authorizedBy",
       "authorizationBasis": {
-        "kind": "qi:accreditation"
+        "kind": "accreditation"
       },
       "required": true
     }

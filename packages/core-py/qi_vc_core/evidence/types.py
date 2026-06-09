@@ -8,25 +8,18 @@ from pydantic import BaseModel, ConfigDict, Field
 JsonObject = dict[str, Any]
 
 EvidenceRelation = Literal[
-    "qi:authorizedBy",
-    "qi:derivedFrom",
-    "qi:recognizedBy",
-    "qi:notifiedBy",
-    "qi:supportedBy",
-    "qi:statusProvidedBy",
+    "authorizedBy",
+    "derivedFrom",
+    "supportedBy",
 ]
 
-EvidenceRole = Literal["authorizing", "supporting", "recognition", "status"]
-
 AuthorizationBasisKind = Literal[
-    "qi:accreditation",
-    "qi:capability",
-    "qi:legalMandate",
-    "qi:notification",
-    "qi:schemeAuthorization",
-    "qi:operationalScope",
-    "qi:recognition",
-    "qi:domainEvidence",
+    "accreditation",
+    "legalMandate",
+    "notification",
+    "schemeAuthorization",
+    "recognition",
+    "operationalScope",
 ]
 
 
@@ -46,7 +39,6 @@ class CredentialEvidenceReference(BaseModel):
     id: str
     type: Literal["CredentialEvidenceReference"]
     relation: EvidenceRelation
-    role: EvidenceRole
     authorizationBasis: AuthorizationBasis | None = None
     digestMultibase: str | None = None
     digestSRI: str | None = None
@@ -63,7 +55,6 @@ class EvidenceEdge(BaseModel):
     from_: str = Field(alias="from")
     to: str
     relation: EvidenceRelation
-    role: EvidenceRole
     authorizationBasis: AuthorizationBasis | None = None
     digestMultibase: str | None = None
     digestSRI: str | None = None

@@ -50,10 +50,9 @@ const minimalDcc = {
     {
       id: 'https://accreditor.example.com/evidence/001',
       type: 'CredentialEvidenceReference',
-      relation: 'qi:authorizedBy',
-      role: 'authorizing',
+      relation: 'authorizedBy',
       authorizationBasis: {
-        kind: 'qi:accreditation',
+        kind: 'accreditation',
       },
       digestMultibase: VALID_DIGEST_1,
     },
@@ -119,10 +118,9 @@ const minimalRmc = {
     {
       id: 'https://accreditor.example.com/evidence/002',
       type: 'CredentialEvidenceReference',
-      relation: 'qi:authorizedBy',
-      role: 'authorizing',
+      relation: 'authorizedBy',
       authorizationBasis: {
-        kind: 'qi:operationalScope',
+        kind: 'operationalScope',
       },
       digestMultibase: VALID_DIGEST_2,
     },

@@ -17,7 +17,7 @@ describe('verifyCredentialGraph shared fixtures', () => {
   });
 
   it('passes DCC authorized by legal mandate without accreditation', async () => {
-    const trace = await verifyFixture('ptb-legal-mandate');
+    const trace = await verifyFixture('nmi-legal-mandate');
     expect(trace.verified).toBe(true);
     expect(codes(trace)).toContain('TRUSTED_ISSUER');
     expect(trace.results.some(result => result.detail.includes('qi:accreditation'))).toBe(false);
@@ -45,5 +45,16 @@ describe('verifyCredentialGraph shared fixtures', () => {
     const trace = await verifyFixture('calibration-capability', 'failing-target-credential.json');
     expect(trace.verified).toBe(false);
     expect(codes(trace)).toContain('DERIVATION_VIOLATION');
+  });
+
+  // Profile D — GS certificate authorized jointly by an independent scheme
+  // authorization (kind: schemeAuthorization, no subset check) and a competence
+  // accreditation (kind: accreditation). Both authorizing edges must resolve and
+  // the required-evidence set must be satisfied for the certificate to accept.
+  it('passes GS Profile D: authorizedBy scheme + accreditation (independent edges)', async () => {
+    const trace = await verifyFixture('gs-scheme-authorization');
+    expect(trace.verified).toBe(true);
+    expect(codes(trace)).toContain('REQUIRED_EVIDENCE_PRESENT');
+    expect(codes(trace)).toContain('TRUSTED_ISSUER');
   });
 });

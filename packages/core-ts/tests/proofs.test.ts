@@ -51,7 +51,7 @@ describe('createProof', () => {
     const before = new Date();
     const proof = await createProof(credential, kp);
     const after = new Date();
-    const created = new Date(proof.created);
+    const created = new Date(proof.created!);
     expect(created >= before).toBe(true);
     expect(created <= after).toBe(true);
   });

@@ -38,12 +38,7 @@ def normalize_evidence(
             ))
             continue
 
-        if reference.relation in {
-            "qi:authorizedBy",
-            "qi:derivedFrom",
-            "qi:recognizedBy",
-            "qi:notifiedBy",
-        } and reference.authorizationBasis is None:
+        if reference.relation in {"authorizedBy", "derivedFrom"} and reference.authorizationBasis is None:
             results.append(trace_entry(
                 id=f"evidence-{index}-basis",
                 level="credential",

@@ -11,8 +11,6 @@ from ..verifier.trace import trace_entry
 def edge_matches_requirement(edge: EvidenceEdge, graph: EvidenceGraph, requirement: RequiredEvidence) -> bool:
     if requirement.relation and edge.relation != requirement.relation:
         return False
-    if requirement.role and edge.role != requirement.role:
-        return False
     if requirement.authorizationBasis and requirement.authorizationBasis.kind:
         if not edge.authorizationBasis or edge.authorizationBasis.kind != requirement.authorizationBasis.kind:
             return False
