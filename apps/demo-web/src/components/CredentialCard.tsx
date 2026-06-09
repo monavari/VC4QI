@@ -293,6 +293,45 @@ export interface CredentialCardProps {
   noRaw?: boolean;
 }
 
+const RELATION_COLOR: Record<string, string> = {
+  authorizedBy: '#2D6CB5',
+  derivedFrom:  '#0284C7',
+  supportedBy:  '#D9703A',
+};
+
+function EvidenceLinks({ links }: { links: JsonObject[] }) {
+  if (links.length === 0) return null;
+  return (
+    <Section title="Evidence links">
+      {links.map((link, i) => {
+        const rel = link.relation as string | undefined;
+        const refId = link.id as string | undefined;
+        const basis = link.authorizationBasis as JsonObject | undefined;
+        const color = rel ? (RELATION_COLOR[rel] ?? '#64748B') : '#64748B';
+        return (
+          <div key={i} className={clsx(i > 0 && 'border-t border-slate-100 mt-1 pt-1', 'py-[2px]')}>
+            <div className="flex items-center gap-2 mb-0.5">
+              {rel && (
+                <span style={{ color, borderColor: color }} className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border bg-white">
+                  {rel}
+                </span>
+              )}
+              {basis?.kind != null && (
+                <span className="text-[9px] text-slate-500 font-mono bg-slate-100 px-1.5 py-0.5 rounded">
+                  {String(basis.kind)}
+                </span>
+              )}
+            </div>
+            {refId && (
+              <p className="text-[9px] font-mono text-slate-400 truncate pl-0.5">{refId}</p>
+            )}
+          </div>
+        );
+      })}
+    </Section>
+  );
+}
+
 export function CredentialCard({ cred, isTarget, status, noRaw }: CredentialCardProps) {
   const type = credType(cred);
   const pal = TYPE_PALETTE[type] ?? DEFAULT_PALETTE;
@@ -302,6 +341,7 @@ export function CredentialCard({ cred, isTarget, status, noRaw }: CredentialCard
   const validUntil = cred.validUntil as string | undefined;
   const subj = (cred.credentialSubject as JsonObject) ?? {};
   const proofSuite = (cred.proof as JsonObject | undefined)?.cryptosuite as string | undefined;
+  const evidenceLinks = (cred.evidence as JsonObject[] | undefined) ?? [];
 
   const isDcc = !SCOPE_TYPES.has(type);
 
@@ -337,6 +377,8 @@ export function CredentialCard({ cred, isTarget, status, noRaw }: CredentialCard
 
       {isDcc ? <DccBody subj={subj} /> : <ScopeBody subj={subj} />}
       {!isDcc && !SCOPE_TYPES.has(type) && <GenericBody subj={subj} />}
+
+      {evidenceLinks.length > 0 && <EvidenceLinks links={evidenceLinks} />}
 
       {!noRaw && <RawJson cred={cred} />}
     </div>
