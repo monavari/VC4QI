@@ -9,7 +9,7 @@ This is the normative model the implementation must satisfy, extracted from the 
 Three **structural gaps** the model closes, and five **boundary conditions** it does not (they depend on infrastructure/institutions/governance):
 
 | ID | Name | Meaning |
-|---|---|---|
+| --- | --- | --- |
 | **G1** | Scope binding | The claim must be checkable against the structured scope that authorizes it (closed structurally; semantic half is B5). |
 | **G2** | Selective disclosure | Present a verifier-specific subset while retaining cryptographic assurance over that subset. |
 | **G3** | Recursive composition | Authorizing/supporting credentials verifiable recursively as one bundle. |
@@ -46,7 +46,7 @@ A single credential can carry edges of both kinds at once (this is why a layer m
 
 A single recursive, memoized walk over an acyclic graph; returns `accept`/`reject`/`explain` with structured reason codes; cost O(|V| + |E|).
 
-```
+```text
 verify(domainCredential, policy):
   verify signature, temporal validity, and status of the domain credential
   resolve issuer identities through the appropriate trust registry
@@ -75,6 +75,7 @@ Two predicates do the real work; the split is the model's central honesty: the *
 **Evidence graph.** `G = (V, E)`. Each edge `e = ⟨u, v, r, b⟩` with `r ∈ {authorizedBy, derivedFrom, supportedBy}` and `b` a basis kind. `authorizedBy`/`derivedFrom` are authorizing; `supportedBy` is supporting. `G` is well-formed for root credential `d` iff it is **acyclic**, every `v` is **reachable from `d`**, and every `derivedFrom` edge carries **scope-bearing endpoints**. A duplicate reference to one credential is one vertex.
 
 **Scope and the derivation order.** A scope `S` is a set of admissible records, each a tuple over dimensions: **(property, matrix, method/characterization approach, measurand range, uncertainty constraint, temporal validity)**. Each dimension carries a partial order `⪯ᵢ`:
+
 - ranges → interval inclusion
 - method / matrix → membership in an admitted set
 - uncertainty → `≤` ceiling
@@ -95,7 +96,8 @@ Define `S′ ⊑ S` ("S′ does not exceed S") iff every record of `S′` is dom
 Three parties own different parts: the **credential** carries facts (claim values, structured scope, edges, status); the **profile** (owned by the scheme/domain community) fixes the required shape (which credential types/edge relations must be present, which `authorizationBasis` kinds are admissible, the scope vocabulary and computable semantics); the **verifier** holds the operative policy (selects a profile; sets the decision rule, freshness requirement, and accepted trust anchors). Outcome is binary `accept`/`reject` with a reason code — never a confidence score. A profile is a satisfiable shape constraint (expressible as SHACL or a presentation query), not a fixed graph; its structural half is expressible today, its value half waits on B5.
 
 Worked policy (verifier = testing lab selecting a check standard):
-```
+
+```text
 require credentialType: ReferenceMaterialCertificate
 require certifiedValue.property: As
 require material.matrix: CuZn (brass)
@@ -105,6 +107,7 @@ require status: current at verification, valid at issuance
 decisionRule: simple acceptance, guard band = U (ISO/IEC 17025 7.8.6, ILAC-G8)
 trustAnchors: accreditation MRA via Global ACI
 ```
+
 Evaluated against a credential asserting `As = 178 ± 5 mg/kg`: property/matrix match, `5 ≤ 8`, value lies within the accredited range under the guard band, status current ⇒ **accept** with a reason trace. Had the uncertainty exceeded the ceiling, or the value sat within `U` of a range bound under a stricter guard band, the same evidence could yield **reject** — a policy decision, not arithmetic.
 
 ---
@@ -138,6 +141,7 @@ The reference-material certificate (node), with one authorizing edge to its oper
   "proof": { "type": "DataIntegrityProof" }
 }
 ```
+
 > The repo uses a richer DRMD-aligned `credentialSubject` (materials[]/materialPropertiesList[]); keep that structure and map these values into it, including `scopeRef`. Figure 3 above is the simplified view.
 
 **The three-credential chain (Figure 4):** `AccreditationAttestation` (NAB issuer; scope: As in CuZn39Pb3, range, admitted methods) ←`derivedFrom` (`kind: accreditation`, subset-checked)— `OperationalScope` (self-issued; As in CuZn, subset of accreditation, tightened uncertainty ceiling) ←`authorizedBy` (`kind: operationalScope`)— `ReferenceMaterialCertificate` (above). Expected: derivation check confirms op-scope ⊑ accreditation; scope-inclusion confirms 178.0 inside the accredited range under the decision rule ⇒ accept. A value outside the range ⇒ reject with a distinct reason code. The certificate also carries `supportedBy` edges to characterization/homogeneity/stability study credentials (the recursive case, Profile B+E).
@@ -149,7 +153,7 @@ The reference-material certificate (node), with one authorizing edge to its oper
 Edge styles in the figure: solid = derived (subset-checked), dashed = independent (own terms), dotted = supporting.
 
 | Profile | Use case | Shape |
-|---|---|---|
+| --- | --- | --- |
 | **A. Accreditation-only** | Standard accredited lab, stable scope (DCC) | `Domain VC` —`authorizedBy`→ `Accreditation` |
 | **B. Accreditation + operational scope** | Flexible-scope issuance; the worked `As = 178` case | `RM cert` —`authorizedBy`→ `Operational scope` —`derivedFrom`→ `Accreditation(RM)` |
 | **C. Legal / metrology authority** | NMI / statutory; no accreditation root | `Statutory DCC` —`authorizedBy` (`kind: recognition`/`legalMandate`)→ `Legal mandate (NMI)` |

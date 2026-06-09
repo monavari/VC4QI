@@ -23,7 +23,7 @@ make lint                            # pnpm lint + ruff + mypy
 ## Key file locations
 
 | What | Where |
-|---|---|
+| --- | --- |
 | TS evidence types | `packages/core-ts/src/evidence/types.ts` |
 | Py evidence types | `packages/core-py/qi_vc_core/evidence/types.py` |
 | TS edge dispatcher | `packages/core-ts/src/edge/evaluateEdge.ts` |
@@ -40,6 +40,7 @@ make lint                            # pnpm lint + ruff + mypy
 ## Current migration state (v0.3.0 — Part A complete)
 
 Part A (Phases 1–5) is complete. The following have been fixed:
+
 - `EvidenceRelation` is now 3 bare tokens: `authorizedBy`, `derivedFrom`, `supportedBy`.
 - `EvidenceRole` enum deleted; `role` field removed everywhere.
 - `AuthorizationBasisKind` is now 6 bare tokens: `accreditation`, `legalMandate`,

@@ -4,7 +4,7 @@ The v0.2 scenario suite is fixture-driven and exercises policy-resolved evidence
 graphs:
 
 | Scenario | Expected result |
-|----------|-----------------|
+| --- | --- |
 | DCC directly authorized by accreditation | pass |
 | DCC authorized by capability evidence derived from accreditation | pass |
 | DCC authorized by an NMI legal mandate | pass |
