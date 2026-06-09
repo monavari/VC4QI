@@ -153,9 +153,9 @@ const TYPE_LABEL: Record<string, string> = {
 
 // ── Type-specific body renderers ──────────────────────────────────────────────
 
-const SCOPE_TYPES = new Set([
-  'AccreditationCertificate', 'LegalMandateEvidence', 'SchemeAuthorizationEvidence',
-  'CalibrationCapabilityAuthorization', 'OperationalScopeEvidence',
+const DCC_TYPES = new Set([
+  'DigitalCalibrationCertificate', 'ReferenceMaterialCertificate',
+  'ReferenceMaterialStudy', 'TestReport',
 ]);
 
 function DccBody({ subj }: { subj: JsonObject }) {
@@ -209,54 +209,12 @@ function DccBody({ subj }: { subj: JsonObject }) {
   );
 }
 
-function ScopeBody({ subj }: { subj: JsonObject }) {
-  const scope = (subj.scope as unknown[] | undefined)
-    ?? ((subj.constraints as JsonObject | undefined)?.scope as unknown[] | undefined)
-    ?? [];
-  const legalBasis = subj.legalBasis as string | undefined;
-  const scheme = subj.scheme as string | undefined;
-  const basisKind = subj.authorizationBasisKind as string | undefined;
 
-  return (
-    <>
-      <Section title="Authorization">
-        {basisKind && (
-          <div className="flex items-baseline gap-2 py-[2px]">
-            <span className="text-[10px] text-slate-400 w-28">Basis</span>
-            <span className="text-[10px] font-medium text-slate-800">{basisKind}</span>
-          </div>
-        )}
-        {legalBasis && (
-          <div className="flex items-baseline gap-2 py-[2px]">
-            <span className="text-[10px] text-slate-400 w-28">Legal basis</span>
-            <span className="text-[10px] font-medium text-slate-800">{legalBasis}</span>
-          </div>
-        )}
-        {scheme && (
-          <div className="flex items-baseline gap-2 py-[2px]">
-            <span className="text-[10px] text-slate-400 w-28">Scheme</span>
-            <span className="text-[10px] font-medium text-slate-800">{scheme}</span>
-          </div>
-        )}
-        <div className="flex items-baseline gap-2 py-[2px]">
-          <span className="text-[10px] text-slate-400 w-28">Subject</span>
-          <span className="text-[10px] font-mono text-slate-600">{shortDid(subj.id as string ?? '')}</span>
-        </div>
-      </Section>
-      {scope.length > 0 && (
-        <Section title="Authorized scope">
-          <TreeValue value={scope} />
-        </Section>
-      )}
-    </>
-  );
-}
-
-function GenericBody({ subj }: { subj: JsonObject }) {
+function SubjectBody({ subj, title = 'Credential subject' }: { subj: JsonObject; title?: string }) {
   const filtered = Object.fromEntries(Object.entries(subj).filter(([k]) => k !== 'id'));
   if (Object.keys(filtered).length === 0) return null;
   return (
-    <Section title="Credential subject">
+    <Section title={title}>
       <TreeValue value={filtered} />
     </Section>
   );
@@ -343,7 +301,7 @@ export function CredentialCard({ cred, isTarget, status, noRaw }: CredentialCard
   const proofSuite = (cred.proof as JsonObject | undefined)?.cryptosuite as string | undefined;
   const evidenceLinks = (cred.evidence as JsonObject[] | undefined) ?? [];
 
-  const isDcc = !SCOPE_TYPES.has(type);
+  const isDcc = DCC_TYPES.has(type);
 
   return (
     <div className="flex flex-col min-w-0">
@@ -375,8 +333,7 @@ export function CredentialCard({ cred, isTarget, status, noRaw }: CredentialCard
         )}
       </div>
 
-      {isDcc ? <DccBody subj={subj} /> : <ScopeBody subj={subj} />}
-      {!isDcc && !SCOPE_TYPES.has(type) && <GenericBody subj={subj} />}
+      {isDcc ? <DccBody subj={subj} /> : <SubjectBody subj={subj} title="Credential subject" />}
 
       {evidenceLinks.length > 0 && <EvidenceLinks links={evidenceLinks} />}
 
