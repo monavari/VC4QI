@@ -144,13 +144,17 @@ async function evaluateProof(
   if (proof.cryptosuite === 'ecdsa-sd-2023') {
     const sdLoader = options.sdDocumentLoader ?? options.documentLoader;
     if (!sdLoader) {
+      // FC-1: absent proof-verification infrastructure fails closed regardless
+      // of policy mode. A credential whose proof was never checked leaves the
+      // graph ill-formed, and the model's guarantees do not range over an
+      // ill-formed graph (MODEL_SPEC §4), so there is no weaker verdict to give.
       return [traceEntry({
         id: `proof-${id}`,
         level: 'credential',
         target: id,
-        status: mode === 'required' ? 'FAIL' : 'WARN',
+        status: 'FAIL',
         code: 'PROOF_RESOLVER_MISSING',
-        detail: 'No document loader was provided for ecdsa-sd-2023 verification.',
+        detail: 'No document loader was configured for ecdsa-sd-2023 verification, so the proof was never verified.',
       })];
     }
     try {
@@ -177,13 +181,15 @@ async function evaluateProof(
     }
   }
   if (!options.resolveKey) {
+    // FC-1: see above. Absent key resolution means gate 1 never ran for this
+    // node; that is a failure, not a warning.
     return [traceEntry({
       id: `proof-${id}`,
       level: 'credential',
       target: id,
-      status: mode === 'required' ? 'FAIL' : 'WARN',
+      status: 'FAIL',
       code: 'PROOF_RESOLVER_MISSING',
-      detail: 'No key resolver was provided for proof verification.',
+      detail: 'No key resolver was configured, so the proof was never verified.',
     })];
   }
   try {
@@ -337,6 +343,10 @@ export async function verifyCredentialGraph(
   for (const edge of graphResult.graph.edges) {
     const edgeOptions: Parameters<typeof evaluateEdge>[3] = {};
     if (options.resolveTrustRegistry !== undefined) edgeOptions.resolveTrustRegistry = options.resolveTrustRegistry;
+    // The trust registry is itself a signed credential; edge evaluation needs
+    // key resolution to verify its proof before reading it (SEC-1).
+    if (options.resolveKey !== undefined) edgeOptions.resolveKey = options.resolveKey;
+    if (options.documentLoader !== undefined) edgeOptions.documentLoader = options.documentLoader;
     if (options.verificationTime !== undefined) edgeOptions.verificationTime = options.verificationTime;
     results.push(...await evaluateEdge(edge, graphResult.graph, policy, edgeOptions));
   }

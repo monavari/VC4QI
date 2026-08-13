@@ -1,13 +1,24 @@
 // SPDX-License-Identifier: Apache-2.0
-import type { JsonObject, TraceEntry } from '../types.js';
+import type { DocumentLoader, JsonObject, TraceEntry } from '../types.js';
 import { traceEntry } from '../verifier/trace.js';
 import type { EvidenceEdge, EvidenceGraph } from '../evidence/types.js';
 import type { PolicyProfile } from '../policy/types.js';
 import { checkScopeInclusion } from '../scope/index.js';
-import { isTrustedIssuer, parseTrustRegistryCredential } from '../trust-registry/index.js';
+import {
+  isTrustedIssuer,
+  verifyTrustRegistryCredential,
+  TrustRegistryVerificationError,
+} from '../trust-registry/index.js';
 
 export interface EdgeEvaluationOptions {
   resolveTrustRegistry?: (issuerDid: string, context?: unknown) => Promise<JsonObject>;
+  /**
+   * Resolves the key that vouches for the TrustRegistryCredential's proof.
+   * Required whenever a trust registry is consulted: the registry is a signed
+   * credential, and its proof is verified before any entry is read (SEC-1).
+   */
+  resolveKey?: (verificationMethod: string) => Promise<Uint8Array>;
+  documentLoader?: DocumentLoader;
   verificationTime?: Date;
 }
 
@@ -59,7 +70,13 @@ export async function evaluateAuthorizedBy(
         authorizationBasisKind: edge.authorizationBasis?.kind,
         issuerRole: edge.authorizationBasis?.issuerRole,
       });
-      const registry = parseTrustRegistryCredential(registryCredential);
+      // SEC-1: verify the registry credential's proof before reading any entry
+      // out of it. Throws TrustRegistryVerificationError, handled below with a
+      // reason code that names which condition failed.
+      const registry = await verifyTrustRegistryCredential(registryCredential, {
+        ...(options.resolveKey ? { resolveKey: options.resolveKey } : {}),
+        ...(options.documentLoader ? { documentLoader: options.documentLoader } : {}),
+      });
       const trusted = isTrustedIssuer(
         registry,
         evidenceIssuer,
@@ -81,6 +98,11 @@ export async function evaluateAuthorizedBy(
           : `${evidenceIssuer} is not trusted for ${edge.authorizationBasis?.kind ?? 'unspecified evidence'}.`,
       }));
     } catch (error) {
+      // Surface the specific condition rather than one opaque failure, so the
+      // trace distinguishes "check not performed" from "check failed" (SEC-8).
+      const code = error instanceof TrustRegistryVerificationError
+        ? error.code
+        : 'TRUST_REGISTRY_ERROR';
       results.push(traceEntry({
         id: `trust-registry-${evidenceIssuer}`,
         level: 'edge',
@@ -88,20 +110,24 @@ export async function evaluateAuthorizedBy(
         to: edge.to,
         relation: edge.relation,
         status: 'FAIL',
-        code: 'TRUST_REGISTRY_ERROR',
+        code,
         detail: `Trust registry check failed: ${String(error)}`,
       }));
     }
   } else {
+    // FC-2: an authority-conveying edge with no trust registry resolver is a
+    // failure, not a warning. Without registry resolution the issuer's
+    // identifier never resolves through an admitted registry, so the graph is
+    // ill-formed and no verdict is available (MODEL_SPEC §4).
     results.push(traceEntry({
       id: `trust-registry-${evidenceIssuer}`,
       level: 'edge',
       from: edge.from,
       to: edge.to,
       relation: edge.relation,
-      status: 'WARN',
+      status: 'FAIL',
       code: 'TRUST_REGISTRY_NOT_AVAILABLE',
-      detail: 'No trust registry resolver was provided.',
+      detail: 'No trust registry resolver was configured, so issuer recognition was never checked.',
     }));
   }
 

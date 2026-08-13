@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
 import { buildEvidenceGraph } from '../src/evidence/index.js';
-import { codes, loadFixture } from './fixture-helpers.js';
+import { codes, loadFixture, registryVerificationOptions } from './fixture-helpers.js';
 import { verifyCredentialGraph } from '../src/verifier/index.js';
 import type { JsonObject } from '../src/types.js';
 
@@ -12,6 +12,7 @@ describe('evidence graph builder', () => {
       skipProof: true,
       fetchDocument: async uri => fixture.documents.get(uri) as JsonObject,
       resolveTrustRegistry: async () => fixture.trustRegistry,
+      ...registryVerificationOptions,
     });
     expect(trace.verified).toBe(true);
     expect(trace.summary.edgesEvaluated).toBeGreaterThan(2);
