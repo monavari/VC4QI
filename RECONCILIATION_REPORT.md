@@ -310,14 +310,14 @@ decision in this run (GS scope) is logged here.
 
 ---
 
-# Stage 1 — SEC-1, FC-1, FC-2 (overhaul work order)
+## Stage 1 — SEC-1, FC-1, FC-2 (overhaul work order)
 
 Branch `fix/sec-1-verify-registry`, from `origin/main` @ `8847bc4`.
 
 Scope from `VC4QI_repo_overhaul_handover.md` §4 stage 1: make the trust decision
 cryptographically grounded, and make absent trust infrastructure fail closed.
 
-## Baseline recorded before any edit
+### Baseline recorded before any edit
 
 ```text
 ✓ pnpm -r build              (core-ts + demo-web)
@@ -330,7 +330,7 @@ cryptographically grounded, and make absent trust infrastructure fail closed.
 `AGENTS.md` claims "129 TS tests, 101 Python"; the observed counts above are the
 correct ones. Undercount in the doc, not a regression.
 
-## After stage 1
+### After stage 1
 
 ```text
 ✓ pnpm -r build              (core-ts + demo-web)
@@ -344,7 +344,7 @@ correct ones. Undercount in the doc, not a regression.
 All six worked chains still accept, verified additionally under a **strict
 offline document loader** that refuses any network fetch.
 
-## What changed, and why it was more than the handover described
+### What changed, and why it was more than the handover described
 
 The handover described SEC-1 as "verify the registry credential's proof before
 parsing". Doing only that would have been cryptographically decorative. See
@@ -354,7 +354,7 @@ therefore also required defining the registry-entry vocabulary
 (`contexts/v1/qi-core.jsonld`, scoped context on `registryEntries`) and really
 signing the fixtures, which previously carried no proof at all.
 
-## Decisions taken
+### Decisions taken
 
 - **D-TR-1 — verified registry as a distinct type.** `isTrustedIssuer` accepts
   only `VerifiedTrustRegistry`, a branded type unconstructable outside the
@@ -374,7 +374,7 @@ signing the fixtures, which previously carried no proof at all.
   defined inside a scoped `@context` on `registryEntries` so `status`,
   `validFrom` and `validUntil` do not shadow the VC-level terms anywhere else.
 
-## Pre-existing defects found while doing this (not caused by stage 1)
+### Pre-existing defects found while doing this (not caused by stage 1)
 
 1. **`uv sync` / `make test` / `make lint` cannot run.** Root `pyproject.toml`
    declares `packages/verifier-service` and `packages/lims-adapter` as uv
@@ -394,7 +394,7 @@ signing the fixtures, which previously carried no proof at all.
    `skipProof: true` is pervasive, and it is why no test exercises real proof
    verification through `verifyCredentialGraph`.
 
-## Deliberately not done in stage 1
+### Deliberately not done in stage 1
 
 - `verifier/index.ts` `STATUS_CHECK_FAILED`. The handover groups it with FC-1,
   but it is a fetch error rather than resolver absence — that is FC-3, whose
