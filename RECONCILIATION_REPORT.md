@@ -414,3 +414,93 @@ signing the fixtures, which previously carried no proof at all.
 - **ADR-004 artifacts** `schemas/v1/trust-registry-entry.json` and
   `policies/trust-registry-credential.json` are referenced by the ADR but do not
   exist.
+
+---
+
+## Stage 2 — D-1, SCO-1, SCO-2, SCO-3, TST-4
+
+Branch `fix/sco-1-governed-identifiers`, stacked on `fix/sec-1-verify-registry`
+(it edits the same `MODEL_SPEC` section and needs stage 1's fixture helpers).
+
+### The unsoundness removed
+
+`scope/index.ts` matched categorical dimensions by lowercasing free text and
+testing substring containment in both directions. `"As"` matched `"Ash"`; a
+scope entry for `"CuZn"` admitted a claim about `"CuZn39Pb3"`. The formal core
+claims soundness relative to a decidable `in`. `in` was decidable and **wrong**,
+in the paper's only witness.
+
+Sites removed: measurand match, `allowedMethods` match, matrix match,
+`allowedForms` match, and the element-symbol regex that parsed `"Arsenic (As)"`
+into `"As"` — which made the label a comparison operand by the back door. The
+derivation check `⊑` was affected too (it lowercased measurands), not only `in`.
+
+### Result
+
+```text
+✓ 176 TS tests (17 files)     (+15 over stage 1)
+✓ 148 Python tests, 1 skip    (+15 over stage 1)
+✓ 2 scenario tests, schemas 6/6, build + tsc + markdownlint green
+✓ ruff 212 (203 at stage 1 tip; the delta is E501 in test_scope.py)
+```
+
+All six worked chains still accept, and scope inclusion genuinely runs on
+identifiers — `SCOPE_INCLUSION_VALID` and `DERIVATION_VALID` appear in the
+traces rather than the check being skipped.
+
+### Decisions taken (stage 2)
+
+- **D-SCO-1 — governed identifiers now, real where they exist.** QUDT for
+  quantity kinds (the repo already uses QUDT unit IRIs); repo-minted
+  `https://w3id.org/qi-vc/terms/v1/...` for matrix, method, element and form,
+  documented in `docs/SCOPE_TERMS.md` as **placeholders standing in for a QI
+  Term-Service (B5/MOD-8), not authoritative identifiers**. Minting these
+  required an explicit override of the AGENTS.md prohibition on inventing
+  vocabulary, taken deliberately rather than by drift.
+- **D-SCO-2 — absent governed term fails.** `UNRESOLVED_SCOPE_TERM`, never a
+  fallback to label comparison (SCO-3, FC-6). This applies symmetrically: a
+  *scope entry* that restricts a dimension by label alone also fails, so an
+  unenforceable limit cannot be silently ignored.
+- **D-SCO-3 — identity yes, subsumption no.** Two identifiers are equal or they
+  are not. Nothing decides that CuZn39Pb3 falls under "non-ferrous metals and
+  alloys"; a taxonomic resolver is a future pluggable interface defaulting to
+  fail-closed (SCO-6).
+- **D-SCO-4 — empty scope confers no scope.** Both scope checkers returned
+  `passed: true` for an empty entry list, and `checkScopeInclusion` passed under
+  the default `optional` mode. A scope check that succeeds against nothing is
+  the same fail-open class as FC-1/FC-2. Now `NO_SCOPE_ENTRY`.
+
+### Honest gaps — D-2's vectors are only partly implementable
+
+The spec now carries the three-case worked example (178 accept / 197
+decision-rule reject / 520 out-of-scope). Only part of it can be exercised
+against this implementation, and pretending otherwise would repeat the defect
+this overhaul exists to fix:
+
+1. **The decision-rule conjunct of `P` does not exist in code.** D-1 moved the
+   decision rule out of `in` and into a separate conjunct; the implementation
+   evaluates `in` (containment) only. There is nothing to compare a policy limit
+   against, so the **197 mg/kg case cannot be tested**. That conjunct is SCO-5
+   (decision rule and guard band supplied by policy at evaluation time, named in
+   the trace) and is not built.
+2. **`DrmdScopeEntry` has no range dimension.** The DCC path checks
+   `range.from`/`range.to`; the RM path checks matrix, form, property and
+   uncertainty only. The paper's worked example turns on an accredited range of
+   50–500 mg/kg, so the **520 mg/kg out-of-scope case cannot be expressed** for
+   an RM credential either.
+
+TST-4 — CuZn39Pb3 against CuZn40Pb2 — **is** implemented, in both languages, as
+the requirements register demands.
+
+### Also not done
+
+- **`⪯ᵢ` orientation declaration (D-5).** Now stated in the spec: a profile must
+  declare the orientation of any dimension it introduces, and an undeclared
+  orientation must not silently pass. Not enforced in code.
+- **Spanning refusal (D-5).** Domination by a single parent record is
+  implemented for `allowedPropertyIris`; the range dimension still searches all
+  matching parents.
+- **The uncertainty floor (F-7 / D-1).** `in` should require that where a scope
+  entry states a capability the reported uncertainty is *not below* it. The
+  implementation models a ceiling only. Recorded in `docs/PAPER_FEEDBACK.md`
+  F-7 already; still open.

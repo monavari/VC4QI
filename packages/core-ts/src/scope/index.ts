@@ -8,6 +8,13 @@
 //   MATRIX_PROPERTY_MISMATCH  — DRMD matrix/property/form outside scope
 //   NO_SCOPE_ENTRY            — no scope entry covers the claim
 //   DERIVATION_VIOLATION      — child evidence scope exceeds parent evidence scope
+//   UNRESOLVED_SCOPE_TERM     — a governed identifier is absent (SCO-3, the B5 boundary)
+//
+// SCO-1/SCO-2: categorical dimensions compare as exact equality over governed
+// identifiers. Human-readable labels are display only and are never comparison
+// operands. This module previously matched lowercased free text with substring
+// containment, which admitted "As" for "Ash" and a "CuZn" scope entry for a
+// CuZn39Pb3 claim — `in` was decidable and wrong. See docs/SCOPE_TERMS.md.
 
 import type { JsonObject } from '../types.js';
 import type { EvidenceEdge } from '../evidence/types.js';
@@ -24,7 +31,47 @@ export type ScopeReasonCode =
   | 'DERIVATION_VIOLATION'
   | 'SUBJECT_BINDING_MISMATCH'
   | 'VALIDITY_WINDOW_VIOLATION'
+  | 'UNRESOLVED_SCOPE_TERM'
   | 'UNKNOWN_SCOPE_CHECK';
+
+// ── Governed-term comparison (SCO-1, SCO-2) ──────────────────────────────────
+
+/**
+ * Read a governed identifier. Returns null when absent — the caller must then
+ * raise UNRESOLVED_SCOPE_TERM rather than fall back to a label (FC-6).
+ */
+function governedIri(source: JsonObject | undefined, key: string): string | null {
+  const value = source?.[key];
+  return typeof value === 'string' && value.length > 0 ? value : null;
+}
+
+/** Read a set of governed identifiers from a scope entry. */
+function governedIriSet(source: JsonObject | undefined, key: string): string[] | null {
+  const value = source?.[key];
+  if (!Array.isArray(value)) return null;
+  const iris = value.filter((v): v is string => typeof v === 'string' && v.length > 0);
+  return iris.length > 0 ? iris : null;
+}
+
+/**
+ * Exact equality over governed identifiers. No normalization, no case folding,
+ * no substring containment: two identifiers denote the same term or they do not.
+ * Identity is decidable here; subsumption is not, and is not attempted (SCO-6).
+ */
+function sameTerm(a: string, b: string): boolean {
+  return a === b;
+}
+
+function unresolved(dimension: string, label: unknown): ScopeViolation {
+  return {
+    code: 'UNRESOLVED_SCOPE_TERM',
+    detail:
+      `No governed identifier for ${dimension}` +
+      (label ? ` '${String(label)}'` : '') +
+      '. Labels are display only and are never compared (SCO-2); supply a governed ' +
+      'term. See docs/SCOPE_TERMS.md.',
+  };
+}
 
 export interface ScopeViolation {
   code: ScopeReasonCode;
@@ -87,9 +134,14 @@ function toMgKg(value: number, unit: JsonObject): number | null {
 // ── DCC scope-inclusion (Section 6.2, Listing 4) ─────────────────────────────
 
 export interface DccScopeEntry {
+  /** Display only. Never a comparison operand (SCO-2). */
   measurand?: string;
+  /** Governed identifier for the measurand. The comparison operand (SCO-1). */
   quantityKindIri?: string;
+  /** Display only. */
   allowedMethods?: string[];
+  /** Governed identifiers for admitted methods. The comparison operands. */
+  allowedMethodIris?: string[];
   range?: { from: number; to: number; unit: JsonObject };
   uncertainty?: {
     type?: 'absolute' | 'relativePercent';
@@ -111,28 +163,48 @@ export function checkDccScopeInclusion(
   const subject = dcc.credentialSubject as JsonObject | undefined;
   const measurementResults = (subject?.measurementResults as JsonObject[] | undefined) ?? [];
 
+  // An authorizing credential conveying no scope entries confers no scope, so
+  // it cannot satisfy a scope-inclusion check. Previously returned passed:true.
   if (scopeEntries.length === 0) {
-    return { passed: true, violations: [] };
+    return {
+      passed: false,
+      violations: [{
+        code: 'NO_SCOPE_ENTRY',
+        detail: 'Authorizing evidence carries no scope entries, so it confers no scope.',
+      }],
+    };
   }
 
   for (const resultGroup of measurementResults) {
-    const measurand = (resultGroup.measurand as string | undefined)?.toLowerCase() ?? '';
-    const usedMethods = (resultGroup.usedMethods as JsonObject[] | undefined) ?? [];
-    const methodRefs = usedMethods.map(m =>
-      ((m['reference'] as string | undefined) ?? (m['name'] as string | undefined) ?? '').toLowerCase()
-    );
+    // SCO-1: the governed identifier is the operand; the label is carried only
+    // so failures can name what the holder called it.
+    const claimQuantityKind = governedIri(resultGroup, 'quantityKindIri');
+    if (claimQuantityKind === null) {
+      violations.push(unresolved('measurand', resultGroup.measurand));
+      continue;
+    }
 
-    // Find scope entries matching this measurand
+    const usedMethods = (resultGroup.usedMethods as JsonObject[] | undefined) ?? [];
+
+    // Find scope entries matching this measurand by governed identifier.
     const matchingEntries = scopeEntries.filter(e => {
-      if (!e.measurand) return true;
-      return e.measurand.toLowerCase() === measurand ||
-             measurand.includes(e.measurand.toLowerCase());
+      const entryQuantityKind = e.quantityKindIri;
+      if (!entryQuantityKind) return false;
+      return sameTerm(entryQuantityKind, claimQuantityKind);
     });
+
+    // A scope entry that governs the measurand dimension but carries no
+    // governed identifier cannot be compared; say so rather than pass silently.
+    if (matchingEntries.length === 0 && scopeEntries.some(e => !e.quantityKindIri)) {
+      violations.push(unresolved('scope entry measurand', undefined));
+      continue;
+    }
 
     if (matchingEntries.length === 0) {
       violations.push({
         code: 'NO_SCOPE_ENTRY',
-        detail: `No scope entry for measurand '${resultGroup.measurand}'`,
+        detail: `No scope entry for measurand ${claimQuantityKind}` +
+                ` (labelled '${String(resultGroup.measurand ?? '')}')`,
       });
       continue;
     }
@@ -144,19 +216,34 @@ export function checkDccScopeInclusion(
       let entryOk = true;
       const entryViolations: ScopeViolation[] = [];
 
-      // Method check
-      if (entry.allowedMethods && entry.allowedMethods.length > 0) {
-        const allowed = entry.allowedMethods.map(m => m.toLowerCase());
-        const methodOk = methodRefs.length === 0 || methodRefs.some(ref =>
-          allowed.some(a => ref.includes(a) || a.includes(ref))
-        );
-        if (!methodOk) {
-          entryViolations.push({
-            code: 'METHOD_OUT_OF_SCOPE',
-            detail: `Method(s) [${methodRefs.join(', ')}] not in allowedMethods [${entry.allowedMethods.join(', ')}]`,
-          });
+      // Method check, over governed identifiers only (SCO-1).
+      const allowedMethodIris = entry.allowedMethodIris;
+      if (allowedMethodIris && allowedMethodIris.length > 0) {
+        const claimMethodIris: (string | null)[] = usedMethods.map(m => governedIri(m, 'methodIri'));
+
+        if (claimMethodIris.some(iri => iri === null)) {
+          entryViolations.push(unresolved('method', usedMethods
+            .map(m => m['reference'] ?? m['name'])
+            .filter(Boolean)
+            .join(', ')));
           entryOk = false;
+        } else if (claimMethodIris.length > 0) {
+          const methodOk = claimMethodIris.some(ref =>
+            allowedMethodIris.some(a => sameTerm(a, ref as string))
+          );
+          if (!methodOk) {
+            entryViolations.push({
+              code: 'METHOD_OUT_OF_SCOPE',
+              detail: `Method(s) [${claimMethodIris.join(', ')}] not in allowedMethodIris [${allowedMethodIris.join(', ')}]`,
+            });
+            entryOk = false;
+          }
         }
+      } else if (entry.allowedMethods && entry.allowedMethods.length > 0) {
+        // The entry restricts methods but names them only by label, which is
+        // not a comparison operand. Fail visibly rather than ignore the limit.
+        entryViolations.push(unresolved('scope entry allowedMethods', entry.allowedMethods.join(', ')));
+        entryOk = false;
       }
 
       // Range and uncertainty check per result
@@ -235,9 +322,18 @@ export function checkDccScopeInclusion(
 // ── DRMD scope-inclusion (Section 6.2, Listing 4) ────────────────────────────
 
 export interface DrmdScopeEntry {
+  /** Display only. Never a comparison operand (SCO-2). */
   matrix?: string[];
+  /** Governed identifiers for admitted matrices. The comparison operands. */
+  matrixIris?: string[];
+  /** Display only. */
   allowedProperties?: string[];
+  /** Governed identifiers for admitted properties. */
+  allowedPropertyIris?: string[];
+  /** Display only. */
   allowedForms?: string[];
+  /** Governed identifiers for admitted forms. */
+  allowedFormIris?: string[];
   uncertainty?: {
     type?: 'absolute' | 'relativeExpanded';
     maxAbsoluteMgKg?: number;
@@ -269,49 +365,80 @@ export function checkDrmdScopeInclusion(
   const materials = (subject?.materials as JsonObject[] | undefined) ?? [];
   const propertiesList = (subject?.materialPropertiesList as JsonObject[] | undefined) ?? [];
 
-  // Derive matrix from materials if not passed explicitly.
-  // Only use an explicit 'matrix' field on the material — do NOT use the material name
-  // (which is an alloy/product ID, not a scope category like 'non-ferrous metals and alloys').
+  // Governed identifiers are the operands; `matrix`/`form` labels are display
+  // only. The explicit arguments remain supported and are treated as already
+  // being governed identifiers.
   const matMaterial = materials[0] as JsonObject | undefined;
-  const derivedMatrix = matrix ??
-    ((matMaterial?.['matrix'] as string | undefined)?.toLowerCase() ?? null);
-  const derivedForm = form ?? ((matMaterial?.['form'] as string | undefined)?.toLowerCase() ?? null);
+  const derivedMatrix = matrix ?? governedIri(matMaterial, 'matrixIri');
+  const derivedForm = form ?? governedIri(matMaterial, 'formIri');
 
+  // An authorizing credential conveying no scope entries confers no scope.
   if (scopeEntries.length === 0) {
-    return { passed: true, violations: [] };
+    return {
+      passed: false,
+      violations: [{
+        code: 'NO_SCOPE_ENTRY',
+        detail: 'Authorizing evidence carries no scope entries, so it confers no scope.',
+      }],
+    };
   }
 
-  // Find scope entries that cover this matrix.
-  // If no matrix was derivable from the credential, skip matrix filtering (accept all entries).
-  const matchingEntries = derivedMatrix === null
-    ? scopeEntries
-    : scopeEntries.filter(e => {
-        if (!e.matrix || e.matrix.length === 0) return true;
-        return e.matrix.some(m =>
-          derivedMatrix.toLowerCase().includes(m.toLowerCase()) ||
-          m.toLowerCase().includes(derivedMatrix.toLowerCase())
-        );
-      });
+  if (derivedMatrix === null) {
+    return {
+      passed: false,
+      violations: [unresolved('matrix', matMaterial?.['matrix'])],
+    };
+  }
+
+  // Find scope entries that cover this matrix, by governed identifier.
+  const entriesRestrictingMatrix = scopeEntries.filter(
+    e => (e.matrixIris?.length ?? 0) > 0 || (e.matrix?.length ?? 0) > 0,
+  );
+  if (entriesRestrictingMatrix.some(e => !(e.matrixIris?.length))) {
+    return {
+      passed: false,
+      violations: [unresolved('scope entry matrix', entriesRestrictingMatrix.flatMap(e => e.matrix ?? []).join(', '))],
+    };
+  }
+
+  const matchingEntries = scopeEntries.filter(e => {
+    const iris = governedIriSet(e as unknown as JsonObject, 'matrixIris');
+    if (iris === null) return true; // entry does not restrict matrix
+    return iris.some(m => sameTerm(m, derivedMatrix));
+  });
 
   if (matchingEntries.length === 0) {
     return {
       passed: false,
-      violations: [{ code: 'MATRIX_PROPERTY_MISMATCH', detail: `Matrix '${derivedMatrix}' not in scope` }],
+      violations: [{
+        code: 'MATRIX_PROPERTY_MISMATCH',
+        detail: `Matrix ${derivedMatrix} (labelled '${String(matMaterial?.['matrix'] ?? '')}') not in scope`,
+      }],
     };
   }
 
-  // Check form against all matching entries.
-  // If no form was derivable from the credential, skip form filtering.
-  if (derivedForm !== null) {
-    const formOk = matchingEntries.some(e => {
-      if (!e.allowedForms || e.allowedForms.length === 0) return true;
-      return e.allowedForms.map(f => f.toLowerCase()).includes(derivedForm.toLowerCase());
-    });
-    if (!formOk) {
-      violations.push({
-        code: 'MATRIX_PROPERTY_MISMATCH',
-        detail: `Form '${derivedForm}' not in allowedForms [${matchingEntries.flatMap(e => e.allowedForms ?? []).join(', ')}]`,
-      });
+  // Form check, over governed identifiers only.
+  const entriesRestrictingForm = matchingEntries.filter(
+    e => (e.allowedFormIris?.length ?? 0) > 0 || (e.allowedForms?.length ?? 0) > 0,
+  );
+  if (entriesRestrictingForm.length > 0) {
+    if (entriesRestrictingForm.some(e => !(e.allowedFormIris?.length))) {
+      violations.push(unresolved(
+        'scope entry allowedForms',
+        entriesRestrictingForm.flatMap(e => e.allowedForms ?? []).join(', '),
+      ));
+    } else if (derivedForm === null) {
+      violations.push(unresolved('form', matMaterial?.['form']));
+    } else {
+      const formOk = entriesRestrictingForm.some(e =>
+        (e.allowedFormIris ?? []).some(f => sameTerm(f, derivedForm)),
+      );
+      if (!formOk) {
+        violations.push({
+          code: 'MATRIX_PROPERTY_MISMATCH',
+          detail: `Form ${derivedForm} not in allowedFormIris [${entriesRestrictingForm.flatMap(e => e.allowedFormIris ?? []).join(', ')}]`,
+        });
+      }
     }
   }
 
@@ -324,23 +451,41 @@ export function checkDrmdScopeInclusion(
 
     for (const result of results) {
       const name = (result.name as string | undefined) ?? '';
-      // Element symbol is the first word in the name, or extract from parentheses
-      const elementMatch = name.match(/\(([A-Z][a-z]?)\)/);
-      const element: string = elementMatch?.[1] ?? name.split(' ')[0] ?? name;
+      // SCO-2: the property is identified by its governed IRI. Parsing an
+      // element symbol out of a display name ("Arsenic (As)") made the label a
+      // comparison operand by the back door.
+      const propertyIri = governedIri(result, 'propertyIri');
+      const element: string = propertyIri ?? name;
 
       const data = result.data as JsonObject | undefined;
       const qty = data?.quantity as JsonObject | undefined;
 
-      // Find scope entry covering this property
+      // Find scope entry covering this property, by governed identifier.
+      const entriesRestrictingProperty = matchingEntries.filter(
+        e => (e.allowedPropertyIris?.length ?? 0) > 0 || (e.allowedProperties?.length ?? 0) > 0,
+      );
+      if (entriesRestrictingProperty.some(e => !(e.allowedPropertyIris?.length))) {
+        violations.push(unresolved(
+          'scope entry allowedProperties',
+          entriesRestrictingProperty.flatMap(e => e.allowedProperties ?? []).join(', '),
+        ));
+        continue;
+      }
+      if (entriesRestrictingProperty.length > 0 && propertyIri === null) {
+        violations.push(unresolved('property', name));
+        continue;
+      }
+
       const propEntry = matchingEntries.find(e => {
-        if (!e.allowedProperties || e.allowedProperties.length === 0) return true;
-        return e.allowedProperties.includes(element);
+        const iris = e.allowedPropertyIris;
+        if (!iris || iris.length === 0) return true;
+        return propertyIri !== null && iris.some(p => sameTerm(p, propertyIri));
       });
 
       if (!propEntry) {
         violations.push({
           code: 'MATRIX_PROPERTY_MISMATCH',
-          detail: `Property '${element}' (from '${name}') not in allowedProperties`,
+          detail: `Property ${element} (labelled '${name}') not in allowedPropertyIris`,
         });
         continue;
       }
@@ -473,10 +618,14 @@ export function checkDerivedEdge(
     for (const childEntry of childEntries) {
       const childRange = childEntry.range as JsonObject | undefined;
       if (childRange) {
+        // SCO-1: match parent entries on the governed identifier, never the
+        // label. D-5: domination is by a single parent record, so a child entry
+        // must be covered by one parent entry rather than by their union.
+        const childQuantityKind = governedIri(childEntry, 'quantityKindIri');
         const matchingParents = parentEntries.filter(parentEntry => {
-          const childMeasurand = String(childEntry.measurand ?? '').toLowerCase();
-          const parentMeasurand = String(parentEntry.measurand ?? '').toLowerCase();
-          return !childMeasurand || !parentMeasurand || childMeasurand === parentMeasurand;
+          const parentQuantityKind = governedIri(parentEntry, 'quantityKindIri');
+          if (childQuantityKind === null || parentQuantityKind === null) return true;
+          return sameTerm(childQuantityKind, parentQuantityKind);
         });
         const childTo = childRange.to as number | undefined;
         const childUnit = childRange.unit as JsonObject | undefined;
@@ -497,13 +646,24 @@ export function checkDerivedEdge(
         }
       }
 
-      const childProperties = childEntry.allowedProperties as string[] | undefined;
+      // Governed identifiers only (SCO-1). D-5: a child entry must be dominated
+      // by a single parent record, so the admissible set comes from one parent
+      // entry rather than the union of all of them — a derived entry spanning
+      // two adjacent parent entries is refused.
+      const childProperties = childEntry.allowedPropertyIris as string[] | undefined;
       if (childProperties?.length) {
+        const dominatingParent = parentEntries.find(entry => {
+          const parentProps = (entry.allowedPropertyIris as string[] | undefined) ?? [];
+          if (parentProps.length === 0) return false;
+          return childProperties.every(property => parentProps.some(p => sameTerm(p, property)));
+        });
         const parentProperties = parentEntries.flatMap(entry =>
-          (entry.allowedProperties as string[] | undefined) ?? []
+          (entry.allowedPropertyIris as string[] | undefined) ?? []
         );
-        if (parentProperties.length > 0) {
-          const extras = childProperties.filter(property => !parentProperties.includes(property));
+        if (parentProperties.length > 0 && !dominatingParent) {
+          const extras = childProperties.filter(
+            property => !parentProperties.some(p => sameTerm(p, property)),
+          );
           if (extras.length > 0) {
             violations.push({
               code: 'DERIVATION_VIOLATION',
@@ -527,12 +687,18 @@ export function checkScopeInclusion(
   const scopeEntries = getScopeEntries(authorizingEvidence);
   const mode = policy?.checks.scopeInclusion ?? 'optional';
 
+  // An authorizing credential conveying no scope entries confers no scope, so
+  // it cannot satisfy scope inclusion. Previously this passed under the default
+  // 'optional' mode, which let a scope check succeed against nothing at all.
   if (scopeEntries.length === 0) {
-    return mode === 'ignored' || mode === 'optional'
+    return mode === 'ignored'
       ? { passed: true, violations: [] }
       : {
           passed: false,
-          violations: [{ code: 'NO_SCOPE_ENTRY', detail: 'Authorizing evidence has no scope entries.' }],
+          violations: [{
+            code: 'NO_SCOPE_ENTRY',
+            detail: 'Authorizing evidence carries no scope entries, so it confers no scope.',
+          }],
         };
   }
 

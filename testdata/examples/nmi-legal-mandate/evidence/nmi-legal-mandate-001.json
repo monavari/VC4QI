@@ -16,8 +16,12 @@
     "scope": [
       {
         "measurand": "Pressure",
+        "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
         "allowedMethods": [
           "EURAMET cg-17"
+        ],
+        "allowedMethodIris": [
+          "https://w3id.org/qi-vc/terms/v1/method/EURAMET-cg-17"
         ],
         "range": {
           "from": 0,

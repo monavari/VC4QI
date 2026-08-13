@@ -20,11 +20,20 @@
         "matrix": [
           "CuZn39Pb3 (leaded brass)"
         ],
+        "matrixIris": [
+          "https://w3id.org/qi-vc/terms/v1/matrix/CuZn39Pb3"
+        ],
         "allowedProperties": [
           "As"
         ],
+        "allowedPropertyIris": [
+          "https://w3id.org/qi-vc/terms/v1/element/As"
+        ],
         "allowedForms": [
           "disc"
+        ],
+        "allowedFormIris": [
+          "https://w3id.org/qi-vc/terms/v1/form/disc"
         ]
       }
     ]
