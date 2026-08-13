@@ -307,3 +307,110 @@ deterministic eddsa chains).
 No new dependencies added. No source code changed — the fix was fixture
 regeneration only. All D-SD-* decisions stand as recorded above; the one new
 decision in this run (GS scope) is logged here.
+
+---
+
+# Stage 1 — SEC-1, FC-1, FC-2 (overhaul work order)
+
+Branch `fix/sec-1-verify-registry`, from `origin/main` @ `8847bc4`.
+
+Scope from `VC4QI_repo_overhaul_handover.md` §4 stage 1: make the trust decision
+cryptographically grounded, and make absent trust infrastructure fail closed.
+
+## Baseline recorded before any edit
+
+```text
+✓ pnpm -r build              (core-ts + demo-web)
+✓ 140 TS tests (15 files)
+✓ 2 scenario tests
+✓ pnpm validate:schemas      6 passed, 0 failed
+✓ 110 Python tests, 1 skip   (D-SD-4)
+```
+
+`AGENTS.md` claims "129 TS tests, 101 Python"; the observed counts above are the
+correct ones. Undercount in the doc, not a regression.
+
+## After stage 1
+
+```text
+✓ pnpm -r build              (core-ts + demo-web)
+✓ 161 TS tests (16 files)    (+21)
+✓ 2 scenario tests
+✓ pnpm validate:schemas      6 passed, 0 failed
+✓ 133 Python tests, 1 skip   (+23)
+✓ ruff 203 errors            (204 on origin/main)
+```
+
+All six worked chains still accept, verified additionally under a **strict
+offline document loader** that refuses any network fetch.
+
+## What changed, and why it was more than the handover described
+
+The handover described SEC-1 as "verify the registry credential's proof before
+parsing". Doing only that would have been cryptographically decorative. See
+`docs/PAPER_FEEDBACK.md` F-3b: with `safe: false` canonicalization, the registry
+proof covered four triples and **not the registry entries**. Closing SEC-1
+therefore also required defining the registry-entry vocabulary
+(`contexts/v1/qi-core.jsonld`, scoped context on `registryEntries`) and really
+signing the fixtures, which previously carried no proof at all.
+
+## Decisions taken
+
+- **D-TR-1 — verified registry as a distinct type.** `isTrustedIssuer` accepts
+  only `VerifiedTrustRegistry`, a branded type unconstructable outside the
+  module; `parseTrustRegistryCredential` is unexported. Python mirrors the
+  intent with a runtime `TypeError`, since it has no equivalent of the brand.
+  Rationale: SEC-1 should be enforced by the type system, not by convention, so
+  a future call site cannot reintroduce the defect.
+- **D-TR-2 — registry verification is independent of `skipProof`.** `skipProof`
+  suppresses proof checks on the graph's own credentials; it does not suppress
+  verification of the trust anchor. Both `fixture-helpers.ts` and
+  `apps/demo-web` therefore supply a key resolver.
+- **D-TR-3 — retrieval loader and canonicalization loader are separate
+  parameters** (`documentLoader` vs `proofDocumentLoader`). A loader that serves
+  the registry for every URL would otherwise be asked to resolve the registry's
+  own `@context` and return the registry itself.
+- **D-TR-4 — scoped, not global, context terms.** The registry entry terms are
+  defined inside a scoped `@context` on `registryEntries` so `status`,
+  `validFrom` and `validUntil` do not shadow the VC-level terms anywhere else.
+
+## Pre-existing defects found while doing this (not caused by stage 1)
+
+1. **`uv sync` / `make test` / `make lint` cannot run.** Root `pyproject.toml`
+   declares `packages/verifier-service` and `packages/lims-adapter` as uv
+   workspace members, but both are empty stubs with no `pyproject.toml`
+   (`verifier-service` holds only `app/.gitkeep`). CI sidesteps this by
+   pip-installing `packages/core-py[dev]` directly. The handover describes both
+   as real packages; they are not.
+2. **Python never verified any proof.** `graph_verifier._evaluate_proof` never
+   referenced `options.resolve_key`. The parity suite did not catch it because
+   every fixture runs with `skip_proof=True`. Fixed in this stage.
+3. **The Python document loader was missing** `qi-evidence-context` and the
+   vendored W3C contexts the TS loader serves. Invisible while Python never
+   canonicalized. Fixed in this stage; the two maps must now be kept in step.
+4. **The `zPlaceholderProof` corpus.** `scripts/generate-v02-fixtures.js:44`
+   emits a literal `proofValue: 'zPlaceholderProof'` for 24 fixtures. Only the
+   trust registries are really signed as of this stage. This is why
+   `skipProof: true` is pervasive, and it is why no test exercises real proof
+   verification through `verifyCredentialGraph`.
+
+## Deliberately not done in stage 1
+
+- `verifier/index.ts` `STATUS_CHECK_FAILED`. The handover groups it with FC-1,
+  but it is a fetch error rather than resolver absence — that is FC-3, whose
+  rule is qualified by a bounded grace period the trace must name. Modelling
+  grace periods is its own stage.
+- **SEC-8 vs `skipProof`.** A run with `skipProof: true` produces an all-`SKIP`
+  trace and `summarizeTrace` still reports `verified: true`. A run in which no
+  check executed is presentable as a pass. `apps/demo-web` depends on this.
+  Needs its own decision.
+- **`binds` can vanish silently.** `evaluateAuthorizedBy.ts` guards the
+  principal-binding comparison with `if (sourceIssuer && evidenceSubject)`; when
+  either is empty no trace entry is emitted at all, so the check disappears
+  rather than failing. Now documented as a predicate in `MODEL_SPEC` §2/§4 (D-3);
+  the code fix belongs with stage 2/3.
+- **SEC-7.** No SSRF guard, size bound or timeout on any fetch, repo-wide
+  (`utils/document-loader.ts`, `trust-registry/index.ts`, `verifier/index.ts`).
+- **ADR-004 artifacts** `schemas/v1/trust-registry-entry.json` and
+  `policies/trust-registry-credential.json` are referenced by the ADR but do not
+  exist.
