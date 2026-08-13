@@ -14,6 +14,24 @@ const DCC_SCHEMA = 'https://w3id.org/qi-vc/schemas/v1/digital-calibration-certif
 const RMC_SCHEMA = 'https://w3id.org/qi-vc/schemas/v1/reference-material-certificate.json';
 const POLICY_SCHEMA = 'https://w3id.org/qi-vc/schemas/v1/policy-profile.schema.json';
 
+// Governed scope terms (SCO-1/SCO-2). Categorical dimensions compare as exact
+// equality over these identifiers; the sibling label fields are display only.
+// QUDT is used where a real governed vocabulary exists; the qi-vc/terms IRIs are
+// placeholders standing in for a QI Term-Service (B5/MOD-8), not authoritative
+// identifiers. See docs/SCOPE_TERMS.md.
+const QK = 'http://qudt.org/vocab/quantitykind';
+const T = 'https://w3id.org/qi-vc/terms/v1';
+const TERMS = {
+  quantityKind: { pressure: `${QK}/Pressure` },
+  method: { euramet_cg17: `${T}/method/EURAMET-cg-17` },
+  matrix: {
+    cuzn39pb3: `${T}/matrix/CuZn39Pb3`,
+    nonFerrous: `${T}/matrix/non-ferrous-metals-and-alloys`,
+  },
+  element: { as: `${T}/element/As`, pb: `${T}/element/Pb` },
+  form: { disc: `${T}/form/disc` },
+};
+
 function stableStringify(value) {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
@@ -96,7 +114,9 @@ function policy(id, targetCredentialTypes, requiredEvidence, checks = {}) {
 function pressureScope(to = 1000) {
   return [{
     measurand: 'Pressure',
+    quantityKindIri: TERMS.quantityKind.pressure,
     allowedMethods: ['EURAMET cg-17'],
+    allowedMethodIris: [TERMS.method.euramet_cg17],
     range: { from: 0, to, unit: { ucumCode: 'kPa' } },
     uncertainty: { maxAbsolute: 2, maxRelativePercent: 0.5 },
   }];
@@ -142,7 +162,12 @@ function dcc(id, issuer, evidence, value = 500) {
       },
       measurementResults: [{
         measurand: 'Pressure',
-        usedMethods: [{ name: 'Pressure calibration', reference: 'EURAMET cg-17' }],
+        quantityKindIri: TERMS.quantityKind.pressure,
+        usedMethods: [{
+          name: 'Pressure calibration',
+          reference: 'EURAMET cg-17',
+          methodIri: TERMS.method.euramet_cg17,
+        }],
         results: [{
           name: 'Pressure at nominal point',
           data: {
@@ -181,7 +206,9 @@ function rmc(id, issuer, evidence) {
       materials: [{
         name: 'Non-ferrous alloy disc',
         matrix: 'non-ferrous metals and alloys',
+        matrixIri: TERMS.matrix.nonFerrous,
         form: 'disc',
+        formIri: TERMS.form.disc,
         materialIdentifiers: [{ type: 'lotNumber', value: 'RM-001' }],
       }],
       materialPropertiesList: [{
@@ -189,6 +216,7 @@ function rmc(id, issuer, evidence) {
         isCertified: true,
         results: [{
           name: 'Lead (Pb)',
+          propertyIri: TERMS.element.pb,
           data: {
             quantity: {
               quantityKind: 'http://qudt.org/vocab/quantitykind/MassFraction',
@@ -421,8 +449,11 @@ function referenceMaterial() {
   // AccreditationAttestation — root, no authorizing edge; scope: As in CuZn39Pb3
   const acc = accreditation('urn:uuid:rm-accreditation-001', NAB, RM_PRODUCER, [{
     matrix: ['CuZn39Pb3 (leaded brass)'],
+    matrixIris: [TERMS.matrix.cuzn39pb3],
     allowedProperties: ['As'],
+    allowedPropertyIris: [TERMS.element.as],
     allowedForms: ['disc'],
+    allowedFormIris: [TERMS.form.disc],
     uncertainty: { maxAbsoluteMgKg: 6 },
   }]);
 
@@ -440,8 +471,11 @@ function referenceMaterial() {
         authorizedCredentialTypes: ['ReferenceMaterialCertificate'],
         scopeEntries: [{
           matrix: ['CuZn39Pb3 (leaded brass)'],
+          matrixIris: [TERMS.matrix.cuzn39pb3],
           allowedProperties: ['As'],
+          allowedPropertyIris: [TERMS.element.as],
           allowedForms: ['disc'],
+          allowedFormIris: [TERMS.form.disc],
           uncertainty: { maxAbsoluteMgKg: 5 },
         }],
       },
@@ -452,8 +486,11 @@ function referenceMaterial() {
 
   const labAcc = accreditation('urn:uuid:rm-study-lab-accreditation-001', NAB, RM_LAB, [{
     matrix: ['CuZn39Pb3 (leaded brass)'],
+    matrixIris: [TERMS.matrix.cuzn39pb3],
     allowedProperties: ['As'],
+    allowedPropertyIris: [TERMS.element.as],
     allowedForms: ['disc'],
+    allowedFormIris: [TERMS.form.disc],
   }]);
 
   const study = {
@@ -487,7 +524,9 @@ function referenceMaterial() {
       materials: [{
         name: 'CuZn39Pb3 (leaded brass)',
         matrix: 'CuZn39Pb3 (leaded brass)',
+        matrixIri: TERMS.matrix.cuzn39pb3,
         form: 'disc',
+        formIri: TERMS.form.disc,
         materialIdentifiers: [{ type: 'lotNumber', value: 'RM-CuZn-As-001' }],
       }],
       materialPropertiesList: [{
@@ -495,6 +534,7 @@ function referenceMaterial() {
         isCertified: true,
         results: [{
           name: 'Arsenic (As)',
+          propertyIri: TERMS.element.as,
           scopeRef: 'scope-entry-As-CuZn',
           data: {
             quantity: {
