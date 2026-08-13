@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const VC_CONTEXT = 'https://www.w3.org/ns/credentials/v2';
 const QI_CONTEXT = 'https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld';
+const QI_CORE_CONTEXT = 'https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld';
 const CAL_CONTEXT = 'https://w3id.org/qi-vc/contexts/v1/qi-calibration.jsonld';
 const RM_CONTEXT = 'https://w3id.org/qi-vc/contexts/v1/qi-rm.jsonld';
 const DCC_SCHEMA = 'https://w3id.org/qi-vc/schemas/v1/digital-calibration-certificate.json';
@@ -52,9 +53,14 @@ function proof(issuer) {
   };
 }
 
+// qi-core is required, not decorative: it defines registryEntries and the
+// scoped entry terms (status, authorizationBasisKinds, credentialTypes, entry
+// validity). Without it URDNA2015 drops them and the proof would not cover the
+// fields the trust decision turns on. Proofs are attached by the second pass,
+// packages/core-ts/scripts/sign-trust-registries.ts.
 function trustRegistry(entries) {
   return {
-    '@context': [VC_CONTEXT, QI_CONTEXT],
+    '@context': [VC_CONTEXT, QI_CONTEXT, QI_CORE_CONTEXT],
     type: ['VerifiableCredential', 'TrustRegistryCredential'],
     id: 'urn:uuid:trust-registry',
     issuer: 'did:web:root.example',

@@ -4,10 +4,20 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { verifyCredentialGraph } from '../../packages/core-ts/src/verifier/index.js';
 import { loadPolicyProfile } from '../../packages/core-ts/src/policy/index.js';
+import { buildDocumentLoader } from '../../packages/core-ts/src/utils/document-loader.js';
 import type { JsonObject } from '../../packages/core-ts/src/types.js';
 
 const ROOT = process.cwd();
 const EXAMPLES = join(ROOT, 'testdata', 'examples');
+
+// Public half of the TEST ONLY key that signs the trust-registry fixtures.
+// The registry's proof is verified before any entry is read (SEC-1), so a key
+// resolver is required even though `skipProof` suppresses the graph's own
+// credential proofs.
+const TEST_REGISTRY_PUBLIC_KEY = Uint8Array.from(
+  Buffer.from('2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12', 'hex'),
+);
+const documentLoader = buildDocumentLoader({});
 
 function readJson<T = JsonObject>(path: string): T {
   return JSON.parse(readFileSync(path, 'utf8')) as T;
@@ -27,6 +37,8 @@ async function verifyFixture(name: string, targetFile = 'target-credential.json'
     skipProof: true,
     fetchDocument: async uri => documents.get(uri) as JsonObject,
     resolveTrustRegistry: async () => registry,
+    resolveKey: async () => TEST_REGISTRY_PUBLIC_KEY,
+    documentLoader,
   });
 }
 
