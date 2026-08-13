@@ -2,6 +2,17 @@ import { create } from 'zustand';
 import type { VerificationTrace, JsonObject } from '@qi-vc/core';
 import type { Scenario } from '../scenarios/index.js';
 import { SCENARIOS } from '../scenarios/index.js';
+import { sdLoader } from '../sd/disclose.js';
+
+/**
+ * Public half of the TEST ONLY Ed25519 key that signs the trust-registry
+ * fixtures (tests/fixtures/keys/test-ed25519-key.json). Demo fixtures only.
+ */
+const TEST_REGISTRY_PUBLIC_KEY = Uint8Array.from(
+  '2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12'
+    .match(/.{2}/g)!
+    .map((b) => parseInt(b, 16)),
+);
 
 export type VerifyMode = 'passing' | 'failing';
 export type DemoView = 'verifier' | 'disclosure';
@@ -69,6 +80,12 @@ export async function runVerifier(
         return doc;
       },
       resolveTrustRegistry: async () => scenario.trustRegistry,
+      // The trust registry is a signed credential and its proof is verified
+      // before any entry is read (SEC-1), independently of `skipProof`. The
+      // fixtures are signed with the TEST ONLY key; the loader serves qi-core
+      // and the vendored W3C contexts from the bundle so this stays offline.
+      resolveKey: async () => TEST_REGISTRY_PUBLIC_KEY,
+      documentLoader: sdLoader,
     },
   );
 

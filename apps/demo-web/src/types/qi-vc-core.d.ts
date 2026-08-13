@@ -61,6 +61,10 @@ export declare const verifier: {
       skipProof?: boolean;
       fetchDocument?: (uri: string) => Promise<JsonObject>;
       resolveTrustRegistry?: () => Promise<JsonObject>;
+      /** Resolves the key that verifies the TrustRegistryCredential's proof (SEC-1). */
+      resolveKey?: (verificationMethod: string) => Promise<Uint8Array>;
+      /** Resolves @context URLs while canonicalizing for proof verification. */
+      documentLoader?: DocumentLoader;
       maxDepth?: number;
       maxEvidenceNodes?: number;
     },

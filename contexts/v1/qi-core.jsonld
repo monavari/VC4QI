@@ -83,7 +83,26 @@
 
     "registryEntries": {
       "@id": "https://w3id.org/qi-vc/vocab/v1#registryEntries",
-      "@container": "@set"
+      "@container": "@set",
+      "@context": {
+        "status": "https://w3id.org/qi-vc/vocab/v1#registryEntryStatus",
+        "authorizationBasisKinds": {
+          "@id": "https://w3id.org/qi-vc/vocab/v1#authorizationBasisKinds",
+          "@container": "@set"
+        },
+        "credentialTypes": {
+          "@id": "https://w3id.org/qi-vc/vocab/v1#credentialTypes",
+          "@container": "@set"
+        },
+        "validFrom": {
+          "@id": "https://w3id.org/qi-vc/vocab/v1#entryValidFrom",
+          "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+        },
+        "validUntil": {
+          "@id": "https://w3id.org/qi-vc/vocab/v1#entryValidUntil",
+          "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+        }
+      }
     }
   }
 }

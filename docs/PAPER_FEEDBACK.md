@@ -85,6 +85,49 @@ context. F-1 and F-2 are instances of this.
 
 ---
 
+## F-3b — safe mode off means a signature covers only what the context defines
+
+**Status:** partially fixed for the trust registry in the SEC-1 work; the general
+case is recorded here and not yet addressed.
+
+`canonicalize/index.ts:22` sets `safe: false`, commented "Allow non-IRI properties
+to be silently dropped". F-3 framed this as a *disclosure* requirement. It is more
+than that: with safe mode off, URDNA2015 drops every term the `@context` does not
+define, so **a Data Integrity proof covers only the subset of the document that
+the context happens to define.** A field that is dropped is not signed, and
+tampering with it is undetectable.
+
+This was live, not theoretical. `TrustRegistryCredential` fixtures referenced
+`qi-evidence-context`, which does not define `registryEntries`. The signed
+N-Quads were four triples — type, credentialSubject reference, issuer, validFrom.
+The registry entries themselves were outside the signature. A signed registry
+could have an issuer appended, or a `revoked` entry flipped to `active`, and the
+proof still verified. Demonstrated before the fix, and now pinned by eight tamper
+vectors in `trust-registry.test.ts` and `test_trust_registry.py`.
+
+**Measured blast radius** (42 credentials under `testdata/examples/` and
+`examples/`, canonicalized with `safe: true`):
+
+- 10 clean, **32 drop at least one property**.
+- The dominant cause is `$schema`, a housekeeping pointer rather than a claim.
+  A leaf-by-leaf check of the worked example
+  (`reference-material-recursive/target-credential.json`) found **0 claim values
+  outside the signature**, so the paper's worked instance is not compromised.
+- **One case is security-relevant and still open.** In
+  `*/status-list.json`, `credentialSubject` carries no `"type": "BitstringStatusList"`,
+  and the W3C context scopes `encodedList` under that type. `encodedList` is
+  therefore dropped: the revocation bitstring is **not covered by the status list
+  credential's signature**. This is latent today only because status lists are
+  never proof-verified (`status/index.ts` has no proof handling and the fixtures
+  carry no proof). It becomes live the moment FC-3 / status verification is
+  implemented, and it is the same defect class as the trust registry one.
+
+**Recommended follow-up, as its own stage:** add `"type": "BitstringStatusList"`
+to the status-list fixtures, define or remove `$schema`, then turn safe mode on
+and keep it on, so a dropped term is a loud error rather than a silent hole.
+
+---
+
 ## F-4 — Manuscript prose/figures must use the locked v2.1 edge form (no `qi:` prefix, no `role`)
 
 **Where:** Surfaced during Phase 8 release prep. The repo `README.md` carried an
