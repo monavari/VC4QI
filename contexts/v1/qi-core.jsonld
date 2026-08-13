@@ -33,6 +33,43 @@
       "@id": "https://w3id.org/qi-vc/vocab/v1#quantityKindIri",
       "@type": "@id"
     },
+
+    "matrixIri": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#matrixIri",
+      "@type": "@id"
+    },
+    "matrixIris": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#matrixIri",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "methodIri": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#methodIri",
+      "@type": "@id"
+    },
+    "allowedMethodIris": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#allowedMethodIri",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "propertyIri": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#propertyIri",
+      "@type": "@id"
+    },
+    "allowedPropertyIris": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#allowedPropertyIri",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "formIri": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#formIri",
+      "@type": "@id"
+    },
+    "allowedFormIris": {
+      "@id": "https://w3id.org/qi-vc/vocab/v1#allowedFormIri",
+      "@type": "@id",
+      "@container": "@set"
+    },
     "allowedMethods": {
       "@id": "https://w3id.org/qi-vc/vocab/v1#allowedMethods",
       "@container": "@set"

@@ -87,13 +87,23 @@ In the implementation's gate model, **gates 0 (structure) and 1 (cryptographic) 
 - uncertainty → `≤` ceiling
 - validity → interval containment
 
-Define `S′ ⊑ S` ("S′ does not exceed S") iff every record of `S′` is dominated, dimension-wise under the `⪯ᵢ`, by some record of `S`. The **derivation check** on a `derivedFrom` edge `⟨u, v, …⟩` is exactly `scope(u) ⊑ scope(v)`. Independent edges carry no such obligation.
+Each `⪯ᵢ` is **oriented toward restrictiveness**: a wider range and a looser uncertainty ceiling both fail. A profile that introduces a new dimension **must declare that dimension's orientation**; a dimension whose orientation is undeclared cannot be checked and must not silently pass.
 
-**Scope inclusion as a decision rule.** A claim `c = (property, matrix, method, value x, expanded uncertainty U)`. `in(c, S)` holds iff some record `s ∈ S` matches `c` on the categorical dimensions **and** the value satisfies `s`'s range **under the operative decision rule**. The boundary case is not a bare inequality: a value with `U` near a range bound is accepted/rejected only relative to a **guard band** and an acceptable probability of false acceptance (ISO/IEC 17025:2017 §7.8.6; JCGM 106; ILAC-G8). The decision rule is **not part of `G`** — it is a component of verifier/scheme policy, supplied to `in` at evaluation time. **`in` is the B5 boundary** — the framework establishes the verification logic, not the semantics that makes `in` computable in general.
+Define `S′ ⊑ S` ("S′ does not exceed S") iff every record of `S′` is dominated, dimension-wise under the `⪯ᵢ`, by **a single record** of `S`. The **derivation check** on a `derivedFrom` edge `⟨u, v, …⟩` is exactly `scope(u) ⊑ scope(v)`. Independent edges carry no such obligation.
+
+Domination is by one parent record, never by a union of several. A derived entry that spans two adjacent parent entries is **refused**, because each derived entry must trace to one entry the parent actually granted — which is also what lets `scopeRef` designate an entry at all.
+
+**Scope inclusion is containment, not a decision rule.** A claim `c = (property, matrix, method, value x, expanded uncertainty U)`. `in(c, S)` holds iff some record `s ∈ S` matches `c` on the categorical dimensions, the value lies within `s`'s range, and, where `s` states a capability, the reported uncertainty is **not below** it. No decision rule and no guard band enter `in`: an accredited range states what the issuer was accredited to do, a **capability rather than a requirement**, so a value is either inside the entry or outside it. **`in` remains the B5 boundary** — the framework establishes the verification logic, not the semantics that makes `in` computable in general.
+
+Conformity of the claim values to what the verifier actually requires is a **separate conjunct of `P`**, and that is where the decision rule and guard band live (ISO/IEC 17025:2017 §7.8.6; JCGM 106; ILAC-G8). The decision rule is **not part of `G`**; it is supplied by policy at evaluation time.
+
+The uncertainty clause is counterintuitive and easy to invert in code: the reported uncertainty must not be **better** than the capability the issuer was accredited for. A scope entry therefore constrains uncertainty from **below** (a floor on `U`), which is the opposite direction from the `⪯ᵢ` ceiling used by the derivation check.
+
+Implementation consequence, and the reason this distinction is load-bearing: applying guard-band logic to an accredited range bound is **wrong**. The two comparisons are against different numbers. A value outside the accredited entry fails scope inclusion with `out-of-scope`; a value inside the entry that does not meet the policy's own limit fails the decision-rule conjunct with a distinct code. Conflating them makes both reason codes unreliable.
 
 **Principal binding.** `binds(u, v)` holds on an authorizing edge `⟨u, v, r, b⟩` iff the `credentialSubject` of the referenced parent `v` identifies the `issuer` of `u`, with both identifiers resolved through the registry that resolves `v`'s issuer. `binds` is required on every authorizing edge and is not required on `supportedBy`. It is the predicate that separates an authorization from a citation: the digest already binds the edge to a document, so without `binds` an issuer may cite another body's valid accreditation and present a correct digest for it.
 
-**Policy.** A verifier policy `P` is a predicate over `(G, d)`. `P(G, d)` holds iff: `d`'s required authorizing relations and evidence kinds are present for its credential type/issuer role/jurisdiction/scheme; **every authorizing edge satisfies `binds`**; every `derivedFrom` edge satisfies `⊑`; `in(c_d, S_d)` holds under `P`'s decision rule; all required statuses are current (and historical status holds at issuance where `P` requires, B1); and every supporting edge resolves to a credential itself satisfying `P`. `P` is left abstract — candidate realizations are SHACL (graph-shape), Datalog/Rego (rules), and the request-layer query languages — but fixing one is profiling work, not part of the model.
+**Policy.** A verifier policy `P` is a predicate over `(G, d)`. `P(G, d)` holds iff: `d`'s required authorizing relations and evidence kinds are present for its credential type/issuer role/jurisdiction/scheme; **every authorizing edge satisfies `binds`**; every `derivedFrom` edge satisfies `⊑`; `in(c_d, S_d)` holds (containment only, no decision rule); **the claim values satisfy `P`'s specified requirements under its decision rule** (a separate conjunct — see D-1); all required statuses are current (and historical status holds at issuance where `P` requires, B1); and every supporting edge resolves to a credential itself satisfying `P`. `P` is left abstract — candidate realizations are SHACL (graph-shape), Datalog/Rego (rules), and the request-layer query languages — but fixing one is profiling work, not part of the model.
 
 **Properties (by construction).** *Soundness:* `verify(d, P) = accept ⇒ P(G, d)`. *Completeness:* `G` well-formed ∧ `P(G, d) ⇒ verify(d, P) = accept`. Both conditional on the decidability of `in` (B5). *Complexity:* with memoization over visited vertices, `O(|V| + |E|)` — a DPP referencing thousands of siblings is linear, each verified once.
 
@@ -108,15 +118,31 @@ Worked policy (verifier = testing lab selecting a check standard):
 ```text
 require credentialType: ReferenceMaterialCertificate
 require certifiedValue.property: As
-require material.matrix: CuZn (brass)
-require certifiedValue.expandedUncertainty <= 8 mg/kg (k=2)
+require material.matrix: CuZn39Pb3 (governed identifier, not the label)
 require authorizing edge basis: accreditation, in-scope entry present
 require status: current at verification, valid at issuance
-decisionRule: simple acceptance, guard band = U (ISO/IEC 17025 7.8.6, ILAC-G8)
-trustAnchors: accreditation MRA via Global ACI
+
+accredited scope entry:  As in CuZn39Pb3, range 50-500 mg/kg
+policy requirement:      As <= 200 mg/kg
+decisionRule:            guarded acceptance, guard band = U
+                         (ISO/IEC 17025 7.8.6, ILAC-G8)
+trustAnchors:            accreditation MRA via Global ACI
 ```
 
-Evaluated against a credential asserting `As = 178 ± 5 mg/kg`: property/matrix match, `5 ≤ 8`, value lies within the accredited range under the guard band, status current ⇒ **accept** with a reason trace. Had the uncertainty exceeded the ceiling, or the value sat within `U` of a range bound under a stricter guard band, the same evidence could yield **reject** — a policy decision, not arithmetic.
+The accredited range and the policy limit are **different numbers checked by
+different conjuncts**, which is the whole point of D-1. Three cases, and they are
+the test vectors (TST-1):
+
+| Claim | Scope inclusion (`in`) | Decision rule conjunct | Outcome |
+| --- | --- | --- | --- |
+| `As = 178 ± 5 mg/kg` | inside 50–500 ⇒ holds | `178 + 5 = 183 ≤ 200` ⇒ holds | **accept** |
+| `As = 197 ± 5 mg/kg` | inside 50–500 ⇒ holds | `197 + 5 = 202 > 200` ⇒ fails | **reject**, decision-rule code |
+| `As = 520 ± 5 mg/kg` | outside 50–500 ⇒ fails | not reached | **reject**, `out-of-scope` |
+
+The 520 case is the one that shows the separation: it fails **scope inclusion**,
+and the guard band has no bearing on that bound. The 197 case is admissible under
+the accreditation and still rejected, because it does not meet what the verifier
+requires. Reporting either one with the other's reason code would be wrong.
 
 ---
 
