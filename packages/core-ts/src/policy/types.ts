@@ -6,6 +6,17 @@ import type {
 
 export type CheckMode = 'required' | 'optional' | 'ignored' | 'unsupported';
 
+export type AssessmentMethod = 'agent' | 'human' | 'hybrid';
+
+export interface AssessmentPolicy {
+  /** Required means absence/indeterminate is a verification failure. */
+  mode: Exclude<CheckMode, 'unsupported'>;
+  /** Only graph nodes carrying one of these types are assessed. */
+  targetCredentialTypes: string[];
+  /** Methods admitted by the verifier's operative policy. */
+  allowedMethods: AssessmentMethod[];
+}
+
 export interface RequiredEvidence {
   id: string;
   relation?: EvidenceRelation;
@@ -44,6 +55,7 @@ export interface PolicyProfile {
   targetCredentialTypes: string[];
   requiredEvidence: RequiredEvidence[];
   checks: PolicyChecks;
+  assessment?: AssessmentPolicy;
   statusPolicy?: StatusPolicy;
   limits?: PolicyLimits;
 }

@@ -9,15 +9,18 @@ function credType(cred: JsonObject): string {
   return types.find((t) => t !== 'VerifiableCredential') ?? 'Credential';
 }
 
-function issuerDid(cred: JsonObject): string {
-  const iss = cred.issuer;
-  if (typeof iss === 'string') return iss;
-  if (iss && typeof iss === 'object') return ((iss as JsonObject).id as string) ?? '';
-  return '';
-}
-
 function shortDid(did: string) {
   return did.replace(/^did:web:/, '').replace(/\.example.*$/, '') || did;
+}
+
+function identityIds(value: unknown): string[] {
+  if (typeof value === 'string') return [value];
+  if (Array.isArray(value)) return value.flatMap(identityIds);
+  if (value && typeof value === 'object') {
+    const id = (value as JsonObject).id;
+    return typeof id === 'string' ? [id] : [];
+  }
+  return [];
 }
 
 function fmtDate(iso: string | undefined) {
@@ -124,6 +127,82 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+// ── Credential parties ───────────────────────────────────────────────────────
+
+const PARTY_STYLE = {
+  issuer:  { letter: 'I', bg: '#EBF2FA', color: '#2D6CB5' },
+  subject: { letter: 'S', bg: '#F3E8FF', color: '#7C3AED' },
+  holder:  { letter: 'H', bg: '#FAF0E0', color: '#C8862A' },
+} as const;
+
+function PartyRow({
+  kind,
+  label,
+  description,
+  ids,
+}: {
+  kind: keyof typeof PARTY_STYLE;
+  label: string;
+  description: string;
+  ids: string[];
+}) {
+  const style = PARTY_STYLE[kind];
+  return (
+    <div className="flex items-start gap-2.5 py-2 first:pt-1.5 last:pb-1.5 border-b border-slate-100 last:border-b-0">
+      <span
+        style={{ background: style.bg, color: style.color, borderColor: style.color }}
+        className="w-6 h-6 rounded-full border flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5"
+      >
+        {style.letter}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-1.5 flex-wrap">
+          <strong className="text-[11px] text-slate-800">{label}</strong>
+          <span className="text-[9px] text-slate-400">{description}</span>
+        </div>
+        {ids.length > 0 ? ids.map(id => (
+          <div key={id} className="mt-0.5">
+            <p className="text-[10px] font-semibold text-slate-700 break-all">{shortDid(id)}</p>
+            {shortDid(id) !== id && (
+              <p className="text-[8px] font-mono text-slate-400 break-all mt-0.5">{id}</p>
+            )}
+          </div>
+        )) : (
+          <p className="text-[10px] italic text-slate-400 mt-0.5">Not declared in this credential</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CredentialParties({ cred }: { cred: JsonObject }) {
+  const issuerIds = identityIds(cred.issuer);
+  const subjectIds = identityIds(cred.credentialSubject);
+  const holderIds = identityIds(cred.holder);
+  return (
+    <Section title="Credential parties">
+      <PartyRow
+        kind="issuer"
+        label="Issuer"
+        description="signed and issued the credential"
+        ids={issuerIds}
+      />
+      <PartyRow
+        kind="subject"
+        label="Subject"
+        description="the credential is about or grants authority to"
+        ids={subjectIds}
+      />
+      <PartyRow
+        kind="holder"
+        label="Holder"
+        description="presenter/controller, only when explicitly declared"
+        ids={holderIds}
+      />
+    </Section>
+  );
+}
+
 // ── Type palette ──────────────────────────────────────────────────────────────
 
 const TYPE_PALETTE: Record<string, { border: string; accent: string; bg: string }> = {
@@ -136,6 +215,10 @@ const TYPE_PALETTE: Record<string, { border: string; accent: string; bg: string 
   ReferenceMaterialCertificate:       { border: '#1B7F79', accent: '#1B7F79', bg: '#E6F4F3' },
   ReferenceMaterialStudy:             { border: '#1B7F79', accent: '#1B7F79', bg: '#E6F4F3' },
   TestReport:                         { border: '#D9703A', accent: '#D9703A', bg: '#FFF4EE' },
+  InspectionReport:                   { border: '#A855F7', accent: '#A855F7', bg: '#FAF5FF' },
+  IssuingScopeCredential:             { border: '#6FA8DC', accent: '#6FA8DC', bg: '#EBF5FB' },
+  GSCertificate:                      { border: '#1B7F79', accent: '#1B7F79', bg: '#E6F4F3' },
+  Product:                            { border: '#7C3AED', accent: '#7C3AED', bg: '#F3E8FF' },
 };
 const DEFAULT_PALETTE = { border: '#94A3B8', accent: '#64748B', bg: '#F8FAFC' };
 
@@ -149,13 +232,17 @@ const TYPE_LABEL: Record<string, string> = {
   ReferenceMaterialCertificate:       'Reference Material Certificate',
   ReferenceMaterialStudy:             'Reference Material Study',
   TestReport:                         'Test Report',
+  InspectionReport:                   'Initial Factory Inspection',
+  IssuingScopeCredential:             'GS Issuing Scope',
+  GSCertificate:                      'GS Product Certificate',
+  Product:                            'GS-marked Product Unit',
 };
 
 // ── Type-specific body renderers ──────────────────────────────────────────────
 
 const DCC_TYPES = new Set([
   'DigitalCalibrationCertificate', 'ReferenceMaterialCertificate',
-  'ReferenceMaterialStudy', 'TestReport',
+  'ReferenceMaterialStudy', 'TestReport', 'InspectionReport',
 ]);
 
 function DccBody({ subj }: { subj: JsonObject }) {
@@ -293,8 +380,18 @@ function EvidenceLinks({ links }: { links: JsonObject[] }) {
 export function CredentialCard({ cred, isTarget, status, noRaw }: CredentialCardProps) {
   const type = credType(cred);
   const pal = TYPE_PALETTE[type] ?? DEFAULT_PALETTE;
-  const label = TYPE_LABEL[type] ?? type;
-  const issuer = shortDid(issuerDid(cred));
+  const issuerId = identityIds(cred.issuer)[0] ?? '';
+  const subjectId = identityIds(cred.credentialSubject)[0] ?? '';
+  const label = type === 'IssuingScopeCredential'
+    ? issuerId === 'did:web:gs-body.example'
+      ? 'GS Body Operational Scope'
+      : 'External Lab Operational Scope'
+    : type === 'AccreditationCertificate' && subjectId === 'did:web:gs-body.example'
+      ? 'GS Body Accreditation'
+      : type === 'AccreditationCertificate' &&
+          subjectId === 'did:web:hanseatic-product-testing.example'
+        ? 'External Lab Accreditation'
+        : TYPE_LABEL[type] ?? type;
   const validFrom = cred.validFrom as string | undefined;
   const validUntil = cred.validUntil as string | undefined;
   const subj = (cred.credentialSubject as JsonObject) ?? {};
@@ -318,7 +415,6 @@ export function CredentialCard({ cred, isTarget, status, noRaw }: CredentialCard
           )}
           <p className="text-[12px] font-bold text-slate-800 leading-tight">{label}</p>
           <p className="text-[9px] font-mono text-slate-400 mt-0.5 flex flex-wrap gap-x-2">
-            {issuer && <span>issuer: {issuer}</span>}
             {validFrom && <span>{fmtDate(validFrom)}{validUntil ? ` – ${fmtDate(validUntil)}` : ''}</span>}
             {proofSuite && <span className="text-slate-300">{proofSuite}</span>}
           </p>
@@ -332,6 +428,8 @@ export function CredentialCard({ cred, isTarget, status, noRaw }: CredentialCard
           </span>
         )}
       </div>
+
+      <CredentialParties cred={cred} />
 
       {isDcc ? <DccBody subj={subj} /> : <SubjectBody subj={subj} title="Credential subject" />}
 

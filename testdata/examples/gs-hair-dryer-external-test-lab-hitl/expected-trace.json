@@ -1,0 +1,55 @@
+{
+  "verified": true,
+  "profile": "gs-hair-dryer-external-test-lab-hitl",
+  "target": "",
+  "summary": {
+    "nodesResolved": 0,
+    "edgesEvaluated": 0,
+    "failures": 0,
+    "warnings": 0
+  },
+  "results": [
+    {
+      "id": "gs-hair-dryer-external-test-lab-hitl-0",
+      "level": "policy",
+      "status": "PASS",
+      "code": "DERIVATION_VALID",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "gs-hair-dryer-external-test-lab-hitl-1",
+      "level": "policy",
+      "status": "PASS",
+      "code": "SUPPORTING_EVIDENCE_RESOLVED",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "gs-hair-dryer-external-test-lab-hitl-2",
+      "level": "policy",
+      "status": "PASS",
+      "code": "ASSESSMENT_PASSED",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "gs-hair-dryer-external-test-lab-hitl-3",
+      "level": "policy",
+      "status": "PASS",
+      "code": "SUBJECT_BOUND",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "gs-hair-dryer-external-test-lab-hitl-4",
+      "level": "policy",
+      "status": "PASS",
+      "code": "PROOF_VALID",
+      "detail": "Expected trace code for fixture parity."
+    },
+    {
+      "id": "gs-hair-dryer-external-test-lab-hitl-5",
+      "level": "policy",
+      "status": "PASS",
+      "code": "REQUIRED_EVIDENCE_PRESENT",
+      "detail": "Expected trace code for fixture parity."
+    }
+  ]
+}

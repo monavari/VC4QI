@@ -1,0 +1,77 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld",
+    {
+      "Product": "https://schema.org/Product",
+      "GSCertificate": "https://w3id.org/qi-vc/vocab/v1#GSCertificate",
+      "IssuingScopeCredential": "https://w3id.org/qi-vc/vocab/v1#IssuingScopeCredential",
+      "SchemeAuthorizationEvidence": "https://w3id.org/qi-vc/vocab/v1#SchemeAuthorizationEvidence",
+      "AccreditationCertificate": "https://w3id.org/qi-vc/vocab/v1#AccreditationCertificate",
+      "TestReport": "https://w3id.org/qi-vc/vocab/v1#TestReport",
+      "InspectionReport": "https://w3id.org/qi-vc/vocab/v1#InspectionReport",
+      "authorizationBasisKind": {
+        "@id": "https://w3id.org/qi-vc/vocab/v1#authorizationBasisKind",
+        "@type": "@vocab"
+      },
+      "constraints": "https://w3id.org/qi-vc/vocab/v1#constraints",
+      "authorizedCredentialTypes": {
+        "@id": "https://w3id.org/qi-vc/vocab/v1#authorizedCredentialTypes",
+        "@container": "@set"
+      }
+    }
+  ],
+  "type": [
+    "VerifiableCredential",
+    "GSCertificate"
+  ],
+  "id": "urn:uuid:gs-hair-dryer-external-test-lab-certificate-001",
+  "issuer": "did:web:gs-body.example",
+  "validFrom": "2026-05-20T00:00:00Z",
+  "validUntil": "2029-01-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "did:web:nordlicht-appliances.example",
+    "https://schema.org/identifier": "GS-HD-01",
+    "https://schema.org/itemReviewed": {
+      "id": "urn:example:product-type:hair-dryer-hd-01",
+      "type": "Product",
+      "https://schema.org/category": "hand-held hair dryer",
+      "https://schema.org/model": "HD-01",
+      "https://schema.org/manufacturer": {
+        "id": "did:web:nordlicht-appliances.example"
+      }
+    }
+  },
+  "evidence": [
+    {
+      "type": "CredentialEvidenceReference",
+      "id": "urn:uuid:gs-hair-dryer-external-test-lab-issuing-scope-001",
+      "relation": "authorizedBy",
+      "authorizationBasis": {
+        "kind": "operationalScope"
+      },
+      "digestSRI": "sha384-Zr5Mo2SEnZGfo9LF6W1muOfoBIoT9AP7Kk2OfabOhH09sXMA2o2aoNGFArttEXtC"
+    },
+    {
+      "type": "CredentialEvidenceReference",
+      "id": "urn:uuid:gs-hair-dryer-external-test-lab-type-examination-001",
+      "relation": "supportedBy",
+      "digestSRI": "sha384-oauzQrcDZlRvawHseDUUtmo1bnzjVJuhGv+0YluVby2AZnDeF8sITaVPAIzCeOkL"
+    },
+    {
+      "type": "CredentialEvidenceReference",
+      "id": "urn:uuid:gs-hair-dryer-external-test-lab-factory-inspection-001",
+      "relation": "supportedBy",
+      "digestSRI": "sha384-fk38wdeK2EZpn0biicdpFAEPsvC3q7/al8f+CfmcUB5JcgAsjtvF3186mdj1zW3y"
+    }
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:web:gs-body.example#key-1",
+    "created": "2026-01-01T00:00:00Z",
+    "proofValue": "zi1uBgCR1d7LtQaqAQ7bJnMZwH4b24V2xd5Znp9aU6NnuBSN1514CLbvJnJRWUzu2C9u4D4wbLE6fHGj25kX4xxb"
+  }
+}

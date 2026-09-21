@@ -113,6 +113,17 @@ Implementation consequence, and the reason this distinction is load-bearing: app
 
 Three parties own different parts: the **credential** carries facts (claim values, structured scope, edges, status); the **profile** (owned by the scheme/domain community) fixes the required shape (which credential types/edge relations must be present, which `authorizationBasis` kinds are admissible, the scope vocabulary and computable semantics); the **verifier** holds the operative policy (selects a profile; sets the decision rule, freshness requirement, and accepted trust anchors). Outcome is binary `accept`/`reject` with a reason code — never a confidence score. A profile is a satisfiable shape constraint (expressible as SHACL or a presentation query), not a fixed graph; its structural half is expressible today, its value half waits on B5.
 
+**Implementation extension for B5/HITL.** Where a schema establishes only shape
+or no governed semantic checker exists, the verifier policy may require an
+external assessment for selected credential types. The evaluator may be an
+agent, a human, or a hybrid workflow and returns pass/fail/indeterminate plus
+assessor provenance and an explanation. A required missing or indeterminate
+assessment fails closed. This assessment is another conjunct of `P`; it cannot
+override graph well-formedness or any failed deterministic check, does not create
+authority, and does not add a fourth evidence relation. Signed `TestReport` and
+`InspectionReport` credentials remain graph evidence; the assessment records how
+the verifier evaluated content beyond the implemented schema/scope semantics.
+
 Worked policy (verifier = testing lab selecting a check standard):
 
 ```text
@@ -195,6 +206,22 @@ Edge styles in the figure: solid = derived (subset-checked), dashed = independen
 | **E. Recursive domain evidence** | DPP container; test→calibration→RM | `DPP container` —`supportedBy`→ {`CE doc`, `Test report`, `RM cert.`}, each retaining its own authority chain |
 
 The architecture generalizes because authority is typed edges over credentials, not a fixed hierarchy: one grammar of derived/independent/supporting edges. Only Profile B is instantiated in the paper; the rest are illustrative pending per-domain validation (and Profile D is the new structural test vector in Phase 7).
+
+The `gs-hair-dryer-hitl` delivery example adds one application edge below the
+Profile D structure: a QR URL resolves a manufacturer-issued `Product` VC for a
+serialized unit, which is `authorizedBy` the GS body's type-level
+`GSCertificate`. The certificate's `credentialSubject.id` is the manufacturer,
+so the normal authorization subject-binding check applies. This does not change
+the Profile D authority chain or introduce another evidence relation.
+
+The companion external-laboratory vector demonstrates that support need not be
+produced by the certificate issuer. Its `TestReport` is issued by a distinct
+testing laboratory and `authorizedBy` a laboratory scope whose issuer and subject
+are that laboratory. The laboratory scope is `derivedFrom` only the laboratory's
+NAB accreditation.
+The report identifies the GS body as customer; commissioning is business context,
+not the source of laboratory competence. The GS body still issues the certificate
+and initial factory inspection under its separate NAB- and ZLS-backed scope.
 
 ---
 

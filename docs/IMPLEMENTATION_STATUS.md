@@ -10,6 +10,17 @@ Aligned with manuscript v2.1:
 - Deleted edge modules for `recognizedBy`, `notifiedBy`, `statusProvidedBy`.
 - JSON-LD context updated so bare tokens expand to full IRIs via `@type: @vocab`.
 - Profile B canonical values for RM certificate (As in CuZn39Pb3 brass, 178 mg/kg).
+- Policy-selected human/agent/hybrid assessment for credential semantics that a
+  schema or implemented scope checker cannot decide.
+- A separate GS hair-dryer evidence graph whose QR target is a signed,
+  manufacturer-issued credential for one serialized unit. The graph continues
+  through the GS body's product-type certificate, product testing, initial
+  manufacturer inspection, and canonical Profile D dual-authority scope.
+- A companion GS graph separates product testing from the GS body: an external
+  laboratory issues the `TestReport` to the GS body under its own operational
+  scope derived from its NAB accreditation. The GS body commissions the report
+  but retains certification and factory-inspection responsibility under its
+  separate NAB- and ZLS-backed scope.
 
 ## v0.2
 

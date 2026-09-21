@@ -1,0 +1,63 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld",
+    {
+      "Product": "https://schema.org/Product",
+      "GSCertificate": "https://w3id.org/qi-vc/vocab/v1#GSCertificate",
+      "IssuingScopeCredential": "https://w3id.org/qi-vc/vocab/v1#IssuingScopeCredential",
+      "SchemeAuthorizationEvidence": "https://w3id.org/qi-vc/vocab/v1#SchemeAuthorizationEvidence",
+      "AccreditationCertificate": "https://w3id.org/qi-vc/vocab/v1#AccreditationCertificate",
+      "TestReport": "https://w3id.org/qi-vc/vocab/v1#TestReport",
+      "InspectionReport": "https://w3id.org/qi-vc/vocab/v1#InspectionReport",
+      "authorizationBasisKind": {
+        "@id": "https://w3id.org/qi-vc/vocab/v1#authorizationBasisKind",
+        "@type": "@vocab"
+      },
+      "constraints": "https://w3id.org/qi-vc/vocab/v1#constraints",
+      "authorizedCredentialTypes": {
+        "@id": "https://w3id.org/qi-vc/vocab/v1#authorizedCredentialTypes",
+        "@container": "@set"
+      }
+    }
+  ],
+  "type": [
+    "VerifiableCredential",
+    "TestReport"
+  ],
+  "id": "urn:uuid:gs-hair-dryer-type-examination-001",
+  "issuer": "did:web:gs-body.example",
+  "validFrom": "2026-05-10T00:00:00Z",
+  "credentialSubject": {
+    "id": "urn:example:product-type:hair-dryer-hd-01#type-examination",
+    "https://schema.org/identifier": "TR-HD-01",
+    "https://schema.org/itemReviewed": {
+      "id": "urn:example:product-type:hair-dryer-hd-01"
+    },
+    "https://schema.org/reviewBody": "Representative type examined for electrical safety, overheating, foreseeable water-related hazards, materials, ergonomics, marking, and instructions.",
+    "https://schema.org/reviewRating": {
+      "https://schema.org/ratingValue": "pass",
+      "https://schema.org/bestRating": "pass"
+    }
+  },
+  "evidence": [
+    {
+      "type": "CredentialEvidenceReference",
+      "id": "urn:uuid:gs-hair-dryer-issuing-scope-001",
+      "relation": "authorizedBy",
+      "authorizationBasis": {
+        "kind": "operationalScope"
+      },
+      "digestSRI": "sha384-0z3FWqsOtw5vrMmkSEh57X10QXaL/k+HpkbZr9iUNa779t1IXV9lvBAZ46Yzk3PN"
+    }
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:web:gs-body.example#key-1",
+    "created": "2026-01-01T00:00:00Z",
+    "proofValue": "zHnbB1kxQnEtAmcXGuFj1AApzKQXbmBmuMCn8LYndZvoxNgTJyJFzni4zGdASRauDahg4vjXvmTST8oSrn67UR1s"
+  }
+}

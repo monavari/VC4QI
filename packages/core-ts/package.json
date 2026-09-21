@@ -18,7 +18,8 @@
     "./policy": "./src/policy/index.ts",
     "./edge": "./src/edge/index.ts",
     "./presentation-query": "./src/presentation-query/index.ts",
-    "./terms": "./src/terms/index.ts"
+    "./terms": "./src/terms/index.ts",
+    "./assessment": "./src/assessment/index.ts"
   },
   "scripts": {
     "test": "vitest run",

@@ -1,0 +1,73 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld",
+    {
+      "Product": "https://schema.org/Product",
+      "GSCertificate": "https://w3id.org/qi-vc/vocab/v1#GSCertificate",
+      "IssuingScopeCredential": "https://w3id.org/qi-vc/vocab/v1#IssuingScopeCredential",
+      "SchemeAuthorizationEvidence": "https://w3id.org/qi-vc/vocab/v1#SchemeAuthorizationEvidence",
+      "AccreditationCertificate": "https://w3id.org/qi-vc/vocab/v1#AccreditationCertificate",
+      "TestReport": "https://w3id.org/qi-vc/vocab/v1#TestReport",
+      "InspectionReport": "https://w3id.org/qi-vc/vocab/v1#InspectionReport",
+      "authorizationBasisKind": {
+        "@id": "https://w3id.org/qi-vc/vocab/v1#authorizationBasisKind",
+        "@type": "@vocab"
+      },
+      "constraints": "https://w3id.org/qi-vc/vocab/v1#constraints",
+      "authorizedCredentialTypes": {
+        "@id": "https://w3id.org/qi-vc/vocab/v1#authorizedCredentialTypes",
+        "@container": "@set"
+      }
+    }
+  ],
+  "type": [
+    "VerifiableCredential",
+    "IssuingScopeCredential"
+  ],
+  "id": "urn:uuid:gs-hair-dryer-issuing-scope-001",
+  "issuer": "did:web:gs-body.example",
+  "validFrom": "2026-01-01T00:00:00Z",
+  "validUntil": "2029-01-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "did:web:gs-body.example",
+    "constraints": {
+      "authorizedCredentialTypes": [
+        "GSCertificate",
+        "TestReport",
+        "InspectionReport"
+      ]
+    }
+  },
+  "evidence": [
+    {
+      "type": "CredentialEvidenceReference",
+      "id": "urn:uuid:gs-hair-dryer-accreditation-001",
+      "relation": "derivedFrom",
+      "authorizationBasis": {
+        "kind": "accreditation"
+      },
+      "digestSRI": "sha384-Q86JXcCfeq9d0oN9j52W9Cfxp6EbsinEPB+UENxU1JKEJLzx53waL5w6lwCzN+hj"
+    },
+    {
+      "type": "CredentialEvidenceReference",
+      "id": "urn:uuid:gs-hair-dryer-scheme-authorization-001",
+      "relation": "authorizedBy",
+      "authorizationBasis": {
+        "kind": "schemeAuthorization",
+        "issuerRole": "schemeAuthority",
+        "scheme": "GS"
+      },
+      "digestSRI": "sha384-i9xyKykz5mJMi6rinWyxZpIS/wDaSsahxyB1UfeVF653pC4TcLGgADh3+lzWlWJo"
+    }
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:web:gs-body.example#key-1",
+    "created": "2026-01-01T00:00:00Z",
+    "proofValue": "z5oa9ZJtkdYgqmrEHMSBSMJ5YKSy6DPieELDnjZ2xCD79MSQAR984dvsZiRThSzYMaxvNd1AmVxFuqpqRWrgYqJmR"
+  }
+}
