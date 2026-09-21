@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from ..assessment import AssessmentEvaluator, evaluate_assessment
 from ..edge import evaluate_edge
 from ..evidence import build_evidence_graph
 from ..policy import PolicyProfile, evaluate_policy
@@ -26,6 +27,7 @@ class VerifyGraphOptions:
     max_evidence_nodes: int | None = None
     skip_proof: bool = False
     skip_status: bool = False
+    assessment_evaluator: AssessmentEvaluator | None = None
 
 
 def _credential_id(credential: JsonObject) -> str:
@@ -247,6 +249,15 @@ def verify_credential_graph(
 
     for node in graph.nodes.values():
         results.extend(_evaluate_schema(node.credential, policy))
+        results.extend(
+            evaluate_assessment(
+                node.credential,
+                policy,
+                options.assessment_evaluator,
+                target_credential=target_credential,
+                evidence_graph=graph,
+            )
+        )
         results.extend(_evaluate_proof(node.credential, policy, options))
         results.extend(_evaluate_status(node.credential, target_id, policy, options))
         results.extend(_evaluate_terms_of_use(node.credential, policy))

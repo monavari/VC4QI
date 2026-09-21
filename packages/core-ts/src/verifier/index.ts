@@ -9,6 +9,8 @@ import { checkStatusBit } from '../status/index.js';
 import { verifyProof } from '../proofs/index.js';
 import { verifySd } from '../proofs/sd.js';
 import { evaluateTermsOfUse } from '../terms/index.js';
+import { evaluateAssessment, type AssessmentEvaluator } from '../assessment/index.js';
+import type { EvidenceGraph } from '../evidence/types.js';
 import type {
   BitstringStatusListEntry,
   DocumentLoader,
@@ -35,6 +37,8 @@ export interface VerifyGraphOptions {
   skipProof?: boolean;
   skipStatus?: boolean;
   verificationTime?: Date;
+  /** Policy-selected semantic evaluator backed by an agent, human, or hybrid workflow. */
+  assessCredential?: AssessmentEvaluator;
 }
 
 function credentialId(credential: JsonObject): string {
@@ -307,9 +311,15 @@ async function evaluateCredentialNode(
   targetId: string,
   policy: PolicyProfile,
   options: VerifyGraphOptions,
+  graph: EvidenceGraph,
+  targetCredential: JsonObject,
 ): Promise<TraceEntry[]> {
   const results: TraceEntry[] = [];
   results.push(...await evaluateSchema(credential, policy));
+  results.push(...await evaluateAssessment(credential, policy, options.assessCredential, {
+    targetCredential,
+    evidenceGraph: graph,
+  }));
   results.push(...await evaluateProof(credential, policy, options));
   results.push(...await evaluateStatus(credential, targetId, policy, options));
   results.push(...evaluateTermsOfUse(credential, policy));
@@ -337,7 +347,14 @@ export async function verifyCredentialGraph(
   results.push(...graphResult.results);
 
   for (const node of Object.values(graphResult.graph.nodes)) {
-    results.push(...await evaluateCredentialNode(node.credential, targetId, policy, options));
+    results.push(...await evaluateCredentialNode(
+      node.credential,
+      targetId,
+      policy,
+      options,
+      graphResult.graph,
+      targetCredential,
+    ));
   }
 
   for (const edge of graphResult.graph.edges) {

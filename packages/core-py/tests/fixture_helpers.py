@@ -40,7 +40,10 @@ def fixture_path(name: str, *parts: str) -> Path:
     return EXAMPLES / name / Path(*parts)
 
 
-def load_fixture(name: str, target_file: str = "target-credential.json") -> tuple[JsonObject, Any, JsonObject, dict[str, JsonObject]]:
+def load_fixture(
+    name: str,
+    target_file: str = "target-credential.json",
+) -> tuple[JsonObject, Any, JsonObject, dict[str, JsonObject]]:
     base = EXAMPLES / name
     target = read_json(base / target_file)
     policy = load_policy_profile(read_json(base / "policy.json"))
@@ -52,7 +55,11 @@ def load_fixture(name: str, target_file: str = "target-credential.json") -> tupl
     return target, policy, trust_registry, documents
 
 
-def verify_fixture(name: str, target_file: str = "target-credential.json", **kwargs: Any) -> JsonObject:
+def verify_fixture(
+    name: str,
+    target_file: str = "target-credential.json",
+    **kwargs: Any,
+) -> JsonObject:
     target, policy, registry, documents = load_fixture(name, target_file)
 
     def fetch(uri: str) -> JsonObject:
@@ -63,12 +70,12 @@ def verify_fixture(name: str, target_file: str = "target-credential.json", **kwa
     defaults: dict[str, Any] = {
         "resolve_key": resolve_test_registry_key,
         "document_loader": TEST_DOCUMENT_LOADER,
+        "skip_proof": True,
     }
     defaults.update(kwargs)
     options = VerifyGraphOptions(
         fetch_document=fetch,
         resolve_trust_registry=lambda _issuer, _context=None: registry,
-        skip_proof=True,
         **defaults,
     )
     return verify_credential_graph(target, policy, options)

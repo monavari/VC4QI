@@ -103,6 +103,7 @@ trace = verify_credential_graph(
 - [Vocabulary](docs/VOCABULARY.md)
 - [Policy Profiles](docs/POLICY_PROFILES.md)
 - [Presentation Query](docs/PRESENTATION_QUERY.md)
+- [Human/agent assessment](docs/ASSESSMENT.md)
 - [Python Parity](docs/PYTHON_PARITY.md)
 - [Non-goals](docs/NON_GOALS.md)
 - [Implementation Status](docs/IMPLEMENTATION_STATUS.md)

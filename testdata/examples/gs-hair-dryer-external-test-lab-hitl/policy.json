@@ -1,0 +1,98 @@
+{
+  "$schema": "https://w3id.org/qi-vc/schemas/v1/policy-profile.schema.json",
+  "id": "gs-hair-dryer-external-test-lab-hitl",
+  "targetCredentialTypes": [
+    "Product"
+  ],
+  "requiredEvidence": [
+    {
+      "id": "manufacturer-gs-certificate",
+      "relation": "authorizedBy",
+      "targetCredentialTypes": [
+        "GSCertificate"
+      ],
+      "authorizationBasis": {
+        "kind": "schemeAuthorization"
+      },
+      "required": true
+    },
+    {
+      "id": "gs-issuing-authority",
+      "relation": "authorizedBy",
+      "authorizationBasis": {
+        "kind": "operationalScope"
+      },
+      "required": true
+    },
+    {
+      "id": "gs-accredited-scope",
+      "relation": "derivedFrom",
+      "authorizationBasis": {
+        "kind": "accreditation"
+      },
+      "required": true
+    },
+    {
+      "id": "gs-scheme-authority",
+      "relation": "authorizedBy",
+      "authorizationBasis": {
+        "kind": "schemeAuthorization"
+      },
+      "required": true
+    },
+    {
+      "id": "product-type-examination",
+      "relation": "supportedBy",
+      "targetCredentialTypes": [
+        "TestReport"
+      ],
+      "required": true
+    },
+    {
+      "id": "initial-factory-inspection",
+      "relation": "supportedBy",
+      "targetCredentialTypes": [
+        "InspectionReport"
+      ],
+      "required": true
+    },
+    {
+      "id": "external-testing-laboratory-scope",
+      "relation": "authorizedBy",
+      "targetCredentialTypes": [
+        "IssuingScopeCredential"
+      ],
+      "authorizationBasis": {
+        "kind": "operationalScope",
+        "issuerRole": "testingLaboratory"
+      },
+      "required": true
+    }
+  ],
+  "checks": {
+    "proof": "optional",
+    "schema": "optional",
+    "status": "optional",
+    "digest": "required",
+    "scopeInclusion": "ignored",
+    "derivation": "scopeSubset",
+    "cycleDetection": "required",
+    "termsOfUse": "optional"
+  },
+  "limits": {
+    "maxDepth": 8,
+    "maxEvidenceNodes": 32
+  },
+  "assessment": {
+    "mode": "required",
+    "targetCredentialTypes": [
+      "TestReport",
+      "InspectionReport"
+    ],
+    "allowedMethods": [
+      "agent",
+      "human",
+      "hybrid"
+    ]
+  }
+}

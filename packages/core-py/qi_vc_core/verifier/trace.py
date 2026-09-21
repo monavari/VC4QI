@@ -3,7 +3,15 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-TraceLevel = Literal["credential", "edge", "graph", "policy", "scope", "presentation"]
+TraceLevel = Literal[
+    "credential",
+    "assessment",
+    "edge",
+    "graph",
+    "policy",
+    "scope",
+    "presentation",
+]
 TraceStatus = Literal["PASS", "FAIL", "SKIP", "WARN"]
 
 
@@ -18,6 +26,9 @@ def trace_entry(
     from_: str | None = None,
     to: str | None = None,
     relation: str | None = None,
+    assessment_method: Literal["agent", "human", "hybrid"] | None = None,
+    assessor_id: str | None = None,
+    assessment_id: str | None = None,
 ) -> dict[str, Any]:
     entry: dict[str, Any] = {
         "id": id,
@@ -34,6 +45,12 @@ def trace_entry(
         entry["to"] = to
     if relation is not None:
         entry["relation"] = relation
+    if assessment_method is not None:
+        entry["assessmentMethod"] = assessment_method
+    if assessor_id is not None:
+        entry["assessorId"] = assessor_id
+    if assessment_id is not None:
+        entry["assessmentId"] = assessment_id
     return entry
 
 

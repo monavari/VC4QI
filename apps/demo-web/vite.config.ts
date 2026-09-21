@@ -40,6 +40,7 @@ const jsonldPlugin: Plugin = {
 };
 
 export default defineConfig({
+  server: { host: '0.0.0.0' },
   plugins: [jsonldPlugin, react(), tailwindcss(), nodeStubPlugin],
   resolve: {
     alias: {

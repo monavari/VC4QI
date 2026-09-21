@@ -58,6 +58,9 @@
         }
       }
     },
+    "assessment": {
+      "$ref": "#/$defs/AssessmentPolicy"
+    },
     "statusPolicy": {
       "type": "object",
       "additionalProperties": false,
@@ -95,6 +98,31 @@
     "CheckMode": {
       "type": "string",
       "enum": ["required", "optional", "ignored", "unsupported"]
+    },
+    "AssessmentPolicy": {
+      "type": "object",
+      "required": ["mode", "targetCredentialTypes", "allowedMethods"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["required", "optional", "ignored"]
+        },
+        "targetCredentialTypes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "allowedMethods": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["agent", "human", "hybrid"]
+          }
+        }
+      }
     },
     "RequiredEvidence": {
       "type": "object",

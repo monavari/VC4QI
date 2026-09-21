@@ -58,7 +58,7 @@ class BitstringStatusListEntry:
 @dataclass
 class TraceEntry:
     id: str
-    level: Literal["credential", "edge", "graph", "policy", "scope", "presentation"]
+    level: Literal["credential", "assessment", "edge", "graph", "policy", "scope", "presentation"]
     status: Literal["PASS", "FAIL", "SKIP", "WARN"]
     code: str
     detail: str
@@ -66,6 +66,9 @@ class TraceEntry:
     from_: str | None = None
     to: str | None = None
     relation: str | None = None
+    assessment_method: Literal["agent", "human", "hybrid"] | None = None
+    assessor_id: str | None = None
+    assessment_id: str | None = None
 
 
 @dataclass

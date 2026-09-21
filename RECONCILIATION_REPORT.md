@@ -504,3 +504,330 @@ the requirements register demands.
   entry states a capability the reported uncertainty is *not below* it. The
   implementation models a ceiling only. Recorded in `docs/PAPER_FEEDBACK.md`
   F-7 already; still open.
+
+---
+
+## GS hair-dryer scenario and generalized assessment path (2026-08-19)
+
+Added a new scenario without modifying the existing
+`testdata/examples/gs-scheme-authorization/` fixture. The source process model
+was the English AP2 GS evaluation report supplied for this task. The scenario
+uses claims from the report's verified process description; its draft questions
+and explicitly unverified AI-generated research notes were not treated as
+requirements or evidence.
+
+### New GS evidence graph
+
+`testdata/examples/gs-hair-dryer-hitl/` models a synthetic hand-held hair dryer:
+
+- the final `GSCertificate` is `authorizedBy` a GS issuing-scope credential;
+- it is `supportedBy` a product type-examination `TestReport` and an initial
+  manufacturer `InspectionReport`;
+- both reports are themselves `authorizedBy` the same issuing scope, because
+  the chosen scenario uses the GS body's in-house laboratory and inspection
+  function under the GS body's legal responsibility;
+- the issuing scope is `derivedFrom` accreditation and independently
+  `authorizedBy` a ZLS `schemeAuthorization` credential.
+
+The factory report covers personnel, equipment, incoming-goods controls,
+production controls, intermediate/final checks, and safety-component
+traceability. The product report covers electrical safety, overheating,
+foreseeable water hazards, materials, ergonomics, marking, and instructions.
+The final certificate is about a product type and its series production, not an
+individual serialized unit.
+
+### Assessment decisions
+
+- **D-AS-1 — assessment is a conjunct of policy `P`.** Added an optional policy
+  `assessment` block and a verifier-supplied evaluator. It supplements schema
+  and scope checks; it cannot override any failed deterministic gate and does
+  not add a fourth evidence relation or basis kind.
+- **D-AS-2 — three admitted methods, no confidence score.** Results identify
+  `agent`, `human`, or `hybrid`, plus assessor/assessment identifiers and an
+  explanation. Outcomes are pass/fail/indeterminate; final verification remains
+  binary with reason codes.
+- **D-AS-3 — required assessment fails closed.** Missing evaluator, evaluator
+  error, disallowed method, invalid result, and required indeterminate result
+  are failures. Optional missing assessment is skipped; optional indeterminate
+  is a warning; a performed fail always fails.
+- **D-AS-4 — HITL orchestration stays outside the kernel.** An adapter may pause
+  externally, collect a human decision, and rerun/resume verification. The
+  verifier does not become a workflow engine. Signed domain reports remain the
+  portable evidence; `assessmentId` may point to an external audit record, but
+  VC4QI does not persist or sign that record.
+- **D-GS-1 — supporting reports do not authorize.** The certificate's links to
+  `TestReport` and `InspectionReport` use `supportedBy` with no
+  `authorizationBasis`. Each report retains its own authorizing edge.
+- **D-GS-2 — no invented GS semantic checker.** The Profile D derivation vector
+  checks the supported structural scope dimension (`authorizedCredentialTypes`).
+  Product-specific scope inclusion remains `ignored`; human/agent assessment
+  covers the sparse content at policy level without pretending to solve B5.
+- **D-GS-3 — JSON-LD safe-mode-clean scenario.** Scenario-local aliases cover
+  existing QI credential types/fields, and product/review facts use absolute
+  schema.org IRIs. A test canonicalizes every graph credential with JSON-LD
+  `safe: true`.
+
+### Remaining `TODO(human)`
+
+- Confirm the exact applicable GS testing bases, versions, product-group scope,
+  and real authorization/accreditation wording before replacing the synthetic
+  values. The AP2 report itself lists the required-document connections as an
+  open question.
+- Decide whether a later deployment requires the runtime assessment result to
+  be issued as its own signed, portable assessment credential. This change
+  deliberately records assessment provenance in the verification trace and an
+  optional external `assessmentId`, without inventing a new credential
+  vocabulary or authority kind.
+
+### Verification
+
+```text
+✓ 183 TypeScript tests (18 files)
+✓ 154 Python tests, 1 intentional SD skip
+✓ 2 repository scenario tests
+✓ schema validation 6/6
+✓ core-ts and demo-web TypeScript checks
+✓ demo-web production build
+✓ ruff on the new/modified assessment tests and assessment module
+✓ git diff --check
+```
+
+The `qi_vc_core` source-package mypy run still reports the same 11 pre-existing
+errors already present at the stage-2 baseline (scope/evidence return typing and
+stale `type: ignore` comments); no new mypy error originates in the assessment
+module. The broader `packages/core-py` path also includes the existing largely
+untyped test corpus and therefore remains substantially noisier.
+
+### GS QR-target revision (2026-08-19)
+
+The first scenario draft stopped at the GS body's product-type certificate.
+That description above is retained as history but is superseded for the final
+application target by the following extension:
+
+- the QR URL identifies a `Product` VC for serialized unit
+  `HD01-2026-000042`;
+- Nordlicht, the fictional manufacturer, issues that unit credential;
+- its `authorizedBy` edge resolves the GS body's `GSCertificate`;
+- the certificate subject is the manufacturer and its `itemReviewed` is the
+  HD-01 product type, so the kernel's ordinary authorization subject binding
+  proves that the certificate authorizes the unit credential's issuer;
+- the certificate remains supported by the type-examination and initial
+  factory-inspection reports, and the inspection explicitly reviews the
+  manufacturer and manufacturing site;
+- the older `gs-scheme-authorization` fixture remains unchanged.
+
+**D-GS-4 — no new QI vocabulary for the delivery credential.** The unit target
+uses the existing schema.org `Product` class through a scenario-local alias.
+The GS semantics are carried by its QR URL and authorizing edge to the
+`GSCertificate`; no new evidence relation, basis kind, or `qi:` value was
+introduced.
+
+**D-GS-5 — proof-enabled canonical pass.** The generator's signing pass now
+signs all seven credentials in this scenario with the repository's TEST ONLY
+fixture key and issuer-specific verification-method identifiers. Both TS and
+Python canonical tests set proof skipping to false. The observed TS trace was:
+
+```text
+verified: true
+target: https://products.nordlicht-appliances.example/hd-01/serial/HD01-2026-000042/gs-mark
+nodesResolved: 7
+edgesEvaluated: 8
+failures: 0
+warnings: 0
+PROOF_VALID: 7
+DIGEST_VALID: 8
+SUBJECT_BOUND: 5
+TRUSTED_ISSUER: 5
+ASSESSMENT_PASSED: 2
+```
+
+### Browser verification correction (2026-08-19)
+
+An end-to-end headless Firefox run selected each GS scenario in the demo and
+clicked `Run Verifier`. The first run exposed a browser-only defect: the shared
+Base58btc decoder used Node's global `Buffer`, which is unavailable in Firefox.
+The proof verifier caught the resulting decode exception and reported every
+graph and trust-registry signature as `PROOF_INVALID`.
+
+`packages/core-ts/src/utils/base58btc.ts` now converts its decoded `BigInt`
+directly to `Uint8Array`, without `Buffer` or a new dependency. Repeating the UI
+run produced:
+
+```text
+Scan one product's GS QR mark: Accepted — 0 failures, 0 warnings
+Separate laboratory tests the product type: Accepted — 0 failures, 0 warnings
+PROOF_INVALID entries displayed: none
+PROOF_VALID entries displayed: yes
+```
+
+The 184-test TypeScript suite, demo typecheck, production build, and
+`git diff --check` remained green after the correction.
+
+### Demo trace replay (2026-08-19)
+
+The demo now replays a completed verification trace in breadth-first graph
+depth order, starting at the scanned product credential and moving upward along
+its evidence edges. Node and edge frames are revealed every 420 ms; scenario
+and pass/fail controls remain disabled during replay, and the final
+Accepted/Rejected badge appears only when replay finishes. This is deliberately
+presentation-only: the kernel still returns one complete, unmodified trace.
+
+A headless Firefox UI run observed progressive trace entry counts and final
+acceptance for both GS scenarios:
+
+```text
+in-house testing: 3.7 s replay, Accepted, 0 failures, 0 warnings
+external test lab: 4.3 s replay, Accepted, 0 failures, 0 warnings
+```
+
+### GS failing-variant correction (2026-08-19)
+
+The GS scenario specs originally had no `failing-target-credential.json`, so
+the demo's Failing selection fell back to the passing target. Both generators
+now emit a failing QR credential with a valid Data Integrity proof but a
+deliberately incorrect `digestSRI` for its referenced GS certificate. The
+complete evidence graphs still resolve and all credential proofs verify; the
+single rejection reason is therefore `DIGEST_MISMATCH`.
+
+Headless Firefox exercised the Failing selector and `Run Verifier` for both
+animated scenarios:
+
+```text
+in-house testing: Rejected — 1 failure, 0 warnings — DIGEST_MISMATCH
+external test lab: Rejected — 1 failure, 0 warnings — DIGEST_MISMATCH
+PROOF_INVALID entries: none
+```
+
+Final regression result: 186 TypeScript tests, 156 Python tests plus one
+intentional skip, repository scenario tests, schema validation, demo typecheck,
+production build, ruff, and `git diff --check` all pass.
+
+Repository verification after adding the vector:
+
+```text
+✓ 184 TypeScript tests (18 files)
+✓ 155 Python tests, 1 intentional SD skip
+✓ 2 repository scenario tests
+✓ schema validation 6/6
+✓ core-ts and demo-web TypeScript checks
+✓ demo-web production build
+✓ targeted ruff and mypy checks
+✓ git diff --check
+```
+
+### Separate testing-laboratory GS vector (2026-08-19)
+
+Added `gs-hair-dryer-external-test-lab-hitl` as a second scenario; the existing
+in-house-laboratory vector is retained. The new graph separates the following
+responsibilities:
+
+- Nordlicht issues the QR-resolved credential for serialized unit
+  `HD01-2026-000043`;
+- the GS body issues the manufacturer-bound `GSCertificate` and performs the
+  initial factory inspection;
+- Hanseatic Product Testing, a distinct laboratory, issues the product
+  `TestReport`; its reviewed-product claim identifies Nordlicht as manufacturer;
+- the laboratory's `TestReport` is `authorizedBy` its own
+  `IssuingScopeCredential`, and that scope is `derivedFrom` a separate
+  accreditation whose subject is the laboratory;
+- the GS body's issuing scope remains separately derived from its accreditation
+  and independently authorized by ZLS.
+
+No new relation, authorization-basis kind, or QI vocabulary term was added. The
+policy selects the external-laboratory path using `issuerRole:
+testingLaboratory` on the report's `operationalScope` edge. The proof-enabled TS
+trace returned:
+
+```text
+verified: true
+target: https://products.nordlicht-appliances.example/hd-01/serial/HD01-2026-000043/gs-mark
+nodesResolved: 9
+edgesEvaluated: 9
+failures: 0
+warnings: 0
+PROOF_VALID: 9
+DIGEST_VALID: 9
+DERIVATION_VALID: 2
+SUBJECT_BOUND: 5
+TRUSTED_ISSUER: 5
+ASSESSMENT_PASSED: 2
+```
+
+### External-laboratory responsibility correction (2026-08-19)
+
+The external-laboratory vector now models the confirmed subcontract workflow:
+
+- Hanseatic Product Testing remains issuer of the `TestReport` about product
+  type `urn:example:product-type:hair-dryer-hd-01`;
+- the report identifies `did:web:gs-body.example` as its Schema.org `customer`,
+  rather than treating the report subject as a transport recipient;
+- the GS body issues the laboratory's `IssuingScopeCredential`, whose subject is
+  `did:web:hanseatic-product-testing.example`;
+- that delegated scope is `derivedFrom` the laboratory's NAB accreditation and
+  independently `authorizedBy` the GS body's own issuing scope;
+- the GS body remains issuer of the `GSCertificate` and factory inspection, and
+  Nordlicht remains issuer of the serialized product QR credential.
+
+No new evidence relation, authorization-basis kind, runtime dependency, or QI
+vocabulary term was added. The general assessment request now receives the
+resolved graph and target when invoked through graph verification. The demo's
+agent/human adapter uses that context to bind report outcome, product type,
+manufacturer, GS customer, certificate, and delegated authority path. A negative
+test that changes the report customer to the manufacturer fails with
+`ASSESSMENT_FAILED`.
+
+Current external-laboratory pass trace:
+
+```text
+verified: true
+nodesResolved: 9
+edgesEvaluated: 10
+failures: 0
+warnings: 0
+PROOF_VALID: 9
+DERIVATION_VALID: 2
+SUBJECT_BOUND: 6
+ASSESSMENT_PASSED: 2
+```
+
+The demo-web runner is covered directly under Vite for both GS scenarios:
+passing variants accept with two completed assessments, while the signed
+digest-mismatch variants reject with `DIGEST_MISMATCH`.
+
+### Independent external-laboratory scope correction (2026-08-19)
+
+This section supersedes the GS-body-issued laboratory delegation described in
+the preceding “External-laboratory responsibility correction.” The confirmed
+model has two independent operational scopes:
+
+- the GS body's scope is issued to and by the GS body, is `derivedFrom` its NAB
+  accreditation, is `authorizedBy` the ZLS scheme authorization, and permits
+  `GSCertificate` and `InspectionReport` issuance;
+- the external laboratory's scope is issued to and by Hanseatic Product
+  Testing, is `derivedFrom` only the laboratory's NAB accreditation, and permits
+  `TestReport` issuance;
+- the laboratory's `TestReport` is `authorizedBy` the laboratory scope;
+- the GS body is the report customer and uses the report as evidence for the GS
+  certificate, but commissioning the test is not the source of the laboratory's
+  competence or authority.
+
+The issuer-grouped demo therefore places the laboratory scope and test report
+inside the external-laboratory frame, the GS scope and GS outputs inside the GS
+body frame, and both accreditation credentials inside the NAB frame. The
+external-laboratory assessment checks the exact NAB issuer, laboratory subject
+binding, report issuer/scope binding, GS-body customer, and absence of a GS
+`authorizedBy` edge on the laboratory scope.
+
+Current external-laboratory pass trace:
+
+```text
+verified: true
+nodesResolved: 9
+edgesEvaluated: 9
+failures: 0
+warnings: 0
+PROOF_VALID: 9
+DERIVATION_VALID: 2
+SUBJECT_BOUND: 5
+ASSESSMENT_PASSED: 2
+```

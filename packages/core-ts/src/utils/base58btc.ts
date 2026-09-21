@@ -50,9 +50,16 @@ export function decode(str: string): Uint8Array {
     n = n * BASE + BigInt(idx);
   }
 
-  // Convert BigInt to bytes
-  const hex = n === 0n ? '' : n.toString(16).padStart(n.toString(16).length + (n.toString(16).length % 2), '0');
-  const body = hex ? Buffer.from(hex, 'hex') : Buffer.alloc(0);
+  // Convert BigInt to bytes without Node's Buffer so the same codec works in
+  // browser verifiers. Accumulate from least-significant byte, then reverse to
+  // the network-order representation used by the encoder.
+  const bodyBytes: number[] = [];
+  while (n > 0n) {
+    bodyBytes.push(Number(n & 0xffn));
+    n >>= 8n;
+  }
+  bodyBytes.reverse();
+  const body = Uint8Array.from(bodyBytes);
 
   const result = new Uint8Array(leadingZeros + body.length);
   result.set(body, leadingZeros);

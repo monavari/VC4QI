@@ -13,6 +13,24 @@ const RM_CONTEXT = 'https://w3id.org/qi-vc/contexts/v1/qi-rm.jsonld';
 const DCC_SCHEMA = 'https://w3id.org/qi-vc/schemas/v1/digital-calibration-certificate.json';
 const RMC_SCHEMA = 'https://w3id.org/qi-vc/schemas/v1/reference-material-certificate.json';
 const POLICY_SCHEMA = 'https://w3id.org/qi-vc/schemas/v1/policy-profile.schema.json';
+const QI_VOCAB = 'https://w3id.org/qi-vc/vocab/v1#';
+const SCHEMA = 'https://schema.org';
+
+// Scenario-local aliases for credential types and existing QI fields that are
+// not part of the minimal shared context. Product/review data below uses full
+// schema.org IRIs so the fixture does not mint new QI vocabulary terms.
+const GS_SCENARIO_CONTEXT = {
+  Product: `${SCHEMA}/Product`,
+  GSCertificate: `${QI_VOCAB}GSCertificate`,
+  IssuingScopeCredential: `${QI_VOCAB}IssuingScopeCredential`,
+  SchemeAuthorizationEvidence: `${QI_VOCAB}SchemeAuthorizationEvidence`,
+  AccreditationCertificate: `${QI_VOCAB}AccreditationCertificate`,
+  TestReport: `${QI_VOCAB}TestReport`,
+  InspectionReport: `${QI_VOCAB}InspectionReport`,
+  authorizationBasisKind: { '@id': `${QI_VOCAB}authorizationBasisKind`, '@type': '@vocab' },
+  constraints: `${QI_VOCAB}constraints`,
+  authorizedCredentialTypes: { '@id': `${QI_VOCAB}authorizedCredentialTypes`, '@container': '@set' },
+};
 
 // Governed scope terms (SCO-1/SCO-2). Categorical dimensions compare as exact
 // equality over these identifiers; the sibling label fields are display only.
@@ -644,6 +662,354 @@ function gsScheme() {
   writeJson('testdata/examples/gs-scheme-authorization/failing-target-credential.json', missingScheme);
 }
 
+function gsHairDryerHitl({ externalTestLab = false } = {}) {
+  const scenarioId = externalTestLab
+    ? 'gs-hair-dryer-external-test-lab-hitl'
+    : 'gs-hair-dryer-hitl';
+  const idPrefix = externalTestLab
+    ? 'gs-hair-dryer-external-test-lab'
+    : 'gs-hair-dryer';
+  const manufacturer = 'did:web:nordlicht-appliances.example';
+  const manufacturingSite = 'urn:example:facility:nordlicht-hair-dryer-01';
+  const productType = 'urn:example:product-type:hair-dryer-hd-01';
+  const serialNumber = externalTestLab ? 'HD01-2026-000043' : 'HD01-2026-000042';
+  const productUnit = `https://products.nordlicht-appliances.example/hd-01/serial/${serialNumber}`;
+  const qrCredentialUrl = `${productUnit}/gs-mark`;
+  const issuingScopeTypes = externalTestLab
+    ? ['GSCertificate', 'InspectionReport']
+    : ['GSCertificate', 'TestReport', 'InspectionReport'];
+  const testLab = 'did:web:hanseatic-product-testing.example';
+
+  // This scenario deliberately chooses the accredited route even though the
+  // report notes that ZLS may assess competence directly when accreditation is
+  // absent. Profile D needs both competence and independent scheme authority.
+  const acc = {
+    '@context': [VC_CONTEXT, QI_CONTEXT, QI_CORE_CONTEXT, GS_SCENARIO_CONTEXT],
+    type: ['VerifiableCredential', 'AccreditationCertificate'],
+    id: `urn:uuid:${idPrefix}-accreditation-001`,
+    issuer: NAB,
+    validFrom: '2025-01-01T00:00:00Z',
+    validUntil: '2030-01-01T00:00:00Z',
+    credentialSubject: {
+      id: GS_BODY,
+      authorizationBasisKind: 'accreditation',
+      scope: { authorizedCredentialTypes: issuingScopeTypes },
+    },
+    proof: proof(NAB),
+  };
+
+  const scheme = {
+    '@context': [VC_CONTEXT, QI_CONTEXT, QI_CORE_CONTEXT, GS_SCENARIO_CONTEXT],
+    type: ['VerifiableCredential', 'SchemeAuthorizationEvidence'],
+    id: `urn:uuid:${idPrefix}-scheme-authorization-001`,
+    issuer: ZLS,
+    validFrom: '2025-01-01T00:00:00Z',
+    validUntil: '2030-01-01T00:00:00Z',
+    credentialSubject: { id: GS_BODY, scheme: 'GS' },
+    proof: proof(ZLS),
+  };
+
+  const issuingScope = {
+    '@context': [VC_CONTEXT, QI_CONTEXT, QI_CORE_CONTEXT, GS_SCENARIO_CONTEXT],
+    type: ['VerifiableCredential', 'IssuingScopeCredential'],
+    id: `urn:uuid:${idPrefix}-issuing-scope-001`,
+    issuer: GS_BODY,
+    validFrom: '2026-01-01T00:00:00Z',
+    validUntil: '2029-01-01T00:00:00Z',
+    credentialSubject: {
+      id: GS_BODY,
+      constraints: { authorizedCredentialTypes: issuingScopeTypes },
+    },
+    evidence: [
+      evidenceRef(acc.id, 'derivedFrom', 'accreditation', { digestSRI: digestSRI(acc) }),
+      evidenceRef(scheme.id, 'authorizedBy', 'schemeAuthorization', {
+        authorizationBasis: { issuerRole: 'schemeAuthority', scheme: 'GS' },
+        digestSRI: digestSRI(scheme),
+      }),
+    ],
+    proof: proof(GS_BODY),
+  };
+
+  const testLabAccreditation = externalTestLab ? {
+    '@context': [VC_CONTEXT, QI_CONTEXT, QI_CORE_CONTEXT, GS_SCENARIO_CONTEXT],
+    type: ['VerifiableCredential', 'AccreditationCertificate'],
+    id: `urn:uuid:${idPrefix}-test-lab-accreditation-001`,
+    issuer: NAB,
+    validFrom: '2025-01-01T00:00:00Z',
+    validUntil: '2030-01-01T00:00:00Z',
+    credentialSubject: {
+      id: testLab,
+      authorizationBasisKind: 'accreditation',
+      scope: { authorizedCredentialTypes: ['TestReport'] },
+    },
+    proof: proof(NAB),
+  } : undefined;
+
+  const testLabScope = externalTestLab && testLabAccreditation ? {
+    '@context': [VC_CONTEXT, QI_CONTEXT, QI_CORE_CONTEXT, GS_SCENARIO_CONTEXT],
+    type: ['VerifiableCredential', 'IssuingScopeCredential'],
+    id: `urn:uuid:${idPrefix}-test-lab-scope-001`,
+    // The independent laboratory's competence comes from its own NAB
+    // accreditation, not from the GS body's commissioning decision. The lab
+    // issues its operational projection within that accredited scope.
+    issuer: testLab,
+    validFrom: '2026-01-01T00:00:00Z',
+    validUntil: '2029-01-01T00:00:00Z',
+    credentialSubject: {
+      id: testLab,
+      constraints: { authorizedCredentialTypes: ['TestReport'] },
+    },
+    evidence: [
+      evidenceRef(testLabAccreditation.id, 'derivedFrom', 'accreditation', {
+        digestSRI: digestSRI(testLabAccreditation),
+      }),
+    ],
+    proof: proof(testLab),
+  } : undefined;
+
+  const reportScope = testLabScope ?? issuingScope;
+
+  const typeExamination = {
+    '@context': [VC_CONTEXT, QI_CONTEXT, QI_CORE_CONTEXT, GS_SCENARIO_CONTEXT],
+    type: ['VerifiableCredential', 'TestReport'],
+    id: `urn:uuid:${idPrefix}-type-examination-001`,
+    issuer: externalTestLab ? testLab : GS_BODY,
+    validFrom: '2026-05-10T00:00:00Z',
+    credentialSubject: {
+      id: `${productType}#type-examination`,
+      [`${SCHEMA}/identifier`]: 'TR-HD-01',
+      [`${SCHEMA}/itemReviewed`]: externalTestLab ? {
+        id: productType,
+        type: 'Product',
+        [`${SCHEMA}/manufacturer`]: { id: manufacturer },
+      } : { id: productType },
+      ...(externalTestLab ? {
+        // Schema.org customer identifies the organization commissioning and
+        // relying on the laboratory service. It is not the report subject.
+        [`${SCHEMA}/customer`]: { id: GS_BODY },
+      } : {}),
+      [`${SCHEMA}/reviewBody`]: 'Representative type examined for electrical safety, overheating, foreseeable water-related hazards, materials, ergonomics, marking, and instructions.',
+      [`${SCHEMA}/reviewRating`]: {
+        [`${SCHEMA}/ratingValue`]: 'pass',
+        [`${SCHEMA}/bestRating`]: 'pass',
+      },
+    },
+    evidence: [evidenceRef(reportScope.id, 'authorizedBy', 'operationalScope', {
+      ...(externalTestLab ? {
+        authorizationBasis: { issuerRole: 'testingLaboratory' },
+      } : {}),
+      digestSRI: digestSRI(reportScope),
+    })],
+    proof: proof(externalTestLab ? testLab : GS_BODY),
+  };
+
+  const factoryInspection = {
+    '@context': [VC_CONTEXT, QI_CONTEXT, QI_CORE_CONTEXT, GS_SCENARIO_CONTEXT],
+    type: ['VerifiableCredential', 'InspectionReport'],
+    id: `urn:uuid:${idPrefix}-factory-inspection-001`,
+    issuer: GS_BODY,
+    validFrom: '2026-05-14T00:00:00Z',
+    credentialSubject: {
+      id: manufacturingSite,
+      [`${SCHEMA}/identifier`]: 'FIR-HD-01',
+      [`${SCHEMA}/itemReviewed`]: { id: manufacturer },
+      [`${SCHEMA}/location`]: { id: manufacturingSite },
+      [`${SCHEMA}/reviewBody`]: 'Initial factory inspection covered personnel, equipment, incoming-goods controls, production controls, intermediate checks, final-product checks, and traceability of safety-critical components.',
+      [`${SCHEMA}/reviewRating`]: {
+        [`${SCHEMA}/ratingValue`]: 'pass',
+        [`${SCHEMA}/bestRating`]: 'pass',
+      },
+    },
+    evidence: [evidenceRef(issuingScope.id, 'authorizedBy', 'operationalScope', {
+      digestSRI: digestSRI(issuingScope),
+    })],
+    proof: proof(GS_BODY),
+  };
+
+  const gsCertificate = {
+    '@context': [VC_CONTEXT, QI_CONTEXT, QI_CORE_CONTEXT, GS_SCENARIO_CONTEXT],
+    type: ['VerifiableCredential', 'GSCertificate'],
+    id: `urn:uuid:${idPrefix}-certificate-001`,
+    issuer: GS_BODY,
+    validFrom: '2026-05-20T00:00:00Z',
+    validUntil: '2029-01-01T00:00:00Z',
+    credentialSubject: {
+      // The certificate authorizes this manufacturer to apply the GS mark to
+      // conforming units of the reviewed product type. This subject binding is
+      // what lets a manufacturer-issued unit credential point to it via
+      // authorizedBy without pretending that the GS body issued the QR mark.
+      id: manufacturer,
+      [`${SCHEMA}/identifier`]: 'GS-HD-01',
+      [`${SCHEMA}/itemReviewed`]: {
+        id: productType,
+        type: 'Product',
+        [`${SCHEMA}/category`]: 'hand-held hair dryer',
+        [`${SCHEMA}/model`]: 'HD-01',
+        [`${SCHEMA}/manufacturer`]: { id: manufacturer },
+      },
+    },
+    evidence: [
+      evidenceRef(issuingScope.id, 'authorizedBy', 'operationalScope', {
+        digestSRI: digestSRI(issuingScope),
+      }),
+      evidenceRef(typeExamination.id, 'supportedBy', undefined, {
+        digestSRI: digestSRI(typeExamination),
+      }),
+      evidenceRef(factoryInspection.id, 'supportedBy', undefined, {
+        digestSRI: digestSRI(factoryInspection),
+      }),
+    ],
+    proof: proof(GS_BODY),
+  };
+
+  // This is the credential returned when the QR mark on one physical unit is
+  // scanned. It is an assertion by the manufacturer about that serialized
+  // unit, authorized by the GS body's type-level certificate above.
+  const target = {
+    '@context': [VC_CONTEXT, QI_CONTEXT, QI_CORE_CONTEXT, GS_SCENARIO_CONTEXT],
+    type: ['VerifiableCredential', 'Product'],
+    id: qrCredentialUrl,
+    issuer: manufacturer,
+    validFrom: '2026-05-21T00:00:00Z',
+    validUntil: '2029-01-01T00:00:00Z',
+    credentialSubject: {
+      id: productUnit,
+      type: 'Product',
+      [`${SCHEMA}/identifier`]: serialNumber,
+      [`${SCHEMA}/serialNumber`]: serialNumber,
+      [`${SCHEMA}/model`]: 'HD-01',
+      [`${SCHEMA}/manufacturer`]: { id: manufacturer },
+      [`${SCHEMA}/isVariantOf`]: { id: productType },
+      [`${SCHEMA}/url`]: qrCredentialUrl,
+    },
+    evidence: [evidenceRef(gsCertificate.id, 'authorizedBy', 'schemeAuthorization', {
+      authorizationBasis: { issuerRole: 'gsBody', scheme: 'GS' },
+      digestSRI: digestSRI(gsCertificate),
+    })],
+    proof: proof(manufacturer),
+  };
+
+  const profile = policy(scenarioId, ['Product'], [
+    {
+      id: 'manufacturer-gs-certificate',
+      relation: 'authorizedBy',
+      targetCredentialTypes: ['GSCertificate'],
+      authorizationBasis: { kind: 'schemeAuthorization' },
+      required: true,
+    },
+    { id: 'gs-issuing-authority', relation: 'authorizedBy', authorizationBasis: { kind: 'operationalScope' }, required: true },
+    { id: 'gs-accredited-scope', relation: 'derivedFrom', authorizationBasis: { kind: 'accreditation' }, required: true },
+    { id: 'gs-scheme-authority', relation: 'authorizedBy', authorizationBasis: { kind: 'schemeAuthorization' }, required: true },
+    { id: 'product-type-examination', relation: 'supportedBy', targetCredentialTypes: ['TestReport'], required: true },
+    { id: 'initial-factory-inspection', relation: 'supportedBy', targetCredentialTypes: ['InspectionReport'], required: true },
+    ...(externalTestLab ? [{
+      id: 'external-testing-laboratory-scope',
+      relation: 'authorizedBy',
+      targetCredentialTypes: ['IssuingScopeCredential'],
+      authorizationBasis: { kind: 'operationalScope', issuerRole: 'testingLaboratory' },
+      required: true,
+    }] : []),
+  ], { scopeInclusion: 'ignored' });
+  profile.assessment = {
+    mode: 'required',
+    targetCredentialTypes: ['TestReport', 'InspectionReport'],
+    allowedMethods: ['agent', 'human', 'hybrid'],
+  };
+
+  const registry = trustRegistry([
+    {
+      id: ZLS,
+      issuerRole: 'schemeAuthority',
+      authorizationBasisKinds: ['schemeAuthorization'],
+      credentialTypes: ['SchemeAuthorizationEvidence'],
+    },
+    {
+      id: NAB,
+      issuerRole: 'nationalAccreditationBody',
+      authorizationBasisKinds: ['accreditation'],
+      credentialTypes: ['AccreditationCertificate'],
+    },
+    {
+      id: GS_BODY,
+      issuerRole: 'gsBody',
+      authorizationBasisKinds: ['operationalScope'],
+      credentialTypes: ['IssuingScopeCredential'],
+    },
+    {
+      id: GS_BODY,
+      issuerRole: 'gsBody',
+      authorizationBasisKinds: ['schemeAuthorization'],
+      credentialTypes: ['GSCertificate'],
+    },
+    ...(externalTestLab ? [{
+      id: testLab,
+      issuerRole: 'testingLaboratory',
+      authorizationBasisKinds: ['operationalScope'],
+      credentialTypes: ['IssuingScopeCredential'],
+    }] : []),
+  ]);
+
+  const evidenceDocuments = [
+    gsCertificate,
+    issuingScope,
+    acc,
+    scheme,
+    typeExamination,
+    factoryInspection,
+    ...(testLabScope ? [testLabScope] : []),
+    ...(testLabAccreditation ? [testLabAccreditation] : []),
+  ];
+
+  writeExample(
+    scenarioId,
+    target,
+    evidenceDocuments,
+    registry,
+    profile,
+    [
+      'DERIVATION_VALID',
+      'SUPPORTING_EVIDENCE_RESOLVED',
+      'ASSESSMENT_PASSED',
+      'SUBJECT_BOUND',
+      'PROOF_VALID',
+      'REQUIRED_EVIDENCE_PRESENT',
+    ],
+  );
+
+  // A cryptographically valid QR credential with a deliberately wrong digest
+  // for its GS certificate. The failing UI variant therefore exercises the
+  // graph-integrity gate while every credential proof can still verify.
+  const failingTarget = structuredClone(target);
+  failingTarget.evidence[0].digestSRI =
+    'sha384-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+  writeJson(`testdata/examples/${scenarioId}/failing-target-credential.json`, failingTarget);
+
+  writeText(
+    `testdata/examples/${scenarioId}/README.md`,
+    `# ${scenarioId}\n\n` +
+    'A realistic synthetic GS Profile D graph for a hand-held hair dryer. Scanning the ' +
+    'QR mark resolves a manufacturer-issued `Product` VC for one serialized unit. It is ' +
+    '`authorizedBy` the GS body\'s type-level `GSCertificate`, whose subject is the ' +
+    'manufacturer. The certificate is `authorizedBy` a self-issued GS scope and ' +
+    '`supportedBy` a product `TestReport` plus an initial manufacturer `InspectionReport`. ' +
+    (externalTestLab
+      ? 'The product test is issued by a separate testing laboratory to the GS body. The laboratory issues its own operational scope derived only from its NAB accreditation; the GS body commissions and uses the report but does not create the laboratory\'s competence. The GS scope '
+      : 'The scope ') +
+    'is `derivedFrom` accreditation and independently `authorizedBy` ZLS scheme ' +
+    'authorization. Policy requires agent/human/hybrid semantic assessment of the two ' +
+    'sparse-schema reports. Fixture credentials are signed with a TEST ONLY key so the ' +
+    'pass test exercises proof verification. The failing target also has a valid proof, ' +
+    'but carries an incorrect digest for the GS certificate. All organizations, identifiers, ' +
+    'and credentials are fictional.\n',
+  );
+  writeJson(
+    externalTestLab
+      ? 'examples/gs/hair-dryer-gs-product-mark-external-test-lab.json'
+      : 'examples/gs/hair-dryer-gs-product-mark.json',
+    target,
+  );
+}
+
 function testReportSupportedByDcc() {
   const acc = accreditation('urn:uuid:test-report-dcc-accreditation-001', NAB, LAB, pressureScope());
   const supportingDcc = dcc('urn:uuid:supporting-dcc-001', LAB, [
@@ -696,8 +1062,27 @@ calibrationCapability();
 legalMandate();
 referenceMaterial();
 gsScheme();
+gsHairDryerHitl();
+gsHairDryerHitl({ externalTestLab: true });
 testReportSupportedByDcc();
 
-for (const profile of ['calibration-direct-accreditation', 'calibration-capability', 'nmi-legal-mandate', 'reference-material-recursive', 'gs-scheme-authorization']) {
+writeText(
+  'examples/gs/README.md',
+  '# GS hair-dryer scenarios\n\n' +
+  '- `hair-dryer-gs-product-mark.json` uses the GS body\'s in-house testing function.\n' +
+  '- `hair-dryer-gs-product-mark-external-test-lab.json` uses a separate accredited testing laboratory commissioned by the GS body.\n\n' +
+  'The complete generated graphs are under `testdata/examples/`. The older ' +
+  '`gs-scheme-authorization` fixture remains unchanged.\n',
+);
+
+for (const profile of [
+  'calibration-direct-accreditation',
+  'calibration-capability',
+  'nmi-legal-mandate',
+  'reference-material-recursive',
+  'gs-scheme-authorization',
+  'gs-hair-dryer-hitl',
+  'gs-hair-dryer-external-test-lab-hitl',
+]) {
   writeJson(`testdata/policies/${profile}.json`, JSON.parse(readFileSync(join(ROOT, `policies/profiles/${profile}.json`), 'utf8')));
 }

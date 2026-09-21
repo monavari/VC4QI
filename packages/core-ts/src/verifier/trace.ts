@@ -11,6 +11,9 @@ export function traceEntry(entry: {
   from?: string;
   to?: string;
   relation?: string;
+  assessmentMethod?: 'agent' | 'human' | 'hybrid';
+  assessorId?: string;
+  assessmentId?: string;
 }): TraceEntry {
   return entry;
 }
