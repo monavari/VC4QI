@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Document the standards-first reliance target, binding design, compatibility break and implementation phases.
+- Supersede obsolete agent instructions and wire-model ADRs while preserving historical snapshots and reports.
+- Distinguish current legacy runtime, experimental target, simulated assurance and unsupported integrations.
+- Add requirements traceability and an 83-case acceptance ledger; no new-model execution or release is claimed.
+
 ## v0.3.0
 
 Aligned with manuscript v2.1 (Part A reconciliation):

@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted for v0.2.
+Superseded by [ADR-010](../adrs/adr-010-standards-first-reliance.md).
+The text below preserves the historical v0.2 decision; it is not the active wire contract.
 
 ## Context
 

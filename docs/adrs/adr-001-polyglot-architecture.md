@@ -1,5 +1,7 @@
 # ADR-001 Polyglot Architecture (TypeScript + Python)
 
+> **2026-09-22 applicability:** The TS-canonical/Python-semantic-parity decision remains. The publication, module-count and test-location statements below are historical, not current execution or package-publication evidence. Python SD does not perform cryptography; see [current parity](../PYTHON_PARITY.md).
+
 ## Status
 
 Accepted

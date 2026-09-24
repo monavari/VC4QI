@@ -1,26 +1,36 @@
 # Architecture
 
-VC4QI v0.2 verifies Quality Infrastructure credentials as a policy-resolved
-evidence graph.
+**Target architecture; runtime migration pending.** See [MODEL_SPEC](MODEL_SPEC.md)
+for normative semantics and [IMPLEMENTATION_STATUS](IMPLEMENTATION_STATUS.md) for
+what the current checkout executes.
 
-The verifier validates the target credential, normalizes every
-`CredentialEvidenceReference`, resolves referenced evidence, verifies
-`digestMultibase` or `digestSRI` when policy requires it, evaluates edge
-semantics, checks policy sufficiency, and returns a structured trace.
+The verifier accepts a reliance request and an accepted binding/profile. It preserves
+secured artifacts, discovers candidate references, validates applicable structure,
+identity, protection and time, maps protected native facts, then compiles and evaluates
+obligations. It returns separate verification, authorization, support, conformity and
+reliance results with source/record/route witnesses. The demo renders that compiled graph.
 
-Presentation Exchange and DCQL can request credentials or fields. They do not
-replace QI verification, because the QI verifier still evaluates scope inclusion,
-derivation, recursive evidence, trust-registry authority, status, and policy
-sufficiency.
+| Boundary | Responsibility | Current migration surface |
+| --- | --- | --- |
+| Binding/profile | Exact paths, IRIs, schemas, security and authority interpretation | New manifest plus `contexts/`, `schemas/`, `policies/` |
+| Resource/protection | Bounded resolution, immutable identity, suite verification, authenticated status/registry | `utils/`, `proofs/`, `canonicalize/`, `status/`, `trust-registry/` |
+| Mapping/compiler | Protected fact provenance; artifact versus contextual node-use | Replace default `evidence/` and wire-enum `edge/` dispatch |
+| Obligation evaluator | Three-state composition, routes, restrictions, well-founded support | `verifier/`, `policy/`, TS/Python mirrors |
+| Domain evaluator | Complete records, quantity semantics, containment and separate conformity | `scope/` and accepted domain modules |
+| Applications | Querying, disclosure, assessment, report/graph UI | `presentation-query/`, `assessment/`, `apps/demo-web` |
 
-When schema validation cannot decide domain semantics, policy may require a
-human, agent, or hybrid assessment callback for selected credential types. That
-assessment is an additional conjunct of the verifier policy: it cannot override
-any failing deterministic gate and it does not introduce another evidence
-relation. See [Human/agent assessment](ASSESSMENT.md).
+The four layers in MODEL_SPEC separate core logic, selected bindings, reference software
+and fictional fixtures. Ports remain small with a real baseline implementation. There is
+no general remote-code rules engine or invented universal credential graph vocabulary.
+Candidate parsing is not accepted authority; lower-gate failures cannot feed higher-gate
+business facts. Contextual reliance caching is separate from verified-artifact caching.
 
-The demo runs the verifier to completion and then replays its immutable trace
-for presentation. Replay frames follow graph depth from the scanned target
-outward to authority roots, revealing node checks and outgoing edges every 420
-ms. This artificial delay is UI-only and does not alter verifier execution or
-the final trace.
+The current runtime uses `CredentialEvidenceReference` and three serialized relations.
+Those modules remain functional legacy code until the signed vertical slice and full RM
+baseline justify switching defaults. Existing graph layout, actor grouping, inspectors,
+trace replay and SD presentation are preserved. Replay delay is UI presentation, not
+verification time or an assurance claim. Browser stubs and proof skipping must be visible
+in assurance reports. Verifier-service and LIMS directories are scaffolds.
+
+See [binding design](BINDING_MANIFEST.md), [migration contract](API_MIGRATION.md),
+[policies](POLICY_PROFILES.md) and [execution phases](plans/standards-first-reconciliation.md).

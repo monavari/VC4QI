@@ -831,3 +831,120 @@ DERIVATION_VALID: 2
 SUBJECT_BOUND: 5
 ASSESSMENT_PASSED: 2
 ```
+
+## Standards-first overhaul planning (2026-09-21)
+
+Planning only, requested before documentation and implementation changes. The
+supplied handover is preserved without modification under
+`docs/plans/standards-first-handover-2026-09-21.txt`. The proposed documentation
+sequence, full document inventory, implementation phases, reuse/replacement
+assessment and evidence requirements are in
+[the reconciliation plan](docs/plans/standards-first-reconciliation.md).
+The accompanying CSV records all 83 acceptance cases as `not_assessed` against
+the new requirements; existing green tests do not establish those cases.
+
+Inspected base: `225e78f37fccb6f3813ba5f0a85ff3e2b2eb72b9` on
+`refactor/manuscript-v2.1`, initially clean. The governed-identifier fix
+`17dc96d` is an ancestor; the later `63231d2` scope patch is unavailable locally.
+The plan preserves the merged GS/assessment history and reproduces the missing
+patch's safety properties through shared regression vectors. No remote refs were
+fetched, and no push, commit, tag, release or manuscript edit was performed.
+
+Fresh baseline checks used Node 20.19.0, pnpm 10.15.1 and Python 3.12.3:
+
+- `pnpm -C packages/core-ts test`: exit 0, 187 passed.
+- `python3 -m pytest packages/core-py/tests -q`: exit 1, system interpreter lacks
+  pytest. Existing `.venv/bin/python -m pytest packages/core-py/tests -q`:
+  exit 0, 157 passed and 1 skipped.
+- `pnpm -r build`: exit 0, including demo build; bundle-size warning remains.
+- `pnpm -r --if-present lint`: exit 0, core TypeScript typecheck-based lint.
+- `pnpm test:scenarios`: exit 0, 2 passed. This is not browser interaction coverage.
+- `pnpm validate:schemas`: exit 0, 4 schemas and 2 examples passed; six examples
+  were skipped because they have no `$schema` field.
+
+Recommendation: retain the repository and useful infrastructure, replace the
+default evaluator contracts in stages, and isolate legacy wire behavior. Update
+active guidance and normative/explanatory documentation together before changing
+the model in runtime code. Active documents have not yet been migrated; historical
+claims above remain historical. No runtime or signed fixture files were changed.
+
+## Standards-first documentation pass (2026-09-22)
+
+The user requested continuation after the planning pass and authorized task-specific
+Astra/Sol/Luna delegation. All three delegated runs failed before producing work with
+"workspace is out of credits". The main agent completed the documentation locally;
+no independent agent review or model-specific output is claimed.
+
+A normal `git fetch origin` completed with exit 0. The remote manuscript branch still
+pointed to `225e78f37fccb6f3813ba5f0a85ff3e2b2eb72b9`, and main to `8847bc4`.
+Created `refactor/standards-first-reconciliation` from the merged baseline, retaining
+registry/governed-identifier and GS/assessment work plus the prior planning artifacts.
+The `63231d2` patch is still unavailable locally. No remote write, tag or release occurred.
+
+### Documentation changes
+
+- Replaced active agent/task guidance and the normative model; preserved exact old task
+  and model snapshots under `docs/history/`. Added ADR-010 and explicit supersession or
+  current-applicability notes without rewriting prior decision bodies.
+- Reconciled architecture, vocabulary, profiles, scope, SD, queries, assessments, parity,
+  schemas/tutorials, scenario/fixture notes, public status, security and contributor guidance.
+- Added the twelve-category manifest guide with a concrete experimental RM candidate,
+  exact candidate paths/IRIs and stated limits, plus API migration and requirements mapping.
+  These are design documents, not newly implemented schemas or an executable manifest.
+- Recorded 69 document/config review dispositions and kept all 83 new acceptance cases
+  `not_assessed`. Existing citation metadata and unrelated conduct/governance rules remain.
+- Appended manuscript corrections. No actual manuscript source was supplied or edited.
+  The updated docs distinguish legacy runtime evidence from the target and experimental,
+  simulated or unsupported behavior. Required command/workspace/CI repairs remain I0/I8.
+
+### Documentation verification
+
+Validation results are recorded below after the final checks. Runtime checks were not
+rerun for this documentation-only pass; the 21 September baseline above remains historical.
+No source, schema, context, policy, signed JSON fixture, dependency or lockfile was changed.
+The Markdown linter was run through transient `npx`, not added as a project dependency.
+It initially found three newly introduced blank-line errors (fixed) and a pre-existing
+duplicate heading in this append-only report. A file-local MD024 setting now checks
+sibling duplicates, allowing historical phase headings to recur without rewriting them.
+The transient linter installation emitted a Node-engine warning for a dependency; the
+actual lint result is recorded separately from that installation warning.
+
+D0–D4 completion is limited to documentation. I0 is next: executable setup/CI repair,
+current checks, consumer inventory and shared safety regressions, followed by I1's signed
+vertical slice. New-model verification and release completion are not claimed.
+
+<!-- markdownlint-configure-file {"MD024": {"siblings_only": true}} -->
+
+## Documentation acceptance and implementation handoff (2026-09-23)
+
+D0–D4 is complete as a documentation-only phase on
+`refactor/standards-first-reconciliation`. HEAD remains the inspected base
+`225e78f37fccb6f3813ba5f0a85ff3e2b2eb72b9`; the documentation changes are local and
+uncommitted. No runtime/model migration, remote write, tag or release is claimed.
+
+Checks performed:
+
+- Markdown lint over all 59 tracked/new project Markdown files: exit 0, using
+  `npx --yes markdownlint-cli@0.41.0 --config .markdownlint.json` with the explicit file list.
+- Local-link/inventory checks: 173 local links resolve; all 59 Markdown files are
+  represented in the 69-entry documentation/config review inventory.
+- All 83 V/P/S/C/E acceptance IDs match the handover and remain `not_assessed`.
+  Documentation completion does not change runtime acceptance status.
+- The source handover SHA-256 matches the value recorded in the plan. Archived old
+  task/model files are byte-identical to their base-commit versions; the report retains
+  its original content as an unchanged prefix.
+- `git diff --check`: exit 0 after removing a trailing-space artifact in changed ADR
+  status metadata. Runtime source, executable configuration, schemas, contexts, signed
+  fixtures, dependency manifests/lockfiles and citation metadata remain unchanged.
+- Historical wire terminology is confined to explicitly labeled legacy/history content
+  or migration explanations. No active instruction requires the old three-relation model.
+
+The two open documents have explicit boundaries: the historical graph ADR points to
+ADR-010, and the RM source note distinguishes an abridged XML transcription from verified
+XML signatures and fictional fixture issuance. The experimental binding draft also keeps
+byte-pinned dependencies distinct from legitimate selective-disclosure representations.
+
+Next is I0 from the active task: repair workspace/CI commands, run the current implementation
+baseline, classify the new acceptance coverage, inventory wire consumers and preserve the
+missing scope patch's safety properties. I1 then implements the machine-readable binding
+manifest and first signed vertical slice. No additional paper source was available to edit.

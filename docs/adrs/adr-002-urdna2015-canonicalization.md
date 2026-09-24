@@ -1,8 +1,10 @@
 # ADR-002 URDNA2015 for Canonicalization
 
+> **2026-09-22 applicability:** Superseded by [ADR-010](adr-010-standards-first-reliance.md). The sole-algorithm and interoperability claims below are historical and must not guide new suite/resource-integrity processing. Exact transforms require independent validation.
+
 ## Status
 
-Accepted
+Superseded by ADR-010
 
 ## Context
 

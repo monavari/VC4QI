@@ -14,10 +14,11 @@ What problem does this solve? What is currently missing?
 
 A clear description of what you want to happen.
 
-## Paper section reference
+## Requirements reference
 
-Link to the section of [Mottaghi et al., 2026] that motivates this request,
-if applicable. New features without a paper reference must justify scope inclusion.
+Link the active reconciliation requirement or an exact available manuscript section,
+if applicable. Do not assume historical section numbering. Explain scope inclusion,
+accepted binding/profile and whether the feature is experimental or externally governed.
 
 ## Alternatives considered
 

@@ -1,5 +1,8 @@
 # Implementation feedback to the manuscript
 
+> Historical findings below retain their original revision context. The standards-first
+> corrections at the end supersede F-4/F-5 as current implementation guidance.
+
 Items where implementing the model surfaced a constraint, ambiguity, or
 contradiction with a standard the paper relies on. Per research SOP, these are
 recorded here so the manuscript can be reconciled with what the standards
@@ -228,3 +231,47 @@ fully machine-expressible. Guard-band evaluation (B5) and trust-registry resolut
 2. Add a listing showing the GS Profile D DCQL output above as Listing X — it is the
    clearest concrete demonstration that the structural policy half is fully
    machine-expressible in the v0.3.0 implementation.
+
+## Standards-first manuscript corrections (2026-09-22)
+
+The supplied handover is an implementation specification, not a manuscript source.
+No paper file was edited. Retain the existing title and framework structure; map these
+corrections to actual manuscript sections when those sources are available.
+
+1. Frame the contribution as explicit conditions for QI reliance. Do not claim invention
+   of recursive recognition or basic scope checks, or derive novelty from another demo's bugs.
+2. Replace the universal three-relation/six-basis serialization and mandatory custom
+   scopeRef with accepted native bindings, protected mappings and verifier-owned witnesses.
+   F-4 describes a superseded model. Provenance is not institutional permission.
+3. Separate verification from reliance and semantic states from execution metadata. Required
+   unknowns block reliance. Complete routes and applicable global restrictions need explicit
+   composition; all required recursive support needs well-founded justification.
+4. Explain accepted semantics and decision-preserving mappings with original source provenance.
+   Underdetermination without interpretation is distinct from mathematical undecidability.
+   Conditional results need supported terminating evaluators and bounded route search.
+5. Keep scope inclusion, calibration capability floors, optional customer limits and conformity
+   separate. Remove generic RM uncertainty ceilings. Show 178→183 (accept), 197→202 (conformity
+   rejection), 520 (scope rejection, decision not run), backed by actual witnesses when available.
+6. Explain local scope evaluation and independently authorized predicate answers. Bind answers to
+   the exact question and time/version. A signed point answer cannot establish whole-scope
+   containment or prove semantic truth independently of its attesting authority.
+7. Recognized Entities is a pinned experimental baseline with actual action/output-validation
+   capabilities. Recognition is not the whole QI reliance calculus. Schema validators can express
+   numeric bounds, enums and logical combinations; explain additional interpretation and
+   cross-artifact/authority requirements without claiming schemas are inherently incapable.
+8. F-5's old policy/query paths and test totals do not establish new profile expressibility.
+   Request matching is distinct from reliance, presentation protection and sufficient disclosure.
+   Python semantic SD parity is not SD crypto parity.
+9. F-1 through F-3b remain relevant safe-processing findings. Current status/registry/proof
+   assurance must be backed by specific tests; native XML and JSON wrappers have distinct proofs.
+10. Report actual implemented/experimental/simulated/unsupported mechanisms. Fixture identity
+    agreement does not establish physical sample truth or production accreditation. Verify exact
+    European specification versions before making format/legal claims; no such claims are added here.
+11. Remove blanket linear-total-cost claims; distinguish traversal, route search, crypto, schema/RDF,
+    quantity matching and resolution. Tests and conditional arguments do not prove deployed interoperability.
+12. Preserve historical citations and verify archive targets before associating them with a new
+    version. A local commit or bibliography placeholder is not a published release or DOI.
+
+Current target: [MODEL_SPEC](MODEL_SPEC.md). Actual capability evidence:
+[IMPLEMENTATION_STATUS](IMPLEMENTATION_STATUS.md). Full requirements and acceptance:
+[traceability](plans/standards-first-traceability.md). No new-model execution is claimed.
