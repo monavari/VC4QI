@@ -1,6 +1,9 @@
 # ADR-008: Three evidence relations, no EvidenceRole
 
-**Status**: Accepted  
+> **2026-09-22 applicability:** Superseded by [ADR-010](adr-010-standards-first-reliance.md). The old wire relations and six basis labels below apply only to the legacy model, not the new default.
+
+**Status**: Superseded by ADR-010
+
 **Date**: 2026-06-08  
 **Relates to**: ADR-005 (VC chain design)
 

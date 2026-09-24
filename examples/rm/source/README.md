@@ -24,3 +24,16 @@ Notes:
   the source artifact.
 - Character encoding has been normalized to clean UTF-8 (the source as received
   had latin1/utf-8 round-trip mojibake, e.g. `für`).
+
+## Reconciliation boundary (2026-09-22)
+
+This abridged, encoding-normalized transcription is provenance material. Retaining a
+signature element does not establish that its signature validates over the modified XML;
+this project has not verified it. A JSON wrapper digest binds only its selected resource
+representation and cannot transfer the XML signature to re-encoded JSON.
+
+Existing source-derived values and names do not make fictional fixture issuance an
+endorsement by BAM or another real institution. The new signed A/O/D/S/H baseline uses
+clearly fictional authorities and an explicitly experimental binding. Preserve native
+source attribution while keeping its assurance separate from test-only Data Integrity
+proofs. See [MODEL_SPEC](../../../docs/MODEL_SPEC.md) and [SD](../../../docs/SELECTIVE_DISCLOSURE.md).

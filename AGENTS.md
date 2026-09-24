@@ -1,179 +1,118 @@
 # AGENTS.md — VC4QI agent configuration
 
-This file is read automatically by Codex and compatible agentic coders. It defines
-the working rules, commands, and guardrails for this repository.
+## Mandate and source order
 
----
+VC4QI is migrating from the manuscript-v2.1 implementation to the standards-first
+reliance model. The runtime is still legacy; documentation of the target is not
+execution evidence. Read, in order:
 
-## Repository overview
+1. The active user instructions.
+2. [The supplied reconciliation requirements](docs/plans/standards-first-handover-2026-09-21.txt),
+   including explicit supersessions in §0.1.
+3. [The active task](RECONCILIATION_TASK.md), [model](docs/MODEL_SPEC.md),
+   [execution plan](docs/plans/standards-first-reconciliation.md) and
+   [ADR-010](docs/adrs/adr-010-standards-first-reliance.md).
+4. [Implementation status](docs/IMPLEMENTATION_STATUS.md) and the append-only
+   [report](RECONCILIATION_REPORT.md).
 
-pnpm + uv monorepo. Packages:
+The handover resolves conflicts with older instructions. Historical documents and
+accepted-but-superseded ADRs do not restore obsolete requirements. Actual manuscript
+sources are not included; do not invent paper section numbers or publication claims.
 
-- `packages/core-ts` — TypeScript canonical implementation
-- `packages/core-py` — Python parity implementation
-- `packages/lims-adapter` — LIMS adapter
-- `packages/verifier-service` — verifier HTTP service
+## Repository and branch
 
-Contexts, schemas, examples, and docs live at the repo root level.
-**TypeScript is canonical; Python mirrors it** over shared JSON fixtures.
+TypeScript in `packages/core-ts` is canonical; `packages/core-py` mirrors supported
+semantics through shared fixtures. `apps/demo-web` is the existing browser demo.
+`packages/lims-adapter` and `packages/verifier-service` are scaffolds, not completed
+services. Contexts, schemas, policies, examples and docs live at the repository root.
 
-Read these for context (they sit *under* this file):
+Work on `refactor/standards-first-reconciliation`, preserving the merged baseline
+at `225e78f37fccb6f3813ba5f0a85ff3e2b2eb72b9`. Do not touch
+`archive/three-layer-capability-model`. Do not push, tag, publish or create a release
+without active session authorization. Preserve unrelated working changes.
 
-- `RECONCILIATION_TASK.md` — the phased migration brief (what to do next).
-- `docs/MODEL_SPEC.md` — the normative model from the manuscript (§4–§8: what the
-  code must satisfy). **Where spec and repo disagree, the spec wins.**
-- `RECONCILIATION_REPORT.md` — running log; append, don't rewrite.
-- `docs/PAPER_FEEDBACK.md` — where implementation contradicts a standard the paper
-  relies on; add to it when you find another.
+## Migration rules
 
-## Branch policy
+- Changes to the evaluator, graph, policy, scope and presentation-query code are
+  authorized when needed for the new model. Retain useful infrastructure and
+  regressions; isolate legacy behavior behind explicit profile selection.
+- No universal serialized relation vocabulary or closed six-basis model is required.
+  Accepted bindings map protected native facts to verifier-owned obligations.
+  PROV provenance does not establish granting rights or containment.
+- Prefer existing dependencies. A narrowly necessary maintained dependency is
+  permitted with documented purpose, version/license review and tests. Do not
+  replace the whole stack or add unrelated frameworks.
+- Experimental fixture binding terms are permitted under a clearly owned reserved
+  `.example` namespace with versioned interpretation/context/schema. Do not claim
+  they are production standards or invent plausible external ontology terms.
+- Keep original secured representations intact before protection verification.
+  Never redefine W3C/schema.org protected terms or drop decision-relevant data
+  through unsafe JSON-LD expansion. The legacy `safe: false` path is a known gap.
+- Required obligations use `established`, `contradicted`, `not_established`;
+  `not_run` is execution metadata. Absence of FAIL does not establish reliance.
+- Complete routes, global restrictions, principal/grant permission, well-founded
+  support, scope and optional conformity are distinct requirements. The RM baseline
+  has no accreditation uncertainty ceiling.
+- Preserve TS `ecdsa-sd-2023`; Python SD remains semantic evaluation of a TS-derived
+  subset, not Python SD cryptographic verification.
 
-All agent work goes on `refactor/manuscript-v2.1`. Do **not** push, tag, create
-releases, or touch `archive/three-layer-capability-model`.
+## Fixtures and unresolved inputs
 
-## One-time setup
+Never hand-edit generated signed fixtures. Change generators and regenerate proofs
+and integrity metadata according to the selected binding. For a hand-authored signed
+artifact, changing content requires reissuance; recomputing a digest alone is not enough.
+Fictional test keys and authorities must remain clearly labeled.
 
-```bash
-npm install -g pnpm && pnpm install
-pip install -e "packages/core-py[dev]"
-# or: pip install uv && uv sync --all-packages
-```
+Routine implementation choices already authorized by the handover do not require
+confirmation. For missing real-world governance inputs, insert a localized
+`TODO(human): <question>` and append its impact to the report. Continue independent
+work; do not substitute TODOs for the specified fictional baseline.
 
-## Checks — run after every phase (all must stay green)
+## Setup and checks
+
+Use Node 20 and pnpm 10.15.1 (the current package-manager pin), Python 3.12, and
+an isolated Python environment. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup.
+Root uv workspace/Make targets currently reference scaffolds; do not advertise them
+as working until repaired in I0. CI's pnpm 9 selection also needs reconciliation.
+
+For each implementation phase, record actual commands, exit codes and limitations:
 
 ```bash
 pnpm -r build
-pnpm -C packages/core-ts test          # canonical TS suite (vitest)
+pnpm -r --if-present lint
+pnpm -C packages/core-ts test
 pnpm test:scenarios
-python3 -m pytest packages/core-py/tests   # use this if `uv` is not installed
+.venv/bin/python -m pytest packages/core-py/tests
 pnpm validate:schemas
-uv run ruff check . && uv run mypy packages/core-py   # if uv is set up; else skip lint
 ```
 
-Shorthand: `make test` and `make lint` (both need `uv`). Regenerate SD fixtures
-with `pnpm -C packages/core-ts exec tsx scripts/gen-sd-fixtures.ts`.
+Run Python lint when its environment is configured, and report unavailable/failed
+checks explicitly. For a documentation-only phase, run Markdown/link/consistency
+checks; do not present earlier runtime results as new evidence. Add dedicated signed
+RM, semantic parity, offline-resource and actual UI interaction lanes during migration.
+Current schema validation skips some examples without `$schema`; exit 0 is not full
+fixture coverage. Never hand-edit output to make an acceptance test pass.
 
-## Fixture discipline
+## Demo
 
-Fixtures are **generated and signed**. Do not hand-edit signed JSON output.
-Change values in generators (`scripts/generate-v02-fixtures.js`,
-`packages/core-ts/scripts/gen-interop-fixture.ts`) and re-run. For hand-authored
-fixtures (no generator), edit directly and recompute `digestSRI` via the digest
-helper.
+Preserve the seven demo entries covering A–F, including both GS application variants,
+actor grouping, graph/credential inspection, replay and selective disclosure. Two GS
+variants currently enable proof checks; other scenarios skip them. The target UI
+must render the evaluator's compiled graph and distinguish simulation from verified
+reliance. Keep Vite stubs in sync with core APIs and report their assurance limits.
 
-## Escalation rule
+Use `pnpm -C apps/demo-web dev` or `pnpm -C apps/demo-web build`. Existing colors
+may remain as internal display conventions; they do not define credential vocabulary.
 
-If a change requires a judgment call or a value not derivable from the task spec,
-insert `TODO(human): <question>` at the site and log it in `RECONCILIATION_REPORT.md`.
-Continue with the rest. **Never guess or invent vocabulary, values, or fixtures.**
+## Collaboration and completion
 
-## What NOT to do
+Per the user's model allocation: Astra for difficult semantic/design review, Sol
+for implementation/integration, Luna at max reasoning for bounded documentation and
+consistency work. Delegate only independent tasks with narrow context and distinct
+file ownership. Avoid repeated whole-repository audits. If delegated runs cannot
+start, report the limitation and continue locally where possible.
 
-- Do not rebuild the research kernel (`evidence/`, `verifier/`, `edge/`, `policy/`,
-  `scope/`, `presentation-query/`). Add new *test vectors*, not new algorithms.
-- Do not replace the hand-rolled plumbing (`proofs/`, `status/`, `trust-registry/`,
-  `canonicalize/`, `utils/`) with Digital Bazaar or any VC framework. The **one**
-  exception is the SD cryptosuite in `packages/core-ts/src/proofs/sd.ts` (TS only).
-- Do not add new runtime dependencies — it's a decision, not a default. Stop and
-  ask (especially for a VC/DID framework, or an ECDSA library on the Python side).
-- Do not invent new vocabulary terms, relations, or basis kinds. `qi:`-prefixed
-  tokens belong only in `@context` mappings, never as a *value* in a credential or
-  code literal.
-- Do not flatten or redesign credential schemas beyond what the task specifies.
-- **Do not re-shadow W3C/schema.org protected terms** (`name`, `description`,
-  `issuer`, `digestSRI`, `digestMultibase`) in any context — reuse them.
-
-## JSON-LD safe mode is the law now
-
-Selective disclosure canonicalizes in JSON-LD **safe mode**, which rejects any
-undefined property or protected-term redefinition. Every term a credential uses
-must expand to an absolute IRI against `credentials/v2`. The legacy
-`eddsa-rdfc-2022` path ran safe mode *off* and hid context defects; do not rely on
-that. See `docs/PAPER_FEEDBACK.md` (F-1..F-3).
-
-## Locked decisions (do not re-litigate)
-
-- **Three edge relations**: `authorizedBy` (independent, **no** subset check),
-  `derivedFrom` (bounded projection, **triggers the derivation check**),
-  `supportedBy` (non-authorizing, recursive, **no** `authorizationBasis`). One
-  credential may carry both authorizing kinds at once; the derivation check runs
-  **per edge** against the specific parent it references.
-- **No `role` field** (implied by `relation`). `issuerRole` inside
-  `authorizationBasis` is different and stays.
-- **Six basis kinds**: `accreditation`, `legalMandate`, `notification`,
-  `schemeAuthorization`, `recognition`, `operationalScope`.
-- **Selective disclosure = `ecdsa-sd-2023`, not BBS** (D-SD-2). BBS is a noted
-  future option only.
-- **Python does not do SD crypto** (D-SD-4): it verifies the TS-derived disclosed
-  subset at the *kernel* level only. `packages/core-py/qi_vc_core/proofs/sd.py` is
-  a marked scaffold, intentionally not implemented.
-
-Per-decision rationale (D-SD-1..D-SD-5) is in `RECONCILIATION_REPORT.md` (Part B).
-
-## Demo web app (`apps/demo-web`)
-
-A Vite + React 19 + Tailwind v4 browser demo. Run with:
-
-```bash
-cd apps/demo-web && pnpm dev    # dev server at http://localhost:5173
-pnpm exec vite build            # production build check
-```
-
-Architecture:
-
-- **`src/scenarios/index.ts`** — five scenario definitions (A–E) mapping fixtures to
-  React Flow graph metadata. Each scenario has `nodes`, `edges`, `policy`,
-  `documents`, `trustRegistry`, and `failingTarget`.
-- **`src/store/index.ts`** — Zustand store + `runVerifier()` which calls
-  `verifyCredentialGraph` from `@qi-vc/core` with `skipProof: true`.
-- **`src/components/CredentialGraph.tsx`** — React Flow graph. BFS layout puts
-  authority roots at top, target credential at bottom (matching paper Fig. 2).
-  Node badge driven by both `level='credential'` and `level='edge'` trace entries —
-  edge-level FAILs (e.g. DIGEST_MISMATCH) mark the `from` node.
-- **`src/components/Sidebar.tsx`** — profile selector, pass/fail variant toggle,
-  run button, result badge.
-- **`src/components/Inspector.tsx`** — per-node/edge trace viewer + JSON display.
-- **`vite.config.ts`** — inline stubs for three Node-only core-ts modules (schemas,
-  status, document-loader) via Vite `load` hook on absolute paths; `node:crypto`
-  aliased to `src/stubs/crypto.ts` using `@noble/hashes`.
-
-Visual conventions (match paper figures):
-
-- `authorizedBy`: solid blue (#2563eb)
-- `derivedFrom`: dashed green (#16a34a)
-- `supportedBy`: dotted grey (#94a3b8)
-- Node fill: light pastel per actor role (blue/violet/amber/teal/rose)
-- Theme: light (white canvas, slate sidebars)
-
-Guardrails:
-
-- Do **not** add new runtime dependencies without discussion.
-- Do **not** hand-edit fixture JSON in `testdata/`; synthetic demo fixtures (bad
-  digestSRI) are defined inline in `src/scenarios/index.ts`.
-- Vite stubs must stay in sync with `packages/core-ts` API surface if that changes.
-
-## Current state & task
-
-Part A (Phases 1–5), Part B **Phase 6** (selective disclosure / G2), and **B1**
-(full policy expressibility — `policyToDcql`, `policyToPresentationDefinition`,
-`validatePresentationSubmission`) are **complete and green** (129 TS tests, 101 Python).
-The **demo web app** (P1) is live at `apps/demo-web` with all five profiles, pass/fail
-variants, light theme, and paper-matching edge colours. See `RECONCILIATION_TASK.md`
-for the full brief. Next, both optional and low-judgment:
-
-- **Phase 7** — GS / Profile D test vector. Skeleton is stubbed under
-  `examples/gs/` with TODO(human) placeholders; see `RECONCILIATION_TASK.md` §11
-  and `docs/MODEL_SPEC.md` §7 (Profile D). One credential carries **both** a
-  `derivedFrom` edge (`kind: accreditation`, subset-checked) **and** an
-  `authorizedBy` edge (`kind: schemeAuthorization`, independent), plus a GS
-  certificate authorized by it. Expected: `accept`.
-- **Phase 8** — release prep (version bumps, `CITATION.cff`, README). Mechanical;
-  see §12. Do **not** tag or release.
-
-## Commit style
-
-```text
-refactor(phase-N): short description
-```
-
-One commit per phase.
+Append evidence to `RECONCILIATION_REPORT.md`; keep historical claims intact.
+Track requirements and the 83 cases in `docs/plans/`. Use
+`refactor(phase-N): short description` for coherent phase commits or meaningful units.
+No unexecuted test, external endorsement or future release may be reported as complete.

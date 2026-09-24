@@ -1,0 +1,727 @@
+# VC4QI: complete paper–repository reconciliation specification
+
+Prepared for Mehran Monavari on 21 September 2026. This is a self-contained implementation handover for a coding harness. It specifies work to perform; it is not a report that the work has been completed.
+
+## 0. Start here: mandate and completion criterion
+
+Reconcile `monavari/VC4QI` with the major standards-first revision of the paper, including the later clarification concerning W3C Recognized Entities and authority-issued scope answers. Do not stop after applying the existing scope patch, replacing three strings, or editing documentation. Migrate the credential bindings, internal evaluation model, both language implementations, fixtures, policies, tests, demo and implementation claims together.
+
+The governing thesis is:
+
+> QI trust rests on institutional authority and evidence relationships. Credentials represent those relationships without creating the authority. A verifier-selected profile determines reliance. Scope decisions require accepted semantics and supported evaluation procedures.
+
+Design motto: **As simple as possible, but not simpler.**
+
+The required result is one reviewable branch with an executable, reproducible RM profile, migrated examples, explicit limitations, meaningful negative tests, and a traceability table connecting this specification to code and test evidence. Preparation of a draft PR is appropriate where access allows it. Do not claim a public release, publication or DOI until it actually exists.
+
+This task authorizes routine implementation changes necessary for this reconciliation, including changes to the old research kernel and contradictory repository guidance. It does not require repeated confirmation for those already specified changes. Follow actual harness permissions; if remote write access is unavailable, finish locally and export a patch or bundle. Never claim a push succeeded without evidence. Creating a tag, publishing a package or minting an archive is a separate release action unless the active user session authorizes it.
+
+### 0.1 Source precedence and explicit supersessions
+
+Use this document as the task-specific resolution of the older handovers. Preserve unrelated repository instructions. Inspect the actual checkout before implementing; later user instructions take precedence.
+
+| Older instruction or assumption                                                       | Required resolution                                                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Exactly three serialized edge relations, `authorizedBy`, `derivedFrom`, `supportedBy` | Superseded. The core requires no universal serialized edge vocabulary. Standard/native bindings supply protected facts; the verifier derives internal obligations.                                                                                                                       |
+| All authorizing and supporting relations live in `evidence`                           | Superseded. The baseline uses recognized authorization policies through `termsOfUse` and non-authorizing support through `evidence`; additional bindings must specify their own accepted interpretation.                                                                                 |
+| Do not change `evidence/`, `edge/`, `verifier/`, `policy/` or `scope/` algorithms     | Superseded to the extent necessary for this reconciliation. This is a model migration.                                                                                                                                                                                                   |
+| Add no runtime dependencies without stopping for approval                             | For this task, a narrowly necessary maintained dependency may be added with documented purpose, version/license review and tests. Prefer existing dependencies; do not replace the whole stack or add unrelated frameworks. This permission does not bypass environment access controls. |
+| The six old basis strings are a universal closed model                                | Superseded. Requirements and basis identifiers belong to the selected profile; labels alone confer no authority.                                                                                                                                                                         |
+| `derivedFrom` can simply become `prov:wasDerivedFrom`                                 | Rejected. Provenance does not establish permission, scope containment or authorization inheritance.                                                                                                                                                                                      |
+| Any unresolved check may become WARN/SKIP while the overall result passes             | Rejected. Every required reliance obligation must be established.                                                                                                                                                                                                                        |
+| Guard bands are part of accredited-range inclusion                                    | Superseded. Scope and conformity are distinct predicates.                                                                                                                                                                                                                                |
+| Every scope needs an uncertainty ceiling                                              | Rejected. The baseline RM profile has no accreditation uncertainty ceiling. Calibration capability floors and optional customer limits are separate, explicit profile rules.                                                                                                             |
+| All evidence must be in one VP or publicly retrievable                                | Superseded. A purpose-specific bundle plus permitted bounded resolution must establish the required closure; private authorized retrieval is allowed.                                                                                                                                    |
+| Every useful credential must be explicitly cited by the leaf                          | Refined. A holder cannot manufacture an issuer endorsement; an independently authenticated authoritative grant can establish a relation under an accepted discovery rule without a custom leaf pointer.                                                                                  |
+| Circles only in authorization relations must be rejected                              | Superseded. All recursively required evaluation dependencies need a well-founded justification, including supporting evidence. Unused provenance cycles are different.                                                                                                                   |
+| EUDI/EUBW formats categorically cannot reference other evidence                       | Do not repeat. Verify the particular specification/version and the semantics of each component. A reference's existence does not establish QI authorization semantics.                                                                                                                   |
+| A sample type in a W3C example is an interoperable production profile                 | Rejected. Example contexts and illustrative terms are not a conformance claim.                                                                                                                                                                                                           |
+| The demonstrator's execution counts prove the paper's full soundness                  | Rejected. Runtime evidence, a conditional argument and deployed interoperability are different claims.                                                                                                                                                                                   |
+
+Update `AGENTS.md`, `CLAUDE.md`, the active reconciliation task and the ADR that locks the three relations before making the model change. Preserve the prior ADR as superseded history. Do not rewrite historical commit claims to appear current.
+
+### 0.2 Material used to compile this handover
+
+The supplied Astra audit packet of 9 September establishes the standards-first target; the older repository-overhaul handover and spec-drift report explain the defects but contain superseded design rules. Later paper discussions establish complete routes, global restrictions, mapping soundness, well-founded support evaluation and the separation of verification from reliance. The available revised manuscript sources were inspected, but their layout/section numbering must not be mistaken for a byte-identical copy of the user's v5 PDF.
+
+All necessary implementation requirements are restated below. This file does not depend on a missing `VC4QI_implementation_requirements.md`, a previous chat, an inaccessible patch, or a particular local path on the recipient's machine.
+
+## 1. Verified starting state and branch handling
+
+### 1.1 Known snapshots: verify ancestry afresh
+
+These are observed snapshots, not promises about future GitHub state.
+
+| Snapshot                           | Commit                                     | Meaning                                                                                 |
+| ---------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------- |
+| Public `main` at last access check | `8847bc4b08d07bdb1298bcc4526eb3233b67db80` | v0.3.0 manuscript-v2.1 implementation, still using the old model.                       |
+| `fix/sec-1-verify-registry`        | `1812b621672d593237e6f9600f9c1570cca559f3` | Earlier registry/protection fixes; inspect actual coverage.                             |
+| `fix/sco-1-governed-identifiers`   | `17dc96d11fb4b645d7fd0639484d63cf0c476064` | Stacked scope-identifier fixes; preferred known starting point when not already merged. |
+| Local `fix/paper-alignment`        | `63231d27bbec86c0e46e3eca48e0ac8a078739a7` | One additional scope-fix commit; not pushed or released by this session.                |
+
+Local working copy at preparation time: `/workspace/scratch/c3f8ab7286c5/paper-alignment`. It was clean. Do not assume that directory or commit object is available in a different harness. The latest access check reported authenticated user `mehranmo`, read permission on `monavari/VC4QI`, and no push permission. Recheck normal authenticated access rather than relying on this historical state; do not probe credential files.
+
+Starting procedure:
+
+1. Read repository guidance and inspect `git status`, remotes, branch tips, PRs and ancestry. Preserve unrelated working changes.
+2. Fetch normally if possible. Select a base containing the reviewed registry and governed-identifier fixes. If main now contains them, branch from main. Do not cherry-pick changes twice.
+3. Create an isolated branch such as `refactor/standards-first-reconciliation`; retain all relevant history.
+4. If local commit `63231d2` is available, inspect and apply it if needed. Otherwise implement the behavior listed in §1.2; do not make the absent patch a blocker.
+5. Record the actual base SHA, environment, commands and initial failures in the implementation report. Never carry forward old test totals as new evidence.
+
+### 1.2 What `63231d2` actually added
+
+Six files changed: the TypeScript and Python scope modules, a shared `testdata/regressions/scope-containment.json`, one test runner per language, and an appended reconciliation-report section.
+
+* Child scope records must each be covered by one complete parent record across the currently supported dimensions.
+* Derived pressure intervals check both endpoints, finite/order-valid bounds and supported units; missing or uninterpretable interval data cannot authorize containment.
+* RM claims check matrix, form, property and the legacy uncertainty condition against the same candidate record; different claims can have different complete records.
+* DCC method-restricted entries require at least one governed method identifier.
+* Failed alternatives within one DCC measurement group are local to that group; a later successful group cannot erase an earlier group's failure.
+* Derived scope endpoints cannot be empty or absent.
+* Seventeen shared regression/control vectors exercise these behaviors.
+
+This patch does **not** implement general unit semantics, the new carrier model, complete reliance, RM numerical-range evaluation or the conformity decision rule. Its legacy uncertainty and missing-dimension conventions need reconciliation with the selected profile. Preserve its safety properties, not every implementation detail.
+
+Previously recorded local results: 34 focused TypeScript tests passed; TypeScript typechecking passed; Python 165 passed and 1 skipped; full TypeScript 184 passed and 9 failed in tests involving remote W3C context retrieval. Those results are historical and are not a green result for the new migration.
+
+## 2. Architectural contract: four layers
+
+| Layer                          | Contains                                                                                                                              | Must not contain                                                                                           |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Minimal evaluator core         | Request evaluation, obligation scheduling, three-state logic, complete route composition, witness assembly and resource accounting    | QI-wide invented credential properties; hardcoded institution names; unit or material taxonomies           |
+| Selected bindings and profiles | Exact carriers, native schemas, vocabulary versions, authority interpretation, scope calculus, time policy, accepted decision modules | Silent schema guessing; issuer-selected weakening of verifier requirements                                 |
+| Reference software             | TypeScript/Python APIs, resolvers, caches, report formats and UI                                                                      | Claims that implementation field names are standardized VC vocabulary                                      |
+| Fixtures and applications      | RM, DCC, statutory-authority and scheme examples; deterministic fictional authorities and keys                                        | Claims of real accreditation, real institutional endorsement or external interoperability without evidence |
+
+Keep one coherent working baseline rather than scaffolding many nonfunctional adapters. Port boundaries should be small interfaces with real baseline implementations. Domain evaluators may be ordinary deterministic code. Do not implement a general ontology reasoner, unrestricted rules engine or arbitrary remote code execution.
+
+## 3. Serialized vocabulary and migration rules
+
+### 3.1 What the new vocabulary requirement means
+
+The task is not to invent replacements for three edge names. It is to stop requiring those names in credentials. Keep institutional distinctions in the evaluator while reading credential-native evidence under accepted bindings.
+
+| Old surface                                          | New treatment                                                                                                                                                                                                             |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `evidence[].relation = authorizedBy`                 | Interpret a recognized authorization policy/reference in `termsOfUse`, or an explicitly supported independently authoritative grant mechanism.                                                                            |
+| `evidence[].relation = derivedFrom`                  | Establish operational-scope maintenance permission plus containment through the selected authorization binding. Genuine provenance may additionally be represented using PROV-O; it does not discharge either obligation. |
+| `evidence[].relation = supportedBy`                  | A recognized supporting evidence entry in `evidence`, with profile-defined applicability to requested claims.                                                                                                             |
+| Serialized `authorizationBasis.kind`                 | Extract the appropriate grant/activity/basis from authoritative native facts and profile rules. Do not copy the old field into a newly named generic wrapper.                                                             |
+| Custom edge digest                                   | Use the selected standard resource-integrity mechanism with its exact representation rules. Independently verify the referenced credential when it is required.                                                           |
+| Mandatory custom per-claim parent pointer            | Remove from the core credential contract. Emit a verifier-owned claim-to-record/path witness. Preserve native claim links where the actual domain standard defines them.                                                  |
+| `PASS`, `FAIL`, `WARN`, `SKIP` in credential schemas | Remove as credential vocabulary. Internal execution/report labels may remain with explicit semantics and no influence through error counting.                                                                             |
+| Old graph JSON supplied as authoritative input       | Treat only as legacy input or UI metadata. Compile the operative graph from authenticated native facts and accepted profile rules.                                                                                        |
+
+Unknown optional annotations need not make a VCDM document invalid. An unrecognized term, policy type or relation required for the reliance request must not establish an obligation. Distinguish base-format validity from supported-profile sufficiency.
+
+### 3.2 Standard carrier responsibilities
+
+Use the VCDM2 mechanisms in their defined roles: `termsOfUse` for recognized policy/authorization interpretation, `evidence` for supporting information, `relatedResource` for resource integrity, and `credentialSchema` for applicable validation. DCMI conformance declarations identify profiles but do not require the verifier to trust them. These reuse choices follow the agreed VC4QI design; VCDM2 alone does not supply the QI decision rules. See [VCDM2, 15 May 2025](https://www.w3.org/TR/2025/REC-vc-data-model-2.0-20250515/), particularly §§4.11, 5.3, 5.5–5.6 and 7.
+
+Do not promote `TrustFrameworkPolicy`, `IssuanceCertificate`, `scopeRef`, `grant`, or any example-context term to a universal VC4QI field by naming it in code. First establish the exact binding that defines it. An EBSI v1 payload cannot simply receive a VCDM2 context and become EBSI v2 conformant.
+
+If no deployed authorization binding supports the complete RM example, implement a **documented local experimental binding** for the fixture, with a versioned context, schema and interpretation. Reuse suitable existing terms; explicitly list the few domain terms that remain local. Place local terms in an unmistakably experimental namespace (for example a reserved `.example` namespace resolved by the fixture loader), never an asserted external institution's namespace. Such a binding is an executable research fixture, not an externally governed production profile. This is authorized here to avoid either fabricating a standard or leaving the demo inoperable. No new universal graph vocabulary is authorized.
+
+### 3.3 Mandatory binding manifest
+
+For each supported binding, publish a machine-readable manifest and a concise human-readable table containing:
+
+1. Stable binding/profile identifier, version, experimental/production status and owning governance source.
+2. Accepted carrier/model versions, credential types and exact contexts/schemas/shapes.
+3. Exact expanded IRIs and native paths used for grantor, grantee, activity, scope, supporting references and applicable times.
+4. Cardinality rules: object versus collection, multiple subjects, multiple policies, multiple schemas and multiple status entries where supported.
+5. How references are found and secured; how independently discovered grants are authenticated and bound to the actor.
+6. Recognized policy/evidence types and what each can establish.
+7. Rules for principal equality, identity mappings, grant permission and operational-scope maintenance permission.
+8. Scope dimensions, units, boundary inclusivity, missing/empty semantics, mapping versions and supported evaluator identifiers.
+9. Complete route requirements and global restrictions.
+10. Proof, key discovery, status, temporal/freshness and resolver rules.
+11. Required support, disclosure, presentation and object-applicability conditions.
+12. Test-vector locations and unsupported cases.
+
+The manifest is implementation configuration, not a new credential vocabulary. Exact spellings are an implementation choice; semantic content above is mandatory. Never allow it to load arbitrary executable code from an issuer-supplied URL.
+
+### 3.4 JSON-LD, native data and signatures
+
+* Pin dependency content and loader mappings; do not silently resolve a different schema/context version.
+* Expand all decision-relevant JSON-LD terms correctly; reject protected-term redefinition and decision-relevant data lost through unsafe expansion.
+* Do not repair a credential's context or rename fields before checking the protection over its original representation.
+* Regenerate migrated synthetic credentials with fresh deterministic test signatures. Do not edit a signed JSON document and retain its old proof.
+* Keep external XML in its native representation. A wrapper digest establishes content binding under the selected mechanism; it does not manufacture an XML signature or transfer an original signature onto re-encoded JSON.
+* Multiple representations must be checked for decision-relevant agreement where the profile relies on them together.
+* Do not invent a generic canonical JSON digest. Byte digests, suite transforms and RDF canonicalization are distinct and must follow their selected specifications.
+
+### 3.5 Legacy compatibility
+
+The default new path must not emit or depend on the legacy edge serialization. Prefer a separate explicit legacy adapter over a permissive auto-detect fallback.
+
+A legacy adapter verifies the original secured legacy representation and preserves provenance, then produces internal facts under an explicitly selected legacy profile. It must not claim that a converted credential retains the original signature or meets the new profile. New-profile requests reject or mark unsupported a legacy-only authorization representation. Legacy fixtures may remain in a clearly separated test directory.
+
+Document the public API/schema compatibility break. Choose a coherent new version using repository release conventions; do not silently call changed wire semantics the same profile version.
+
+## 4. Evaluator request and result
+
+### 4.1 Request
+
+The request explicitly supplies: target credential identity; selected claims; purpose; accepted profile and version; trust configuration; relevant evaluation/activity times; supplied evidence; resolver policy and budgets; and, when requested, conformity requirement and decision rule.
+
+Select a processing plan through verifier policy, not by taking the first type/context/schema in a credential. Multiple declarations require a deterministic accepted composition. A credential cannot choose a weaker profile than the verifier accepts.
+
+An empty target claim selection must have an explicit supported meaning. Do not accept an empty claim list accidentally through vacuous conjunction.
+
+### 4.2 Three evidence states, plus execution state
+
+Use the internal semantic states `established`, `contradicted`, `not_established`. Separately record `not_run` when a check was not executed. These names belong to internal/report schemas, not VCDM credential vocabulary.
+
+* **Established:** adequate validated evidence supports the predicate under the selected profile.
+* **Contradicted:** a supported check establishes a mismatch or violation.
+* **Not established:** missing, unresolved, unsupported, budget-limited or otherwise insufficient evidence prevents a definite conclusion.
+* **Not run:** execution metadata only; cannot satisfy an obligation.
+
+For conjunction, one contradiction is enough for contradiction; all conjuncts must be established for establishment; otherwise the result is not established. For disjunction, one established complete alternative is enough for establishment; all alternatives must be contradicted for contradiction; otherwise the result is not established. Search that stops at a resource limit cannot claim to have disproved all alternatives.
+
+Do not use `failures.length === 0`, absence of exceptions, or absence of top-level FAIL as acceptance logic. Unknowns and omissions must participate in the obligation evaluation itself.
+
+### 4.3 Result contract
+
+Return separate results for document protection/verification, authorization, support, and conformity, together with the overall reliance outcome `accept`, `reject`, or `not_established`. Define the scope of every boolean if retained for compatibility. A document-level `verified: true` must not imply reliance.
+
+The exact JSON shape is a software API choice. A suitable result contains:
+
+```text
+requestId, target, selectedClaims, purpose, profile/version
+verification: per-artifact applicable structure/protection/temporal outcomes
+authorization: per-claim state, complete route witnesses, restrictions
+support: per-obligation state and applicability witnesses
+conformity: per-claim state or explicit not-requested/not-run, rule and arithmetic
+reliance: accept | reject | not_established
+trace: gate, node-use, predicate, state, reason, input provenance
+resources: content identities, retrieval sources/times, status observations
+limitations: exact skipped, unsupported or simulated mechanisms
+```
+
+For a required conjunction of claims, all must satisfy the request. If the product supports partial results, disclose exactly which claims are covered; do not turn one authorized claim into acceptance of the complete credential.
+
+Internal diagnostics may keep stable uppercase codes. Map HTTP operation errors to documented RFC 9457 Problem Details when an HTTP surface exists. `authorization-not-established` is an application problem type, not a new VC property. Semantic rejection need not be an HTTP protocol failure; document the API choice.
+
+## 5. Graph compilation, identity and ordering
+
+### 5.1 Small internal model
+
+Represent an artifact separately from a use of that artifact. A node-use is distinguished by content identity, role, purpose, profile/processing plan and relevant time context. Identical document bytes may discharge different obligations for different purposes.
+
+The internal graph may contain typed obligations and edges for visualization. Internal names such as authority use, bounded projection, recognition or support are permitted. Removing the serialized vocabulary does not mean deleting the distinctions or the graph inspector.
+
+Every operative relation needs an evidence source: a protected source pointer or an independently authenticated authoritative grant/discovery fact, its binding adapter, and the rule that gives it meaning. A holder-provided graph or arbitrary extra VC cannot create an endorsement.
+
+### 5.2 Required algorithmic sequence
+
+1. Select the accepted plan and parse bounded input. Do not execute arbitrary user-supplied evaluation modules.
+2. Identify candidate references and check resource identity constraints. Candidate discovery is not acceptance.
+3. Verify original secured artifacts, authorized key relationships and applicable temporal evidence.
+4. Map protected native facts through accepted deterministic mappings, retaining source paths and transformations.
+5. Compile permitted relation obligations, required support and complete route candidates.
+6. Recursively discharge every required node-use; memoize by the complete evaluation context.
+7. Establish complete authorization routes and global restrictions per claim.
+8. Establish required supporting evidence and its applicability to the requested object/activity.
+9. Evaluate conformity only when requested and its prerequisites are established.
+10. Produce deterministic witnesses and an auditable result. Trace order may differ internally, but its meaning must be stable across languages.
+
+### 5.3 Seven gates: canonical numbering for this migration
+
+Older documents number gates differently. Use this table consistently in code, tests, docs and UI.
+
+| Gate | Obligation             | Required evidence                                                                                                |
+| ---- | ---------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| 0    | Plan and structure     | Accepted purpose/profile; deterministic dispatch; supported native structural constraints                        |
+| 1    | Resource identity      | Exact referenced representation/version where required; no silent conflicting identities                         |
+| 2    | Protection             | Correct proof/security verification and authorized key/controller relationship; authenticated security artifacts |
+| 3    | Temporal applicability | Relevant validity intervals, status/freshness and historical requirements                                        |
+| 4    | Meaning and mapping    | Supported identifiers, quantities, units and decision-preserving native interpretation                           |
+| 5    | Authority and scope    | Principal binding, rights, complete routes, operational containment, global restrictions                         |
+| 6    | Support and decision   | Independently justified applicable support; requested conformity calculation                                     |
+
+This is a per-node-use dependency discipline, not a ban on all parsing or equality checks before gate 2. Suite transformations and structural checks necessarily occur before/during cryptography. Authenticated key resolution can be required at gate 2, while institutional authority remains a separate gate-5 obligation. Security/status resources have their own applicable checks. No failed lower-stage business fact may establish a higher-stage predicate.
+
+Diagnostic evaluation of a failed object must remain inert: it cannot confer authority, poison accepted caches or trigger uncontrolled network access. Failures in unused route alternatives are retained as diagnostics, not automatically global rejections.
+
+### 5.4 Identity, cache and cycle rules
+
+* Bind immutable artifact identity to the selected secured representation and processing context, not only to a fetch URL.
+* Detect conflicting content claiming the same immutable identity within one evaluation; do not last-write-wins merge it.
+* Preserve distinct time-stamped observations for dynamic status resources. Do not freeze status indefinitely merely because the resource URL is pinned.
+* Cache verified artifacts separately from reliance outcomes. Outcome caches include purpose, profile, role, relevant times, trust-configuration identity and dynamic-evidence freshness.
+* Detect cycles on the active recursive evaluation stack. Shared DAG dependencies must not be mistaken for cycles because they appear in a global visited set.
+* All required recursive relations, including support and external attestations' authority dependencies, need a well-founded justification. A required circular obligation gives not established in the baseline model.
+* A cycle in unrelated provenance data does not invalidate a complete independent route.
+* A configured anchor supplies only its configured authority for relevant purposes. A self-signature, a familiar institutional name or a maximum traversal depth is not an anchor.
+
+## 6. Authority and scope semantics
+
+### 6.1 Principal and granting-right checks
+
+For an authorizing relation, bind the grantee in the authoritative parent to the actor exercising the right in the child. A missing actor/subject never silently bypasses the comparison. The same check is required for a bounded operational projection, together with permission to maintain/project the scope. Multiple subjects require selecting the actual applicable grant, not the first subject.
+
+Key authorization and institutional permission are separate. A correct signature from an entity does not show that it may accredit, recognize, delegate, maintain an operational scope or issue a particular domain result.
+
+Treat identity equivalence as governed input. Do not equate legal entity names, lowercased strings, URL aliases, organization brands or DID controllers to institutional authority without a supported binding.
+
+An authority-use relation asks whether a result's issuer may perform that activity under an operative grant. A bounded projection asks whether the projected authority remains within its parent and the projecting actor has that permission. Do not apply subset checks to every independent institutional grant; do not omit them from operational projections.
+
+### 6.2 Complete routes and global restrictions
+
+The profile defines permitted complete routes. For a claim:
+
+```text
+authorized(claim) = applicable_global_restrictions_hold
+                    AND OR_over_complete_routes(
+                          AND_over_required_bases(basis_established))
+```
+
+For example, a fictional profile may allow `(competence AND scheme permission) OR statutory authority`. This is a profile example, not a universal GS or legal rule.
+
+Rules:
+
+* Every required basis in a route must be tied to the correct actor, activity, time and claim.
+* One record must cover all dimensions owned by that basis. Do not splice property from one record with method from another.
+* Complementary bases can govern different dimensions legitimately. Check all overlapping restrictions; the profile defines ownership and combination.
+* Alternative complete routes are OR; parts of different routes do not combine into a synthetic route.
+* Global restrictions apply outside the OR. A suspension governing the whole activity cannot be bypassed by selecting another route.
+* Not every failed/revoked unrelated credential is a global restriction. The accepted policy must establish its applicability.
+* An empty route or missing requirements list cannot accidentally authorize arbitrary claims. Explicit anchor-only cases need an explicit profile rule.
+
+### 6.3 Scope records, mappings and quantities
+
+Implement scope evaluators per domain binding. The core invokes them without assuming all quantities are pressure or all categorical terms are comparable.
+
+Required rules:
+
+1. Use governed identifiers or explicitly accepted equivalence mappings. Human-readable labels are display-only. `As` must not match `Ash`; CuZn39Pb3 must not match CuZn40Pb2 by partial spelling.
+2. One complete record covers each relied-upon claim. Different claims may use different complete records.
+3. A delegated interval must fit one complete parent interval in the baseline profile. Adjacent records do not automatically authorize their union.
+4. Define lower/upper inclusivity, empty/missing constraints and dimension orientation in the profile. Missing restricted dimensions are unresolved or invalid, never silently unrestricted. An explicitly permitted unrestricted dimension is different.
+5. Validate quantity kind, unit identity, magnitude, finite values, interval ordering and uncertainty metadata before comparisons. Reject contradictory unit indicators. Unsupported conversions yield not established.
+6. Preserve quantity-kind distinctions even when dimensions coincide. Do not infer semantic equivalence from unit dimensionality alone.
+7. Test representation equivalence deliberately: `1 mg/kg = 10^-6 kg/kg` in the mass-fraction profile. Do not send RM mass fractions through `toPa`.
+8. Use deterministic decimal/rational arithmetic or a documented numerically sound comparison strategy across TypeScript and Python. Do not silently insert a tolerance that changes the acceptance boundary.
+9. Preserve asymmetric uncertainties, coverage factors and distributions where required. If the baseline supports only symmetric expanded uncertainty, identify unsupported inputs rather than averaging them.
+10. Test empty result groups, uncertified properties and partially omitted claim fields. Filtering non-relied-upon data is allowed; filtering requested claims into an empty accepted set is not.
+
+Quantity-binding policy: retain native DCC/D-SI XML where applicable; use a pinned SIS/SIRP mapping for the selected RDF profile where validated. QUDT may remain in an explicitly named legacy or alternative binding. Do not mix ecosystems by assuming equal-looking unit labels imply equivalence. Resolve and document exact available ontology terms; do not invent plausible SIS term names. The complete RM baseline can use a clearly scoped experimental quantity binding until an external mapping is validated, with that limitation stated.
+
+### 6.4 Uncertainty and conformity
+
+Keep three possible uses separate:
+
+* A calibration capability floor, when the selected calibration profile requires it: reporting uncertainty below the admitted capability may contradict scope.
+* A customer's maximum usable uncertainty, only if requested: a reliance requirement separate from accreditation.
+* A conformity decision rule such as `x + U <= L`, explicitly chosen for the example.
+
+Do not reintroduce the old generic RM uncertainty ceiling. Do not reuse the same inequality for all three purposes. A valid uncertainty representation remains necessary when a conformity calculation consumes it.
+
+### 6.5 RM baseline that must run end to end
+
+Use fictional, clearly labeled authorities. Keep all non-varied identity, time, method, support and protection conditions valid.
+
+* A: accreditation of the RM producer; authorized mass-fraction range `[50, 500] mg/kg`; methods M1 and M2 allowed.
+* O: controlled operational scope for that producer; same example range, M1 only. Its authorization binding establishes maintenance permission and containment within A.
+* D: RM certificate for CuZn39Pb3 brass, arsenic mass fraction, method M1, symmetric expanded uncertainty `U = 5 mg/kg`, coverage factor `k = 2`.
+* S: required supporting study for the same relevant material/batch and purpose; its laboratory authority H is established separately.
+* Q/r: verifier limit `L = 200 mg/kg`; guarded acceptance `x + U <= L`. The accredited range compares the estimate x in this profile, not the guarded quantity.
+
+| Target x  | Scope calculation  | Conformity calculation | Required result                                          |
+| --------- | ------------------ | ---------------------- | -------------------------------------------------------- |
+| 178 mg/kg | `50 <= 178 <= 500` | `178 + 5 = 183 <= 200` | accept if all other obligations established              |
+| 197 mg/kg | `50 <= 197 <= 500` | `197 + 5 = 202 > 200`  | reject for conformity; authorization remains established |
+| 520 mg/kg | `520 > 500`        | not run                | reject for scope; never label it a conformity rejection  |
+
+Add two boundary controls: `195 + 5 = 200` satisfies the inclusive conformity rule; x=500 remains in the inclusive scope even though this particular conformity requirement rejects it. A separate authorization-only request for x=197 succeeds without running conformity. An x below 50 fails scope. A method M2 claim cannot use O merely because A admits M2; it needs a separately permitted complete route.
+
+### 6.6 Governed method succession and semantic boundary
+
+Implement explicit profile inputs that distinguish a scheme permitting M2 as an accepted successor of M1 from a scheme requiring an explicit extension. Identical credential bytes can then produce different justified scope outcomes under two explicitly selected profiles. Without an accepted succession interpretation, return not established. A self-asserted equivalence by the result issuer cannot override governance.
+
+Document the boundary as underdetermination without accepted interpretation, not a proof that every scope question is mathematically undecidable. Conditional decidability additionally assumes supported terminating evaluators, finite route search and a well-founded required dependency graph. Resource timeout is not a proof of semantic falsity.
+
+## 7. Protection, resources, trust and time
+
+### 7.1 Protection and trust anchors
+
+* Every required credential receives the real protection checks required by its selected binding. At least one baseline end-to-end suite runs without `skipProof`, placeholder proofs or an always-successful verifier.
+* Verify signatures using the appropriate key relationship/controller and suite. A signature from any key returned by a resolver is insufficient.
+* The resolver must map the requested verification method to the correct fixture identity. A constant resolver returning the same key for all requests is not adequate adversarial evidence.
+* Authenticate registry/trust-list artifacts before using their contents. Anchor selection is independently configured and must not become circular through the registry being evaluated.
+* Authenticate a status artifact and establish that its signer is permitted to state status for the target under the selected mechanism. URL possession or a valid unrelated signature is insufficient.
+* A proof-disabled exercise may remain available as a clearly named simulation. It must never yield an unconditional successful reliance result or be counted as a cryptographic end-to-end pass.
+
+### 7.2 Resource handling
+
+Put all network I/O behind a bounded resolver: permitted protocols/origins, redirect checks, address restrictions, media-type expectations, response-size/decompression limits and timeouts. Validate redirects and resolved destinations; an initial allowlisted URL alone is insufficient. Fixture loaders use an explicit local resource catalog and do not silently phone home.
+
+Verify supplied integrity metadata according to the chosen binding before using the resource. A correct digest identifies content; it does not establish that its author is entitled to grant authority. Distinguish digest mismatch from resource unavailable.
+
+Tests must not depend on live W3C URLs for static contexts. Vendor the pinned normative/test context resources with origin/version/hash metadata and resolve their canonical identifiers locally. Live integration tests are a separately marked lane. This fixes reproducibility without disabling safe processing or cryptographic checks.
+
+### 7.3 Time model
+
+Separate evaluation time, activity/measurement time, native issuance time if defined, validity interval, proof timestamps, status observation time and material shelf life. Do not treat `validFrom` as issuance time merely because a fixture historically did so. An accepted profile may define a particular relationship explicitly.
+
+The baseline supports a precise current-reliance question. Historical requests require the evidence that the selected temporal policy needs. When authenticated historical status/scope is unavailable, report not established rather than substituting current status. A current suspension can affect new reliance according to the policy without proving past issuance was unauthorized.
+
+Missing status is governed by the accepted profile. VCDM optionality does not imply that a profile requiring revocation evidence should pass without it. Freshness is explicit; holder-supplied signed status is neither automatically acceptable nor automatically stale. Its admissibility depends on authenticated observation time, purpose and the profile's freshness rules.
+
+Trusted time mechanisms may be provided behind a port. Do not implement new timestamp-service infrastructure in this migration or claim backdating resistance from issuer-written dates alone.
+
+## 8. Required support and external scope attestations
+
+### 8.1 Supporting evidence is independently evaluated
+
+A required study/report/calibration must be valid for its own role and supported by the relevant authority, then matched to the requested material, batch, instrument, activity, method and time as the profile requires. It need not have the same subject as the issuer of the consuming result. That equality is an authority-binding rule, not a universal support rule.
+
+A genuine report concerning another batch contradicts support applicability. A missing report leaves support not established. A resolved URL, correct digest or verified signature alone does not establish support sufficiency. Plain provenance cannot satisfy a required authorization obligation.
+
+Physical-object assurance is explicit: equality of protected identifiers establishes the digital match the profile defines, not that nobody swapped the physical sample. Do not claim anti-counterfeiting or physical truth from this evaluator.
+
+### 8.2 External authority-issued answers
+
+Support an experimental adapter for an authority-issued scope answer as an alternative way to establish a **specific** scope predicate. This is additional evidence supplying governed semantics, not an escape from the semantic boundary.
+
+The accepted profile specifies:
+
+* Who is authorized to answer, and how that authority is established independently of the answer itself.
+* The exact predicate: point-claim coverage versus full delegated-scope containment.
+* The claim or claim digest, relevant grantee/activity, scope identity/version, rule/profile version, applicable time and question parameters.
+* Required answer protection, validity/status/freshness and whether historical reliance is supported.
+* Whether a supplied answer can satisfy the request without a network query.
+
+Before using an answer, verify its protection, bind the signer to the permitted authority, bind its content to the exact question, check applicable time/version and any required status, and evaluate the stated result. A correct answer for another claim, another grantee, a later scope version or a different activity time cannot be reused. An endpoint URL selected only by the applicant cannot determine its own authority.
+
+A signed answer that says 'this point is covered' cannot establish that a broader O is contained in A. External-attestation reliance shifts an assumption to the recognized attesting authority; report that basis in the witness. If the authority is unavailable and no admissible answer was supplied, return not established. Do not recursively trust the answer to authorize its own signer.
+
+## 9. Recognized Entities and other infrastructure bindings
+
+### 9.1 W3C Recognized Entities: scoped experimental adapter
+
+The [6 September 2026 Working Draft](https://www.w3.org/TR/2026/WD-vc-recognized-entities-1.0-20260906/) defines `RecognizedEntityCredential`, `recognizedIn`, `recognizedTo` and `RecognizedAction`, including schema-based `outputValidation`. It is experimental. Use this exact snapshot for an initial adapter; a later version requires explicit review, manifest update and tests. Recognition and action recognition do not by themselves supply every VC4QI reliance obligation.
+
+Implement this in an optional binding module, not by requiring every credential to become a RecognizedEntityCredential or using its terms as universal graph edges. Minimum scope: credential-based discovery, protected membership/principal matching, configured anchors, action matching, accepted output validators and conversion to the internal authority evidence interface. Test a small signed recognition chain and a result whose recognition succeeds but QI scope does not.
+
+If identifier-based discovery is implemented, §4.2 requires verification of the retrieved presentation and its binding to the queried issuer; checking only enclosed credentials is not enough. Otherwise declare this discovery path unsupported and return an explicit unsupported result when requested. Do not advertise full draft conformance from the minimum adapter.
+
+Where a profile wants both baseline `termsOfUse` interpretation and Recognized Entities discovery, define their composition. Do not automatically merge their grants or require duplicate references in every leaf. Reaching a recognition anchor does not override global restrictions, substitute for a supporting study or decide conformity.
+
+### 9.2 EBSI, EUDI/EUBW and carrier neutrality
+
+Keep carrier/security, authority source and domain semantics independently selectable through supported profiles. Do not build all wallet stacks to complete this task.
+
+* EBSI integration is optional and requires exact environment, data-model version, schemas, credential types, APIs and conformance evidence. Avoid mixing v1 `IssuanceCertificate` examples with unrelated v2 terms.
+* SD-JWT VC, mdoc and W3C VC are not interchangeable JSON envelopes. A claim named `evidence` may have different governed semantics. A payload extension is not automatically an authorization reference.
+* Distinguish wallet support obligations, legally recognized formats and realizations in a technical profile. Do not assert current legal status from old notes or infer production support from a draft.
+* Recheck the exact ETSI clauses before changing European documentation. Earlier supplied notes contain conflicting statements about which realizations permit evidence; this handover does not resolve those conflicts by assumption.
+* `extends` or similar credential-type inheritance never automatically means institutional delegation or scope containment.
+* Preserve presentation-query integration where useful, but DCQL/Presentation Exchange request matching does not execute the reliance calculus.
+
+Mark unsupported adapters honestly. A port stub is not an implemented integration. Remote normative/legal verification is required if making corresponding current compliance claims; it is not a reason to block the coherent local RM implementation.
+
+## 10. Presentations and selective disclosure
+
+The stopping condition is sufficient evidence for the request, usually ending in configured authority anchors and independently established support. Depth limits are operational budgets, not invented trust roots.
+
+Retain the ability to supply a flat presentation containing the required closure. Credentials normally reference direct dependencies; do not duplicate the full transitive graph inside every credential. Additional unrelated credentials do not confer rights merely by appearing in the VP.
+
+Required information can be supplied by the holder or obtained through the accepted resolver. Keep source and freshness information in the trace. A public basic view may rely on a service's signed conclusion; label that reliance relationship instead of claiming full independent verification from a minimal view.
+
+Preserve the existing TypeScript `ecdsa-sd-2023` selective-disclosure feature where compatible. Recheck mandatory disclosure of subject bindings, applicable restrictions and necessary references after migration. Existing Python support is not evidence of Python SD cryptography; if only semantic verification of a TS-derived subset is supported, label it exactly that. Do not manufacture cross-language crypto parity by disabling checks.
+
+A generic VC proof suite is not automatically a VP holder-binding mechanism. For any interactive presentation adapter, implement its specified challenge/audience/holder requirements and replay checks, or declare the adapter unsupported.
+
+## 11. Repository work map
+
+Paths below refer to the inspected repository structure. Locate moved files before editing; keep the implementation modular without preserving obsolete dispatch just for filename stability.
+
+| Area                  | Known locations                                                                                                                                  | Required work                                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| Agent guidance        | `AGENTS.md`, `CLAUDE.md`, `RECONCILIATION_TASK.md`                                                                                               | Supersede obsolete locks, retain unrelated conventions and fixture discipline.                                         |
+| Model/spec            | `docs/MODEL_SPEC.md`, `docs/VOCABULARY.md`, `docs/POLICY_PROFILES.md`, `docs/adrs/adr-008-three-relations-no-role.md`                            | Document carriers vs internal roles, gates, states, routes and assumptions.                                            |
+| Public/internal types | `packages/core-ts/src/types.ts`, `evidence/types.ts`; Python `types.py`, `evidence/types.py`                                                     | Separate secured artifacts, extracted facts, node uses, obligations, witnesses and results.                            |
+| Graph compilation     | TS `evidence/buildEvidenceGraph.ts`, `normalizeEvidence.ts`, `resolveEvidence.ts`, `detectCycles.ts`; Python `evidence/graph.py`, `normalize.py` | Binding-driven extraction, immutable identities, well-founded node-use graph.                                          |
+| Old edge dispatch     | TS `edge/evaluateEdge.ts`, `evaluateAuthorizedBy.ts`, `evaluateDerivedFrom.ts`, `evaluateSupportedBy.ts`; Python `edge/`                         | Replace default wire-enum dispatch with internal obligations; preserve useful predicate code under clearer interfaces. |
+| Scope                 | TS `scope/index.ts`; Python `scope/__init__.py`                                                                                                  | Per-binding record matching, RM intervals, deterministic units, explicit uncertainty semantics.                        |
+| Policy                | TS `policy/`; Python `policy/`                                                                                                                   | Complete route expressions, global restrictions, required support, verifier-owned Q/r.                                 |
+| Orchestration/report  | TS `verifier/index.ts`, `trace.ts`; Python `verifier/graph_verifier.py`, `trace.py`                                                              | Gates, three-state aggregation, per-claim witnesses and separate conformity.                                           |
+| Security resources    | `trust-registry/`, `status/`, `canonicalize/`, `utils/`, `issuer/`, `proofs/` and Python mirrors                                                 | Real proof/identity checks, bounded resolution, contextual caches and reproducible loaders.                            |
+| Wire artifacts        | `contexts/`, `schemas/`, `policies/`, fixture generators                                                                                         | New binding manifests; no old wire relations in default generated credentials.                                         |
+| Fixtures              | `scripts/generate-v02-fixtures.js`, TS `scripts/gen-interop-fixture.ts`, SD generators, `testdata/`, `tests/fixtures/`                           | Regenerate signed fixtures; isolate legacy and intentional invalid vectors.                                            |
+| Examples              | `testdata/examples/`, `examples/rm/`, scenario catalogues                                                                                        | Preserve six illustrative use cases with accurate authority descriptions.                                              |
+| Demo                  | `apps/demo-web/src/scenarios/index.ts`, `store/index.ts`, `components/`, `vite.config.ts`, `stubs/`                                              | Render compiled graph, correct reliance badges, migrated signed inputs and explicit simulation boundaries.             |
+| Validation/CI         | package scripts, `.github/workflows/ci.yml`, Python tests                                                                                        | Both languages, schema validation, offline contexts and real end-to-end lane.                                          |
+| Claims/release        | `README.md`, `docs/IMPLEMENTATION_STATUS.md`, `docs/PAPER_FEEDBACK.md`, `CITATION.cff`                                                           | Actual capability table, exact evidence and citation state.                                                            |
+
+The old handover describes verifier-service and LIMS packages more fully than the inspected stubs justify. Do not invent service implementation status. Repair workspace commands by declaring real packages correctly or excluding empty stubs, rather than faking passing service tests.
+
+## 12. Demo migration: preserve existing strengths
+
+The existing demo already has a graph, credential/edge inspectors, passing/failing variants, detailed traces, six scenarios and a selective-disclosure view. Preserve these capabilities. The task does not require copying Peter's interface or creating a new website.
+
+Required changes:
+
+1. Generate displayed relations from the same compiled internal graph used by the evaluator. Do not hardcode accepted edges separately in the UI.
+2. Label human-facing roles as authority use, bounded operational scope, supporting evidence, etc.; expose the actual native property/path and binding in the inspector.
+3. Show document verification separately from reliance. When required checks are disabled, show a simulation/insufficient-evidence result rather than green 'Accepted'.
+4. Make the RM 178/197/520 cases available with distinct explanations and arithmetic. Preserve the evidence graph when switching them.
+5. Provide a short guided mode: select purpose, inspect authority, inspect scope witness, inspect required support, inspect conformity. Keep detailed technical trace behind an expandable view.
+6. Add focused controls for the RM value, M1/M2, a required missing study and the supported evaluation time. Each control changes one documented assumption and uses the real evaluator.
+7. For an altered signed value, explicitly distinguish tampering from reissuance. A legitimate scenario slider must regenerate/re-sign through the fictional issuer path; simply editing signed bytes should demonstrate proof failure, not a scope-only failure.
+8. Keep unsupported time/history controls from implying historical verification. Show the missing evidence.
+9. Explain one failed obligation in plain language, linked to its witness or blocking reason. Do not hide required unknowns in an informational warning count.
+10. Test actual UI state transitions and inspector selection against evaluator output. A screenshot or successful Vite build alone does not establish working controls.
+
+Do not make the framework depend on QR, RFID, GS-specific presentation rules or a named institution. Avoid increasing the demo's scope into a full wallet, key-management system or metrology uncertainty-propagation platform.
+
+## 13. Acceptance test matrix
+
+Each case below needs a stable test identifier, expected semantic result, and trace assertions for the relevant reason/gate/witness. For invalid data, specify whether supported validation contradicts the predicate or unavailable interpretation leaves it not established. 'Does not accept' alone is insufficient where the distinction matters.
+
+Shared vectors are preferred for semantic parity. Tests should exercise independent obligations and adversarial inputs, not merely mirror helper implementations. Re-sign authorized fictional issuers' modified credentials when testing a semantic failure; retain invalid signatures only for intentional protection failures.
+
+### 13.1 Carriers, profile dispatch and migration
+
+| ID  | Input/change                                                                                   | Expected                                                                  |
+| --- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| V01 | New-profile baseline contains no old serialized relation/basis fields                          | Accept with witnesses compiled from its selected binding.                 |
+| V02 | Legacy edge-only credential under new profile                                                  | Unsupported authorization; no silent fallback.                            |
+| V03 | Same legacy credential under explicit supported legacy profile                                 | Evaluate original secured representation; label legacy profile.           |
+| V04 | Arbitrary `termsOfUse` object/type named like a trust policy                                   | Establishes no authorization without a recognized interpretation.         |
+| V05 | `evidence` only, with no authorizing basis                                                     | Support cannot discharge required authority.                              |
+| V06 | `prov:wasDerivedFrom` only                                                                     | No authority inheritance or containment success.                          |
+| V07 | Add an unrelated authentic accreditation to the VP                                             | No accidental new right.                                                  |
+| V08 | Authenticated independently discovered grant naming the actual issuer, accepted discovery rule | May establish its specified authority without a custom leaf pointer.      |
+| V09 | Credential requests a weaker/unaccepted profile                                                | Not established under the requested reliance policy.                      |
+| V10 | Multiple recognized schemas/contexts                                                           | Deterministic accepted composition or explicit unsupported outcome.       |
+| V11 | Unknown optional annotation versus missing required semantic term                              | Optional data remains inert; required unresolved meaning blocks reliance. |
+| V12 | Undefined decision-relevant JSON-LD field or protected-term redefinition                       | Processing refuses it; no dropped restriction.                            |
+
+### 13.2 Protection, identity, trust and time
+
+| ID  | Input/change                                                                     | Expected                                                                 |
+| --- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| P01 | Correct signed complete RM chain, proper fixture key relationships               | Real verification and reliance succeed for x=178.                        |
+| P02 | Modify target bytes without re-signing                                           | Protection contradiction; no authority/conformity use of altered facts.  |
+| P03 | Cryptographically valid proof using a key not authorized for that issuer/purpose | Protection fails.                                                        |
+| P04 | Missing key resolver/required registry resolver                                  | Not established; never green acceptance.                                 |
+| P05 | Registry with invalid proof or untrusted bootstrap                               | Registry contents cannot establish authority.                            |
+| P06 | Parent grantee is another issuer; separately, parent grantee missing             | Mismatch rejected; missing required binding blocked with precise reason. |
+| P07 | `skipProof` or placeholder proof in reliance mode                                | No successful verified reliance.                                         |
+| P08 | Correctly signed status statement by unauthorized status authority               | Status cannot be established from it.                                    |
+| P09 | Required status unavailable/stale; separately, authenticated relevant revocation | Unknown for unavailable; contradiction for applicable revocation.        |
+| P10 | Missing optional status under a profile explicitly permitting that case          | Defined behavior; does not weaken another profile requiring status.      |
+| P11 | Duplicate immutable credential ID with conflicting protected contents            | Explicit conflict; no silent overwrite.                                  |
+| P12 | Required resource digest mismatch versus timeout                                 | Distinct reasons and states.                                             |
+| P13 | Historical query with only current status                                        | Not established if history is required.                                  |
+| P14 | Old activity predates scope extension, though covered today                      | Cannot use later scope as authorization for the old activity.            |
+| P15 | Change purpose/profile/trust config/time between cached evaluations              | No reuse of an incompatible reliance verdict.                            |
+| P16 | Unsafe redirect, excessive decompression or resource budget exhaustion           | Bounded stop; no reliance and no uncontrolled fetch.                     |
+
+### 13.3 Scope, records and decision rules
+
+| ID  | Input/change                                                                                | Expected                                                      |
+| --- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| S01 | x=178, U=5, scope 50–500, L=200                                                             | Authorized; conforms with 183; accept.                        |
+| S02 | x=197, same other inputs                                                                    | Authorized; nonconforming with 202; reject for decision rule. |
+| S03 | x=520                                                                                       | Scope contradiction; conformity not run.                      |
+| S04 | x=195                                                                                       | Conforms at exact inclusive limit 200.                        |
+| S05 | x=500, authorization-only request                                                           | In scope; conformity not requested.                           |
+| S06 | x<50                                                                                        | Out of scope; lower bound checked.                            |
+| S07 | M2 claimed against O restricted to M1, with A allowing both                                 | O route fails; no implicit bypass to A.                       |
+| S08 | Accepted M1→M2 succession rule versus explicit-extension rule versus missing interpretation | Distinct profile-governed results; missing semantics unknown. |
+| S09 | Arsenic/M1 and lead/M2 records; claim arsenic/M2                                            | Reject synthetic record combination.                          |
+| S10 | RM matrix/form/property split across records                                                | No splicing.                                                  |
+| S11 | Two different claims each covered by its own complete record                                | Both authorized with different record witnesses.              |
+| S12 | Child interval spans adjacent parent records                                                | No implicit union for bounded projection.                     |
+| S13 | Child lower bound below parent while upper bound fits                                       | Containment rejected.                                         |
+| S14 | Missing/unknown/contradictory units                                                         | Comparison blocked with correct reason.                       |
+| S15 | Equivalent mg/kg and kg/kg encodings                                                        | Same semantic outcome and equivalent arithmetic witness.      |
+| S16 | NaN, infinity, reversed interval, negative uncertainty                                      | Supported invalidity checks reject.                           |
+| S17 | As/Ash; CuZn39Pb3/CuZn40Pb2; near-miss method labels                                        | No substring or display-label authorization.                  |
+| S18 | DCC method restriction but no governed claim method                                         | No empty-array bypass.                                        |
+| S19 | DCC first group fails; later group succeeds                                                 | First failure remains; overall required conjunction fails.    |
+| S20 | Missing/empty scope endpoint in bounded projection                                          | No successful containment.                                    |
+| S21 | Calibration uncertainty below admitted CMC floor, where profile applies it                  | Scope contradiction, independently from conformity.           |
+| S22 | RM baseline without any accreditation uncertainty ceiling                                   | Valid baseline still works; no invented ceiling.              |
+| S23 | Asymmetric U supplied to symmetric-only baseline                                            | Unsupported; never silently symmetrized.                      |
+| S24 | Empty requested claims/results or omitted requested property                                | No accidental vacuous acceptance.                             |
+
+### 13.4 Composition, support and closure
+
+| ID  | Input/change                                                           | Expected                                                  |
+| --- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
+| C01 | Competence AND scheme permission, both present                         | Complete route established.                               |
+| C02 | Same route missing scheme permission                                   | Not established; competence alone insufficient.           |
+| C03 | One route contradicted, another complete route established             | Authorization succeeds if global restrictions hold.       |
+| C04 | Every permitted complete route contradicted                            | Reject authorization.                                     |
+| C05 | One route contradicted, another unresolved                             | Authorization not established.                            |
+| C06 | Successful route plus applicable global suspension                     | Reject; route selection cannot bypass it.                 |
+| C07 | Revoked unused unrelated candidate                                     | Does not become an invented global suspension.            |
+| C08 | Operational scope within A but maintainer lacks projection permission  | No valid projection.                                      |
+| C09 | Required study exists and is signed but lacks its own authority        | Required support not established.                         |
+| C10 | Valid authorized study concerns another batch/instrument               | Support applicability contradicted.                       |
+| C11 | Required study unavailable                                             | Support not established; distinguish C10.                 |
+| C12 | Authorization cycle, support cycle and mixed cycle on a required route | No circular acceptance.                                   |
+| C13 | Shared DAG study used twice with compatible contexts                   | Reuse allowed, not falsely classified as a cycle.         |
+| C14 | Same study used in different role/purpose                              | Appropriate independent node-use checks.                  |
+| C15 | Unused provenance cycle                                                | Does not invalidate an otherwise established request.     |
+| C16 | Route/depth/time limit reached before search completes                 | Incomplete result, not false contradiction or acceptance. |
+
+### 13.5 Recognition, external answers, disclosure and UI
+
+| ID  | Input/change                                                                        | Expected                                                                                        |
+| --- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| E01 | Pinned Recognized Entities chain with proper membership/action/anchor               | Recognition facts established under experimental adapter.                                       |
+| E02 | Recognition succeeds but action/output validator fails                              | No authority for that requested action/output.                                                  |
+| E03 | Recognition and action succeed, QI claim outside scope                              | Reliance rejected for scope.                                                                    |
+| E04 | Identifier discovery requested but unsupported                                      | Explicit unsupported result; or, if implemented, enforce presentation proof and issuer binding. |
+| E05 | Authority-issued answer bound to exact point claim, scope version and activity time | Predicate established under accepted attestation policy.                                        |
+| E06 | Valid answer for wrong claim/grantee/time/version                                   | Cannot discharge requested predicate.                                                           |
+| E07 | Correct answer signed by non-authorized party or self-authorizing endpoint          | Not accepted as authoritative evidence.                                                         |
+| E08 | Point-coverage answer offered as full O⊆A proof                                     | Cannot discharge containment.                                                                   |
+| E09 | Answer stale/expired/unavailable under applicable policy                            | Required predicate not established or contradicted as appropriate.                              |
+| E10 | Disclosure hides required binding, method restriction or supporting link            | Insufficient evidence; no reliance.                                                             |
+| E11 | Different legitimate selective-disclosure representations of the same issued object | Suite-aware identity treatment; no simplistic byte-conflict rule.                               |
+| E12 | UI proof-disabled simulation and real verified run                                  | Visibly distinct assurance; same semantic engine when applicable.                               |
+| E13 | RM UI switches 178→197→520                                                          | Correct distinct state, reason, arithmetic and graph inspection.                                |
+| E14 | UI changes scenario value through reissuance versus tamper control                  | Reissued proof remains valid; tamper test fails protection.                                     |
+| E15 | Full fixture bundle offline, required static resources locally pinned               | Reproducible end-to-end pass without internet.                                                  |
+
+Do not describe the entire matrix as already executed. Mark each case implemented, passing, failing, or not implemented, with command and evidence. Capability-specific exclusions must be visible; unsupported adapters cannot be counted as passing conformance.
+
+## 14. Implementation sequence and checkpoints
+
+### Phase 0 — establish base and replace obsolete instructions
+
+Deliver: actual base/ancestry report; scoped guidance update; inventory of old wire terms and active consumers; selected baseline binding design; known failures. Preserve `63231d2` behavior or reproduce it. Acceptance: one unambiguous target model and no active instruction demanding the old serialization.
+
+### Phase 1 — manifest, new types and signed vertical slice
+
+Deliver: binding manifest, schemas/contexts, verifier-owned request/result types, fixture generator producing one real signed target plus authorizing artifact under the new carrier contract. Acceptance: parse, protect, extract and inspect original source provenance end to end. Establish this before broad schema rewrites.
+
+### Phase 2 — graph compiler and protected evaluation pipeline
+
+Deliver: binding-driven candidate extraction, identity/cache rules, seven gates, key/registry/status checks and three-state results. Acceptance: V/P tests; lower-gate failures cannot produce successful higher-gate business facts; no accepted all-SKIP traces.
+
+### Phase 3 — authority composition and recursive support
+
+Deliver: principal/grant permission checks, bounded projection obligations, complete route logic, global restrictions and well-founded support evaluation. Acceptance: C tests with signed fixtures and shared-DAG controls.
+
+### Phase 4 — RM scope, conformity and parity
+
+Deliver: full A/O/D/S/H baseline, supported quantity arithmetic, M1/M2 narrowing, separate conformity evaluator and per-claim witnesses. Acceptance: S tests in both languages; all three headline RM outcomes genuinely executed without stubs for the claimed mechanisms.
+
+### Phase 5 — artifact migration and compatibility
+
+Deliver: regenerated scenarios A–F, updated policies/schema validators, isolated legacy adapter/tests, consistent sample identifiers and context ownership. Acceptance: default path has no reliance on old wire enums; legacy support is explicitly selected; schema, fixture, documentation and parser agree.
+
+### Phase 6 — external evidence and recognition adapter
+
+Deliver: scope-attestation adapter and limited experimental Recognized Entities adapter defined in §§8–9. Acceptance: E01–E09 with exact supported coverage documented. Do not expand to a complete EUDI wallet or a live institutional service.
+
+### Phase 7 — demo and presentation sufficiency
+
+Deliver: migrated graph inspector, correct assurance/result displays, guided RM controls and retained selective-disclosure functionality. Acceptance: actual control/inspection tests, real evaluator path and honest simulation labels.
+
+### Phase 8 — reproducibility, report and review package
+
+Deliver: passing required CI lanes, updated model/status/docs, migration notes, citation metadata draft, implementation matrix and a clean reviewable commit series. Include executed output for the paper's witness and an explicit list of excluded infrastructure. Prepare a draft PR if authorized access permits; otherwise export a git patch/bundle and exact application instructions.
+
+Use one coherent commit per phase or smaller meaningful unit. Keep TypeScript/Python behavior aligned as each semantic feature lands. Do not postpone all Python updates until the end or declare tests green by changing old acceptance expectations without explaining the model change.
+
+## 15. Validation commands and evidence discipline
+
+Check actual package scripts before using these commands. Known baseline commands are:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm -r build
+pnpm -r --if-present lint
+pnpm -r --if-present test
+pnpm test:scenarios
+pnpm validate:schemas
+python -m pip install -e 'packages/core-py[dev]'
+python -m pytest packages/core-py/tests
+```
+
+Use a supported Node/pnpm/Python environment matching CI and record versions. Add explicit stable commands for signed RM execution, semantic parity and UI behavior. Preserve a lockfile; necessary dependency updates must be deliberate and justified. Existing optional proprietary metrology tools in someone else's demonstrator are not dependencies of VC4QI.
+
+If a root `uv`/Make target points at empty workspace stubs, repair the target or workspace declaration. Do not leave documented basic commands broken while claiming the repository is reproducible. Separate existing lint debt from introduced failures, and state any required gate that still fails.
+
+Minimum execution evidence:
+
+* Actual commit/tree state and clean or dirty status.
+* Environment versions, commands, exit codes and test summaries.
+* Whether security checks were real, fixture-backed, simulated or unsupported.
+* Per-claim 178/197/520 witness output with arithmetic and blocking stage.
+* Negative tests demonstrating invalid proof, wrong principal, incomplete route, missing support, record splicing and unsupported semantics.
+* Cross-language agreement of semantic states, selected records/routes and normalized arithmetic; formatting/order may be canonicalized for comparison.
+* Independent known-answer tests for the selected securing mechanism where available. Two implementations sharing a mistaken fixture are not independent proof of correctness.
+* Offline static-resource execution and separate optional live integration results.
+
+Never infer conformity from an implementation returning the expected boolean alone. Inspect whether the intended scope/authority/decision predicate actually ran. Test assertions must include the relevant diagnostic or witness to catch vacuous passes.
+
+## 16. Documentation and manuscript-facing corrections
+
+Update implementation documentation in the repository. If actual manuscript sources are included, make corresponding focused corrections; otherwise provide a manuscript change list without claiming the paper was edited.
+
+1. State the framework's contribution as explicit conditions for QI reliance, not invention of recursive recognition or basic scope checks.
+2. Add Recognized Entities as a version-pinned experimental baseline; recognize its actual action/schema capabilities.
+3. Explain local scope evaluation and authority-issued predicate answers, and their different assumptions.
+   Schema validation can express numeric bounds, enumerations and logical combinations. Do not present schemas as inherently incapable of scope constraints; explain which governed interpretation, cross-artifact checks and authority assumptions the selected profile additionally supplies.
+4. Preserve the underdetermination result and conditional decidability/soundness assumptions. A signature on an answer is evidence of an assertion, not a general proof of semantic truth.
+5. State that the `Mapped` obligation requires decision-preserving meaning and source provenance, not just an executed mapper flag.
+6. Keep the proof model's well-founded dependency assumptions aligned with support recursion in code.
+7. Preserve the separation of scope inclusion, uncertainty capability rules and conformity; show all three RM outcomes.
+8. Retain the current title and framework structure unless a later explicit paper task changes them. Do not expand the paper merely to narrate every software module.
+9. Do not use bugs in Peter's demonstrator as the novelty claim. Cite relevant design mechanisms fairly if discussed; no copying or attribution/endorsement assumptions.
+10. Replace unverifiable execution/release statements with actual evidence. A local commit is not an archived release. A TODO in a bibliography does not create a citable artifact.
+
+`README.md` and `docs/IMPLEMENTATION_STATUS.md` must distinguish implemented semantic checks, tested cryptography, experimental bindings, simulated infrastructure and unsupported integrations. The demo can use fictional local resources without claiming real accreditation infrastructure is connected.
+
+Do not advertise linear total verification cost from linear graph traversal alone. Report route search, crypto, schema/RDF work, quantity matching and resolution separately; the finite profile assumptions do not establish a global performance bound.
+
+## 17. Completion checklist and required final report
+
+The coding harness must finish with a concrete report containing:
+
+* [ ] Actual repository, branch, base SHA, final SHA and push/PR state.
+* [ ] Old instruction locks superseded with traceable rationale.
+* [ ] Default generated credentials and schemas migrated away from old wire-edge requirements.
+* [ ] Exact supported binding manifests and explicit local/experimental vocabulary ownership.
+* [ ] Real secured vertical slice and full signed RM chain.
+* [ ] Complete route, scope, support and conformity implementation in both languages.
+* [ ] Three-state reliance logic; required missing checks cannot be counted as success.
+* [ ] Resource/identity/cache/time and recursive dependency safeguards.
+* [ ] External scope-answer and limited Recognized Entities support, with exact exclusions.
+* [ ] All six illustrative scenarios migrated or a precise justified blocker for any one.
+* [ ] Demo uses actual compiled graph/results and distinguishes simulation from verification.
+* [ ] Selective disclosure retains required evidence or reports insufficiency honestly.
+* [ ] Test matrix mapped to code and real execution evidence.
+* [ ] Reproducible commands and offline static resources.
+* [ ] Updated implementation claims, API migration notes and citation/release status.
+* [ ] No fabricated production profile, legal compliance, public deployment or external endorsement.
+
+For each incomplete item, report what is missing, its impact, why it could not be completed, and the smallest next action. Continue all independent authorized work before stopping. Do not substitute `TODO(human)` for routine implementation choices already resolved by this document.
+
+## 18. Reference anchors and provenance of requirements
+
+The detailed rules above are this project's agreed implementation requirements, not a claim that one external specification mandates the entire framework.
+
+* [VC4QI repository](https://github.com/monavari/VC4QI), [known baseline](https://github.com/monavari/VC4QI/tree/17dc96d11fb4b645d7fd0639484d63cf0c476064). Source paths in §11 were checked against the local descendant of this baseline.
+* User-supplied `VC4QI_Astra_audit_packet_2026-09-09 (2).md`: standards-first carrier model, no new universal credential properties, claim witnesses, scope/conformity split and profile boundaries.
+* User-supplied `VC4QI_spec_drift_report(1).md`: scope/conformity drift and principal-binding motivation; older RM uncertainty-ceiling wording is superseded above.
+* User-supplied `VC4QI_repo_overhaul_handover(1).md`: repository map and historical defects; three-relation lock and blanket kernel freeze are superseded above.
+* User-supplied `VC4QI_EUBW_analysis_and_brief (2).md`: infrastructure questions; its broad carrier-absence and compatibility claims require primary-source rechecking rather than implementation by assumption.
+* Later user discussion and available revised manuscript sections: complete routes with global restrictions, mapping meaning, well-founded recursive support, v5 witness/release limitations and no new universal graph vocabulary.
+* [W3C VCDM2 Recommendation, 15 May 2025](https://www.w3.org/TR/2025/REC-vc-data-model-2.0-20250515/): baseline carrier mechanisms; this task's specific QI interpretation is supplied by the selected profile.
+* [W3C Recognized Entities Working Draft, 6 September 2026](https://www.w3.org/TR/2026/WD-vc-recognized-entities-1.0-20260906/): experimental adapter snapshot. Pin rather than silently tracking the editor's draft.
+* [Peter Blattner's demonstrator at reviewed commit 46d15ce](https://github.com/PeterBlattner/Verifiable_Credentials_4_QI/tree/46d15ce839dd1deba57ca658819a54c9db5061e3): contextual implementation comparison, especially authority-issued scope answers and guided inspection. It is not the normative source of VC4QI obligations or evidence that this repository implements them.
+
+No repository code was changed while preparing this handover. The implementation starts with the recorded existing scope-fix state, not with a completed major reconciliation.

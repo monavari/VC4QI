@@ -41,3 +41,19 @@ schema validation, trust registry resolution, status list handling.
 
 Out of scope: issues in upstream dependencies (report those to the upstream
 project), demo UI cosmetic issues.
+
+## Standards-first migration assurance
+
+The current runtime is a legacy research implementation with known migration gaps;
+see [implementation status](docs/IMPLEMENTATION_STATUS.md). A supported-version label
+above is not a security certification or evidence of the revised model's implementation.
+The target requires authorized proof keys, authenticated registry/status resources,
+independent trust bootstrap, safe expansion and protected source mappings, complete
+routes, contextual caches and well-founded required support.
+
+All resolution must be bounded, including redirects, destination addresses, response
+size/decompression and time. Static contexts/schemas need pinned offline resources;
+dynamic status needs authenticated observation time/freshness. Proof skipping is
+simulation. Missing required evidence cannot authorize reliance, and signed identifiers
+do not establish physical sample truth. Historical reliance and interactive presentation
+security need their own evidence. These are migration requirements, not completed fixes.

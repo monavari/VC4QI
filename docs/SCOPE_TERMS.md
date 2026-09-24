@@ -1,99 +1,54 @@
-# Governed scope terms
+# Scope identifiers and quantities
 
-Categorical scope dimensions compare as **exact equality over governed
-identifiers** (SCO-1). Human-readable labels are display only and are never
-comparison operands (SCO-2). A dimension that carries a label but no governed
-identifier fails with `UNRESOLVED_SCOPE_TERM` (SCO-3) — that code is the B5
-boundary made visible at runtime, not an error to be worked around.
+**Target rules with an explicit legacy inventory.** The [model](MODEL_SPEC.md) defines
+accepted mappings, complete record matching and separate conformity. See
+[BINDING_MANIFEST](BINDING_MANIFEST.md) for the candidate local RM paths and terms.
 
-## Why this file exists
+## Target interpretation
 
-Substring matching on lowercased free text was an actual unsoundness in the
-verifier: `"As"` matched `"Ash"`, and a scope entry for `"CuZn"` admitted a claim
-about `"CuZn39Pb3"`. The formal core claims soundness relative to a decidable
-`in`; `in` was decidable and **wrong**.
+Display labels never grant scope. Compare exact governed identifiers or explicitly
+accepted equivalences, preserving mapping version and original source paths. As/Ash,
+CuZn39Pb3/CuZn40Pb2 and near-miss method labels are distinct controls. Missing restricted
+dimensions do not silently mean unrestricted; the selected binding defines that distinction.
 
-Fixing that requires something to compare *instead of* the labels, and this file
-records what that is.
+One complete parent record covers all dimensions owned by a basis. Each projected record
+must fit one parent record, without automatic unions of adjacent ranges. Different requested
+claims may use different records. A successful later measurement group does not erase an
+earlier required failure. Missing governed methods cannot bypass a method restriction.
 
-## Status of these identifiers
+Quantity kind and unit meaning are separate. Validate finite/order-valid values, both
+interval endpoints, unit identity and uncertainty before comparison. The local RM candidate
+uses exact mass-fraction conversion: 1 mg/kg = 0.000001 kg/kg. Pressure conversion is not
+mass-fraction evaluation. No implicit tolerance or dimensionality-only equivalence is allowed.
+Unsupported quantity/mapping semantics yield not established; proven violations contradict.
 
-| Namespace | Authority | Status |
-| --- | --- | --- |
-| `http://qudt.org/vocab/quantitykind/` | QUDT | **Real.** External, stable, already used by this repo for units. |
-| `http://qudt.org/vocab/unit/` | QUDT | **Real.** Already used in `scope/index.ts` unit tables. |
-| `https://w3id.org/qi-vc/terms/v1/` | this repository | **Placeholder.** Not authoritative. |
+The RM scope checks the estimate x within inclusive [50,500] mg/kg. Calibration capability
+floors, optional customer uncertainty limits and conformity `x+U<=L` are distinct rules.
+The RM baseline has no accreditation uncertainty ceiling. Unsupported asymmetric uncertainty
+is not averaged. Accepted M1→M2 succession requires governed profile inputs; a self-asserted
+issuer mapping cannot override an explicit-extension profile.
 
-The `qi-vc/terms` identifiers stand in for a governed vocabulary that does not
-exist yet. Owning the semantics of "does CuZn39Pb3 fall under non-ferrous metals
-and alloys" is **B5**, and belongs to QI institutions, not to this framework
-(MOD-8 anticipates a QI Term-Service or SKOS/RDF resolver behind a pluggable
-interface). Until such a service exists, these IRIs make the *comparison*
-well-defined without pretending the *taxonomy* is settled.
+## Existing identifiers: legacy binding only
 
-Consequently: identity is decidable here, **subsumption is not**. Two identifiers
-are equal or they are not. Nothing in this repository decides that one term falls
-under another; a taxonomic resolver is a future pluggable interface whose default
-implementation fails closed (SCO-6).
-
-## Terms used by the worked examples
-
-### Quantity kinds (real, QUDT)
-
-| Label (display only) | Governed identifier |
+| Current namespace or term | Status |
 | --- | --- |
-| Pressure | `http://qudt.org/vocab/quantitykind/Pressure` |
+| `http://qudt.org/vocab/quantitykind/Pressure` and `MassFraction` | Existing QUDT quantity identifiers; retain only in an explicitly named legacy/alternative binding |
+| `http://qudt.org/vocab/unit/` | Existing legacy unit vocabulary; no presumed equivalence with another ecosystem |
+| `https://w3id.org/qi-vc/terms/v1/matrix/CuZn39Pb3` and `CuZn40Pb2` | Repository placeholders, not institutional governance |
+| `https://w3id.org/qi-vc/terms/v1/element/As` | Legacy property placeholder |
+| `https://w3id.org/qi-vc/terms/v1/method/EURAMET-cg-17` | Legacy method placeholder |
+| `https://w3id.org/qi-vc/terms/v1/form/disc` | Legacy form placeholder |
 
-### Matrices (placeholder)
+The existing contexts use fields such as `quantityKindIri`, `matrixIri`, `methodIri`,
+`propertyIri`, `formIri` and plural constraint fields. They are not universal core vocabulary.
+Legacy exact-equality regression tests remain useful, but their presence does not establish
+record-complete containment or full numerical RM scope.
 
-| Label (display only) | Governed identifier |
-| --- | --- |
-| CuZn39Pb3 (leaded brass) | `https://w3id.org/qi-vc/terms/v1/matrix/CuZn39Pb3` |
-| CuZn40Pb2 (leaded brass) | `https://w3id.org/qi-vc/terms/v1/matrix/CuZn40Pb2` |
+## Adding a binding term
 
-These two are deliberately close. `CuZn39Pb3` against `CuZn40Pb2` is a permanent
-regression test (TST-4): a near-miss that substring matching would have admitted
-and exact identifier equality refuses.
-
-### Elements / properties (placeholder)
-
-| Label (display only) | Governed identifier |
-| --- | --- |
-| Arsenic (As) | `https://w3id.org/qi-vc/terms/v1/element/As` |
-
-### Methods (placeholder)
-
-| Label (display only) | Governed identifier |
-| --- | --- |
-| EURAMET cg-17 | `https://w3id.org/qi-vc/terms/v1/method/EURAMET-cg-17` |
-
-### Forms (placeholder)
-
-| Label (display only) | Governed identifier |
-| --- | --- |
-| disc | `https://w3id.org/qi-vc/terms/v1/form/disc` |
-
-## Vocabulary terms carrying these identifiers
-
-Defined in `contexts/v1/qi-core.jsonld`, all with `"@type": "@id"`.
-
-| Term | Where it appears | Plural form on scope entries |
-| --- | --- | --- |
-| `quantityKindIri` | DCC measurement result group | — (scope entry uses the same term) |
-| `matrixIri` | material on a DRMD/RM credential | `matrixIris` |
-| `methodIri` | `usedMethods` entry | `allowedMethodIris` |
-| `propertyIri` | certified property result | `allowedPropertyIris` |
-| `formIri` | material on a DRMD/RM credential | `allowedFormIris` |
-
-The singular and plural terms expand to the same vocabulary IRI; the plural is a
-`@set` container so a scope entry can admit several values.
-
-## Adding a term
-
-1. Prefer a real external identifier if a governed one exists. QUDT covers
-   quantity kinds and units.
-2. Otherwise mint under `https://w3id.org/qi-vc/terms/v1/<dimension>/<token>` and
-   add it to the tables above, so the placeholder set stays enumerable.
-3. Never compare the label. If a credential supplies no identifier for a
-   dimension the scope entry governs, the correct outcome is
-   `UNRESOLVED_SCOPE_TERM`, not a fallback comparison (FC-6).
+Use an exact validated external term where available, with version/source provenance.
+Retain native DCC/D-SI XML and only claim SIS/SIRP support after a pinned mapping is
+validated. Otherwise use an explicitly local experimental `.example` namespace, define
+its meaning and safe context expansion, and add witness-bearing tests. Do not continue
+minting unreviewed identifiers under an external institution's namespace or invent
+plausible SIS terms. The core does not implement a general ontology reasoner.

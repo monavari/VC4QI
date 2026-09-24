@@ -1,234 +1,271 @@
-# VC4QI — Model Spec (developer extract of the manuscript, §4–§8)
+# VC4QI — standards-first reliance model
 
-This is the normative model the implementation must satisfy, extracted from the companion paper and organized for coding decisions. It reflects the **locked v2.1 target** (three relations, no `role`, unprefixed context-mapped values), so it is consistent with `RECONCILIATION_TASK.md`. Section references (e.g. §6.3) point back to the manuscript. The full paper's intro/background/agenda (§1–§3, §9–§10) are omitted — they are not decision-relevant for the code. Figures that are diagrams are described in text; Figure 3 is reproduced as JSON.
+**Normative target, 22 September 2026. The runtime migration is not implemented.**
+This developer contract summarizes the [supplied requirements](plans/standards-first-handover-2026-09-21.txt).
+That source resolves ambiguity; later user instructions take precedence. It is not
+an extract with verified section numbering from a supplied manuscript. See
+[implementation status](IMPLEMENTATION_STATUS.md) for execution evidence and
+[the historical model](history/model-spec-manuscript-v2.1.txt) for the old contract.
 
----
+## 1. Thesis and layers
 
-## 1. Gaps and boundary conditions (§4) — what each mechanism is for
+QI trust rests on institutional authority and evidence relationships. Credentials
+represent those relationships without creating authority. A verifier-selected
+profile determines reliance. Scope decisions require accepted semantics and
+supported evaluation procedures.
 
-Three **structural gaps** the model closes, and five **boundary conditions** it does not (they depend on infrastructure/institutions/governance):
-
-| ID | Name | Meaning |
+| Layer | Responsibility | Exclusion |
 | --- | --- | --- |
-| **G1** | Scope binding | The claim must be checkable against the structured scope that authorizes it (closed structurally; semantic half is B5). |
-| **G2** | Selective disclosure | Present a verifier-specific subset while retaining cryptographic assurance over that subset. |
-| **G3** | Recursive composition | Authorizing/supporting credentials verifiable recursively as one bundle. |
-| B1 | Status currency (incl. historical) | Freshness infra required; also historical status at a past issuance date. |
-| B2 | Identifier resolution | Reachable, plural trust registries (accreditation MRA, CIPM, scheme/legal). |
-| B3 | Trust-anchor governance | Institutional, not technical — who may be a trust anchor. |
-| B4 | Disclosure obligations | Holder disclosure operates beneath a lawful right to the full record. |
-| **B5** | Semantic conformance | Scope inclusion is decidable only relative to a **governed computable scope semantics**. This is the deferred dependency; the code isolates it as a parameter, it does not solve it. |
+| Minimal core | Obligation scheduling, states, route composition, witnesses, resource accounting | Universal QI credential properties or domain taxonomies |
+| Bindings and profiles | Native carriers, meaning, authority, scope, time and decision modules | Schema guessing or issuer-selected weakening of verifier requirements |
+| Reference software | TS/Python APIs, caches, resolvers, reports and UI | Treating API names as standard credential vocabulary |
+| Fixtures and applications | Deterministic fictional authorities, RM/DCC/scheme examples | Real accreditation, endorsement or interoperability claims without evidence |
 
-**G2 detail (§4.2, §5.3):** QI artifacts are presented all-or-nothing today. The holder must be able to disclose a verifier-specific subset (e.g. one property of a multi-property RM certificate — value + expanded uncertainty only, hiding personnel/equipment/environment) while the seal's guarantees still hold over that subset. Mechanism: a disclosure-capable Data Integrity cryptosuite (`ecdsa-sd-2023`; BBS deferred). Operates **within B4** — it governs proportionate presentation to ordinary verifiers but never overrides a regulator's/accreditation body's lawful entitlement to the complete record.
+Use small interfaces and terminating deterministic evaluators. No general ontology
+reasoner, unrestricted rules engine or issuer-supplied executable code is required.
 
----
+## 2. Secured facts and bindings
 
-## 2. Vocabulary (§6.2, Table 7) — authoritative
+The core requires no universal serialized relation or basis vocabulary. In the
+baseline binding, recognized `termsOfUse` policies identify authorization evidence;
+recognized `evidence` entries supply non-authorizing support. `relatedResource`
+provides the selected resource-integrity mechanism, and `credentialSchema` supplies
+applicable validation. VCDM alone does not define QI authority semantics. A conformance
+declaration does not oblige the verifier to accept the declared profile.
 
-**Exactly three edge relations** (bare tokens, context-mapped via `@type: @vocab`):
+Each accepted binding specifies exact IRIs, source paths, versions, cardinalities,
+principal/permission rules and evaluation semantics in a manifest. See
+[BINDING_MANIFEST](BINDING_MANIFEST.md) and [VOCABULARY](VOCABULARY.md). Local fixture
+terms are explicitly experimental; example vocabulary is not production conformance.
 
-- `authorizedBy` — issuance authorized by the referenced credential; **independent edge**, verified on its own terms, **no subset check**.
-- `derivedFrom` — authority is a bounded projection of the referenced credential; **derived edge**, **triggers the derivation check** (subset).
-- `supportedBy` — non-authorizing supporting evidence (a prior domain credential); verified recursively; **carries no `authorizationBasis`**.
+Every operative relation has a protected source pointer or independently authenticated
+authoritative discovery fact, plus the adapter and rule that interpret it. An arbitrary
+credential added to a VP or a holder-drawn graph cannot manufacture an endorsement.
+An independently authenticated grant may establish a relation without a custom leaf
+pointer when the accepted discovery rule binds it to the actor and activity.
 
-**Authorization basis kind** (open code-list, six canonical values; on authorizing edges only):
-`accreditation`, `legalMandate`, `notification`, `schemeAuthorization`, `recognition`, `operationalScope`. `kind` names the authority kind of the **referenced parent**.
+Verify the original secured representation before mapping its business facts. Pin
+contexts/schemas; reject protected-term redefinition or lost decision-relevant data.
+Byte digests, suite transforms and RDF canonicalization follow their own specifications;
+there is no invented generic JSON digest. Preserve native XML; a wrapper's integrity
+binding does not verify XMLDSig or transfer its signature to JSON. When multiple
+representations are relied upon together, establish decision-relevant agreement.
+Unknown optional annotations remain inert; unresolved required meaning cannot satisfy
+an obligation. Base-format validity and supported-profile sufficiency are distinct.
 
-Institutional variety (notification, recognition, …) is carried by `authorizationBasis.kind`, **not** by adding relations. Status lives on the standard `credentialStatus`, never as an edge. The relations are evidentiary descriptors, not runtime access grants.
+Legacy `authorizedBy`, `derivedFrom`, `supportedBy`, `authorizationBasis.kind` and
+custom mandatory `scopeRef` are not the new core wire contract. Provenance such as
+`prov:wasDerivedFrom` establishes neither maintenance permission nor containment.
+A legacy adapter must be explicitly selected, verify the original representation,
+retain provenance, and never claim a transformed credential retains its signature.
 
-**Edge object** (`CredentialEvidenceReference`): `id`, `type`, `relation`, `authorizationBasis` (authorizing edges only: `{ kind, issuerRole, … }`), `digestSRI` (integrity binding to the referenced credential). **No `role` field.**
+## 3. Requests, states and results
 
-**Principal binding (`binds`).** On both authorizing relations, the referenced parent's `credentialSubject` must identify the child's `issuer`, resolved through the registry that resolves the parent's issuer. Without it an edge is a **citation rather than an authorization**: any issuer could reference a valid accreditation held by another body and present a correct digest for it. The digest binds the edge to a *document*; `binds` binds the edge to a *principal*. Grounded in X.509 issuer-to-subject chaining (RFC 5280) and SPKI principal binding (RFC 2693), and matched to the EBSI issuer trust model. `supportedBy` carries **no** such obligation, because a supporting test report is about a different subject by construction.
+A request specifies target identity, selected claims, purpose, accepted profile/version,
+trust configuration, evaluation/activity times, supplied evidence, resolver policy and
+budgets, and any conformity requirement/decision rule. Dispatch follows verifier policy,
+including deterministic composition of multiple contexts/types/schemas. Never select a
+weaker profile solely because the issuer named it. Empty claim selection needs an
+explicit supported meaning; the baseline rejects accidental vacuous acceptance.
 
-A single credential can carry edges of both kinds at once (this is why a layer model fails): e.g. a product-safety mark is `derivedFrom` its accreditation (competence) **and** `authorizedBy` an independent scheme authorization (permission). The derivation check runs **per edge**, against the specific parent it references.
+| Semantic state | Meaning |
+| --- | --- |
+| `established` | Adequate validated evidence supports the predicate under the selected profile. |
+| `contradicted` | A supported check establishes a mismatch or violation. |
+| `not_established` | Missing, unsupported, unresolved, stale or budget-limited evidence prevents establishment. |
 
----
+`not_run` is separate execution metadata and never satisfies an obligation. Invalid
+inputs may be contradicted when supported validation establishes invalidity; unavailable
+interpretation remains not established. A missing required principal is insufficient;
+a proven different principal contradicts binding.
 
-## 3. Verification function (§6.3)
-
-A single recursive, memoized walk over an acyclic graph; returns `accept`/`reject`/`explain` with structured reason codes; cost O(|V| + |E|).
-
-```text
-verify(domainCredential, policy):
-  verify signature, temporal validity, and status of the domain credential
-  resolve issuer identities through the appropriate trust registry
-  collect referenced evidence (authorizing and supporting) via evidence edges
-  check that the present evidence types satisfy the policy for this
-    credential type, issuer role, jurisdiction, and scheme
-  for each authorizing evidence edge:
-    verify signature, temporal validity, and status of the referenced
-      credential (current now, and valid at issuance where policy requires, B1)
-    if the edge is DERIVED (derivedFrom): apply the derivation check --
-      the child's constraints must be a subset of the referenced parent's scope
-    if the edge is INDEPENDENT (authorizedBy): verify on its own terms
-      against the recognized issuer; no subset check against accreditation
-  check that the domain claim falls within the scope conferred by the
-    operative evidence (scope-inclusion check)
-  for each supporting domain credential: verify recursively and confirm references
-  return accept / reject / explain
-```
-
-Two predicates do the real work; the split is the model's central honesty: the **derivation check** is structural and computable today; the **scope-inclusion check** is computable only relative to a settled scope semantics (B5).
-
----
-
-## 4. Formal core (§6.5) — definitions to implement
-
-**Evidence graph.** `G = (V, E)`. Each edge `e = ⟨u, v, r, b⟩` with `r ∈ {authorizedBy, derivedFrom, supportedBy}` and `b` a basis kind. `authorizedBy`/`derivedFrom` are authorizing; `supportedBy` is supporting. `G` is well-formed for root credential `d` iff it is **acyclic**, every `v` is **reachable from `d`**, every `derivedFrom` edge carries **scope-bearing endpoints**, **every credential in `V` carries a valid proof**, and **every credential's issuer resolves through an admitted registry**. A duplicate reference to one credential is one vertex.
-
-Cryptographic validity and identifier resolution sit in well-formedness rather than in `P` so that `P` ranges over the evidentiary conjuncts alone: verification establishes well-formedness and *then* evaluates `P`, and the properties below are stated over the second step. This has a direct consequence for implementations. If a credential's proof is unverified, or its issuer does not resolve through an admitted registry, then `G` is **ill-formed** and the soundness and completeness statements below **do not apply** — they are not merely unproven. A verifier that downgrades a missing key resolver or a missing trust registry to a warning and continues is therefore not returning a weaker verdict; it is returning a verdict from outside the model, over a graph the theorem never quantified. Such conditions must fail closed.
-
-In the implementation's gate model, **gates 0 (structure) and 1 (cryptographic) establish well-formedness; gates 2 to 6 evaluate `P`.**
-
-**Scope and the derivation order.** A scope `S` is a set of admissible records, each a tuple over dimensions: **(property, matrix, method/characterization approach, measurand range, uncertainty constraint, temporal validity)**. Each dimension carries a partial order `⪯ᵢ`:
-
-- ranges → interval inclusion
-- method / matrix → membership in an admitted set
-- uncertainty → `≤` ceiling
-- validity → interval containment
-
-Each `⪯ᵢ` is **oriented toward restrictiveness**: a wider range and a looser uncertainty ceiling both fail. A profile that introduces a new dimension **must declare that dimension's orientation**; a dimension whose orientation is undeclared cannot be checked and must not silently pass.
-
-Define `S′ ⊑ S` ("S′ does not exceed S") iff every record of `S′` is dominated, dimension-wise under the `⪯ᵢ`, by **a single record** of `S`. The **derivation check** on a `derivedFrom` edge `⟨u, v, …⟩` is exactly `scope(u) ⊑ scope(v)`. Independent edges carry no such obligation.
-
-Domination is by one parent record, never by a union of several. A derived entry that spans two adjacent parent entries is **refused**, because each derived entry must trace to one entry the parent actually granted — which is also what lets `scopeRef` designate an entry at all.
-
-**Scope inclusion is containment, not a decision rule.** A claim `c = (property, matrix, method, value x, expanded uncertainty U)`. `in(c, S)` holds iff some record `s ∈ S` matches `c` on the categorical dimensions, the value lies within `s`'s range, and, where `s` states a capability, the reported uncertainty is **not below** it. No decision rule and no guard band enter `in`: an accredited range states what the issuer was accredited to do, a **capability rather than a requirement**, so a value is either inside the entry or outside it. **`in` remains the B5 boundary** — the framework establishes the verification logic, not the semantics that makes `in` computable in general.
-
-Conformity of the claim values to what the verifier actually requires is a **separate conjunct of `P`**, and that is where the decision rule and guard band live (ISO/IEC 17025:2017 §7.8.6; JCGM 106; ILAC-G8). The decision rule is **not part of `G`**; it is supplied by policy at evaluation time.
-
-The uncertainty clause is counterintuitive and easy to invert in code: the reported uncertainty must not be **better** than the capability the issuer was accredited for. A scope entry therefore constrains uncertainty from **below** (a floor on `U`), which is the opposite direction from the `⪯ᵢ` ceiling used by the derivation check.
-
-Implementation consequence, and the reason this distinction is load-bearing: applying guard-band logic to an accredited range bound is **wrong**. The two comparisons are against different numbers. A value outside the accredited entry fails scope inclusion with `out-of-scope`; a value inside the entry that does not meet the policy's own limit fails the decision-rule conjunct with a distinct code. Conflating them makes both reason codes unreliable.
-
-**Principal binding.** `binds(u, v)` holds on an authorizing edge `⟨u, v, r, b⟩` iff the `credentialSubject` of the referenced parent `v` identifies the `issuer` of `u`, with both identifiers resolved through the registry that resolves `v`'s issuer. `binds` is required on every authorizing edge and is not required on `supportedBy`. It is the predicate that separates an authorization from a citation: the digest already binds the edge to a document, so without `binds` an issuer may cite another body's valid accreditation and present a correct digest for it.
-
-**Policy.** A verifier policy `P` is a predicate over `(G, d)`. `P(G, d)` holds iff: `d`'s required authorizing relations and evidence kinds are present for its credential type/issuer role/jurisdiction/scheme; **every authorizing edge satisfies `binds`**; every `derivedFrom` edge satisfies `⊑`; `in(c_d, S_d)` holds (containment only, no decision rule); **the claim values satisfy `P`'s specified requirements under its decision rule** (a separate conjunct — see D-1); all required statuses are current (and historical status holds at issuance where `P` requires, B1); and every supporting edge resolves to a credential itself satisfying `P`. `P` is left abstract — candidate realizations are SHACL (graph-shape), Datalog/Rego (rules), and the request-layer query languages — but fixing one is profiling work, not part of the model.
-
-**Properties (by construction).** *Soundness:* `verify(d, P) = accept ⇒ P(G, d)`. *Completeness:* `G` well-formed ∧ `P(G, d) ⇒ verify(d, P) = accept`. Both conditional on the decidability of `in` (B5). *Complexity:* with memoization over visited vertices, `O(|V| + |E|)` — a DPP referencing thousands of siblings is linear, each verified once.
-
----
-
-## 5. Policy: what it decides, and the worked example (§6.4)
-
-Three parties own different parts: the **credential** carries facts (claim values, structured scope, edges, status); the **profile** (owned by the scheme/domain community) fixes the required shape (which credential types/edge relations must be present, which `authorizationBasis` kinds are admissible, the scope vocabulary and computable semantics); the **verifier** holds the operative policy (selects a profile; sets the decision rule, freshness requirement, and accepted trust anchors). Outcome is binary `accept`/`reject` with a reason code — never a confidence score. A profile is a satisfiable shape constraint (expressible as SHACL or a presentation query), not a fixed graph; its structural half is expressible today, its value half waits on B5.
-
-**Implementation extension for B5/HITL.** Where a schema establishes only shape
-or no governed semantic checker exists, the verifier policy may require an
-external assessment for selected credential types. The evaluator may be an
-agent, a human, or a hybrid workflow and returns pass/fail/indeterminate plus
-assessor provenance and an explanation. A required missing or indeterminate
-assessment fails closed. This assessment is another conjunct of `P`; it cannot
-override graph well-formedness or any failed deterministic check, does not create
-authority, and does not add a fourth evidence relation. Signed `TestReport` and
-`InspectionReport` credentials remain graph evidence; the assessment records how
-the verifier evaluated content beyond the implemented schema/scope semantics.
-
-Worked policy (verifier = testing lab selecting a check standard):
-
-```text
-require credentialType: ReferenceMaterialCertificate
-require certifiedValue.property: As
-require material.matrix: CuZn39Pb3 (governed identifier, not the label)
-require authorizing edge basis: accreditation, in-scope entry present
-require status: current at verification, valid at issuance
-
-accredited scope entry:  As in CuZn39Pb3, range 50-500 mg/kg
-policy requirement:      As <= 200 mg/kg
-decisionRule:            guarded acceptance, guard band = U
-                         (ISO/IEC 17025 7.8.6, ILAC-G8)
-trustAnchors:            accreditation MRA via Global ACI
-```
-
-The accredited range and the policy limit are **different numbers checked by
-different conjuncts**, which is the whole point of D-1. Three cases, and they are
-the test vectors (TST-1):
-
-| Claim | Scope inclusion (`in`) | Decision rule conjunct | Outcome |
+| A | B | A AND B | A OR B |
 | --- | --- | --- | --- |
-| `As = 178 ± 5 mg/kg` | inside 50–500 ⇒ holds | `178 + 5 = 183 ≤ 200` ⇒ holds | **accept** |
-| `As = 197 ± 5 mg/kg` | inside 50–500 ⇒ holds | `197 + 5 = 202 > 200` ⇒ fails | **reject**, decision-rule code |
-| `As = 520 ± 5 mg/kg` | outside 50–500 ⇒ fails | not reached | **reject**, `out-of-scope` |
+| established | established | established | established |
+| established | contradicted | contradicted | established |
+| established | not_established | not_established | established |
+| contradicted | contradicted | contradicted | contradicted |
+| contradicted | not_established | contradicted | not_established |
+| not_established | not_established | not_established | not_established |
 
-The 520 case is the one that shows the separation: it fails **scope inclusion**,
-and the guard band has no bearing on that bound. The 197 case is admissible under
-the accreditation and still rejected, because it does not meet what the verifier
-requires. Reporting either one with the other's reason code would be wrong.
+The operators are commutative. All alternatives must be contradicted for OR to be
+contradicted; exhausted search budgets cannot establish that all alternatives failed.
+Required conjunctions must all be established for acceptance. Empty routes do not
+establish authority unless an explicit profile rule defines a valid anchor-only case.
 
----
+Results separate per-artifact verification, per-claim authorization, support, optional
+conformity and overall reliance. A required conjunction yields `accept` when established,
+`reject` when contradicted, otherwise `not_established`. Not-requested conformity is
+explicitly excluded from that conjunction; blocked conformity is recorded as not run.
+A document-level `verified: true` does not imply reliance. Uppercase diagnostic/display
+labels may remain, but error counts and absence of FAIL are never acceptance logic.
 
-## 6. Canonical worked instance (§6.6, Figure 3) — target form
+Include request/profile identity, selected claims, complete route and record witnesses,
+gate/node-use/predicate/state/reason, original source paths and transformations,
+retrieval/status observations, arithmetic and resource usage. Report unsupported,
+skipped and simulated mechanisms. Partial coverage must identify exactly which claims
+are established, without accepting an entire multi-claim credential by implication.
+HTTP surfaces, if implemented, document semantic outcomes separately from operation
+errors and use RFC 9457 Problem Details for those errors.
 
-The reference-material certificate (node), with one authorizing edge to its operational-scope parent. Shown in the locked v2.1 form (unprefixed values, no `role`):
+## 4. Compilation and seven gates
 
-```json
-{
-  "@context": ["https://www.w3.org/ns/credentials/v2", "..."],
-  "type": ["VerifiableCredential", "ReferenceMaterialCertificate"],
-  "issuer": "did:web:rm-producer.example",
-  "validFrom": "2026-02-01T00:00:00Z",
-  "credentialSubject": {
-    "material": { "matrix": "CuZn39Pb3 (leaded brass)" },
-    "certifiedValue": {
-      "property": "As", "value": 178.0, "unit": "mg/kg",
-      "expandedUncertainty": 5.0, "coverageFactor": 2,
-      "scopeRef": "scope-entry-As-CuZn"
-    }
-  },
-  "evidence": [{
-    "type": "CredentialEvidenceReference",
-    "relation": "authorizedBy",
-    "id": ".../credentials/opscope/77",
-    "authorizationBasis": { "kind": "operationalScope", "issuerRole": "referenceMaterialProducer" },
-    "digestSRI": "sha256-9f2c1a0b..."
-  }],
-  "credentialStatus": { "type": "BitstringStatusListEntry" },
-  "proof": { "type": "DataIntegrityProof" }
-}
+Artifact identity is separate from a use of that artifact. A node-use includes secured
+content identity, role, purpose, profile/processing plan and time context. Accepted
+business facts must depend on completed lower gates for that use.
+
+| Gate | Obligation | Evidence |
+| --- | --- | --- |
+| 0 | Plan and structure | Accepted purpose/profile and supported native structural constraints |
+| 1 | Resource identity | Exact required representation/version; no conflicting immutable identity |
+| 2 | Protection | Real proof and authorized key/controller relationship; authenticated security resources |
+| 3 | Temporal applicability | Relevant validity, status, freshness and historical evidence |
+| 4 | Meaning and mapping | Supported identifiers, quantities and decision-preserving native interpretation |
+| 5 | Authority and scope | Principal/rights, complete routes, operational containment and restrictions |
+| 6 | Support and decision | Independently justified applicable support and requested conformity |
+
+Select the plan, parse bounded inputs and discover candidates; then verify original
+artifacts, map protected facts, compile obligations and recursively discharge required
+node-uses. Establish complete routes and restrictions per claim, required applicable
+support, and finally requested conformity when prerequisites are established.
+Parsing and suite transforms can precede protection; candidate discovery is not acceptance.
+Diagnostic evaluation of failed objects remains inert and cannot grant authority, poison
+accepted caches or trigger uncontrolled I/O.
+
+Detect content conflicts for an immutable identity without last-write-wins merging.
+Account for legitimate cryptosuite-derived SD representations. Keep verified-artifact
+caches separate from reliance caches keyed by purpose/profile/role/times/trust identity
+and dynamic-evidence freshness. Preserve distinct time-stamped status observations.
+
+All recursively required dependencies, including support and attestation authority,
+need a well-founded justification. Detect cycles on the active evaluation stack;
+a required circular justification is not established. A shared DAG is reusable under
+compatible context. Unused provenance cycles do not invalidate independent complete
+routes. Depth limits are resource budgets, never trust anchors.
+
+## 5. Authority composition
+
+Bind the authoritative grant's grantee to the actor exercising the right. Check
+permission to issue/grant for the relevant activity, claim and time, independently
+from key authorization. Multiple subjects require the applicable grant, not the first
+subject. Identity equivalence must be governed input, not name/brand/URL similarity.
+
+Operational projection additionally requires permission to maintain/project scope and
+containment within its parent. Independent grants are not automatically subset-bounded
+by accreditation. A configured anchor supplies only its configured authority and purpose;
+a self-signature or familiar institutional name is not an anchor.
+
+```text
+authorized(claim) = applicable_global_restrictions_hold
+                    AND OR(complete_route_1, complete_route_2, ...)
+complete_route = AND(each required basis established for actor/activity/time/claim)
 ```
 
-> The repo uses a richer DRMD-aligned `credentialSubject` (materials[]/materialPropertiesList[]); keep that structure and map these values into it, including `scopeRef`. Figure 3 above is the simplified view.
+One complete record must cover every dimension owned by a basis. Complementary bases
+may legitimately govern different dimensions; check all overlapping restrictions.
+Never combine fragments of distinct alternative routes into a synthetic route.
+A failed unused alternative is diagnostic, while an applicable global suspension applies
+outside OR. An unrelated revoked credential is not an invented global restriction.
 
-**The three-credential chain (Figure 4):** `AccreditationAttestation` (NAB issuer; scope: As in CuZn39Pb3, range, admitted methods) ←`derivedFrom` (`kind: accreditation`, subset-checked)— `OperationalScope` (self-issued; As in CuZn, subset of accreditation, tightened uncertainty ceiling) ←`authorizedBy` (`kind: operationalScope`)— `ReferenceMaterialCertificate` (above). Expected: derivation check confirms op-scope ⊑ accreditation; scope-inclusion confirms 178.0 inside the accredited range under the decision rule ⇒ accept. A value outside the range ⇒ reject with a distinct reason code. The certificate also carries `supportedBy` edges to characterization/homogeneity/stability study credentials (the recursive case, Profile B+E).
+## 6. Scope, quantities and conformity
 
----
+Accepted domain bindings define supported dimensions, missing/empty/unrestricted
+semantics, interval inclusivity, units and orientation of restrictiveness. One whole
+parent record must dominate each projected record; adjacent entries do not automatically
+form a union. Different claims may use different complete records.
 
-## 7. Profiles (§7, Figure 5) — graph shapes per domain
+Use governed identifiers or accepted equivalence mappings, never display-label substrings.
+Validate quantity kind, unit identity, magnitude, finite/order-valid bounds and uncertainty
+metadata. Dimensional similarity does not imply quantity-kind equivalence. Unsupported
+conversions or missing restricted dimensions cannot authorize a comparison. Use exact
+decimal/rational arithmetic or a documented sound strategy shared by both languages;
+never introduce an unexplained tolerance at a decision boundary.
 
-Edge styles in the figure: solid = derived (subset-checked), dashed = independent (own terms), dotted = supporting.
+Retain native DCC/D-SI XML where applicable. Only use SIS/SIRP terms after validating an
+exact pinned mapping; QUDT is an explicitly named legacy/alternative binding. The local
+RM experiment may define its own clearly labeled quantity binding pending that validation.
+Test `1 mg/kg = 10^-6 kg/kg`; do not route mass fractions through pressure conversion.
 
-| Profile | Use case | Shape |
-| --- | --- | --- |
-| **A. Accreditation-only** | Standard accredited lab, stable scope (DCC) | `Domain VC` —`authorizedBy`→ `Accreditation` |
-| **B. Accreditation + operational scope** | Flexible-scope issuance; the worked `As = 178` case | `RM cert` —`authorizedBy`→ `Operational scope` —`derivedFrom`→ `Accreditation(RM)` |
-| **C. Legal / metrology authority** | NMI / statutory; no accreditation root | `Statutory DCC` —`authorizedBy` (`kind: recognition`/`legalMandate`)→ `Legal mandate (NMI)` |
-| **D. Notification / scheme** | Notified body; product-safety marks (GS) | `issuing-scope VC` —`derivedFrom`→ `Accreditation` **and** —`authorizedBy` (`kind: schemeAuthorization`)→ `Scheme auth.`; `GS certificate` authorized by the issuing-scope VC. **Independent authority composed with accreditation.** |
-| **E. Recursive domain evidence** | DPP container; test→calibration→RM | `DPP container` —`supportedBy`→ {`CE doc`, `Test report`, `RM cert.`}, each retaining its own authority chain |
+Keep distinct: calibration capability floors where required; optional customer uncertainty
+limits; conformity under the selected decision rule. The baseline RM accreditation has no
+uncertainty ceiling. The baseline decision consumes symmetric expanded uncertainty with
+k=2; asymmetric unsupported input must not be silently symmetrized. Requested missing
+claims and empty result groups never pass by filtering everything away.
 
-The architecture generalizes because authority is typed edges over credentials, not a fixed hierarchy: one grammar of derived/independent/supporting edges. Only Profile B is instantiated in the paper; the rest are illustrative pending per-domain validation (and Profile D is the new structural test vector in Phase 7).
+The complete fictional RM witness consists of A (producer accreditation, [50,500] mg/kg,
+M1 and M2), O (same range, M1 only, permitted maintenance and containment), D (CuZn39Pb3
+brass/arsenic, M1, U=5 mg/kg, k=2), required same-batch study S and independently established
+laboratory authority H. The verifier selects L=200 mg/kg and `x + U <= L`.
 
-The `gs-hair-dryer-hitl` delivery example adds one application edge below the
-Profile D structure: a QR URL resolves a manufacturer-issued `Product` VC for a
-serialized unit, which is `authorizedBy` the GS body's type-level
-`GSCertificate`. The certificate's `credentialSubject.id` is the manufacturer,
-so the normal authorization subject-binding check applies. This does not change
-the Profile D authority chain or introduce another evidence relation.
+| x | Scope (estimate x) | Conformity | Reliance with other obligations established |
+| --- | --- | --- | --- |
+| 178 | 50≤178≤500 | 178+5=183≤200 | accept |
+| 197 | 50≤197≤500 | 197+5=202>200 | reject for conformity; authorization established |
+| 520 | 520>500 | not_run | reject for scope |
 
-The companion external-laboratory vector demonstrates that support need not be
-produced by the certificate issuer. Its `TestReport` is issued by a distinct
-testing laboratory and `authorizedBy` a laboratory scope whose issuer and subject
-are that laboratory. The laboratory scope is `derivedFrom` only the laboratory's
-NAB accreditation.
-The report identifies the GS body as customer; commissioning is business context,
-not the source of laboratory competence. The GS body still issues the certificate
-and initial factory inspection under its separate NAB- and ZLS-backed scope.
+195+5=200 passes the inclusive decision; 500 is in scope. Authorization-only requests
+for 197 or 500 do not run conformity. Below 50 fails scope. M2 cannot bypass O because
+A admits it; it needs a separately permitted complete route. Accepted method succession
+and explicit-extension profiles may yield different justified results for identical
+bytes; absent accepted interpretation yields not established, not invented equivalence.
 
----
+## 7. Support and external answers
 
-## 8. Governance constraints that bind behavior (§8)
+Required support must be valid and authorized for its own role, then applicable to the
+requested material/batch/instrument/activity/method/time. A support subject need not equal
+the consuming issuer. A genuine report about another batch contradicts applicability;
+a missing report leaves it not established. Resolution, digest or signature alone is
+insufficient. Protected identifier agreement proves the profile's digital match, not that
+a physical sample has not been swapped.
 
-- **VCs represent authority; they do not create it.** A credential's `type` name confers nothing; meaning is fixed by issuer mandate, governing policy, referenced normative basis, and the verifier's trust registry.
-- **Operational scope** is valid only as a derived, subset-checked projection; its institutional sufficiency (self-asserted vs. co-signed by the authorizing body) is a per-deployment governance choice.
-- **Trust registry** is plural and layered (accreditation MRA via Global ACI; CIPM for metrology; scheme/legal authorities) — no single global root. Status via W3C Bitstring Status List.
-- **Standards are normative references, not credentials** — they enter the graph as integrity-bound related resources (the basis for scope/methods/policy), never as an authorizing edge.
-- **Legal effect vs. verifiability are distinct** (§8.5): a VC representation should align with, not replace, the eIDAS electronic seal; the open question is binding a VC data model and an eIDAS seal to the same attestation. (This is why the SD cryptosuite choice favors ECDSA/P-256 over BBS — seal compatibility.)
+An authority-issued answer can establish a specific predicate under an accepted attestation
+policy. Bind its protected content to the exact claim/digest, grantee, activity, scope
+identity/version, profile/rule version, time and question parameters. Establish signer
+authority independently and verify protection, status/freshness and question binding.
+Point coverage cannot prove full O⊆A. A valid supplied answer may avoid a network query;
+an unavailable authority without admissible evidence leaves the predicate not established.
+The witness records reliance on that authority's assertion, not proof of semantic truth.
+
+The optional Recognized Entities adapter pins the 6 September 2026 Working Draft and
+supports only its documented discovery/membership/action/output-validator subset.
+Recognition does not replace QI scope, global restrictions, support or conformity.
+Identifier discovery is unsupported unless its retrieved VP proof and queried-issuer
+binding are implemented. Profiles must explicitly compose this adapter with other grants.
+
+## 8. Security, time, disclosure and limits
+
+All required credentials and security artifacts receive the selected binding's real
+checks. Registry bootstrap is independently configured. Status statements require an
+authorized status signer. A constant key resolver is not adversarial identity evidence.
+Proof-disabled operation is simulation and cannot yield unconditional verified reliance.
+
+Bound all I/O by protocol/origin/address/redirect/media-type/size/decompression/time rules.
+Pin static contexts and schemas with origin/version/hash metadata for offline tests;
+dynamic status retains observation times and freshness. Digest mismatch and unavailable
+resource have distinct states/reasons.
+
+Separate evaluation, activity, native issuance, validity, proof, status observation and
+shelf-life times. `validFrom` is not automatically issuance. The baseline answers a precise
+current-reliance request; historical reliance needs the policy's historical evidence, not
+current status substituted for history. Issuer-written dates do not prove anti-backdating.
+
+Evidence closure can be supplied in a flat presentation or obtained through permitted
+bounded/private retrieval. Extra credentials confer no rights merely by being present.
+SD must retain all facts required by the selected request; missing bindings/restrictions/
+support leave reliance insufficient. Preserve TS SD; Python semantic subset checks are not
+SD cryptographic verification. An interactive presentation needs its own holder/challenge/
+audience/replay checks; a generic VC suite alone does not supply them.
+
+Conditional decidability/soundness assumes accepted decision-preserving mappings, supported
+terminating evaluators, finite route search and well-founded required dependencies.
+Underdetermination without interpretation is not universal mathematical undecidability.
+Timeout is not semantic falsity. Traversal cost alone does not bound total verification:
+account for route search, crypto, schema/RDF work, quantities and resolution separately.
+
+## Standards anchors
+
+[VCDM2, 15 May 2025](https://www.w3.org/TR/2025/REC-vc-data-model-2.0-20250515/)
+provides carrier mechanisms; this project's accepted bindings supply QI interpretation.
+The [Recognized Entities snapshot](https://www.w3.org/TR/2026/WD-vc-recognized-entities-1.0-20260906/)
+is experimental. The project requirements, not either external specification alone,
+define the full reliance calculus above.

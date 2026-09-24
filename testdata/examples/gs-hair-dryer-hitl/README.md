@@ -1,3 +1,12 @@
 # gs-hair-dryer-hitl
 
-A realistic synthetic GS Profile D graph for a hand-held hair dryer. Scanning the QR mark resolves a manufacturer-issued `Product` VC for one serialized unit. It is `authorizedBy` the GS body's type-level `GSCertificate`, whose subject is the manufacturer. The certificate is `authorizedBy` a self-issued GS scope and `supportedBy` a product `TestReport` plus an initial manufacturer `InspectionReport`. The scope is `derivedFrom` accreditation and independently `authorizedBy` ZLS scheme authorization. Policy requires agent/human/hybrid semantic assessment of the two sparse-schema reports. Fixture credentials are signed with a TEST ONLY key so the pass test exercises proof verification. The failing target also has a valid proof, but carries an incorrect digest for the GS certificate. All organizations, identifiers, and credentials are fictional.
+**Generated legacy fixture; not a standards-first conformance claim.**
+
+The fictional GS body performs in-house testing and inspection; a manufacturer issues the serialized-product target under the type certificate. Preserve application assessments.
+
+Existing policy and relation fields describe the old runtime. The fixture's assurance
+is determined by its proof and test runner; graph proof skipping is simulation, not
+verified reliance. Actors and keys are fictional test inputs without institutional
+endorsement. Migrate through generators and reissue signatures/integrity metadata,
+never hand-edit signed output. See the [scenario catalogue](../../../docs/scenarios/scenario-catalogue.md)
+and [implementation plan](../../../docs/plans/standards-first-reconciliation.md).

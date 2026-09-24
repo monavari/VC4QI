@@ -1,112 +1,88 @@
 # VC4QI
 
-VC4QI is a reference implementation of a policy-resolved evidence-graph verifier
-for Quality Infrastructure credentials. It builds on W3C VC 2.0 primitives and
-adds QI-specific evidence relations, policy profiles, scope checks, derivation
-checks, and verification traces.
+VC4QI is a research reference implementation for evaluating reliance on Quality
+Infrastructure credentials. Credentials represent institutional authority and evidence;
+verifier-selected profiles and accepted semantics determine what a verifier can rely on.
 
 [![CI](https://github.com/monavari/VC4QI/actions/workflows/ci.yml/badge.svg)](https://github.com/monavari/VC4QI/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/monavari/VC4QI/actions/workflows/codeql.yml/badge.svg)](https://github.com/monavari/VC4QI/actions/workflows/codeql.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](LICENSE-docs)
 
-## Status
+## Current status
 
-`main` tracks the manuscript v2.1 model: QI credentials are verified by
-resolving typed evidence edges and applying a policy profile. The v0.1 chain
-implementation is archived in `archive/three-layer-capability-model`.
+The documentation now specifies the **standards-first target**. Runtime code, v1 schemas,
+policies and fixtures still implement the legacy manuscript-v2.1 model. The migration is
+planned and tracked; this branch is not a new release or proof that the revised paper's
+full witness executes. TypeScript is canonical; Python mirrors supported semantics.
 
-The `0.3.0` tagged release corresponds to the manuscript submission.
+| Capability | Current status |
+| --- | --- |
+| Legacy graph/policy/scope checks and application assessments | Implemented, with known gaps documented in the migration plan |
+| TS ECDSA-SD issuance/derivation/verification | Implemented for existing fixtures; new binding/disclosure rules pending |
+| Python processing of TS-derived SD subsets | Semantic evaluation only; no Python SD crypto |
+| Demo | Seven legacy entries covering A–F, including two GS variants; assurance varies by scenario |
+| New bindings, complete routes, three-state reliance and signed RM witness | Documentation/design only; runtime implementation pending |
+| Authority-issued scope answers / Recognized Entities | Planned experimental adapters, not implemented integrations |
+| Verifier HTTP service / LIMS adapter | Scaffold directories |
 
-TypeScript is canonical. Python mirrors public behavior using shared JSON
-fixtures in `testdata/`.
+See [implementation status](docs/IMPLEMENTATION_STATUS.md) for dated test evidence and
+limitations. Existing citation metadata describes historical v0.3.0; no new DOI, release
+or external endorsement is claimed. The v0.1 chain remains in the archive branch.
 
-## Architecture
+## Target model
 
-Domain credentials keep established artifact types such as
-`DigitalCalibrationCertificate`, `ReferenceMaterialCertificate`, `TestReport`,
-`InspectionReport`, and `ConformityCertificate`.
+Accepted bindings interpret protected native facts into internal obligations. The baseline
+uses recognized `termsOfUse` authorization policies, `evidence` for support, selected
+resource integrity and applicable schemas. The core requires no universal serialized edge
+vocabulary. Original signatures, authorized keys, time and mappings are checked before
+facts establish authority or support.
 
-Authorizing and supporting relationships are expressed through
-`CredentialEvidenceReference` entries in VC `evidence`:
+Document verification, authorization, support, conformity and overall reliance are separate.
+Missing required evidence produces `not_established`; it cannot be hidden in a warning count.
+The fictional RM example separates 178 mg/kg accepted, 197 authorized but rejected for
+conformity, and 520 rejected for scope. These are target acceptance cases until I4 is proven.
 
-```json
-{
-  "type": "CredentialEvidenceReference",
-  "id": "urn:uuid:accreditation-direct-001",
-  "relation": "authorizedBy",
-  "authorizationBasis": {
-    "kind": "accreditation"
-  },
-  "digestSRI": "sha384-..."
-}
-```
+## Run the current implementation
 
-The three evidence relations are `authorizedBy` (independent authority),
-`derivedFrom` (subset-checked projection), and `supportedBy` (supporting
-evidence). On authorizing edges, `authorizationBasis.kind` is one of six bare
-tokens: `accreditation`, `legalMandate`, `notification`, `schemeAuthorization`,
-`recognition`, `operationalScope`. Verifier policy determines which are
-sufficient for a use case.
-
-## Quickstart
+Install Node 20, pnpm 10.15.1 and Python 3.12. From the repository root:
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
+python3 -m venv .venv
+.venv/bin/python -m pip install -e 'packages/core-py[dev]'
 pnpm -r build
-pnpm -r test
+pnpm -C packages/core-ts test
+.venv/bin/python -m pytest packages/core-py/tests
+pnpm test:scenarios
 pnpm validate:schemas
-pytest packages/core-py/tests
 ```
 
-## Structure
+The last two commands cover legacy fixtures: root scenarios skip graph proofs and schema
+validation skips some examples lacking `$schema`. They do not establish the new signed RM
+baseline. Setup/check limitations are in [CONTRIBUTING](CONTRIBUTING.md).
+Run the browser demo with `pnpm -C apps/demo-web dev`. Its two GS variants enable graph
+proof checks with test keys; other entries currently skip them. Simulation is not verified
+reliance even if the current legacy UI presents a green result.
 
-| Directory | Description |
-| --- | --- |
-| `schemas/v1/` | JSON Schema 2020-12 credential and policy schemas |
-| `contexts/v1/` | JSON-LD contexts and QI evidence context |
-| `policies/profiles/` | v0.2 policy profiles |
-| `testdata/` | Shared fixtures used by TypeScript and Python |
-| `packages/core-ts/` | Canonical TypeScript implementation |
-| `packages/core-py/` | Python parity implementation |
-| `docs/` | Architecture, vocabulary, policy, and parity docs |
+## Structure and API
 
-## Core API
+`packages/core-ts` and `packages/core-py` contain the implemented libraries;
+`apps/demo-web` contains the demo. `contexts/v1`, `schemas/v1`, `policies` and `testdata`
+contain existing legacy artifacts. `docs` distinguishes the target model and actual status.
 
-TypeScript:
-
-```ts
-import { verifier } from '@qi-vc/core';
-
-const trace = await verifier.verifyCredentialGraph(targetCredential, policy, {
-  fetchDocument,
-  resolveTrustRegistry,
-  skipProof: true,
-});
-```
-
-Python:
-
-```py
-from qi_vc_core.verifier import VerifyGraphOptions, verify_credential_graph
-
-trace = verify_credential_graph(
-    target_credential,
-    policy,
-    VerifyGraphOptions(fetch_document=fetch_document, skip_proof=True),
-)
-```
+The current entry points remain `verifier.verifyCredentialGraph` in TS and
+`verify_credential_graph` in Python. Their `verified` result is a legacy contract, not the
+new reliance result. See [API migration](docs/API_MIGRATION.md) and the explicitly legacy
+[DCC](docs/tutorials/01-issue-and-verify-dcc.md) / [RM](docs/tutorials/02-issue-and-verify-drmd.md)
+walkthroughs. No future API is presented as runnable code.
 
 ## Documentation
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [Vocabulary](docs/VOCABULARY.md)
-- [Policy Profiles](docs/POLICY_PROFILES.md)
-- [Presentation Query](docs/PRESENTATION_QUERY.md)
-- [Human/agent assessment](docs/ASSESSMENT.md)
-- [Python Parity](docs/PYTHON_PARITY.md)
-- [Non-goals](docs/NON_GOALS.md)
-- [Implementation Status](docs/IMPLEMENTATION_STATUS.md)
+- [Active task](RECONCILIATION_TASK.md) and [execution plan](docs/plans/standards-first-reconciliation.md)
+- [Model](docs/MODEL_SPEC.md), [architecture](docs/ARCHITECTURE.md) and [binding design](docs/BINDING_MANIFEST.md)
+- [Vocabulary](docs/VOCABULARY.md), [profiles](docs/POLICY_PROFILES.md) and [scope terms](docs/SCOPE_TERMS.md)
+- [Assessment](docs/ASSESSMENT.md), [queries](docs/PRESENTATION_QUERY.md) and [selective disclosure](docs/SELECTIVE_DISCLOSURE.md)
+- [Parity](docs/PYTHON_PARITY.md), [scenario catalogue](docs/scenarios/scenario-catalogue.md) and [non-goals](docs/NON_GOALS.md)
+- [Requirements/evidence map](docs/plans/standards-first-traceability.md) and [running report](RECONCILIATION_REPORT.md)
 
 ## License
 

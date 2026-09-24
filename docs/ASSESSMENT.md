@@ -1,87 +1,49 @@
-# Human/agent assessment
+# Verifier assessment and authority-issued answers
 
-VC4QI separates deterministic verification from domain assessment.
+## Existing assessment callback
 
-The verifier can always check graph structure, evidence digests, proofs, status,
-issuer trust, principal binding, required evidence, and the scope semantics that
-have an implemented checker. A JSON Schema can establish document shape, but it
-cannot decide every conformity question. Some credentials also lack a sufficiently
-rich schema for a deterministic domain decision.
+The legacy runtime has a policy-selected `assessment` block for credential types and
+allowed methods (`agent`, `human`, `hybrid`). An application callback receives the
+credential and, through graph verification, the target and resolved graph. It returns
+`pass`, `fail` or `indeterminate`, assessor provenance and an explanation. These are
+current callback labels, not the new semantic state contract.
 
-For those cases, a policy can select credential types for semantic assessment:
+A required missing/indeterminate callback fails closed in the existing implementation;
+optional indeterminate results can be warnings. The new evaluator instead gives required
+missing/unsupported evidence the applicable `not_established` state. A supported negative
+predicate is contradicted. A callback cannot override a failed protection, binding, scope
+or other required obligation. Human workflow remains outside the core; no generic confidence
+score or arbitrary issuer-provided executable evaluator is accepted.
 
-```json
-{
-  "assessment": {
-    "mode": "required",
-    "targetCredentialTypes": ["TestReport", "InspectionReport"],
-    "allowedMethods": ["agent", "human", "hybrid"]
-  }
-}
-```
+Schemas can express numerical bounds, enumerations and logical combinations. A particular
+schema may leave cross-artifact meaning, authority or decision predicates to another accepted
+evaluator; schema use alone neither proves nor precludes those predicates.
 
-The application supplies an assessment evaluator to the verifier. The evaluator
-receives the complete credential node and, when invoked through graph verification,
-the target credential plus the resolved evidence graph. This lets a domain adapter
-compare related credentials instead of deciding from one sparse report in isolation.
-It returns:
+## GS application behavior to preserve
 
-- `outcome`: `pass`, `fail`, or `indeterminate`;
-- `method`: `agent`, `human`, or `hybrid`;
-- `assessorId` and optionally `assessmentId`;
-- an explanation suitable for the verification trace.
+Both fictional GS hair-dryer variants use report and manufacturer-inspection assessments,
+a type-level GS certificate and a manufacturer-issued serialized-product credential. The
+external-laboratory variant preserves two independent scopes: the laboratory issues its
+own scope bounded by its accreditation, and its report uses that authority. The GS body
+is the report's customer, not the source of laboratory competence. It retains certification
+and inspection responsibility under its separate accreditation and scheme authorization.
 
-A required assessment fails closed when the evaluator is absent, throws, uses a
-method the policy does not admit, or returns `indeterminate`. An optional
-indeterminate result is a warning. A performed `fail` result is always a failure.
-There is deliberately no confidence score: the operative policy still produces a
-binary verification verdict with reason codes.
+The current fixtures use test-only keys, legacy edge fields and application-specific
+assessments. Their proof-enabled tests demonstrate that path, not GS legal/technical-rule
+conformance or real institutional endorsement. Do not turn the QR/product extension into
+a universal framework requirement.
 
-## HITL path
+## Target authority-issued predicate adapter
 
-The verifier does not contain a long-running workflow engine. A human-in-the-loop
-adapter can pause outside the kernel, collect the human decision, and resume or
-rerun verification with an evaluator that returns the completed result. A hybrid
-adapter can let an agent decide routine cases and route indeterminate cases to a
-human reviewer.
+An application callback is not automatically authenticated institutional evidence. I6 adds
+a separate experimental authority-answer binding: verify answer protection, establish the
+signer's right to answer independently, and bind the exact predicate, claim/digest, grantee,
+activity, scope identity/version, profile/rule, parameters and relevant time/freshness.
+A holder-selected endpoint cannot authorize itself. An accepted supplied answer can avoid
+network retrieval; an unavailable authority without admissible evidence leaves the predicate
+not established. Wrong-claim/batch/time answers cannot discharge the requested predicate.
 
-Assessment supplements deterministic gates; it cannot override an invalid proof,
-schema, status, digest, authority edge, derivation, or graph. It is a conjunct of
-the verifier's policy predicate `P`, not a fourth evidence relation or a new trust
-anchor.
-
-Portable domain evidence should still be represented by signed credentials such
-as `TestReport` or `InspectionReport` and connected with `supportedBy`. The runtime
-assessment records how the verifier interpreted sparse or non-computable content.
-Its `assessmentId` can refer to an external audit record, but VC4QI does not itself
-persist or sign that record.
-
-## GS example
-
-The `gs-hair-dryer-hitl` fixture requires:
-
-- an agent assessment of the product type-examination `TestReport`;
-- a human assessment of the manufacturer `InspectionReport`;
-- both reports as non-authorizing support for the GS body's type-level
-  `GSCertificate`;
-- a QR-resolved `Product` VC issued by the manufacturer for one serialized
-  unit and `authorizedBy` that certificate;
-- a GS issuing-scope credential derived from accreditation and independently
-  authorized by ZLS.
-
-The fixture signs the full graph with a TEST ONLY key. Its canonical pass test
-runs with proof skipping disabled, in addition to checking the manufacturer ↔
-certificate subject binding, digests, trust, policy, derivation, and assessments.
-
-The evaluator demonstrates the assessment path. It does not implement the GS
-technical rules or decide legal validity. Exact GS testing bases and the governed
-product-scope vocabulary remain domain-governance inputs.
-
-The companion `gs-hair-dryer-external-test-lab-hitl` fixture uses the same QR
-and assessment pattern but separates roles. Hanseatic Product Testing issues its
-own `IssuingScopeCredential`, derived only from its NAB accreditation, and issues
-the `TestReport` under that scope. The GS body is identified as the Schema.org
-`customer`, commissions and uses the report, and remains responsible for the
-`GSCertificate` and `InspectionReport` under its separate NAB- and ZLS-backed scope.
-The assessment binds the report, certificate, serialized product, manufacturer,
-customer, and independent laboratory competence path across the resolved graph.
+Point coverage does not prove full O⊆A. The witness records which authority's assertion is
+relied upon; a signature is not a general proof of semantic truth. Support and the answer's
+own authority dependencies need well-founded justification. See [MODEL_SPEC](MODEL_SPEC.md)
+and E05–E09 in the [acceptance ledger](plans/standards-first-acceptance.csv).
