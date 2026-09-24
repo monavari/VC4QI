@@ -5,29 +5,31 @@ for submitting changes.
 
 ## Development setup
 
-Install Node 20, pnpm 10.15.1 and Python 3.12 first. The current local package-manager
-pin is 10.15.1; CI still selects pnpm 9 and will be reconciled in I0. From a checkout:
+Install Node 20, pnpm 10.15.1, Python 3.12 and uv 0.12.17 first. CI and local setup
+use the repository package-manager pin and the committed Python lock. From a checkout:
 
 ```bash
 pnpm install --frozen-lockfile
-python3 -m venv .venv
-.venv/bin/python -m pip install -e 'packages/core-py[dev]'
+uv sync --locked --all-packages --extra dev
 ```
 
-Use an existing project venv when already configured. Root uv workspace/Make targets
-currently include scaffold packages without package manifests; use explicit commands
-until I0 repairs them. `make setup` does not itself install Node or Python.
+`make setup` runs these two installation commands; it does not install the prerequisite
+tools. The uv workspace includes only core-py; service and LIMS scaffolds are excluded.
+uv uses the project `.venv`, even if an unrelated environment is active.
 
 ```bash
 pnpm -r build
 pnpm -r --if-present lint
 pnpm -C packages/core-ts test
-.venv/bin/python -m pytest packages/core-py/tests
+uv run --locked --all-packages --extra dev pytest packages/core-py/tests
 pnpm test:scenarios
 pnpm validate:schemas
 ```
 
-Run Python lint via the configured environment and report unavailable checks explicitly.
+`make test` runs TS, scenarios and Python tests. `make lint` runs the existing TS
+check and Python Ruff/mypy checks. Python lint currently fails on baseline debt;
+[I0 evidence](docs/plans/standards-first-i0-evidence.md) records the comparison.
+Do not suppress rules or report lint as passing.
 The scenario command skips graph proofs; schema validation skips some examples without
 `$schema`. Add dedicated new-profile/offline/UI lanes during migration. For documentation
 changes, check Markdown, links and consistency; do not invent runtime execution evidence.

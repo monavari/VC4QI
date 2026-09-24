@@ -41,8 +41,10 @@ issuer mapping cannot override an explicit-extension profile.
 
 The existing contexts use fields such as `quantityKindIri`, `matrixIri`, `methodIri`,
 `propertyIri`, `formIri` and plural constraint fields. They are not universal core vocabulary.
-Legacy exact-equality regression tests remain useful, but their presence does not establish
-record-complete containment or full numerical RM scope.
+I0 adds complete-record matching for supported legacy dimensions, pressure bounds,
+restricted DCC method checks and RM alternative retries. Its unsigned predicate vectors
+do not establish full numerical RM scope or new-profile reliance. See
+[I0 evidence and limitations](plans/standards-first-i0-evidence.md).
 
 ## Adding a binding term
 

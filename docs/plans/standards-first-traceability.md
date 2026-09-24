@@ -1,10 +1,11 @@
 # Standards-first requirements and documentation traceability
 
-**Documentation baseline, 22 September 2026. Runtime evidence pending I0–I8.**
+**Updated 24 September 2026: D0–D4 and I0 complete; I1–I8 pending.**
 Source: [unaltered supplied handover](standards-first-handover-2026-09-21.txt).
 The [83-case CSV](standards-first-acceptance.csv) retains exact case IDs, inputs and
-expected outcomes. Every row is currently `not_assessed`; green legacy tests do not
-establish new cases. During I0 classify implementation coverage before recording results.
+expected outcomes. I0 classified all 83 new-profile cases as `not_implemented` and
+annotated partial legacy predicate evidence where relevant. None claims a signed
+new-profile pass. See [I0 evidence](standards-first-i0-evidence.md) and its inventories.
 
 | Source section | Contract / documentation | Implementation phase / surface | Evidence needed |
 | --- | --- | --- | --- |

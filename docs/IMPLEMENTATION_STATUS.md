@@ -1,9 +1,9 @@
 # Implementation status
 
-**Validated 23 September 2026. Documentation D0–D4 is complete; runtime remains legacy.**
+**Validated 24 September 2026. D0–D4 and I0 complete; runtime remains legacy.**
 The [handover](plans/standards-first-handover-2026-09-21.txt) and [model](MODEL_SPEC.md)
 are requirements, not implementation evidence. No new-model acceptance case is claimed
-passing by this documentation update.
+passing by this preparation phase.
 
 ## Capabilities and limitations
 
@@ -11,7 +11,7 @@ passing by this documentation update.
 | --- | --- | --- |
 | Graph/types/policy | Three serialized relations and six basis labels, legacy policy matcher | Binding compiler, contextual node-uses, complete routes/restrictions and explicit legacy adapter |
 | Results | `verified` from absence of FAIL | Three-state obligation evaluation; separate verification and reliance |
-| Principal/scope | Governed identifier equality and existing containment checks | Missing-principal safeguards, complete-record checks, both endpoints, exact quantities and permitted projection |
+| Principal/scope | I0 complete-record matching, finite pressure bounds, RM retry and DCC method/group safety | Missing-principal safeguards, binding-defined projection, exact RM quantities and witnesses |
 | RM | Legacy recursive and SD fixtures | Full signed A/O/D/S/H chain; real 178/197/520 scope/conformity witnesses |
 | Protection | Ed25519 integration, signed registry work and TS SD tests | Suite/authorized-key audit; safe general expansion; full authenticated status, resource identity and time rules |
 | Support/assessment | Graph resolution and GS human/agent/hybrid callback | Independent role-specific support authority and batch/instrument/time applicability |
@@ -43,15 +43,24 @@ Python 3.12.3. These checks preceded the documentation update and are not new ex
 
 Passing legacy tests does not prove the revised calculus, independent crypto conformance,
 offline static resolution or actual UI interactions. Current general canonicalization
-sets `safe: false`; this remains a migration gap. Root uv/Make workspace declarations
-reference scaffold packages; CI uses pnpm 9 while metadata pins 10.15.1. I0/I8 must repair
-commands/coverage rather than treat documentation warnings as fixes.
+sets `safe: false`; this remains a migration gap. I0 repaired uv/Make setup and CI pins;
+the dedicated new-profile, offline and UI coverage remains future work.
+
+## I0 results, 24 September 2026
+
+226 TS tests and 196 Python tests pass, with one existing Python skip. This includes
+38 shared unsigned vectors plus one non-finite-bound test per language. Build, scenarios,
+schema checks and TS lint pass. Locked uv/Make setup and CI package-manager pins are repaired.
+Python lint retains baseline debt: Ruff core diagnostics decreased 208→204, mypy remains
+198; no new diagnostics were added. See [I0 evidence](plans/standards-first-i0-evidence.md)
+for exact commands, inventories and limitations. All 83 new-profile acceptance cases
+remain unimplemented; eleven have partial legacy predicate evidence.
 
 ## Migration and historical claims
 
 Work branch: `refactor/standards-first-reconciliation`, retaining merged registry,
 governed-identifier and GS work. The missing `63231d2` scope patch's safety properties
-must be recovered or reproduced. D0–D4 are documentation; I0–I8 implement the target.
+were reproduced in I0. D0–D4 updated documentation; I1–I8 implement the new evaluator.
 Track outcomes in the [83-case ledger](plans/standards-first-acceptance.csv) and
 [requirements map](plans/standards-first-traceability.md), with commands and witnesses.
 

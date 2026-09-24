@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Repair uv workspace/locked setup and reconcile CI's pnpm pin with package metadata.
+- Restore legacy complete-record containment, pressure bounds, RM alternatives and DCC failure retention in TS/Python.
+- Add 38 shared unsigned scope vectors plus non-finite-bound checks; classify new-profile coverage and existing lint debt.
+
 - Document the standards-first reliance target, binding design, compatibility break and implementation phases.
 - Supersede obsolete agent instructions and wire-model ADRs while preserving historical snapshots and reports.
 - Distinguish current legacy runtime, experimental target, simulated assurance and unsupported integrations.

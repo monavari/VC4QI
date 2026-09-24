@@ -948,3 +948,45 @@ Next is I0 from the active task: repair workspace/CI commands, run the current i
 baseline, classify the new acceptance coverage, inventory wire consumers and preserve the
 missing scope patch's safety properties. I1 then implements the machine-readable binding
 manifest and first signed vertical slice. No additional paper source was available to edit.
+
+## Standards-first I0 — 24 September 2026
+
+Documentation D0–D4 was committed as `51fd945` and pushed to
+`refactor/standards-first-reconciliation` after the user explicitly authorized
+incremental branch pushes. Historical content above remains unchanged. I0 preparation
+is now complete; the new evaluator and signed RM baseline remain I1–I8 work.
+
+I0 repairs the uv workspace, adds a locked dependency resolution and aligns Make/CI
+commands with the actual packages. CI uses the package-manager pin and also runs on
+this branch. Development tool additions are Ruff 0.4.5 (the existing pre-commit version)
+and mypy `>=1.10,<2`; no runtime dependency declaration was added. Existing dependency
+bounds resolved newer packages, so the complete suites were rerun after locked setup.
+No signed fixture, context, schema or release metadata was modified.
+
+Shared TS/Python scope fixes implement one-parent complete-record containment,
+finite ordered pressure bounds with supported consistent units, RM complete-alternative
+retries, required DCC method identifiers and retention of earlier group failures.
+The first 36 shared unsigned vectors failed 23 cases in both languages before the fix.
+All now pass; two explicit GS type-domain controls and non-finite-bound tests bring
+the added suite to 39 tests per language. No missing commit was represented as applied.
+
+Executed results: `CI=true make setup`, `make test`, `pnpm -r build`, TypeScript lint,
+root scenarios and schema checks exit 0. Totals: **226 TS tests; 196 Python passed,
+1 existing skip; 2 root scenarios; 4 schemas and 2 examples**. Six schema examples
+remain skipped without `$schema`; Vite retains its bundle-size warning.
+
+Python Ruff and mypy still exit 1. Comparing the same installed tools against an
+extraction of base `225e78f` found Ruff decreased from 208 to 204 diagnostics and mypy
+stayed at 198 in 24 files, with no new file/rule/message diagnostics. `make lint`
+stops on this Ruff debt; mypy was separately executed. No lint rule was suppressed.
+
+The [I0 evidence](docs/plans/standards-first-i0-evidence.md) records exact commands,
+remaining semantic limits, 111 legacy-identifier consumer files and six observed
+static-loader resource hashes. All 83 new-profile acceptance cases are classified
+`not_implemented`; eleven S rows cite partial legacy predicate coverage without
+claiming a new-profile pass. Python's old label-based `check_derivation` helper remains
+deprecated and outside the graph path/assurance of the fixed `check_derived_edge`.
+
+Astra completed bounded read-only reviews; Sol/Luna hit workspace credit limits and
+made no edits, so implementation and validation continued locally. Next is I1:
+executable binding manifest, request/result contract and first signed RM vertical slice.

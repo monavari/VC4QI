@@ -72,8 +72,9 @@ work; do not substitute TODOs for the specified fictional baseline.
 
 Use Node 20 and pnpm 10.15.1 (the current package-manager pin), Python 3.12, and
 an isolated Python environment. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup.
-Root uv workspace/Make targets currently reference scaffolds; do not advertise them
-as working until repaired in I0. CI's pnpm 9 selection also needs reconciliation.
+I0 repaired the uv workspace and Make targets; use `uv sync --locked --all-packages
+--extra dev` with uv 0.12.17. CI reads pnpm 10.15.1 from `packageManager`. Python lint
+has recorded pre-existing debt; see the I0 evidence before claiming all checks green.
 
 For each implementation phase, record actual commands, exit codes and limitations:
 

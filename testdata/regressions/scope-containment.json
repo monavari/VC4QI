@@ -1,0 +1,1916 @@
+{
+  "description": "Unsigned legacy predicate vectors for I0 safety preservation; not secured end-to-end reliance evidence.",
+  "vectors": [
+    {
+      "id": "contained-interval",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 10,
+                "to": 90,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "inclusive-equality",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "lower-escape",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": -1,
+                "to": 90,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "upper-escape",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 101,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "adjacent-not-union",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 10,
+                "to": 90,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 50,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            },
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 50,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "missing-lower",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "missing-unit",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "unknown-unit",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "unknown"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "reversed-interval",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 90,
+                "to": 10,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "equivalent-pressure-units",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 1000,
+                "to": 90000,
+                "unit": {
+                  "ucumCode": "Pa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "conflicting-unit-indicators",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa",
+                  "unitIri": "http://qudt.org/vocab/unit/PA"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "missing-quantity-kind",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "conversion-overflow",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 1e+308,
+                "unit": {
+                  "ucumCode": "MPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 1e+308,
+                "unit": {
+                  "ucumCode": "MPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "range-method-splicing",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 5,
+                "to": 90,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M2"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            },
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 10,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "missing-restricted-child-method",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "empty-child-scope",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": []
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "empty-parent-scope",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": []
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "empty-record",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {}
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {}
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "different-child-records",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 10,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            },
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 90,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 20,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            },
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 80,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "property-union-splicing",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "allowedPropertyIris": [
+                "https://vc4qi.example/regressions/property/As",
+                "https://vc4qi.example/regressions/property/Pb"
+              ]
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "allowedPropertyIris": [
+                "https://vc4qi.example/regressions/property/As"
+              ]
+            },
+            {
+              "allowedPropertyIris": [
+                "https://vc4qi.example/regressions/property/Pb"
+              ]
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "missing-parent-property",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "allowedPropertyIris": [
+                "https://vc4qi.example/regressions/property/As"
+              ]
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "matrixIris": [
+                "https://vc4qi.example/regressions/matrix/CuZn39Pb3"
+              ]
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "absent-child-scope",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {}
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "absent-parent-scope",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "scope": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "allowedMethodIris": [
+                "https://vc4qi.example/regressions/method/M1"
+              ],
+              "range": {
+                "from": 0,
+                "to": 100,
+                "unit": {
+                  "ucumCode": "kPa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "parent": {
+        "credentialSubject": {}
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    },
+    {
+      "id": "rm-complete-control",
+      "operation": "rm",
+      "credential": {
+        "type": [
+          "ReferenceMaterialCertificate"
+        ],
+        "credentialSubject": {
+          "materials": [
+            {
+              "matrixIri": "https://vc4qi.example/regressions/matrix/CuZn39Pb3",
+              "formIri": "https://vc4qi.example/regressions/form/disc"
+            }
+          ],
+          "materialPropertiesList": [
+            {
+              "isCertified": true,
+              "results": [
+                {
+                  "propertyIri": "https://vc4qi.example/regressions/property/As",
+                  "data": {
+                    "quantity": {
+                      "value": 178,
+                      "unit": {
+                        "ucumCode": "mg/kg"
+                      },
+                      "uncertainty": {
+                        "expandedUncertainty": 5
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "scope": [
+        {
+          "matrixIris": [
+            "https://vc4qi.example/regressions/matrix/CuZn39Pb3"
+          ],
+          "allowedFormIris": [
+            "https://vc4qi.example/regressions/form/disc"
+          ],
+          "allowedPropertyIris": [
+            "https://vc4qi.example/regressions/property/As"
+          ]
+        }
+      ],
+      "expected": {
+        "passed": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "rm-form-property-splicing",
+      "operation": "rm",
+      "credential": {
+        "type": [
+          "ReferenceMaterialCertificate"
+        ],
+        "credentialSubject": {
+          "materials": [
+            {
+              "matrixIri": "https://vc4qi.example/regressions/matrix/CuZn39Pb3",
+              "formIri": "https://vc4qi.example/regressions/form/disc"
+            }
+          ],
+          "materialPropertiesList": [
+            {
+              "isCertified": true,
+              "results": [
+                {
+                  "propertyIri": "https://vc4qi.example/regressions/property/As",
+                  "data": {
+                    "quantity": {
+                      "value": 178,
+                      "unit": {
+                        "ucumCode": "mg/kg"
+                      },
+                      "uncertainty": {
+                        "expandedUncertainty": 5
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "scope": [
+        {
+          "matrixIris": [
+            "https://vc4qi.example/regressions/matrix/CuZn39Pb3"
+          ],
+          "allowedFormIris": [
+            "https://vc4qi.example/regressions/form/powder"
+          ],
+          "allowedPropertyIris": [
+            "https://vc4qi.example/regressions/property/As"
+          ]
+        },
+        {
+          "matrixIris": [
+            "https://vc4qi.example/regressions/matrix/CuZn39Pb3"
+          ],
+          "allowedFormIris": [
+            "https://vc4qi.example/regressions/form/disc"
+          ],
+          "allowedPropertyIris": [
+            "https://vc4qi.example/regressions/property/Pb"
+          ]
+        }
+      ],
+      "expected": {
+        "passed": false,
+        "codes": [
+          "MATRIX_PROPERTY_MISMATCH"
+        ]
+      }
+    },
+    {
+      "id": "rm-distinct-records-per-claim",
+      "operation": "rm",
+      "credential": {
+        "type": [
+          "ReferenceMaterialCertificate"
+        ],
+        "credentialSubject": {
+          "materials": [
+            {
+              "matrixIri": "https://vc4qi.example/regressions/matrix/CuZn39Pb3",
+              "formIri": "https://vc4qi.example/regressions/form/disc"
+            }
+          ],
+          "materialPropertiesList": [
+            {
+              "isCertified": true,
+              "results": [
+                {
+                  "propertyIri": "https://vc4qi.example/regressions/property/As",
+                  "data": {
+                    "quantity": {
+                      "value": 178,
+                      "unit": {
+                        "ucumCode": "mg/kg"
+                      },
+                      "uncertainty": {
+                        "expandedUncertainty": 5
+                      }
+                    }
+                  }
+                },
+                {
+                  "propertyIri": "https://vc4qi.example/regressions/property/Pb",
+                  "data": {
+                    "quantity": {
+                      "value": 178,
+                      "unit": {
+                        "ucumCode": "mg/kg"
+                      },
+                      "uncertainty": {
+                        "expandedUncertainty": 5
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "scope": [
+        {
+          "matrixIris": [
+            "https://vc4qi.example/regressions/matrix/CuZn39Pb3"
+          ],
+          "allowedFormIris": [
+            "https://vc4qi.example/regressions/form/disc"
+          ],
+          "allowedPropertyIris": [
+            "https://vc4qi.example/regressions/property/As"
+          ]
+        },
+        {
+          "matrixIris": [
+            "https://vc4qi.example/regressions/matrix/CuZn39Pb3"
+          ],
+          "allowedFormIris": [
+            "https://vc4qi.example/regressions/form/disc"
+          ],
+          "allowedPropertyIris": [
+            "https://vc4qi.example/regressions/property/Pb"
+          ]
+        }
+      ],
+      "expected": {
+        "passed": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "rm-uncertainty-alternative",
+      "operation": "rm",
+      "credential": {
+        "type": [
+          "ReferenceMaterialCertificate"
+        ],
+        "credentialSubject": {
+          "materials": [
+            {
+              "matrixIri": "https://vc4qi.example/regressions/matrix/CuZn39Pb3",
+              "formIri": "https://vc4qi.example/regressions/form/disc"
+            }
+          ],
+          "materialPropertiesList": [
+            {
+              "isCertified": true,
+              "results": [
+                {
+                  "propertyIri": "https://vc4qi.example/regressions/property/As",
+                  "data": {
+                    "quantity": {
+                      "value": 178,
+                      "unit": {
+                        "ucumCode": "mg/kg"
+                      },
+                      "uncertainty": {
+                        "expandedUncertainty": 5
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "scope": [
+        {
+          "matrixIris": [
+            "https://vc4qi.example/regressions/matrix/CuZn39Pb3"
+          ],
+          "allowedFormIris": [
+            "https://vc4qi.example/regressions/form/disc"
+          ],
+          "allowedPropertyIris": [
+            "https://vc4qi.example/regressions/property/As"
+          ],
+          "uncertainty": {
+            "maxAbsoluteMgKg": 2
+          }
+        },
+        {
+          "matrixIris": [
+            "https://vc4qi.example/regressions/matrix/CuZn39Pb3"
+          ],
+          "allowedFormIris": [
+            "https://vc4qi.example/regressions/form/disc"
+          ],
+          "allowedPropertyIris": [
+            "https://vc4qi.example/regressions/property/As"
+          ],
+          "uncertainty": {
+            "maxAbsoluteMgKg": 6
+          }
+        }
+      ],
+      "expected": {
+        "passed": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "rm-uncertainty-alternative-reversed",
+      "operation": "rm",
+      "credential": {
+        "type": [
+          "ReferenceMaterialCertificate"
+        ],
+        "credentialSubject": {
+          "materials": [
+            {
+              "matrixIri": "https://vc4qi.example/regressions/matrix/CuZn39Pb3",
+              "formIri": "https://vc4qi.example/regressions/form/disc"
+            }
+          ],
+          "materialPropertiesList": [
+            {
+              "isCertified": true,
+              "results": [
+                {
+                  "propertyIri": "https://vc4qi.example/regressions/property/As",
+                  "data": {
+                    "quantity": {
+                      "value": 178,
+                      "unit": {
+                        "ucumCode": "mg/kg"
+                      },
+                      "uncertainty": {
+                        "expandedUncertainty": 5
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "scope": [
+        {
+          "matrixIris": [
+            "https://vc4qi.example/regressions/matrix/CuZn39Pb3"
+          ],
+          "allowedFormIris": [
+            "https://vc4qi.example/regressions/form/disc"
+          ],
+          "allowedPropertyIris": [
+            "https://vc4qi.example/regressions/property/As"
+          ],
+          "uncertainty": {
+            "maxAbsoluteMgKg": 6
+          }
+        },
+        {
+          "matrixIris": [
+            "https://vc4qi.example/regressions/matrix/CuZn39Pb3"
+          ],
+          "allowedFormIris": [
+            "https://vc4qi.example/regressions/form/disc"
+          ],
+          "allowedPropertyIris": [
+            "https://vc4qi.example/regressions/property/As"
+          ],
+          "uncertainty": {
+            "maxAbsoluteMgKg": 2
+          }
+        }
+      ],
+      "expected": {
+        "passed": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "rm-uncertainty-contradicted",
+      "operation": "rm",
+      "credential": {
+        "type": [
+          "ReferenceMaterialCertificate"
+        ],
+        "credentialSubject": {
+          "materials": [
+            {
+              "matrixIri": "https://vc4qi.example/regressions/matrix/CuZn39Pb3",
+              "formIri": "https://vc4qi.example/regressions/form/disc"
+            }
+          ],
+          "materialPropertiesList": [
+            {
+              "isCertified": true,
+              "results": [
+                {
+                  "propertyIri": "https://vc4qi.example/regressions/property/As",
+                  "data": {
+                    "quantity": {
+                      "value": 178,
+                      "unit": {
+                        "ucumCode": "mg/kg"
+                      },
+                      "uncertainty": {
+                        "expandedUncertainty": 5
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "scope": [
+        {
+          "matrixIris": [
+            "https://vc4qi.example/regressions/matrix/CuZn39Pb3"
+          ],
+          "allowedFormIris": [
+            "https://vc4qi.example/regressions/form/disc"
+          ],
+          "allowedPropertyIris": [
+            "https://vc4qi.example/regressions/property/As"
+          ],
+          "uncertainty": {
+            "maxAbsoluteMgKg": 2
+          }
+        }
+      ],
+      "expected": {
+        "passed": false,
+        "codes": [
+          "UNCERTAINTY_WIDENING"
+        ]
+      }
+    },
+    {
+      "id": "rm-no-invented-ceiling",
+      "operation": "rm",
+      "credential": {
+        "type": [
+          "ReferenceMaterialCertificate"
+        ],
+        "credentialSubject": {
+          "materials": [
+            {
+              "matrixIri": "https://vc4qi.example/regressions/matrix/CuZn39Pb3",
+              "formIri": "https://vc4qi.example/regressions/form/disc"
+            }
+          ],
+          "materialPropertiesList": [
+            {
+              "isCertified": true,
+              "results": [
+                {
+                  "propertyIri": "https://vc4qi.example/regressions/property/As",
+                  "data": {
+                    "quantity": {
+                      "value": 178,
+                      "unit": {
+                        "ucumCode": "mg/kg"
+                      },
+                      "uncertainty": {
+                        "expandedUncertainty": 50
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "scope": [
+        {
+          "matrixIris": [
+            "https://vc4qi.example/regressions/matrix/CuZn39Pb3"
+          ],
+          "allowedFormIris": [
+            "https://vc4qi.example/regressions/form/disc"
+          ],
+          "allowedPropertyIris": [
+            "https://vc4qi.example/regressions/property/As"
+          ]
+        }
+      ],
+      "expected": {
+        "passed": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "dcc-method-control",
+      "operation": "dcc",
+      "credential": {
+        "type": [
+          "DigitalCalibrationCertificate"
+        ],
+        "credentialSubject": {
+          "measurementResults": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "usedMethods": [
+                {
+                  "methodIri": "https://vc4qi.example/regressions/method/M1"
+                }
+              ],
+              "results": [
+                {
+                  "data": {
+                    "quantity": {
+                      "value": 50,
+                      "unit": {
+                        "ucumCode": "kPa"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "scope": [
+        {
+          "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+          "allowedMethodIris": [
+            "https://vc4qi.example/regressions/method/M1"
+          ],
+          "range": {
+            "from": 0,
+            "to": 100,
+            "unit": {
+              "ucumCode": "kPa"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "passed": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "dcc-empty-methods",
+      "operation": "dcc",
+      "credential": {
+        "type": [
+          "DigitalCalibrationCertificate"
+        ],
+        "credentialSubject": {
+          "measurementResults": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "usedMethods": [],
+              "results": [
+                {
+                  "data": {
+                    "quantity": {
+                      "value": 50,
+                      "unit": {
+                        "ucumCode": "kPa"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "scope": [
+        {
+          "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+          "allowedMethodIris": [
+            "https://vc4qi.example/regressions/method/M1"
+          ],
+          "range": {
+            "from": 0,
+            "to": 100,
+            "unit": {
+              "ucumCode": "kPa"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "passed": false,
+        "codes": [
+          "UNRESOLVED_SCOPE_TERM"
+        ]
+      }
+    },
+    {
+      "id": "dcc-first-group-fails",
+      "operation": "dcc",
+      "credential": {
+        "type": [
+          "DigitalCalibrationCertificate"
+        ],
+        "credentialSubject": {
+          "measurementResults": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "usedMethods": [
+                {
+                  "methodIri": "https://vc4qi.example/regressions/method/M1"
+                }
+              ],
+              "results": [
+                {
+                  "data": {
+                    "quantity": {
+                      "value": 150,
+                      "unit": {
+                        "ucumCode": "kPa"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "usedMethods": [
+                {
+                  "methodIri": "https://vc4qi.example/regressions/method/M1"
+                }
+              ],
+              "results": [
+                {
+                  "data": {
+                    "quantity": {
+                      "value": 50,
+                      "unit": {
+                        "ucumCode": "kPa"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "scope": [
+        {
+          "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+          "allowedMethodIris": [
+            "https://vc4qi.example/regressions/method/M1"
+          ],
+          "range": {
+            "from": 0,
+            "to": 100,
+            "unit": {
+              "ucumCode": "kPa"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "passed": false,
+        "codes": [
+          "RANGE_OUT_OF_SCOPE"
+        ]
+      }
+    },
+    {
+      "id": "dcc-last-group-fails",
+      "operation": "dcc",
+      "credential": {
+        "type": [
+          "DigitalCalibrationCertificate"
+        ],
+        "credentialSubject": {
+          "measurementResults": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "usedMethods": [
+                {
+                  "methodIri": "https://vc4qi.example/regressions/method/M1"
+                }
+              ],
+              "results": [
+                {
+                  "data": {
+                    "quantity": {
+                      "value": 50,
+                      "unit": {
+                        "ucumCode": "kPa"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "usedMethods": [
+                {
+                  "methodIri": "https://vc4qi.example/regressions/method/M1"
+                }
+              ],
+              "results": [
+                {
+                  "data": {
+                    "quantity": {
+                      "value": 150,
+                      "unit": {
+                        "ucumCode": "kPa"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "scope": [
+        {
+          "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+          "allowedMethodIris": [
+            "https://vc4qi.example/regressions/method/M1"
+          ],
+          "range": {
+            "from": 0,
+            "to": 100,
+            "unit": {
+              "ucumCode": "kPa"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "passed": false,
+        "codes": [
+          "RANGE_OUT_OF_SCOPE"
+        ]
+      }
+    },
+    {
+      "id": "dcc-alternative-recovers",
+      "operation": "dcc",
+      "credential": {
+        "type": [
+          "DigitalCalibrationCertificate"
+        ],
+        "credentialSubject": {
+          "measurementResults": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "usedMethods": [
+                {
+                  "methodIri": "https://vc4qi.example/regressions/method/M1"
+                }
+              ],
+              "results": [
+                {
+                  "data": {
+                    "quantity": {
+                      "value": 50,
+                      "unit": {
+                        "ucumCode": "kPa"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "scope": [
+        {
+          "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+          "allowedMethodIris": [
+            "https://vc4qi.example/regressions/method/M1"
+          ],
+          "range": {
+            "from": 0,
+            "to": 10,
+            "unit": {
+              "ucumCode": "kPa"
+            }
+          }
+        },
+        {
+          "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+          "allowedMethodIris": [
+            "https://vc4qi.example/regressions/method/M1"
+          ],
+          "range": {
+            "from": 0,
+            "to": 100,
+            "unit": {
+              "ucumCode": "kPa"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "passed": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "dcc-missing-methods",
+      "operation": "dcc",
+      "credential": {
+        "type": [
+          "DigitalCalibrationCertificate"
+        ],
+        "credentialSubject": {
+          "measurementResults": [
+            {
+              "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+              "results": [
+                {
+                  "data": {
+                    "quantity": {
+                      "value": 50,
+                      "unit": {
+                        "ucumCode": "kPa"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "scope": [
+        {
+          "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
+          "allowedMethodIris": [
+            "https://vc4qi.example/regressions/method/M1"
+          ],
+          "range": {
+            "from": 0,
+            "to": 100,
+            "unit": {
+              "ucumCode": "kPa"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "passed": false,
+        "codes": [
+          "UNRESOLVED_SCOPE_TERM"
+        ]
+      }
+    },
+    {
+      "id": "gs-type-only-contained",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "constraints": {
+            "authorizedCredentialTypes": [
+              "TestReportCredential"
+            ]
+          }
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": {
+            "authorizedCredentialTypes": [
+              "TestReportCredential"
+            ]
+          }
+        }
+      },
+      "expected": {
+        "passed": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "gs-type-only-escape",
+      "operation": "derived",
+      "child": {
+        "credentialSubject": {
+          "constraints": {
+            "authorizedCredentialTypes": [
+              "UnpermittedCredential"
+            ]
+          }
+        }
+      },
+      "parent": {
+        "credentialSubject": {
+          "scope": {
+            "authorizedCredentialTypes": [
+              "TestReportCredential"
+            ]
+          }
+        }
+      },
+      "expected": {
+        "passed": false,
+        "codes": [
+          "DERIVATION_VIOLATION"
+        ]
+      }
+    }
+  ]
+}

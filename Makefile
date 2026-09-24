@@ -1,31 +1,25 @@
 .PHONY: setup test lint validate-schemas demo clean
 
+# Prerequisites: Node 20, pnpm 10.15.1, Python 3.12 and uv on PATH.
 setup:
-	@echo "==> Installing Node.js toolchain (pnpm)..."
-	npm install -g pnpm
-	pnpm install
-	@echo "==> Installing Python toolchain (uv)..."
-	pip install uv
-	uv sync --all-packages
-	@echo "==> Installing pre-commit hooks..."
-	pip install pre-commit
-	pre-commit install
-	@echo "==> Setup complete."
+	pnpm install --frozen-lockfile
+	uv sync --locked --all-packages --extra dev
 
 test:
 	pnpm test
-	uv run pytest
+	pnpm test:scenarios
+	uv run --locked --all-packages --extra dev pytest packages/core-py/tests
 
 lint:
 	pnpm lint
-	uv run ruff check .
-	uv run mypy packages/core-py
+	uv run --locked --all-packages --extra dev ruff check .
+	uv run --locked --all-packages --extra dev mypy packages/core-py
 
 validate-schemas:
 	pnpm validate:schemas
 
 demo:
-	pnpm --filter demo-web dev
+	pnpm --filter @qi-vc/demo-web dev
 
 clean:
 	find . -name "node_modules" -type d -prune -exec rm -rf {} +
