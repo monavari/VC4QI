@@ -1,7 +1,10 @@
 # Standards-first reconciliation: documentation and implementation plan
 
-Prepared 21 September 2026; documentation validated 23 September 2026.
-**Status: documentation pass D0–D4 complete; runtime migration I0–I8 pending.**
+Prepared 21 September 2026; documentation validated 23 September; I0 completed 24 September.
+**Status: D0–D4 and I0 complete; evaluator migration I1–I8 pending.**
+
+[I0 evidence](standards-first-i0-evidence.md) records the repaired setup, regression
+results, remaining lint debt and inventories. Next is the signed I1 binding slice.
 
 ## Recommendation and scope
 
@@ -20,9 +23,9 @@ Replace those abstractions coherently; reuse lower-level code only after checkin
 its behavior against the new contracts.
 
 The original planning pass preserved the supplied handover and created this plan
-and acceptance ledger. On 22 September the user requested continuation. The current
-pass updates documentation D0–D4; runtime code, credentials and release metadata
-remain unchanged. Active guidance now uses the standards-first contract.
+and acceptance ledger. D0–D4 updated documentation before runtime work. I0 then repaired
+workspace configuration and legacy scope predicates. Signed credentials and release
+metadata remain unchanged; active guidance uses the standards-first contract.
 
 The supplied text is an implementation handover, not the complete manuscript.
 No tracked manuscript `.tex`, `.bib`, `.pdf` or `.docx` was found. Plan manuscript
@@ -58,7 +61,7 @@ review. Verify the relevant primary specification before adding such claims.
 | LIMS is a `.gitkeep` directory; verifier-service has an `app` directory but no package manifest | Do not count these as implemented service packages. Repair workspace claims and commands. |
 | `CITATION.cff` already contains a version, release date and DOI | Preserve existing metadata as historical; verify its archive target before associating it with any new version. |
 
-Fresh baseline execution on Node 20.19.0, pnpm 10.15.1, Python 3.12.3:
+21 September baseline execution on Node 20.19.0, pnpm 10.15.1, Python 3.12.3:
 
 | Command | Exit | Observed result |
 | --- | --- | --- |
@@ -77,7 +80,7 @@ or fixture regeneration was needed for this planning pass.
 
 ## Evidence for what to retain and replace
 
-| Area | Evidence from current code | Treatment |
+| Area | Evidence at original base (before I0) | Treatment |
 | --- | --- | --- |
 | Graph, policy and result model | `evidence/types.ts` hardcodes three relations and six bases; `verifier/trace.ts` and Python `trace.py` accept when failure count is zero | Replace default model and aggregation; retain legacy APIs only behind explicit selection. |
 | Principal binding | `edge/evaluateAuthorizedBy.ts` compares identifiers only when both are present | Replace with a mandatory, profile-defined grantee/actor predicate; add missing-identifier and multiple-subject tests. |
@@ -187,7 +190,7 @@ directories mean every matching file is reviewed, not just one representative.
 | `RECONCILIATION_REPORT.md` | Append dated planning and phase evidence only; do not rewrite historical test claims. |
 | `docs/PAPER_FEEDBACK.md` | Append supersession notes for old relation/ceiling claims and a manuscript-facing correction list; preserve valid safe-mode findings. |
 | `CHANGELOG.md`, `CITATION.cff` | Draft migration/compatibility notes; preserve history and verify existing DOI; no invented publication, release date or new DOI. |
-| Package metadata, `Makefile`, root `pyproject.toml`, `.github/workflows/ci.yml`, release workflow | Record command/environment discrepancies now; fix executable configuration in I0/I8. CI currently selects pnpm 9 while package metadata pins 10.15.1. |
+| Package metadata, `Makefile`, root `pyproject.toml`, `.github/workflows/ci.yml`, release workflow | Record command/environment discrepancies now; fix executable configuration in I0/I8. The documentation pass found pnpm 9 in CI against a 10.15.1 package pin; I0 repaired this discrepancy. |
 
 Add focused documents only where needed: binding manifest guide, API migration
 guide and acceptance/evidence index. Use cross-links to the model and manifest
@@ -384,12 +387,13 @@ within the handover's authorization. Actual real-world governance inputs that th
 handover does not supply require a localized `TODO(human)` and report entry; they
 do not block the fictional RM baseline or independent work.
 
-D0–D4 have been carried out as a documentation pass, with validation recorded in the
-report. I0 is next: executable setup/CI repair, current checks, consumer inventory
-and shared regression preservation before the I1 signed vertical slice.
+D0–D4 and I0 are complete, with validation and remaining baseline debt recorded in the
+report. I1 is next: executable binding/request/result contracts and a signed vertical
+slice before broader evaluator replacement.
 
 The user requested Astra for hard semantic/design review, Sol for implementation
 and Luna at max reasoning for bounded documentation/consistency tasks. These three
 delegated documentation runs were attempted on 22 September but all failed before
 work with a workspace-credit error. The main agent completed the documentation
-locally; no independent model review is claimed.
+locally. During I0, Astra completed bounded semantic reviews; Sol/Luna remained
+unavailable. See the I0 evidence for the exact review boundary.

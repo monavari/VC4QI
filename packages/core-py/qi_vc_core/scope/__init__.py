@@ -10,7 +10,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from math import isfinite
+from typing import Any, Literal, TypeGuard
 
 JsonObject = dict[str, Any]
 
@@ -175,6 +176,7 @@ def check_dcc_scope_inclusion(
 
         results: list[JsonObject] = result_group.get("results") or []
         entry_matched = False
+        group_violations: list[ScopeViolation] = []
 
         for entry in matching:
             entry_ok = True
@@ -185,7 +187,9 @@ def check_dcc_scope_inclusion(
                 claim_method_iris = [
                     _governed_iri(m, "methodIri") for m in used_methods
                 ]
-                if any(iri is None for iri in claim_method_iris):
+                if not claim_method_iris or any(
+                    iri is None for iri in claim_method_iris
+                ):
                     labels = ", ".join(
                         str(m.get("reference") or m.get("name") or "")
                         for m in used_methods
@@ -267,10 +271,10 @@ def check_dcc_scope_inclusion(
             if entry_ok:
                 entry_matched = True
                 break
-            violations.extend(entry_violations)
+            group_violations.extend(entry_violations)
 
-        if entry_matched:
-            violations.clear()
+        if not entry_matched:
+            violations.extend(group_violations)
 
     return ScopeCheckResult(passed=len(violations) == 0, violations=violations)
 
@@ -290,6 +294,39 @@ class DrmdScopeEntry:
 
 
 def check_drmd_scope_inclusion(
+    drmd: JsonObject,
+    scope_entries: list[DrmdScopeEntry],
+    matrix: str | None = None,
+    form: str | None = None,
+) -> ScopeCheckResult:
+    """Each certified claim needs one complete record, including legacy U rules."""
+    subject = drmd.get("credentialSubject") or {}
+    violations: list[ScopeViolation] = []
+    checked = False
+    for group in subject.get("materialPropertiesList") or []:
+        if group.get("isCertified") is False:
+            continue
+        for result in group.get("results") or []:
+            checked = True
+            claim = {**drmd, "credentialSubject": {
+                **subject, "materialPropertiesList": [{**group, "results": [result]}],
+            }}
+            alternatives = [
+                _check_drmd_record(claim, [entry], matrix, form)
+                for entry in scope_entries
+            ]
+            if not any(candidate.passed for candidate in alternatives):
+                if not alternatives:
+                    return _check_drmd_record(claim, [], matrix, form)
+                for candidate in alternatives:
+                    violations.extend(candidate.violations)
+    # Empty requested-claim semantics belong to the new profile (S24).
+    if not checked:
+        return _check_drmd_record(drmd, scope_entries, matrix, form)
+    return ScopeCheckResult(passed=not violations, violations=violations)
+
+
+def _check_drmd_record(
     drmd: JsonObject,
     scope_entries: list[DrmdScopeEntry],
     matrix: str | None = None,
@@ -443,7 +480,11 @@ def check_derivation(
     child_credential: JsonObject,
     parent_credential: JsonObject,
 ) -> ScopeCheckResult:
-    """Compatibility wrapper for checking child evidence constraints against parent scope."""
+    """Deprecated legacy helper: label-based constraints, not governed containment.
+
+    New callers must use check_derived_edge. Retained for old callers only;
+    its historical behavior is NOT evidence for the I0 safety vectors.
+    """
     violations: list[ScopeViolation] = []
     cap_subject = child_credential.get("credentialSubject") or {}
     constraints: JsonObject = cap_subject.get("constraints") or {}
@@ -544,6 +585,86 @@ def _validity_violations(child: JsonObject, parent: JsonObject) -> list[ScopeVio
     return violations
 
 
+def _finite_number(value: Any) -> TypeGuard[int | float]:
+    if not isinstance(value, int | float) or isinstance(value, bool):
+        return False
+    try:
+        return isfinite(value)
+    except OverflowError:
+        return False
+
+
+def _pressure_interval(entry: JsonObject) -> tuple[float, float] | None:
+    bounds = entry.get("range")
+    if not isinstance(bounds, dict):
+        return None
+    unit = bounds.get("unit")
+    if not isinstance(unit, dict):
+        return None
+    keys = [unit[k] for k in ("unitIri", "ucumCode") if k in unit]
+    if not keys or any(
+        not isinstance(k, str) or k not in _PRESSURE_TO_PA for k in keys
+    ):
+        return None
+    factors = [_PRESSURE_TO_PA[k] for k in keys]
+    if any(factor != factors[0] for factor in factors):
+        return None
+    lo, hi = bounds.get("from"), bounds.get("to")
+    if not _finite_number(lo) or not _finite_number(hi) or lo > hi:
+        return None
+    low, high = lo * factors[0], hi * factors[0]
+    return (low, high) if isfinite(low) and isfinite(high) else None
+
+
+def _covers_record(child: JsonObject, parent: JsonObject) -> bool:
+    compared = False
+    for key, label in (
+        ("matrixIris", "matrix"), ("allowedPropertyIris", "allowedProperties"),
+        ("allowedFormIris", "allowedForms"), ("allowedMethodIris", "allowedMethods"),
+    ):
+        if not any(k in e for e in (child, parent) for k in (key, label)):
+            continue
+        cs, ps = child.get(key), parent.get(key)
+        if (not isinstance(cs, list) or not isinstance(ps, list) or not cs or not ps
+                or any(not isinstance(v, str) or not v for v in cs + ps)
+                or not all(v in ps for v in cs)):
+            return False
+        compared = True
+    if "range" in child or "range" in parent:
+        kind = _governed_iri(child, "quantityKindIri")
+        if (kind != "http://qudt.org/vocab/quantitykind/Pressure"
+                or kind != _governed_iri(parent, "quantityKindIri")):
+            return False
+        a, b = _pressure_interval(child), _pressure_interval(parent)
+        if a is None or b is None or a[0] < b[0] or a[1] > b[1]:
+            return False
+        compared = True
+    elif "quantityKindIri" in child or "quantityKindIri" in parent:
+        kind = _governed_iri(child, "quantityKindIri")
+        if not kind or kind != _governed_iri(parent, "quantityKindIri"):
+            return False
+        compared = True
+    # Explicit legacy maxima only; never invent an RM accreditation ceiling.
+    cu, pu = child.get("uncertainty") or {}, parent.get("uncertainty") or {}
+    for key in (
+        "maxAbsolute", "maxRelativePercent", "maxAbsoluteMgKg", "maxRelativeU_k2",
+    ):
+        if key not in pu:
+            continue
+        c, p = cu.get(key), pu[key]
+        if not _finite_number(c) or not _finite_number(p) or c < 0 or p < 0:
+            return False
+        if key == "maxAbsolute":
+            normalized_c = _to_pa(c, (child.get("range") or {}).get("unit") or {})
+            normalized_p = _to_pa(p, (parent.get("range") or {}).get("unit") or {})
+            if not _finite_number(normalized_c) or not _finite_number(normalized_p):
+                return False
+            c, p = normalized_c, normalized_p
+        if not _finite_number(c) or not _finite_number(p) or c > p:
+            return False
+    return compared
+
+
 def check_derived_edge(
     child_credential: JsonObject,
     parent_credential: JsonObject,
@@ -562,57 +683,21 @@ def check_derived_edge(
 
     child_entries = _scope_entries(child_credential)
     parent_entries = _scope_entries(parent_credential)
-    if child_entries and parent_entries:
-        for child_entry in child_entries:
-            child_range = child_entry.get("range") or {}
-            if child_range:
-                child_to = child_range.get("to")
-                child_unit = child_range.get("unit") or {}
-                covered = False
-                for parent_entry in parent_entries:
-                    # SCO-1: match on the governed identifier, never the label.
-                    child_measurand = _governed_iri(child_entry, "quantityKindIri")
-                    parent_measurand = _governed_iri(parent_entry, "quantityKindIri")
-                    if (child_measurand and parent_measurand
-                            and not _same_term(child_measurand, parent_measurand)):
-                        continue
-                    parent_range = parent_entry.get("range") or {}
-                    parent_to = parent_range.get("to")
-                    parent_unit = parent_range.get("unit") or {}
-                    if child_to is None or parent_to is None:
-                        covered = True
-                        continue
-                    child_pa = _to_pa(float(child_to), child_unit)
-                    parent_pa = _to_pa(float(parent_to), parent_unit)
-                    if child_pa is None or parent_pa is None or child_pa <= parent_pa:
-                        covered = True
-                if not covered:
-                    violations.append(ScopeViolation(
-                        code="DERIVATION_VIOLATION",
-                        detail=f"Child range.to {child_to} exceeds parent scope.",
-                    ))
-
-            # Governed identifiers only (SCO-1). D-5: a child entry must be
-            # dominated by a single parent record, so a derived entry spanning
-            # two adjacent parent entries is refused.
-            child_props = child_entry.get("allowedPropertyIris") or []
-            dominating_parent = next(
-                (entry for entry in parent_entries
-                 if (entry.get("allowedPropertyIris") or [])
-                 and all(p in (entry.get("allowedPropertyIris") or []) for p in child_props)),
-                None,
-            )
-            parent_props = [
-                p for entry in parent_entries
-                for p in (entry.get("allowedPropertyIris") or [])
-            ]
-            if dominating_parent is not None:
-                parent_props = list(dominating_parent.get("allowedPropertyIris") or [])
-            extra_props = [p for p in child_props if parent_props and p not in parent_props]
-            if extra_props:
+    # Existing GS scopes explicitly restrict a finite set of credential types.
+    type_only = (not child_entries and not parent_entries
+                 and bool(child_types) and bool(parent_types))
+    if not type_only and (not child_entries or not parent_entries):
+        violations.append(ScopeViolation(
+            code="DERIVATION_VIOLATION",
+            detail="Both endpoints require nonempty scope records.",
+        ))
+    else:
+        for index, child_entry in enumerate(child_entries):
+            if not any(_covers_record(child_entry, p) for p in parent_entries):
                 violations.append(ScopeViolation(
                     code="DERIVATION_VIOLATION",
-                    detail=f"Child allowedProperties [{', '.join(extra_props)}] not present in parent scope.",
+                    detail=(f"Child scope record {index} is not covered by one "
+                            "complete supported parent record."),
                 ))
     return ScopeCheckResult(passed=len(violations) == 0, violations=violations)
 

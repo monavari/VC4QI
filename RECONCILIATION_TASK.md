@@ -1,6 +1,9 @@
 # Standards-first reconciliation — active task
 
-**Documentation D0–D4 validated 23 September 2026. Runtime I0–I8 remains pending.**
+**Documentation D0–D4 and preparation I0 complete. Next: I1 signed binding slice.**
+
+[I0 evidence, 24 September 2026](docs/plans/standards-first-i0-evidence.md) records
+passing runtime checks and existing Python lint debt. The evaluator remains legacy.
 
 The governing thesis is that credentials represent institutional authority and
 evidence without creating that authority. Verifier-selected profiles determine
@@ -18,8 +21,8 @@ not active instructions. Later user instructions take precedence.
 
 Keep the existing repository and replace the evaluator in stages. The current base
 `225e78f37fccb6f3813ba5f0a85ff3e2b2eb72b9` includes registry/governed-identifier fixes
-and GS/assessment work. The later `63231d2` scope patch is absent locally; recover
-its safety properties rather than treating the missing commit as a blocker.
+and GS/assessment work. The later `63231d2` scope patch is absent locally; I0 reproduced
+its safety properties in shared unsigned regression vectors without claiming to apply it.
 Work on `refactor/standards-first-reconciliation` under [AGENTS.md](AGENTS.md).
 
 ## Ordered work
@@ -30,7 +33,7 @@ explanatory documents, traceability and consistency before runtime model changes
 
 | Phase | Deliverable and principal exit evidence |
 | --- | --- |
-| I0 | Reproducible baseline/configuration, old consumer inventory, preserved scope regressions. |
+| I0 — complete | Locked setup, consumer/resource inventory, shared scope regressions; existing Python lint debt recorded. |
 | I1 | Binding manifest, new request/result types and a real signed vertical slice with protected source provenance. |
 | I2 | Binding-driven compiler, seven gates, bounded resources and three-state outcomes; V/P controls. |
 | I3 | Complete routes/global restrictions and independently justified recursive support; C controls. |

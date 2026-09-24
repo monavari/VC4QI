@@ -10,8 +10,8 @@ verifier-selected profiles and accepted semantics determine what a verifier can 
 ## Current status
 
 The documentation now specifies the **standards-first target**. Runtime code, v1 schemas,
-policies and fixtures still implement the legacy manuscript-v2.1 model. The migration is
-planned and tracked; this branch is not a new release or proof that the revised paper's
+policies and fixtures still implement the legacy manuscript-v2.1 model. I0 restored scope safety and locked workspace setup; the evaluator migration is
+tracked; this branch is not a new release or proof that the revised paper's
 full witness executes. TypeScript is canonical; Python mirrors supported semantics.
 
 | Capability | Current status |
@@ -43,12 +43,11 @@ conformity, and 520 rejected for scope. These are target acceptance cases until 
 
 ## Run the current implementation
 
-Install Node 20, pnpm 10.15.1 and Python 3.12. From the repository root:
+Install Node 20, pnpm 10.15.1, Python 3.12 and uv 0.12.17. From the repository root:
 
 ```bash
 pnpm install --frozen-lockfile
-python3 -m venv .venv
-.venv/bin/python -m pip install -e 'packages/core-py[dev]'
+uv sync --locked --all-packages --extra dev
 pnpm -r build
 pnpm -C packages/core-ts test
 .venv/bin/python -m pytest packages/core-py/tests

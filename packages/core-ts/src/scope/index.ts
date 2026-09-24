@@ -211,6 +211,7 @@ export function checkDccScopeInclusion(
 
     const results = (resultGroup.results as JsonObject[] | undefined) ?? [];
     let entryMatched = false;
+    const groupViolations: ScopeViolation[] = [];
 
     for (const entry of matchingEntries) {
       let entryOk = true;
@@ -221,7 +222,7 @@ export function checkDccScopeInclusion(
       if (allowedMethodIris && allowedMethodIris.length > 0) {
         const claimMethodIris: (string | null)[] = usedMethods.map(m => governedIri(m, 'methodIri'));
 
-        if (claimMethodIris.some(iri => iri === null)) {
+        if (claimMethodIris.length === 0 || claimMethodIris.some(iri => iri === null)) {
           entryViolations.push(unresolved('method', usedMethods
             .map(m => m['reference'] ?? m['name'])
             .filter(Boolean)
@@ -307,13 +308,11 @@ export function checkDccScopeInclusion(
         entryMatched = true;
         break;
       }
-      violations.push(...entryViolations);
+      groupViolations.push(...entryViolations);
     }
 
-    if (entryMatched) {
-      // Clear violations from failed entries for this measurand — one match is enough
-      violations.length = 0;
-    }
+    // Alternatives are local to this group; earlier groups remain required.
+    if (!entryMatched) violations.push(...groupViolations);
   }
 
   return { passed: violations.length === 0, violations };
@@ -355,6 +354,38 @@ export interface DrmdPropertyCheck {
  * Returns per-property results to support the characterisationOf multi-lab check (F7).
  */
 export function checkDrmdScopeInclusion(
+  drmd: JsonObject,
+  scopeEntries: DrmdScopeEntry[],
+  matrix?: string,
+  form?: string,
+): ScopeCheckResult {
+  const subject = drmd.credentialSubject as JsonObject | undefined;
+  const groups = (subject?.materialPropertiesList as JsonObject[] | undefined) ?? [];
+  const violations: ScopeViolation[] = [];
+  let checked = false;
+  for (const group of groups) {
+    if (group.isCertified === false) continue;
+    for (const result of (group.results as JsonObject[] | undefined) ?? []) {
+      checked = true;
+      const claim = { ...drmd, credentialSubject: { ...subject,
+        materialPropertiesList: [{ ...group, results: [result] }],
+      } };
+      // One record must satisfy matrix, form, property and any explicit legacy
+      // uncertainty constraint together. A later complete alternative may recover.
+      const alternatives = scopeEntries.map(entry => checkDrmdRecord(claim, [entry], matrix, form));
+      if (!alternatives.some(candidate => candidate.passed)) {
+        if (alternatives.length === 0) return checkDrmdRecord(claim, [], matrix, form);
+        violations.push(...alternatives.flatMap(candidate => candidate.violations));
+      }
+    }
+  }
+  // Preserve the legacy empty/informative-group contract; requested-claim
+  // non-vacuity is a separate new-profile obligation (S24), not claimed here.
+  return checked ? { passed: violations.length === 0, violations }
+    : checkDrmdRecord(drmd, scopeEntries, matrix, form);
+}
+
+function checkDrmdRecord(
   drmd: JsonObject,
   scopeEntries: DrmdScopeEntry[],
   matrix?: string,
@@ -592,6 +623,75 @@ function validityWindowViolations(child: JsonObject, parent: JsonObject): ScopeV
   return violations;
 }
 
+// Legacy supported dimensions only. Unknown/new semantics belong to the
+// selected binding in the new evaluator; labels are never containment operands.
+function pressureInterval(entry: JsonObject): [number, number] | null {
+  const range = entry.range as JsonObject | undefined;
+  if (!range || typeof range !== 'object') return null;
+  const unit = range.unit as JsonObject | undefined;
+  if (!unit || typeof unit !== 'object') return null;
+  const keys = [unit.unitIri, unit.ucumCode].filter(value => value !== undefined);
+  if (keys.length === 0 || keys.some(key => typeof key !== 'string' || PRESSURE_TO_PA[key] === undefined)) return null;
+  const factors = keys.map(key => PRESSURE_TO_PA[key as string]!);
+  if (!factors.every(factor => factor === factors[0])) return null;
+  const from = range.from;
+  const to = range.to;
+  if (typeof from !== 'number' || typeof to !== 'number' || !Number.isFinite(from) || !Number.isFinite(to) || from > to) return null;
+  const low = from * factors[0]!;
+  const high = to * factors[0]!;
+  return Number.isFinite(low) && Number.isFinite(high) ? [low, high] : null;
+}
+
+function coversRecord(child: JsonObject, parent: JsonObject): boolean {
+  let compared = false;
+  for (const [key, label] of [
+    ['matrixIris', 'matrix'], ['allowedPropertyIris', 'allowedProperties'],
+    ['allowedFormIris', 'allowedForms'], ['allowedMethodIris', 'allowedMethods'],
+  ] as const) {
+    if (child[key] === undefined && parent[key] === undefined &&
+        child[label] === undefined && parent[label] === undefined) continue;
+    const childSet = governedIriSet(child, key);
+    const parentSet = governedIriSet(parent, key);
+    if (!childSet || !parentSet || childSet.length !== (child[key] as unknown[]).length ||
+        parentSet.length !== (parent[key] as unknown[]).length ||
+        !childSet.every(value => parentSet.includes(value))) return false;
+    compared = true;
+  }
+  if (child.range !== undefined || parent.range !== undefined) {
+    const kind = governedIri(child, 'quantityKindIri');
+    if (kind !== 'http://qudt.org/vocab/quantitykind/Pressure' ||
+        kind !== governedIri(parent, 'quantityKindIri')) return false;
+    const a = pressureInterval(child);
+    const b = pressureInterval(parent);
+    if (!a || !b || a[0] < b[0] || a[1] > b[1]) return false;
+    compared = true;
+  } else if (child.quantityKindIri !== undefined || parent.quantityKindIri !== undefined) {
+    const kind = governedIri(child, 'quantityKindIri');
+    if (!kind || kind !== governedIri(parent, 'quantityKindIri')) return false;
+    compared = true;
+  }
+  // These are explicitly supplied legacy maxima, not an RM baseline ceiling.
+  const cu = child.uncertainty as JsonObject | undefined;
+  const pu = parent.uncertainty as JsonObject | undefined;
+  for (const key of ['maxAbsolute', 'maxRelativePercent', 'maxAbsoluteMgKg', 'maxRelativeU_k2']) {
+    if (pu?.[key] === undefined) continue;
+    const childValue = cu?.[key];
+    const parentValue = pu[key];
+    if (typeof childValue !== 'number' || typeof parentValue !== 'number' || !Number.isFinite(childValue) ||
+        !Number.isFinite(parentValue) || childValue < 0 || parentValue < 0) return false;
+    let c = childValue;
+    let p = parentValue;
+    if (key === 'maxAbsolute') {
+      const cr = child.range as JsonObject | undefined;
+      const pr = parent.range as JsonObject | undefined;
+      c = toPa(c, (cr?.unit as JsonObject | undefined) ?? {}) ?? NaN;
+      p = toPa(p, (pr?.unit as JsonObject | undefined) ?? {}) ?? NaN;
+    }
+    if (!Number.isFinite(c) || !Number.isFinite(p) || c > p) return false;
+  }
+  return compared;
+}
+
 export function checkDerivedEdge(
   childCredential: JsonObject,
   parentCredential: JsonObject,
@@ -614,63 +714,17 @@ export function checkDerivedEdge(
 
   const childEntries = getScopeEntries(childCredential);
   const parentEntries = getScopeEntries(parentCredential);
-  if (childEntries.length > 0 && parentEntries.length > 0) {
-    for (const childEntry of childEntries) {
-      const childRange = childEntry.range as JsonObject | undefined;
-      if (childRange) {
-        // SCO-1: match parent entries on the governed identifier, never the
-        // label. D-5: domination is by a single parent record, so a child entry
-        // must be covered by one parent entry rather than by their union.
-        const childQuantityKind = governedIri(childEntry, 'quantityKindIri');
-        const matchingParents = parentEntries.filter(parentEntry => {
-          const parentQuantityKind = governedIri(parentEntry, 'quantityKindIri');
-          if (childQuantityKind === null || parentQuantityKind === null) return true;
-          return sameTerm(childQuantityKind, parentQuantityKind);
-        });
-        const childTo = childRange.to as number | undefined;
-        const childUnit = childRange.unit as JsonObject | undefined;
-        const covered = matchingParents.some(parentEntry => {
-          const parentRange = parentEntry.range as JsonObject | undefined;
-          const parentTo = parentRange?.to as number | undefined;
-          const parentUnit = parentRange?.unit as JsonObject | undefined;
-          if (childTo === undefined || parentTo === undefined || !childUnit || !parentUnit) return true;
-          const childToPa = toPa(childTo, childUnit);
-          const parentToPa = toPa(parentTo, parentUnit);
-          return childToPa === null || parentToPa === null || childToPa <= parentToPa;
-        });
-        if (!covered) {
-          violations.push({
-            code: 'DERIVATION_VIOLATION',
-            detail: `Child range.to ${String(childTo)} exceeds parent scope.`,
-          });
-        }
-      }
-
-      // Governed identifiers only (SCO-1). D-5: a child entry must be dominated
-      // by a single parent record, so the admissible set comes from one parent
-      // entry rather than the union of all of them — a derived entry spanning
-      // two adjacent parent entries is refused.
-      const childProperties = childEntry.allowedPropertyIris as string[] | undefined;
-      if (childProperties?.length) {
-        const dominatingParent = parentEntries.find(entry => {
-          const parentProps = (entry.allowedPropertyIris as string[] | undefined) ?? [];
-          if (parentProps.length === 0) return false;
-          return childProperties.every(property => parentProps.some(p => sameTerm(p, property)));
-        });
-        const parentProperties = parentEntries.flatMap(entry =>
-          (entry.allowedPropertyIris as string[] | undefined) ?? []
-        );
-        if (parentProperties.length > 0 && !dominatingParent) {
-          const extras = childProperties.filter(
-            property => !parentProperties.some(p => sameTerm(p, property)),
-          );
-          if (extras.length > 0) {
-            violations.push({
-              code: 'DERIVATION_VIOLATION',
-              detail: `Child allowedProperties [${extras.join(', ')}] not present in parent scope.`,
-            });
-          }
-        }
+  // Type-only scopes are the existing GS binding's explicit finite domain.
+  // They are not missing scope, but cannot substitute for a record on one side.
+  const typeOnly = childEntries.length === 0 && parentEntries.length === 0 &&
+    childTypes.length > 0 && parentTypes.length > 0;
+  if (!typeOnly && (childEntries.length === 0 || parentEntries.length === 0)) {
+    violations.push({ code: 'DERIVATION_VIOLATION', detail: 'Both endpoints require nonempty scope records.' });
+  } else {
+    for (const [index, childEntry] of childEntries.entries()) {
+      if (!parentEntries.some(parentEntry => coversRecord(childEntry, parentEntry))) {
+        violations.push({ code: 'DERIVATION_VIOLATION',
+          detail: `Child scope record ${index} is not covered by one complete supported parent record.` });
       }
     }
   }

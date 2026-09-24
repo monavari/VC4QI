@@ -22,5 +22,8 @@ pnpm -C packages/core-ts test
 
 The 21 September 2026 baseline recorded 187 TS passed and 157 Python passed/1 skipped.
 Those are legacy results, not execution of the [new acceptance matrix](plans/standards-first-acceptance.csv).
-Root uv/Make workspace targets require repair; do not silently replace missing pytest with
-an assumption that Python checks passed.
+I0 repaired uv/Make setup. On 24 September the suites pass 226 TS tests and 196 Python
+tests, with one existing Python skip. This includes 38 shared unsigned scope vectors and
+non-finite-bound checks in each language. See [I0 evidence](plans/standards-first-i0-evidence.md).
+Python's old label-based `check_derivation` helper is deprecated and outside this safety
+coverage; the graph uses `check_derived_edge`. Existing Python lint debt remains visible.
