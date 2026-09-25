@@ -6,9 +6,9 @@ import addFormatsModule from 'ajv-formats';
 import { describe, expect, it } from 'vitest';
 import { canonicalize } from '../src/canonicalize/index.js';
 import {
-  catalogDocumentLoader, loadRmV1Catalog, RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, RM_V1_VOCAB,
-  VC_V2_CONTEXT,
+  catalogDocumentLoader, RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, RM_V1_VOCAB, VC_V2_CONTEXT,
 } from '../src/reliance/index.js';
+import { loadRmV1Catalog } from '../src/reliance/rm-v1-node.js';
 import type { JsonObject } from '../src/types.js';
 
 const Ajv = Ajv2020 as unknown as typeof import('ajv/dist/2020.js').default;

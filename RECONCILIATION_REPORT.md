@@ -1101,7 +1101,7 @@ quantities; `@list` for `materials`, `materialPropertiesList` and `results` so n
 index pointers are signed. The VCDM 2.0 bytes are the existing vendored copy; they were
 not compared with W3C's published hash here (network to w3.org is blocked).
 
-New `loadRmV1Catalog`/`load_rm_v1_catalog` install the index into the isolated catalog.
+New `loadRmV1Catalog` (Node-only `reliance/rm-v1-node.ts`, kept out of the browser-reachable barrel) and `load_rm_v1_catalog` install the index into the isolated catalog.
 The manifest's pending list now names controller documents, the A/O/D178/S/H artifacts
 and the status list instead of the pinned contexts/schemas; it remains `incomplete`.
 
