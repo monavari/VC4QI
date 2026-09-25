@@ -319,6 +319,14 @@
       },
       "additionalProperties": false
     },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
     "proof": {
       "type": "object",
       "required": [

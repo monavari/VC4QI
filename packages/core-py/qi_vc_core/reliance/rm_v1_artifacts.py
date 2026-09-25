@@ -26,7 +26,14 @@ from jsonschema import (  # type: ignore[import-untyped]
 from pyld import jsonld  # type: ignore[import-untyped]
 
 from ..proofs import verify_proof
-from .catalog import CatalogError, CatalogSession, sha384_sri
+from .catalog import (
+    CatalogBudget,
+    CatalogError,
+    MemoizingResolver,
+    ResourceResolver,
+    StaticResourceCatalog,
+    sha384_sri,
+)
 from .key_authorization import KeyAuthorization, authorize_assertion_method
 from .manifest import RM_V1_BINDING_ID, BindingManifest
 from .profile import RelianceProfile
@@ -239,7 +246,7 @@ def _validity(document: dict[str, Any], evaluation_time: str) -> PredicateResult
 
 
 def _related_resources(
-    document: dict[str, Any], session: CatalogSession
+    document: dict[str, Any], session: ResourceResolver
 ) -> tuple[RelatedResourceCheck, ...]:
     references = document.get("relatedResource")
     checks: list[RelatedResourceCheck] = []
@@ -293,7 +300,7 @@ def _format_checker() -> FormatChecker:
     return checker
 
 
-def _catalog_loader(session: CatalogSession) -> Any:
+def _catalog_loader(session: ResourceResolver) -> Any:
     def loader(url: str, options: dict[str, Any] | None = None) -> dict[str, Any]:
         resource = session.resolve(url)
         if not (
@@ -346,11 +353,17 @@ def _undefined_terms(document: dict[str, Any], loader: Any) -> list[str]:
 
 def verify_rm_artifact(
     uri: str,
-    session: CatalogSession,
+    session: ResourceResolver,
     manifest: BindingManifest,
     evaluation_time: str,
+    static_resolver: ResourceResolver | None = None,
 ) -> RmArtifactVerification:
-    """Verify one RM v1 artifact from its exact catalog bytes; never raises."""
+    """Verify one RM v1 artifact from its exact catalog bytes; never raises.
+
+    ``static_resolver`` resolves pinned contexts, schemas and controller documents;
+    it defaults to ``session``.
+    """
+    static = static_resolver or session
     checks: list[CheckOutcome] = []
     extra: dict[str, Any] = {}
 
@@ -430,6 +443,13 @@ def verify_rm_artifact(
         )
     extra["artifact_type"] = artifact_type
     declared = document.get("credentialSchema")
+    if isinstance(declared, list):
+        return fail(
+            "type",
+            "not_established",
+            "Multiple credentialSchema declarations have no accepted composition "
+            "in this binding.",
+        )
     if not isinstance(declared, dict) or declared.get("id") != schema_id:
         return fail(
             "type", "contradicted", f"{artifact_type} must declare schema {schema_id}."
@@ -439,7 +459,7 @@ def verify_rm_artifact(
     )
 
     try:
-        schema = json.loads(session.resolve(schema_id).content.decode("utf-8"))
+        schema = json.loads(static.resolve(schema_id).content.decode("utf-8"))
     except (CatalogError, UnicodeDecodeError, ValueError):
         return fail("schema", "not_established", "Pinned schema unavailable.")
     errors = sorted(
@@ -473,7 +493,7 @@ def verify_rm_artifact(
     )
 
     key = authorize_assertion_method(
-        document.get("issuer"), proof.get("verificationMethod"), session
+        document.get("issuer"), proof.get("verificationMethod"), static
     )
     extra["key_authorization"] = key
     if key.state != "established" or key.public_key is None:
@@ -483,7 +503,7 @@ def verify_rm_artifact(
         return fail("key", state, f"{key.code}: {key.reason}")
     checks.append(CheckOutcome("key", "established", key.reason))
 
-    loader = _catalog_loader(session)
+    loader = _catalog_loader(static)
     try:
         undefined = _undefined_terms(document, loader)
         if undefined:
@@ -545,37 +565,108 @@ def _selected_result(pointer: str) -> bool:
     )
 
 
+# Internal budget for pinned static material (contexts, schemas, controller documents).
+STATIC_RESOURCE_BUDGET = CatalogBudget(max_resources=1_000, max_bytes=20_000_000)
+
+
+def _refuse_plan(request: RelianceRequest, reason: str) -> RmSliceEvaluation:
+    """Gate 0 refusal: nothing is resolved, read or evaluated."""
+    not_run = _not_run("Not evaluated: the plan was refused at gate 0.")
+    conformity: ConformityResult = (
+        ConformityRequestedResult(
+            state=not_run.state,
+            execution=not_run.execution,
+            reasons=not_run.reasons,
+            source_pointers=(),
+            requirement_id=request.conformity.requirement_id,
+            decision_rule_id=request.conformity.decision_rule_id,
+        )
+        if request.conformity is not None
+        else ConformityNotRequested()
+    )
+    result = create_reliance_result(
+        RelianceResult(
+            request_id=request.request_id,
+            target_id=request.target_id,
+            binding=request.binding,
+            profile=request.profile,
+            artifact_verification=(),
+            authorization=tuple(
+                ClaimAuthorizationResult(
+                    state=not_run.state,
+                    execution=not_run.execution,
+                    reasons=not_run.reasons,
+                    source_pointers=(),
+                    claim_id=claim.id,
+                    route_witness_ids=(),
+                )
+                for claim in request.selected_claims
+            ),
+            support=(),
+            conformity=conformity,
+            decision="not_established",
+            trace=(
+                TraceEntry(
+                    0,
+                    f"{request.target_id} | plan",
+                    "accepted-plan",
+                    "not_established",
+                    "executed",
+                    reason,
+                    (),
+                ),
+            ),
+            limitations=(
+                "The request did not name the verifier-selected profile and binding; "
+                "nothing was evaluated.",
+            ),
+        )
+    )
+    return RmSliceEvaluation(result=result, artifacts=())
+
+
 def evaluate_rm_slice(
     request: RelianceRequest,
-    session: CatalogSession,
+    catalog: StaticResourceCatalog,
     manifest: BindingManifest,
     profile: RelianceProfile,
 ) -> RmSliceEvaluation:
-    """Evaluate a reliance request with the I1 slice; the decision is never accept."""
+    """Evaluate a reliance request; the decision is never accept before I3/I4."""
     if (
-        request.binding.id != RM_V1_BINDING_ID
-        or request.binding.version != manifest.version
-        or manifest.id != RM_V1_BINDING_ID
-    ):
-        raise ValueError(
-            f"The I1 slice evaluates only {RM_V1_BINDING_ID}@{manifest.version}."
-        )
-    # The verifier selects the profile; the request must name exactly that profile.
-    if (
-        request.profile.id != profile.id
-        or request.profile.version != profile.version
+        manifest.id != RM_V1_BINDING_ID
         or profile.binding.id != manifest.id
         or profile.binding.version != manifest.version
     ):
         raise ValueError(
-            f"Request profile {request.profile.id}@{request.profile.version} "
-            "is not the selected profile."
+            f"Profile {profile.id}@{profile.version} is not configured for "
+            f"{RM_V1_BINDING_ID}@{manifest.version}."
         )
+    # Gate 0: the verifier selects profile and binding (V09).
+    if (
+        request.binding.id != manifest.id
+        or request.binding.version != manifest.version
+        or request.profile.id != profile.id
+        or request.profile.version != profile.version
+    ):
+        return _refuse_plan(
+            request,
+            f"Requested {request.profile.id}@{request.profile.version} with binding "
+            f"{request.binding.id}@{request.binding.version} is not the "
+            f"verifier-selected profile {profile.id}@{profile.version} "
+            f"for {manifest.id}@{manifest.version}.",
+        )
+    # Retrieved evidence counts against the request budget, each resource once;
+    # pinned static material uses a separate internal budget.
+    limits = request.resolver_limits
+    session = MemoizingResolver(
+        catalog.open_session(CatalogBudget(limits.max_resources, limits.max_bytes))
+    )
+    static = MemoizingResolver(catalog.open_session(STATIC_RESOURCE_BUDGET))
     target = verify_rm_artifact(
-        request.target_id, session, manifest, request.evaluation_time
+        request.target_id, session, manifest, request.evaluation_time, static
     )
     artifacts = [target] + [
-        verify_rm_artifact(uri, session, manifest, request.evaluation_time)
+        verify_rm_artifact(uri, session, manifest, request.evaluation_time, static)
         for uri in request.supplied_evidence
         if uri != request.target_id
     ]
@@ -583,12 +674,47 @@ def evaluate_rm_slice(
     def read(uri: str) -> dict[str, Any]:
         return dict(json.loads(session.resolve(uri).content.decode("utf-8")))
 
+    # Gate 1 identity: a protected artifact must identify itself by the identity it
+    # was resolved under (P11).
+    identity: dict[str, PredicateResult | None] = {}
+    for artifact in artifacts:
+        if artifact.protection.state != "established":
+            identity[artifact.artifact_id] = None
+            continue
+        claimed = read(artifact.artifact_id).get("id")
+        identity[artifact.artifact_id] = (
+            _predicate(
+                "established",
+                ("Artifact identifies itself by its resolved identity.",),
+                ("/id",),
+            )
+            if claimed == artifact.artifact_id
+            else _predicate(
+                "contradicted",
+                (
+                    f"Artifact resolved as {artifact.artifact_id} identifies itself "
+                    f"as {claimed}.",
+                ),
+                ("/id",),
+            )
+        )
+
     # Gate 3 status: each status list is verified once as an artifact in its own right.
     lists: dict[str, RmArtifactVerification] = {}
     status: dict[str, StatusOutcome | None] = {}
-    for artifact in artifacts:
+    for index, artifact in enumerate(artifacts):
         if artifact.protection.state != "established":
             status[artifact.artifact_id] = None
+            continue
+        # The target is depth 0 and supplied evidence depth 1; its list is one deeper.
+        list_depth = (0 if index == 0 else 1) + 1
+        if list_depth > limits.max_depth:
+            status[artifact.artifact_id] = StatusOutcome(
+                "not_established",
+                f"Status list is at depth {list_depth}, beyond the request's maxDepth "
+                f"{limits.max_depth}.",
+                ("/credentialStatus",),
+            )
             continue
         document = read(artifact.artifact_id)
         entry = document.get("credentialStatus")
@@ -600,7 +726,7 @@ def evaluate_rm_slice(
         if isinstance(list_uri, str):
             if list_uri not in lists:
                 lists[list_uri] = verify_rm_artifact(
-                    list_uri, session, manifest, request.evaluation_time
+                    list_uri, session, manifest, request.evaluation_time, static
                 )
             checked = lists[list_uri]
             if (
@@ -626,6 +752,19 @@ def evaluate_rm_slice(
     verification: list[ArtifactVerificationResult] = []
     for artifact in artifacts:
         verification.append(artifact.protection)
+        checked_identity = identity[artifact.artifact_id]
+        identity_result = checked_identity or _not_run(
+            "Not evaluated because protection is not established."
+        )
+        verification.append(
+            ArtifactVerificationResult(
+                state=identity_result.state,
+                execution=identity_result.execution,
+                reasons=tuple(f"identity: {r}" for r in identity_result.reasons),
+                source_pointers=identity_result.source_pointers,
+                artifact_id=artifact.artifact_id,
+            )
+        )
         verification.append(
             ArtifactVerificationResult(
                 state=artifact.validity.state,
@@ -760,6 +899,20 @@ def evaluate_rm_slice(
                     ("/relatedResource", related.id),
                 )
             )
+        checked_identity = identity[artifact.artifact_id]
+        trace.append(
+            TraceEntry(
+                1,
+                use,
+                "resource-identity",
+                checked_identity.state if checked_identity else "not_established",
+                "executed" if checked_identity else "not_run",
+                " ".join(checked_identity.reasons)
+                if checked_identity
+                else "Not evaluated because protection is not established.",
+                checked_identity.source_pointers if checked_identity else (),
+            )
+        )
         trace.append(
             TraceEntry(
                 3,

@@ -91,6 +91,17 @@ undefined-term check because PyLD has no safe mode. See the
 [signed-slice evidence](plans/standards-first-i1-signed-slice-evidence.md).
 Status resources and an independent transformation vector remain.
 
+## I2 progress, 25 September 2026
+
+The reliance result now carries a request identity, a gate-numbered trace (0–6) and
+resource observations. Gate 3 checks revocation status from signed Bitstring Status
+Lists with issuer-only authority, explicit freshness and bounded decompression. Gate 0
+refuses unselected profiles; gate 1 checks resolved identity; the request budget bounds
+evidence resolution. Fifteen acceptance cases are `passing` (V09–V12, P02–P04, P07–P12,
+P15, P16) and P05 is `excluded_unsupported`; the other 67 remain `not_implemented`.
+Authorization, support and conformity (gates 5–6) are still not implemented, so no
+request can yet be accepted. See the [I2 evidence](plans/standards-first-i2-evidence.md).
+
 ## Migration and historical claims
 
 Work branch: `refactor/standards-first-reconciliation`, retaining merged registry,

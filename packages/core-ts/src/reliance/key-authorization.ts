@@ -8,7 +8,7 @@
 // Controller documents come only from the isolated static catalog and are processed
 // as plain JSON (W3C Controlled Identifiers 1.0 permits JSON processing).
 import { fromMultibase } from '../utils/base58btc.js';
-import { CatalogError, type CatalogSession } from './catalog.js';
+import { CatalogError, type ResourceResolver } from './catalog.js';
 import type { SemanticState } from './types.js';
 
 export type KeyAuthorizationCode =
@@ -92,7 +92,7 @@ function decodeEd25519Multikey(value: unknown): Uint8Array | undefined {
  * the issuer's assertion key is `contradicted`. Never throws for untrusted input.
  */
 export function authorizeAssertionMethod(
-  issuer: unknown, verificationMethod: unknown, session: CatalogSession,
+  issuer: unknown, verificationMethod: unknown, session: ResourceResolver,
 ): KeyAuthorization {
   const issuerId = issuerIdentifier(issuer);
   if (issuerId === undefined) {

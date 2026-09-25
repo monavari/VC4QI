@@ -4,7 +4,7 @@
 // executed; authorization, support and conformity are not implemented yet and are
 // reported as not_run, so the decision can never be accept. Node-only (status uses zlib).
 import { createRelianceResult, decisionFromRequired, semanticAnd } from './index.js';
-import type { CatalogSession } from './catalog.js';
+import { memoizingResolver, type StaticResourceCatalog } from './catalog.js';
 import { RM_V1_BINDING_ID, type BindingManifest } from './manifest.js';
 import type { RelianceProfile } from './profile.js';
 import {
@@ -22,6 +22,9 @@ export interface RmSliceEvaluation {
   readonly artifacts: readonly RmArtifactVerification[];
 }
 
+/** Internal budget for pinned static material (contexts, schemas, controller documents). */
+export const STATIC_RESOURCE_BUDGET = Object.freeze({ maxResources: 1_000, maxBytes: 20_000_000 });
+
 const SELECTED_RESULT = /^\/credentialSubject\/materialPropertiesList\/(0|[1-9][0-9]*)\/results\/(0|[1-9][0-9]*)$/;
 
 /**
@@ -31,18 +34,27 @@ const SELECTED_RESULT = /^\/credentialSubject\/materialPropertiesList\/(0|[1-9][
  * not_established. A contradicted artifact yields reject.
  */
 export async function evaluateRmSlice(
-  request: RelianceRequest, session: CatalogSession, manifest: BindingManifest, profile: RelianceProfile,
+  request: RelianceRequest, catalog: StaticResourceCatalog, manifest: BindingManifest, profile: RelianceProfile,
 ): Promise<RmSliceEvaluation> {
-  if (request.binding.id !== RM_V1_BINDING_ID || request.binding.version !== manifest.version ||
-      manifest.id !== RM_V1_BINDING_ID) {
-    throw new Error(`The I1 slice evaluates only ${RM_V1_BINDING_ID}@${manifest.version}.`);
+  if (manifest.id !== RM_V1_BINDING_ID || profile.binding.id !== manifest.id ||
+      profile.binding.version !== manifest.version) {
+    throw new Error(`Profile ${profile.id}@${profile.version} is not configured for ${RM_V1_BINDING_ID}@${manifest.version}.`);
   }
-  // The verifier selects the profile; the request must name exactly that profile.
-  if (request.profile.id !== profile.id || request.profile.version !== profile.version ||
-      profile.binding.id !== manifest.id || profile.binding.version !== manifest.version) {
-    throw new Error(`Request profile ${request.profile.id}@${request.profile.version} is not the selected profile.`);
+  // Gate 0: the verifier selects profile and binding; a request for anything else is
+  // not evaluated at all (V09), rather than silently evaluated under another plan.
+  if (request.binding.id !== manifest.id || request.binding.version !== manifest.version ||
+      request.profile.id !== profile.id || request.profile.version !== profile.version) {
+    return refusePlan(request,
+      `Requested ${request.profile.id}@${request.profile.version} with binding ${request.binding.id}@${request.binding.version} `
+      + `is not the verifier-selected profile ${profile.id}@${profile.version} for ${manifest.id}@${manifest.version}.`);
   }
-  const options = { manifest, evaluationTime: request.evaluationTime };
+  // Retrieved evidence counts against the request budget, each resource once;
+  // pinned static material uses a separate internal budget.
+  const session = memoizingResolver(catalog.openSession({
+    maxResources: request.resolverLimits.maxResources, maxBytes: request.resolverLimits.maxBytes,
+  }));
+  const staticResolver = memoizingResolver(catalog.openSession(STATIC_RESOURCE_BUDGET));
+  const options = { manifest, evaluationTime: request.evaluationTime, staticResolver };
   const target = await verifyRmArtifact(request.targetId, session, options);
   const evidence: RmArtifactVerification[] = [];
   for (const uri of request.suppliedEvidence) {
@@ -54,9 +66,27 @@ export async function evaluateRmSlice(
   const lists = new Map<string, RmArtifactVerification>();
   const status = new Map<string, StatusOutcome | undefined>();
   const read = (uri: string) => JSON.parse(new TextDecoder().decode(session.resolve(uri).bytes)) as Record<string, unknown>;
+  // Gate 1 identity: a protected artifact must identify itself by the identity it was
+  // resolved under (P11); conflicting content under one identity cannot be installed.
+  const identity = new Map<string, ReturnType<typeof predicate> | undefined>();
   for (const artifact of artifacts) {
+    if (artifact.protection.state !== 'established') { identity.set(artifact.artifactId, undefined); continue; }
+    const id = read(artifact.artifactId).id;
+    identity.set(artifact.artifactId, id === artifact.artifactId
+      ? predicate('established', ['Artifact identifies itself by its resolved identity.'], ['/id'])
+      : predicate('contradicted', [`Artifact resolved as ${artifact.artifactId} identifies itself as ${String(id)}.`], ['/id']));
+  }
+
+  for (const [index, artifact] of artifacts.entries()) {
     if (artifact.protection.state !== 'established') { status.set(artifact.artifactId, undefined); continue; }
     const document = read(artifact.artifactId);
+    // The target is depth 0 and supplied evidence depth 1; its status list is one deeper.
+    const listDepth = (index === 0 ? 0 : 1) + 1;
+    if (listDepth > request.resolverLimits.maxDepth) {
+      status.set(artifact.artifactId, { state: 'not_established', sources: ['/credentialStatus'],
+        reason: `Status list is at depth ${listDepth}, beyond the request's maxDepth ${request.resolverLimits.maxDepth}.` });
+      continue;
+    }
     const entry = document.credentialStatus as { statusListCredential?: unknown } | undefined;
     const listUri = typeof entry?.statusListCredential === 'string' ? entry.statusListCredential : undefined;
     let list: Record<string, unknown> | undefined;
@@ -81,6 +111,10 @@ export async function evaluateRmSlice(
   // names. A digest mismatch contradicts; an unavailable reference is not established.
   const artifactVerification: ArtifactVerificationResult[] = artifacts.flatMap(artifact => [
     artifact.protection,
+    identity.get(artifact.artifactId)
+      ? { artifactId: artifact.artifactId, ...identity.get(artifact.artifactId)!,
+        reasons: identity.get(artifact.artifactId)!.reasons.map(reason => `identity: ${reason}`) }
+      : { artifactId: artifact.artifactId, ...notRun('identity: Not evaluated because protection is not established.') },
     { artifactId: artifact.artifactId, ...artifact.validity,
       reasons: artifact.validity.reasons.map(reason => `validity: ${reason}`) },
     ...(status.get(artifact.artifactId)
@@ -94,9 +128,7 @@ export async function evaluateRmSlice(
     })),
   ]);
 
-  const targetDocument = target.protection.state === 'established'
-    ? JSON.parse(new TextDecoder().decode(session.resolve(request.targetId).bytes)) as unknown
-    : undefined;
+  const targetDocument = target.protection.state === 'established' ? read(request.targetId) as unknown : undefined;
   const authorization = request.selectedClaims.map(claim => {
     const inTarget = targetDocument !== undefined && SELECTED_RESULT.test(claim.sourcePointer)
       && resolvePointer(targetDocument, claim.sourcePointer) !== undefined;
@@ -140,6 +172,12 @@ export async function evaluateRmSlice(
       trace.push({ gate: 1, nodeUse, predicate: 'related-resource-integrity', state: related.state,
         execution: 'executed', reason: `${related.id}: ${related.reason}`, sources: ['/relatedResource', related.id] });
     }
+    const id = identity.get(artifact.artifactId);
+    trace.push(id
+      ? { gate: 1, nodeUse, predicate: 'resource-identity', state: id.state, execution: 'executed',
+        reason: id.reasons.join(' '), sources: [...id.sourcePointers] }
+      : { gate: 1, nodeUse, predicate: 'resource-identity', state: 'not_established', execution: 'not_run',
+        reason: 'Not evaluated because protection is not established.', sources: [] });
     trace.push({ gate: 3, nodeUse, predicate: 'validity-period', state: artifact.validity.state,
       execution: artifact.validity.execution, reason: artifact.validity.reasons.join(' ') || 'Not evaluated.',
       sources: [...artifact.validity.sourcePointers] });
@@ -190,4 +228,29 @@ export async function evaluateRmSlice(
     ],
   });
   return Object.freeze({ result, artifacts: Object.freeze(artifacts) });
+}
+
+/** Gate 0 refusal: nothing is resolved, read or evaluated under an unselected plan. */
+function refusePlan(request: RelianceRequest, reason: string): RmSliceEvaluation {
+  const nodeUse = `${request.targetId} | plan`;
+  const result = createRelianceResult({
+    requestId: request.requestId,
+    targetId: request.targetId,
+    binding: request.binding,
+    profile: request.profile,
+    artifactVerification: [],
+    authorization: request.selectedClaims.map(claim => ({
+      claimId: claim.id, routeWitnessIds: [], ...notRun('Not evaluated: the plan was refused at gate 0.'),
+    })),
+    support: [],
+    conformity: request.conformity
+      ? { requested: true as const, ...request.conformity, ...notRun('Not evaluated: the plan was refused at gate 0.') }
+      : { requested: false as const, execution: 'not_run' as const },
+    decision: 'not_established',
+    trace: [{ gate: 0, nodeUse, predicate: 'accepted-plan', state: 'not_established', execution: 'executed',
+      reason, sources: [] }],
+    resources: [],
+    limitations: ['The request did not name the verifier-selected profile and binding; nothing was evaluated.'],
+  });
+  return Object.freeze({ result, artifacts: Object.freeze([]) });
 }
