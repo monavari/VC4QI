@@ -1,7 +1,8 @@
 # Implementation status
 
-**Validated 25 September 2026. D0–D4 and I0 complete; I1 is in progress and the
-default runtime remains legacy.**
+**Validated 25 September 2026. D0–D4 and I0 complete; the I1 signed slice is
+implemented in both languages with two network-dependent checks open. The default
+runtime remains legacy.**
 The [handover](plans/standards-first-handover-2026-09-21.txt) and [model](MODEL_SPEC.md)
 are requirements, not implementation evidence. No new-model acceptance case is claimed
 passing by this preparation phase.
