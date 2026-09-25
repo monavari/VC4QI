@@ -110,11 +110,14 @@ checked by exact decimal arithmetic. It composes complete routes: AND within a r
 OR between routes, restrictions outside the OR, and a budget-cut search is never a
 disproof. Gate 6 evaluates the required study, including its own laboratory authority.
 Only `termsOfUse` and `evidence` references are followed. Independently discovered
-grants are declared unsupported in the manifest (V08). Twenty-four cases are `passing`
-(I3 added V04, V05, V07, P06, C08–C11 and C16), 2 are `excluded_unsupported` (P05, V08)
-and 57 are `not_implemented`. Claim scope coverage and conformity are I4, so no request
-is accepted yet. A second signed route, restriction evaluators and cycle handling are
-still open. See the [I3 evidence](plans/standards-first-i3-evidence.md).
+grants are declared unsupported in the manifest (V08). Step 2 added typed references,
+a signed second route (direct accreditation A2) under a fictional two-route profile,
+and the `accreditation-suspension` global restriction outside the OR; failures on
+unused alternatives are diagnostic. Thirty-one cases are `passing` (I3 added V04, V05,
+V07, P06 and C01–C11, C16), 2 are `excluded_unsupported` (P05, V08) and 50 are
+`not_implemented`. Claim scope coverage and conformity are I4, so no request is
+accepted yet. Cycle handling (C12–C15) and V06 are still open. See the
+[I3 evidence](plans/standards-first-i3-evidence.md).
 
 ## Migration and historical claims
 

@@ -307,7 +307,8 @@ cannot claim every route was disproved. Keep GS independent laboratory authority
 
 Progress 2026-09-25: step 1 (operational-scope route, required support, composition,
 V08 declared unsupported) is done; see [I3 evidence](standards-first-i3-evidence.md).
-Open: the second signed route for C01–C06, restriction evaluators, C12–C15 and V06.
+Step 2 (typed references, signed second route A2, `accreditation-suspension`
+restriction, diagnostic unused alternatives) passes C01–C07. Open: C12–C15 and V06.
 
 ### I4 — full signed RM baseline, scope/conformity and language parity
 

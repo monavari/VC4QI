@@ -14,12 +14,20 @@
     "authorizationCredential": {
       "type": "object",
       "required": [
-        "id"
+        "id",
+        "type"
       ],
       "properties": {
         "id": {
           "type": "string",
           "format": "uri"
+        },
+        "type": {
+          "enum": [
+            "RmAccreditation",
+            "RmOperationalScope",
+            "RmLabAuthority"
+          ]
         }
       },
       "additionalProperties": false
