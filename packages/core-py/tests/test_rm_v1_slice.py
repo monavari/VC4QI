@@ -60,6 +60,9 @@ URI = {
     "PRODUCER": "https://producer.vc4qi.example/controller",
     "LAB": "https://lab.vc4qi.example/controller",
     "PRODUCER_STATUS": "https://producer.vc4qi.example/status/1",
+    "A2": "https://nab.vc4qi.example/credentials/A2",
+    "NAB_STATUS": "https://nab.vc4qi.example/status/1",
+    "NAB_SUSPENSION": "https://nab.vc4qi.example/status/suspension/1",
 }
 NOW = "2026-09-25T12:00:00Z"
 BUDGET = CatalogBudget(max_resources=256, max_bytes=5_000_000)
@@ -447,6 +450,7 @@ def test_status_established_for_the_whole_chain() -> None:
     assert sorted(r.uri for r in result.resources if r.kind == "status") == [
         "https://lab.vc4qi.example/status/1",
         "https://nab.vc4qi.example/status/1",
+        "https://nab.vc4qi.example/status/suspension/1",
         URI["PRODUCER_STATUS"],
     ]
 

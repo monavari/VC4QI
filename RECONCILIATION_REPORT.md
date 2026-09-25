@@ -1299,3 +1299,25 @@ TS 353 passed plus the 9 network-only legacy failures; Python 306 passed, 1 skip
 poster bundle pass (the bundle changes only by the regenerated schemas and manifest).
 Open: second signed route, restriction evaluators, C12–C15, V06. See
 `docs/plans/standards-first-i3-evidence.md`.
+
+## Standards-first I3 step 2: second route and global suspension — 25 September 2026
+
+Authorization references in `termsOfUse` are now typed (`{id, type}`): each route selects
+its reference by the declared type and the resolved credential must match, so an
+unavailable reference cannot become ambiguous across routes. A second signed
+accreditation A2 (direct route) and a NAB suspension status list were added to the
+generator; NAB accreditations carry revocation and suspension entries. Gate 3 selects the
+entry for the profile's purposes; suspension is read only by the new
+`accreditation-suspension` global restriction, which covers every usable anchor-issued
+accreditation of the issuer reached on any route and sits outside the route OR. A
+fictional two-route profile exercises composition; the default profile keeps one route
+and gains the restriction. The decision now counts verification only for the target and
+the selected route and support chains, so a failed unused alternative is diagnostic.
+Both languages; the manifest records the installed routes and restriction.
+
+Ledger: C01–C07 `passing` (31 passing, 2 excluded, 50 not implemented). Ledger command:
+72 TS and 70 Python tests, exit 0. Full results: TS 363 passed plus the 9 network-only
+legacy failures; Python 316 passed, 1 skip; Ruff 204 and mypy 198 unchanged; build,
+lint, scenarios, schemas, generator checks pass; fixtures, resources and the poster
+bundle were regenerated and the poster still renders "Accepted". Open: C12–C15, V06.
+See `docs/plans/standards-first-i3-evidence.md`.

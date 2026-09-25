@@ -31,6 +31,8 @@ class NodeFacts:
     usable: SemanticState
     reason: str
     document: Doc | None = None
+    # The issuer's suspension status (state, reason), read only by global restrictions.
+    suspension: tuple[SemanticState, str] | None = None
 
 
 NodeLookup = Callable[[str], NodeFacts | None]
@@ -99,24 +101,26 @@ def _permits(doc: Doc, activity: str) -> bool:
     return activity in _list(_subject(doc).get("permittedActivity"))
 
 
-def _authorizing_reference(
-    basis_id: str, doc: Doc, wanted: str, lookup: NodeLookup, stack: tuple[str, ...]
-) -> tuple[BasisResult, NodeFacts | None]:
-    candidates: list[str] = []
+def _policy_references(doc: Doc) -> list[tuple[str, Any]]:
+    """(id, declared type) of credentials referenced by recognized policies."""
+    references: list[tuple[str, Any]] = []
     for policy in _list(doc.get("termsOfUse")):
         if (
             isinstance(policy, dict)
             and policy.get("type") == "RmAuthorizationPolicy"
             and isinstance(policy.get("authorizationCredential"), dict)
+            and isinstance(policy["authorizationCredential"].get("id"), str)
         ):
-            uri = str(policy["authorizationCredential"].get("id"))
-            node = lookup(uri)
-            if (
-                node is None
-                or node.document is None
-                or _type_of(node.document) == wanted
-            ):
-                candidates.append(uri)
+            ref = policy["authorizationCredential"]
+            references.append((ref["id"], ref.get("type")))
+    return references
+
+
+def _authorizing_reference(
+    basis_id: str, doc: Doc, wanted: str, lookup: NodeLookup, stack: tuple[str, ...]
+) -> tuple[BasisResult, NodeFacts | None]:
+    """Select the reference by its declared type; the credential must match it."""
+    candidates = [uri for uri, kind in _policy_references(doc) if kind == wanted]
     if not candidates:
         return _unknown(
             basis_id,
@@ -150,6 +154,13 @@ def _authorizing_reference(
             basis_id,
             state,
             f"Referenced {wanted} {uri} is not usable: {node.reason}",
+            sources,
+        ), None
+    if _type_of(node.document) != wanted:
+        return _no(
+            basis_id,
+            f"Reference declares {wanted}, but {uri} is a "
+            f"{_type_of(node.document)}.",
             sources,
         ), None
     return _ok(basis_id, f"References {wanted} {uri}.", sources), node
@@ -331,6 +342,71 @@ CERTIFICATE_ROUTES: dict[
 }
 
 
+def _accreditation_suspension(
+    target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
+) -> BasisResult:
+    """Global restriction: a suspended accreditation of the actor applies to all routes.
+
+    Applies to every usable RmAccreditation issued by an accreditation anchor to the
+    target's issuer and reached through the target's authorization references on any
+    route. Missing suspension status is not established; unusable credentials grant
+    nothing and are not turned into restrictions (C07).
+    """
+    basis_id = "restriction:accreditation-suspension"
+    assert target.document is not None
+    actor = target.document.get("issuer")
+    seen = {target.uri}
+    queue: list[Doc] = [target.document]
+    applicable: list[NodeFacts] = []
+    while queue:
+        for uri, _kind in _policy_references(queue.pop(0)):
+            if uri in seen:
+                continue
+            seen.add(uri)
+            node = lookup(uri)
+            if node is None or node.usable != "established" or node.document is None:
+                continue
+            doc = node.document
+            queue.append(doc)
+            anchored = any(
+                a.id == doc.get("issuer") and "accredit-rm-producers" in a.purposes
+                for a in profile.trust_anchors
+            )
+            if (
+                _type_of(doc) == "RmAccreditation"
+                and anchored
+                and _subject(doc).get("id") == actor
+            ):
+                applicable.append(node)
+    if not applicable:
+        return _unknown(
+            basis_id,
+            f"No accreditation of {actor} is reached, so the absence of a suspension "
+            "is not established.",
+        )
+    parts = [
+        _unknown(basis_id, f"{n.uri} carries no suspension status.", (n.uri,))
+        if n.suspension is None
+        else BasisResult(
+            basis_id, n.suspension[0], f"{n.uri}: {n.suspension[1]}", (n.uri,)
+        )
+        for n in applicable
+    ]
+    state = semantic_and(tuple(p.state for p in parts))
+    reason = (
+        "The actor's certification activity is suspended. "
+        + " ".join(p.reason for p in parts if p.state == "contradicted")
+        if state == "contradicted"
+        else " ".join(p.reason for p in parts)
+    )
+    return BasisResult(basis_id, state, reason, tuple(n.uri for n in applicable))
+
+
+GLOBAL_RESTRICTIONS: dict[
+    str, Callable[[NodeFacts, NodeLookup, RelianceProfile], BasisResult]
+] = {"accreditation-suspension": _accreditation_suspension}
+
+
 def compose_authority(
     restrictions: tuple[BasisResult, ...],
     evaluated: tuple[RouteResult, ...],
@@ -398,6 +474,8 @@ def certificate_authority(
         _unknown(
             f"restriction:{r}", f"Global restriction {r} has no installed evaluator."
         )
+        if (restrict := GLOBAL_RESTRICTIONS.get(r)) is None
+        else restrict(target, lookup, profile)
         for r in profile.authority.global_restrictions
     )
     return compose_authority(restrictions, tuple(evaluated), tuple(ids[budget:]))

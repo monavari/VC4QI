@@ -103,6 +103,33 @@ def _time(value: Any) -> datetime | None:
         return None
 
 
+def select_status_entry(
+    credential: dict[str, Any], purposes: tuple[str, ...] | list[str]
+) -> tuple[dict[str, Any] | None, str | None]:
+    """The single status entry for one of ``purposes`` (mirrors selectStatusEntry).
+
+    Entries for other purposes are left to whoever evaluates them; several entries
+    for the requested purposes are ambiguous. Returns (entry, reason); both None
+    when the credential names no status.
+    """
+    value = credential.get("credentialStatus")
+    if value is None:
+        return None, None
+    entries = value if isinstance(value, list) else [value]
+    if not entries or not all(isinstance(entry, dict) for entry in entries):
+        return None, "Unsupported credentialStatus form."
+    matching = [e for e in entries if str(e.get("statusPurpose")) in purposes]
+    if len(matching) > 1:
+        return None, f"Several status entries for {'/'.join(purposes)}."
+    if not matching:
+        found = ", ".join(str(e.get("statusPurpose")) for e in entries)
+        return None, (
+            f"No status entry has an accepted purpose ({', '.join(purposes)}); "
+            f"found {found}."
+        )
+    return matching[0], None
+
+
 def evaluate_status(
     credential: dict[str, Any],
     status_list: dict[str, Any] | None,
@@ -114,8 +141,8 @@ def evaluate_status(
 
     An applicable set bit is contradicted.
     """
-    entry = credential.get("credentialStatus")
-    if entry is None:
+    entry, problem = select_status_entry(credential, policy.purposes)
+    if entry is None and problem is None:
         if policy.required:
             return StatusOutcome(
                 "not_established",
@@ -127,9 +154,10 @@ def evaluate_status(
             "The profile does not require status for this credential.",
             (),
         )
+    if entry is None:
+        return StatusOutcome("not_established", str(problem), ("/credentialStatus",))
     if (
-        not isinstance(entry, dict)
-        or entry.get("type") != "BitstringStatusListEntry"
+        entry.get("type") != "BitstringStatusListEntry"
         or not isinstance(entry.get("statusListCredential"), str)
         or not isinstance(entry.get("statusListIndex"), str)
     ):
@@ -144,11 +172,6 @@ def evaluate_status(
     def no(reason: str) -> StatusOutcome:
         return StatusOutcome("not_established", reason, sources, uri)
 
-    if str(entry.get("statusPurpose")) not in policy.purposes:
-        return no(
-            f"Status purpose {entry.get('statusPurpose')} is not accepted "
-            "by the profile."
-        )
     if status_list is None:
         return no(f"Status list {uri} is unavailable.")
     if list_protected != "established":
@@ -181,13 +204,18 @@ def evaluate_status(
     if not re.fullmatch(r"0|[1-9][0-9]*", index):
         return no("statusListIndex is not a non-negative integer.")
     try:
-        revoked = status_bit(decode_status_list(subject.get("encodedList")), int(index))
+        is_set = status_bit(decode_status_list(subject.get("encodedList")), int(index))
     except (StatusListError, IndexError) as error:
         return no(f"Status list cannot be read: {error}")
-    if revoked:
+    yes, not_ = (
+        ("Suspended", "Not suspended")
+        if entry.get("statusPurpose") == "suspension"
+        else ("Revoked", "Not revoked")
+    )
+    if is_set:
         return StatusOutcome(
-            "contradicted", f"Revoked: bit {index} of {uri} is set.", sources, uri
+            "contradicted", f"{yes}: bit {index} of {uri} is set.", sources, uri
         )
     return StatusOutcome(
-        "established", f"Not revoked: bit {index} of {uri} is clear.", sources, uri
+        "established", f"{not_}: bit {index} of {uri} is clear.", sources, uri
     )

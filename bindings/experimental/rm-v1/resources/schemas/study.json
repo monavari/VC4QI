@@ -116,12 +116,20 @@
           "authorizationCredential": {
             "type": "object",
             "required": [
-              "id"
+              "id",
+              "type"
             ],
             "properties": {
               "id": {
                 "type": "string",
                 "format": "uri"
+              },
+              "type": {
+                "enum": [
+                  "RmAccreditation",
+                  "RmOperationalScope",
+                  "RmLabAuthority"
+                ]
               }
             },
             "additionalProperties": false
@@ -154,35 +162,81 @@
       }
     },
     "credentialStatus": {
-      "type": "object",
-      "required": [
-        "id",
-        "type",
-        "statusPurpose",
-        "statusListIndex",
-        "statusListCredential"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uri"
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "type",
+            "statusPurpose",
+            "statusListIndex",
+            "statusListCredential"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uri"
+            },
+            "type": {
+              "const": "BitstringStatusListEntry"
+            },
+            "statusPurpose": {
+              "enum": [
+                "revocation",
+                "suspension"
+              ]
+            },
+            "statusListIndex": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$"
+            },
+            "statusListCredential": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "additionalProperties": false
         },
-        "type": {
-          "const": "BitstringStatusListEntry"
-        },
-        "statusPurpose": {
-          "const": "revocation"
-        },
-        "statusListIndex": {
-          "type": "string",
-          "pattern": "^(0|[1-9][0-9]*)$"
-        },
-        "statusListCredential": {
-          "type": "string",
-          "format": "uri"
+        {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "statusPurpose",
+              "statusListIndex",
+              "statusListCredential"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uri"
+              },
+              "type": {
+                "const": "BitstringStatusListEntry"
+              },
+              "statusPurpose": {
+                "enum": [
+                  "revocation",
+                  "suspension"
+                ]
+              },
+              "statusListIndex": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*)$"
+              },
+              "statusListCredential": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "additionalProperties": false
+          }
         }
-      },
-      "additionalProperties": false
+      ]
     },
     "name": {
       "type": "string",
