@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://vc4qi.example/schemas/rm/1/lab-authority.json",
-  "title": "Study laboratory authority (H)",
+  "$id": "https://vc4qi.example/schemas/rm/1/status-list.json",
+  "title": "Bitstring Status List credential for RM v1 fixtures",
   "description": "Experimental VC4QI RM binding v1 fixture schema. Not an external standard.",
   "type": "object",
   "required": [
@@ -12,14 +12,12 @@
     "validFrom",
     "validUntil",
     "credentialSchema",
-    "credentialSubject",
-    "credentialStatus"
+    "credentialSubject"
   ],
   "properties": {
     "@context": {
       "const": [
-        "https://www.w3.org/ns/credentials/v2",
-        "https://vc4qi.example/contexts/rm/1"
+        "https://www.w3.org/ns/credentials/v2"
       ]
     },
     "id": {
@@ -29,7 +27,7 @@
     "type": {
       "const": [
         "VerifiableCredential",
-        "RmLabAuthority"
+        "BitstringStatusListCredential"
       ]
     },
     "issuer": {
@@ -52,7 +50,7 @@
       ],
       "properties": {
         "id": {
-          "const": "https://vc4qi.example/schemas/rm/1/lab-authority.json"
+          "const": "https://vc4qi.example/schemas/rm/1/status-list.json"
         },
         "type": {
           "const": "JsonSchema"
@@ -64,78 +62,9 @@
       "type": "object",
       "required": [
         "id",
-        "permittedActivity",
-        "scope"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uri"
-        },
-        "permittedActivity": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "enum": [
-              "https://vc4qi.example/bindings/rm/1#issueRmStudy"
-            ]
-          }
-        },
-        "scope": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "type": "object",
-            "required": [
-              "id",
-              "matrixIri",
-              "allowedPropertyIris",
-              "studyTypeIris"
-            ],
-            "properties": {
-              "id": {
-                "type": "string",
-                "format": "uri"
-              },
-              "matrixIri": {
-                "type": "string",
-                "format": "uri"
-              },
-              "allowedPropertyIris": {
-                "type": "array",
-                "minItems": 1,
-                "uniqueItems": true,
-                "items": {
-                  "type": "string",
-                  "format": "uri"
-                }
-              },
-              "studyTypeIris": {
-                "type": "array",
-                "minItems": 1,
-                "uniqueItems": true,
-                "items": {
-                  "type": "string",
-                  "format": "uri"
-                }
-              }
-            },
-            "additionalProperties": false
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    "credentialStatus": {
-      "type": "object",
-      "required": [
-        "id",
         "type",
         "statusPurpose",
-        "statusListIndex",
-        "statusListCredential"
+        "encodedList"
       ],
       "properties": {
         "id": {
@@ -143,18 +72,14 @@
           "format": "uri"
         },
         "type": {
-          "const": "BitstringStatusListEntry"
+          "const": "BitstringStatusList"
         },
         "statusPurpose": {
           "const": "revocation"
         },
-        "statusListIndex": {
+        "encodedList": {
           "type": "string",
-          "pattern": "^(0|[1-9][0-9]*)$"
-        },
-        "statusListCredential": {
-          "type": "string",
-          "format": "uri"
+          "pattern": "^u[A-Za-z0-9_-]+$"
         }
       },
       "additionalProperties": false

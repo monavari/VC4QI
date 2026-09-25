@@ -7,11 +7,9 @@
 // offline catalog. Only after protection is established does it read validity and
 // extract facts by the manifest's native paths, with concrete source pointers.
 //
-// evaluateRmSlice wraps that in the reliance result contract. Authorization, support
-// and conformity are not implemented in I1, so they are reported as not_run and the
-// overall decision can never be accept: authentic artifacts alone establish no reliance.
-//
-// Node-oriented (Ajv, jsonld); not exported from the browser-reachable barrel.
+// The reliance evaluation over these artifacts is in rm-v1-slice.ts (Node-only,
+// because status decoding uses zlib); this module also runs in the poster bundle.
+// Not exported from the browser-reachable barrel (Ajv, jsonld).
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormatsModule from 'ajv-formats';
 import { verifyProof } from '../proofs/index.js';
@@ -19,15 +17,12 @@ import type { JsonObject } from '../types.js';
 import {
   catalogDocumentLoader, CatalogError, type CatalogSession, sha384SRI,
 } from './catalog.js';
-import {
-  createRelianceResult, decisionFromRequired, semanticAnd,
-} from './index.js';
+import { semanticAnd } from './index.js';
 import { authorizeAssertionMethod, type KeyAuthorization } from './key-authorization.js';
-import { RM_V1_BINDING_ID, type BindingManifest } from './manifest.js';
+import type { BindingManifest } from './manifest.js';
 import { RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, VC_V2_CONTEXT } from './rm-v1.js';
 import type {
-  ArtifactVerificationResult, Gate, PredicateResult, RelianceRequest, RelianceResult,
-  ResourceObservation, SemanticState, TraceEntry,
+  ArtifactVerificationResult, Gate, PredicateResult, RelianceRequest, SemanticState,
 } from './types.js';
 
 const Ajv = Ajv2020 as unknown as typeof import('ajv/dist/2020.js').default;
@@ -40,7 +35,13 @@ export const RM_V1_ARTIFACT_SCHEMAS: Readonly<Record<string, string>> = Object.f
   RmCertificate: `${RM_V1_SCHEMA_BASE}certificate.json`,
   RmStudy: `${RM_V1_SCHEMA_BASE}study.json`,
   RmLabAuthority: `${RM_V1_SCHEMA_BASE}lab-authority.json`,
+  BitstringStatusListCredential: `${RM_V1_SCHEMA_BASE}status-list.json`,
 });
+
+/** Exact context list each recognized type must use; status lists use VCDM 2.0 only. */
+function expectedContexts(type: unknown): readonly string[] {
+  return type === 'BitstringStatusListCredential' ? [VC_V2_CONTEXT] : [VC_V2_CONTEXT, RM_V1_CONTEXT];
+}
 
 export type ProtectionCheck =
   | 'resolve' | 'parse' | 'carrier' | 'type' | 'schema' | 'proof' | 'key' | 'signature';
@@ -141,7 +142,7 @@ export function resolvePointer(document: unknown, pointer: string): unknown {
   return value;
 }
 
-function predicate(
+export function predicate(
   state: SemanticState, reasons: string[], sourcePointers: string[] = [],
   execution: 'executed' | 'not_run' = 'executed',
 ): PredicateResult {
@@ -150,7 +151,7 @@ function predicate(
   });
 }
 
-const notRun = (reason: string) => predicate('not_established', [reason], [], 'not_run');
+export const notRun = (reason: string) => predicate('not_established', [reason], [], 'not_run');
 
 function validity(document: JsonObject, evaluationTime: string): PredicateResult {
   const at = Date.parse(evaluationTime);
@@ -230,10 +231,11 @@ export async function verifyRmArtifact(
   checks.push({ check: 'parse', state: 'established', reason: 'Strict UTF-8 JSON object.' });
 
   const contexts = document['@context'];
-  if (!Array.isArray(contexts) || contexts.length !== 2 ||
-      contexts[0] !== VC_V2_CONTEXT || contexts[1] !== RM_V1_CONTEXT) {
+  const expected = expectedContexts(Array.isArray(document.type) ? document.type[1] : undefined);
+  if (!Array.isArray(contexts) || contexts.length !== expected.length ||
+      expected.some((uri, index) => contexts[index] !== uri)) {
     return fail('carrier', 'not_established',
-      'Only the exact VCDM 2.0 + RM v1 context combination is supported.', { digestSRI });
+      'Only the exact supported context combination for this type is accepted.', { digestSRI });
   }
   checks.push({ check: 'carrier', state: 'established', reason: 'Exact supported context combination.' });
 
@@ -313,130 +315,3 @@ export async function verifyRmArtifact(
   });
 }
 
-export interface RmSliceEvaluation {
-  readonly result: RelianceResult;
-  readonly artifacts: readonly RmArtifactVerification[];
-}
-
-const SELECTED_RESULT = /^\/credentialSubject\/materialPropertiesList\/(0|[1-9][0-9]*)\/results\/(0|[1-9][0-9]*)$/;
-
-/**
- * Evaluate a reliance request with the I1 slice. Protection and validity of the
- * target and supplied evidence are executed; authorization, support and conformity
- * are not implemented yet and are reported as not_run, so the decision is at best
- * not_established. A contradicted artifact yields reject.
- */
-export async function evaluateRmSlice(
-  request: RelianceRequest, session: CatalogSession, manifest: BindingManifest,
-): Promise<RmSliceEvaluation> {
-  if (request.binding.id !== RM_V1_BINDING_ID || request.binding.version !== manifest.version ||
-      manifest.id !== RM_V1_BINDING_ID) {
-    throw new Error(`The I1 slice evaluates only ${RM_V1_BINDING_ID}@${manifest.version}.`);
-  }
-  const options = { manifest, evaluationTime: request.evaluationTime };
-  const target = await verifyRmArtifact(request.targetId, session, options);
-  const evidence: RmArtifactVerification[] = [];
-  for (const uri of request.suppliedEvidence) {
-    if (uri !== request.targetId) evidence.push(await verifyRmArtifact(uri, session, options));
-  }
-  const artifacts = [target, ...evidence];
-
-  // Per artifact: protection, validity, and the integrity of each relatedResource it
-  // names. A digest mismatch contradicts; an unavailable reference is not established.
-  const artifactVerification: ArtifactVerificationResult[] = artifacts.flatMap(artifact => [
-    artifact.protection,
-    { artifactId: artifact.artifactId, ...artifact.validity,
-      reasons: artifact.validity.reasons.map(reason => `validity: ${reason}`) },
-    ...artifact.relatedResources.map(check => ({
-      artifactId: check.id,
-      ...predicate(check.state, [`integrity (from ${artifact.artifactId}): ${check.reason}`], ['/relatedResource']),
-    })),
-  ]);
-
-  const targetDocument = target.protection.state === 'established'
-    ? JSON.parse(new TextDecoder().decode(session.resolve(request.targetId).bytes)) as unknown
-    : undefined;
-  const authorization = request.selectedClaims.map(claim => {
-    const inTarget = targetDocument !== undefined && SELECTED_RESULT.test(claim.sourcePointer)
-      && resolvePointer(targetDocument, claim.sourcePointer) !== undefined;
-    return {
-      claimId: claim.id,
-      routeWitnessIds: [],
-      ...(inTarget
-        ? notRun('Claim authorization (routes, scope, principal binding) is implemented in I3/I4.')
-        : predicate('not_established', [targetDocument === undefined
-          ? 'The target is not protected, so its claims are not read.'
-          : `Selected claim ${claim.sourcePointer} is not a result in the protected target.`])),
-    };
-  });
-  const support = [{
-    obligationId: 'rm-v1:required-study',
-    witnessIds: [],
-    ...notRun('Required-study support and laboratory authority are implemented in I3.'),
-  }];
-  const conformity = request.conformity
-    ? { requested: true as const, ...request.conformity, ...notRun('Conformity is implemented in I4.') }
-    : { requested: false as const, execution: 'not_run' as const };
-
-  const required: SemanticState[] = [
-    ...artifactVerification.map(result => result.state),
-    ...authorization.map(result => result.state),
-    ...support.map(result => result.state),
-    ...(conformity.requested ? [conformity.state] : []),
-  ];
-  const decision = decisionFromRequired(required);
-
-  const trace: TraceEntry[] = [];
-  const resources: ResourceObservation[] = [];
-  artifacts.forEach((artifact, index) => {
-    const role = index === 0 ? 'target' : 'supplied-evidence';
-    const nodeUse = nodeUseKey(artifact.artifactId, artifact.digestSRI, role, request);
-    for (const check of artifact.checks) {
-      trace.push({ gate: PROTECTION_CHECK_GATES[check.check], nodeUse, predicate: check.check,
-        state: check.state, execution: 'executed', reason: check.reason, sources: [artifact.artifactId] });
-    }
-    for (const related of artifact.relatedResources) {
-      trace.push({ gate: 1, nodeUse, predicate: 'related-resource-integrity', state: related.state,
-        execution: 'executed', reason: `${related.id}: ${related.reason}`, sources: ['/relatedResource', related.id] });
-    }
-    trace.push({ gate: 3, nodeUse, predicate: 'validity-period', state: artifact.validity.state,
-      execution: artifact.validity.execution, reason: artifact.validity.reasons.join(' ') || 'Not evaluated.',
-      sources: [...artifact.validity.sourcePointers] });
-    if (artifact.digestSRI !== undefined) {
-      resources.push({ uri: artifact.artifactId, digestSRI: artifact.digestSRI, kind: 'artifact',
-        source: 'catalog', observedAt: request.evaluationTime });
-    }
-  });
-  const targetUse = nodeUseKey(target.artifactId, target.digestSRI, 'target', request);
-  for (const claim of authorization) {
-    trace.push({ gate: 5, nodeUse: targetUse, predicate: `claim-authorization:${claim.claimId}`,
-      state: claim.state, execution: claim.execution, reason: claim.reasons.join(' '), sources: [...claim.sourcePointers] });
-  }
-  for (const obligation of support) {
-    trace.push({ gate: 6, nodeUse: targetUse, predicate: obligation.obligationId, state: obligation.state,
-      execution: obligation.execution, reason: obligation.reasons.join(' '), sources: [] });
-  }
-  if (conformity.requested) {
-    trace.push({ gate: 6, nodeUse: targetUse, predicate: `conformity:${conformity.requirementId}`,
-      state: conformity.state, execution: conformity.execution, reason: conformity.reasons.join(' '), sources: [] });
-  }
-
-  const result = createRelianceResult({
-    requestId: request.requestId,
-    targetId: request.targetId,
-    binding: request.binding,
-    profile: request.profile,
-    artifactVerification,
-    authorization,
-    support,
-    conformity,
-    decision,
-    trace,
-    resources,
-    limitations: [
-      'I1 slice: authorization, support and conformity are not implemented and never establish reliance.',
-      'Credential status is not checked in I1.',
-    ],
-  });
-  return Object.freeze({ result, artifacts: Object.freeze(artifacts) });
-}

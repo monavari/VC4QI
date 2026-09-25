@@ -15,6 +15,7 @@ from qi_vc_core.reliance import (
     StaticResource,
     StaticResourceCatalog,
     load_binding_manifest,
+    load_reliance_profile,
     read_pinned_resources,
     sha384_sri,
 )
@@ -24,6 +25,11 @@ from qi_vc_core.reliance.rm_v1_artifacts import (
     _undefined_terms,
     evaluate_rm_slice,
     verify_rm_artifact,
+)
+from qi_vc_core.reliance.status_list import (
+    MIN_STATUS_BITS,
+    decode_status_list,
+    encode_status_list,
 )
 from qi_vc_core.reliance.types import (
     ConformityRequest,
@@ -35,6 +41,9 @@ from qi_vc_core.reliance.types import (
 )
 from qi_vc_core.types import Ed25519KeyPair
 
+PROFILE = load_reliance_profile(
+    json.loads((RM_V1_DIRECTORY / "profiles/rm-verifier-1.json").read_text())
+)
 MANIFEST = load_binding_manifest(
     json.loads((RM_V1_DIRECTORY / "manifest.json").read_text())
 )
@@ -50,6 +59,7 @@ URI = {
     "D520": "https://producer.vc4qi.example/credentials/D520",
     "PRODUCER": "https://producer.vc4qi.example/controller",
     "LAB": "https://lab.vc4qi.example/controller",
+    "PRODUCER_STATUS": "https://producer.vc4qi.example/status/1",
 }
 NOW = "2026-09-25T12:00:00Z"
 BUDGET = CatalogBudget(max_resources=256, max_bytes=5_000_000)
@@ -178,7 +188,7 @@ def test_extracts_protected_facts_with_source_pointers() -> None:
 
 
 def test_authentic_artifacts_alone_do_not_establish_reliance() -> None:
-    result = evaluate_rm_slice(request(), session(), MANIFEST).result
+    result = evaluate_rm_slice(request(), session(), MANIFEST, PROFILE).result
     assert all(r.state == "established" for r in result.artifact_verification)
     assert (result.authorization[0].state, result.authorization[0].execution) == (
         "not_established",
@@ -201,7 +211,7 @@ def test_changed_value_without_resigning_is_rejected() -> None:
     )
     assert artifact.facts == ()
     assert artifact.validity.execution == "not_run"
-    result = evaluate_rm_slice(request(), session(overrides), MANIFEST).result
+    result = evaluate_rm_slice(request(), session(overrides), MANIFEST, PROFILE).result
     assert result.decision == "reject"
     assert "not protected" in result.authorization[0].reasons[0]
 
@@ -261,7 +271,7 @@ def test_sentinel_detects_undefined_terms_and_types() -> None:
 def test_changed_referenced_bytes_contradict_integrity() -> None:
     overrides = {URI["O"]: text(URI["O"]) + " "}
     assert verify(URI["O"], overrides).protection.state == "established"
-    result = evaluate_rm_slice(request(), session(overrides), MANIFEST).result
+    result = evaluate_rm_slice(request(), session(overrides), MANIFEST, PROFILE).result
     integrity = [
         r
         for r in result.artifact_verification
@@ -276,6 +286,7 @@ def test_missing_study_target_or_controller_is_not_established() -> None:
         request(supplied_evidence=(URI["A"], URI["O"], URI["H"])),
         session({URI["S"]: None}),
         MANIFEST,
+        PROFILE,
     ).result
     assert [
         r.state for r in result.artifact_verification if r.artifact_id == URI["S"]
@@ -308,7 +319,7 @@ def test_unsupported_context_order_or_proof_set_is_not_established() -> None:
 
 def test_expired_target_is_rejected_after_protection() -> None:
     result = evaluate_rm_slice(
-        request(evaluation_time="2029-01-01T00:00:00Z"), session(), MANIFEST
+        request(evaluation_time="2029-01-01T00:00:00Z"), session(), MANIFEST, PROFILE
     ).result
     validity = [
         r
@@ -324,6 +335,7 @@ def test_selected_claim_outside_protected_results_is_not_established() -> None:
         request(selected_claims=(SelectedClaim("issuer", "/issuer"),)),
         session(),
         MANIFEST,
+        PROFILE,
     ).result
     assert (result.authorization[0].state, result.authorization[0].execution) == (
         "not_established",
@@ -360,7 +372,7 @@ def test_arbitrary_authorization_policy_name_is_not_accepted(name: str) -> None:
 
 
 def test_gate_numbered_trace_and_resources() -> None:
-    result = evaluate_rm_slice(request(), session(), MANIFEST).result
+    result = evaluate_rm_slice(request(), session(), MANIFEST, PROFILE).result
     assert result.request_id == "urn:uuid:rm-v1-slice-request"
     target = [t for t in result.trace if t.node_use.startswith(URI["D"] + " |")]
     assert all("| target |" in t.node_use for t in target)
@@ -374,6 +386,96 @@ def test_gate_numbered_trace_and_resources() -> None:
     claim = by["claim-authorization:as-mass-fraction"]
     assert (claim.gate, claim.execution) == (5, "not_run")
     assert by["conformity:as-plus-u-le-200"].gate == 6
-    assert sorted(r.uri for r in result.resources) == sorted(
+    assert sorted(r.uri for r in result.resources if r.kind == "artifact") == sorted(
         URI[k] for k in ("A", "D", "H", "O", "S")
     )
+
+
+def _status_of(result: Any, uri: str) -> Any:
+    return next(
+        t
+        for t in result.trace
+        if t.node_use.startswith(uri + " |") and t.predicate == "credential-status"
+    )
+
+
+def _producer_list(
+    set_bits: tuple[int, ...] = (),
+    key_name: str = "producer",
+    issuer: str = URI["PRODUCER"],
+    encoded: str | None = None,
+) -> str:
+    bits = bytearray(MIN_STATUS_BITS // 8)
+    for bit in set_bits:
+        bits[bit >> 3] |= 1 << (7 - (bit & 7))
+    status_list = doc(URI["PRODUCER_STATUS"])
+    status_list["issuer"] = issuer
+    status_list["credentialSubject"]["encodedList"] = encoded or encode_status_list(
+        bytes(bits)
+    )
+    return resign(status_list, key_name, f"{issuer}#key-1")
+
+
+def test_status_established_for_the_whole_chain() -> None:
+    result = evaluate_rm_slice(request(), session(), MANIFEST, PROFILE).result
+    for key in ("D", "A", "O", "S", "H"):
+        entry = _status_of(result, URI[key])
+        assert (entry.gate, entry.state) == (3, "established"), key
+    assert sorted(r.uri for r in result.resources if r.kind == "status") == [
+        "https://lab.vc4qi.example/status/1",
+        "https://nab.vc4qi.example/status/1",
+        URI["PRODUCER_STATUS"],
+    ]
+
+
+def test_p09_revoked_target_is_contradicted() -> None:
+    overrides = {URI["PRODUCER_STATUS"]: _producer_list((1,))}
+    result = evaluate_rm_slice(request(), session(overrides), MANIFEST, PROFILE).result
+    assert _status_of(result, URI["D"]).state == "contradicted"
+    assert _status_of(result, URI["O"]).state == "established"
+    assert result.decision == "reject"
+
+
+def test_p08_list_from_party_without_status_authority() -> None:
+    overrides = {URI["PRODUCER_STATUS"]: _producer_list((), "lab", URI["LAB"])}
+    result = evaluate_rm_slice(request(), session(overrides), MANIFEST, PROFILE).result
+    entry = _status_of(result, URI["D"])
+    assert entry.state == "not_established" and "may not state status" in entry.reason
+    assert result.decision == "not_established"
+
+
+def test_p09_stale_or_unavailable_list_is_not_established() -> None:
+    stale = evaluate_rm_slice(
+        request(evaluation_time="2026-11-15T00:00:00Z"), session(), MANIFEST, PROFILE
+    ).result
+    assert "freshness" in _status_of(stale, URI["D"]).reason
+    assert stale.decision == "not_established"
+    missing = evaluate_rm_slice(
+        request(), session({URI["PRODUCER_STATUS"]: None}), MANIFEST, PROFILE
+    ).result
+    assert _status_of(missing, URI["D"]).state == "not_established"
+
+
+def test_tampered_status_list_is_not_used() -> None:
+    status_list = doc(URI["PRODUCER_STATUS"])
+    status_list["credentialSubject"]["encodedList"] = encode_status_list(
+        b"\xff" * (MIN_STATUS_BITS // 8)
+    )
+    overrides = {URI["PRODUCER_STATUS"]: serialize(status_list)}
+    result = evaluate_rm_slice(request(), session(overrides), MANIFEST, PROFILE).result
+    entry = _status_of(result, URI["D"])
+    assert entry.state == "not_established" and "not protected" in entry.reason
+
+
+def test_p16_signed_decompression_bomb_stops_at_bound() -> None:
+    bomb = encode_status_list(bytes(3 * 1024 * 1024))
+    overrides = {URI["PRODUCER_STATUS"]: _producer_list((), encoded=bomb)}
+    result = evaluate_rm_slice(request(), session(overrides), MANIFEST, PROFILE).result
+    entry = _status_of(result, URI["D"])
+    assert entry.state == "not_established" and "exceeds" in entry.reason
+
+
+def test_python_encoding_matches_the_typescript_fixture() -> None:
+    fixture = doc(URI["PRODUCER_STATUS"])["credentialSubject"]["encodedList"]
+    assert encode_status_list(bytes(MIN_STATUS_BITS // 8)) == fixture
+    assert decode_status_list(fixture) == bytes(MIN_STATUS_BITS // 8)

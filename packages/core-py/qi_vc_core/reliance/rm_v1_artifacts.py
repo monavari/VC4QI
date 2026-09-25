@@ -29,7 +29,9 @@ from ..proofs import verify_proof
 from .catalog import CatalogError, CatalogSession, sha384_sri
 from .key_authorization import KeyAuthorization, authorize_assertion_method
 from .manifest import RM_V1_BINDING_ID, BindingManifest
+from .profile import RelianceProfile
 from .rm_v1 import RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, VC_V2_CONTEXT
+from .status_list import StatusOutcome, evaluate_status
 from .types import (
     ArtifactVerificationResult,
     ClaimAuthorizationResult,
@@ -55,7 +57,17 @@ RM_V1_ARTIFACT_SCHEMAS: dict[str, str] = {
     "RmCertificate": f"{RM_V1_SCHEMA_BASE}certificate.json",
     "RmStudy": f"{RM_V1_SCHEMA_BASE}study.json",
     "RmLabAuthority": f"{RM_V1_SCHEMA_BASE}lab-authority.json",
+    "BitstringStatusListCredential": f"{RM_V1_SCHEMA_BASE}status-list.json",
 }
+
+
+def _expected_contexts(declared_type: Any) -> list[str]:
+    """Exact context list each recognized type must use; status lists use VCDM 2.0."""
+    if declared_type == "BitstringStatusListCredential":
+        return [VC_V2_CONTEXT]
+    return [VC_V2_CONTEXT, RM_V1_CONTEXT]
+
+
 _UNDEFINED = "urn:vc4qi:undefined-term#"
 # Canonical gate (handover section 5.3) of each protection check.
 PROTECTION_CHECK_GATES: dict[str, Gate] = {
@@ -387,11 +399,15 @@ def verify_rm_artifact(
         return fail("parse", "contradicted", "Artifact is not a JSON object.")
     checks.append(CheckOutcome("parse", "established", "Strict UTF-8 JSON object."))
 
-    if document.get("@context") != [VC_V2_CONTEXT, RM_V1_CONTEXT]:
+    declared = document.get("type")
+    declared_type = (
+        declared[1] if isinstance(declared, list) and len(declared) > 1 else None
+    )
+    if document.get("@context") != _expected_contexts(declared_type):
         return fail(
             "carrier",
             "not_established",
-            "Only the exact VCDM 2.0 + RM v1 context combination is supported.",
+            "Only the exact supported context combination for this type is accepted.",
         )
     checks.append(
         CheckOutcome("carrier", "established", "Exact supported context combination.")
@@ -530,7 +546,10 @@ def _selected_result(pointer: str) -> bool:
 
 
 def evaluate_rm_slice(
-    request: RelianceRequest, session: CatalogSession, manifest: BindingManifest
+    request: RelianceRequest,
+    session: CatalogSession,
+    manifest: BindingManifest,
+    profile: RelianceProfile,
 ) -> RmSliceEvaluation:
     """Evaluate a reliance request with the I1 slice; the decision is never accept."""
     if (
@@ -541,6 +560,17 @@ def evaluate_rm_slice(
         raise ValueError(
             f"The I1 slice evaluates only {RM_V1_BINDING_ID}@{manifest.version}."
         )
+    # The verifier selects the profile; the request must name exactly that profile.
+    if (
+        request.profile.id != profile.id
+        or request.profile.version != profile.version
+        or profile.binding.id != manifest.id
+        or profile.binding.version != manifest.version
+    ):
+        raise ValueError(
+            f"Request profile {request.profile.id}@{request.profile.version} "
+            "is not the selected profile."
+        )
     target = verify_rm_artifact(
         request.target_id, session, manifest, request.evaluation_time
     )
@@ -549,6 +579,49 @@ def evaluate_rm_slice(
         for uri in request.supplied_evidence
         if uri != request.target_id
     ]
+
+    def read(uri: str) -> dict[str, Any]:
+        return dict(json.loads(session.resolve(uri).content.decode("utf-8")))
+
+    # Gate 3 status: each status list is verified once as an artifact in its own right.
+    lists: dict[str, RmArtifactVerification] = {}
+    status: dict[str, StatusOutcome | None] = {}
+    for artifact in artifacts:
+        if artifact.protection.state != "established":
+            status[artifact.artifact_id] = None
+            continue
+        document = read(artifact.artifact_id)
+        entry = document.get("credentialStatus")
+        list_uri = (
+            entry.get("statusListCredential") if isinstance(entry, dict) else None
+        )
+        status_list: dict[str, Any] | None = None
+        list_state: SemanticState = "not_established"
+        if isinstance(list_uri, str):
+            if list_uri not in lists:
+                lists[list_uri] = verify_rm_artifact(
+                    list_uri, session, manifest, request.evaluation_time
+                )
+            checked = lists[list_uri]
+            if (
+                checked.digest_sri is not None
+                and checked.protection.state == "established"
+            ):
+                status_list = read(list_uri)
+                list_state = semantic_and(
+                    (checked.protection.state, checked.validity.state)
+                )
+            elif checked.digest_sri is not None:
+                # Resolved but not protected: its contents are never read.
+                status_list = {}
+                list_state = checked.protection.state
+        status[artifact.artifact_id] = evaluate_status(
+            document,
+            status_list,
+            list_state,
+            profile.credential_status,
+            request.evaluation_time,
+        )
 
     verification: list[ArtifactVerificationResult] = []
     for artifact in artifacts:
@@ -559,6 +632,20 @@ def evaluate_rm_slice(
                 execution=artifact.validity.execution,
                 reasons=tuple(f"validity: {r}" for r in artifact.validity.reasons),
                 source_pointers=artifact.validity.source_pointers,
+                artifact_id=artifact.artifact_id,
+            )
+        )
+        outcome = status[artifact.artifact_id]
+        verification.append(
+            ArtifactVerificationResult(
+                state=outcome.state if outcome else "not_established",
+                execution="executed" if outcome else "not_run",
+                reasons=(
+                    f"status: {outcome.reason}"
+                    if outcome
+                    else "status: Not evaluated because protection is not established.",
+                ),
+                source_pointers=outcome.sources if outcome else (),
                 artifact_id=artifact.artifact_id,
             )
         )
@@ -684,12 +771,37 @@ def evaluate_rm_slice(
                 artifact.validity.source_pointers,
             )
         )
+        outcome = status[artifact.artifact_id]
+        trace.append(
+            TraceEntry(
+                3,
+                use,
+                "credential-status",
+                outcome.state if outcome else "not_established",
+                "executed" if outcome else "not_run",
+                outcome.reason
+                if outcome
+                else "Not evaluated because protection is not established.",
+                outcome.sources if outcome else (),
+            )
+        )
         if artifact.digest_sri is not None:
             resources.append(
                 ResourceObservation(
                     artifact.artifact_id,
                     artifact.digest_sri,
                     "artifact",
+                    "catalog",
+                    request.evaluation_time,
+                )
+            )
+    for list_uri, checked in lists.items():
+        if checked.digest_sri is not None:
+            resources.append(
+                ResourceObservation(
+                    list_uri,
+                    checked.digest_sri,
+                    "status",
                     "catalog",
                     request.evaluation_time,
                 )
@@ -746,9 +858,8 @@ def evaluate_rm_slice(
             trace=tuple(trace),
             resources=tuple(resources),
             limitations=(
-                "I1 slice: authorization, support and conformity are not implemented "
+                "Authorization, support and conformity are not implemented yet "
                 "and never establish reliance.",
-                "Credential status is not checked in I1.",
                 "Python rejects undefined terms/types via a sentinel @vocab, "
                 "not full JSON-LD safe mode.",
             ),

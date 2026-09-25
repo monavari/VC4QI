@@ -6,16 +6,19 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { createProof } from '../src/proofs/index.js';
 import {
-  catalogDocumentLoader, createRelianceRequest, loadBindingManifest, sha384SRI,
+  catalogDocumentLoader, createRelianceRequest, loadBindingManifest, loadRelianceProfile, sha384SRI,
   StaticResourceCatalog, type StaticResourceInput,
 } from '../src/reliance/index.js';
-import { evaluateRmSlice, verifyRmArtifact } from '../src/reliance/rm-v1-artifacts.js';
+import { encodeStatusList, MIN_STATUS_BITS } from '../src/reliance/status-list.js';
+import { verifyRmArtifact } from '../src/reliance/rm-v1-artifacts.js';
+import { evaluateRmSlice } from '../src/reliance/rm-v1-slice.js';
 import { readPinnedResources } from '../src/reliance/rm-v1-node.js';
 import type { JsonObject } from '../src/types.js';
 
 const repoRoot = new URL('../../../', import.meta.url);
 const rmDir = new URL('bindings/experimental/rm-v1/', repoRoot);
 const manifest = loadBindingManifest(JSON.parse(readFileSync(new URL('manifest.json', rmDir), 'utf8')));
+const profile = loadRelianceProfile(JSON.parse(readFileSync(new URL('profiles/rm-verifier-1.json', rmDir), 'utf8')));
 const signed = readPinnedResources(new URL('test-vectors/signed/catalog.json', rmDir).pathname);
 
 const URI = {
@@ -27,6 +30,7 @@ const URI = {
   D197: 'https://producer.vc4qi.example/credentials/D197',
   D520: 'https://producer.vc4qi.example/credentials/D520',
   PRODUCER: 'https://producer.vc4qi.example/controller',
+  PRODUCER_STATUS: 'https://producer.vc4qi.example/status/1',
   LAB: 'https://lab.vc4qi.example/controller',
 };
 const NOW = '2026-09-25T12:00:00Z';
@@ -113,7 +117,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
   });
 
   it('authentic D with A/O/S/H alone does not establish reliance', async () => {
-    const { result } = await evaluateRmSlice(request(), session(), manifest);
+    const { result } = await evaluateRmSlice(request(), session(), manifest, profile);
     expect(result.artifactVerification.every(r => r.state === 'established')).toBe(true);
     expect(result.authorization).toHaveLength(1);
     expect(result.authorization[0]).toMatchObject({ state: 'not_established', execution: 'not_run' });
@@ -124,7 +128,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
   });
 
   it('reports a gate-numbered trace per node-use and the observed resources', async () => {
-    const { result } = await evaluateRmSlice(request(), session(), manifest);
+    const { result } = await evaluateRmSlice(request(), session(), manifest, profile);
     expect(result.requestId).toBe('urn:uuid:rm-v1-slice-request');
     const target = result.trace.filter(t => t.nodeUse.startsWith(`${URI.D} |`));
     expect(target.every(t => t.nodeUse.includes('| target |'))).toBe(true);
@@ -135,8 +139,9 @@ describe('RM v1 signed vertical slice (I1)', () => {
     expect(byPredicate('validity-period')).toMatchObject({ gate: 3, state: 'established' });
     expect(byPredicate('claim-authorization:as-mass-fraction')).toMatchObject({ gate: 5, execution: 'not_run' });
     expect(byPredicate('conformity:as-plus-u-le-200')).toMatchObject({ gate: 6, execution: 'not_run' });
-    expect(result.resources.map(r => r.uri).sort()).toEqual([URI.A, URI.D, URI.H, URI.O, URI.S].sort());
-    expect(result.resources.every(r => r.kind === 'artifact' && r.digestSRI.startsWith('sha384-'))).toBe(true);
+    expect(result.resources.filter(r => r.kind === 'artifact').map(r => r.uri).sort())
+      .toEqual([URI.A, URI.D, URI.H, URI.O, URI.S].sort());
+    expect(result.resources.every(r => r.digestSRI.startsWith('sha384-'))).toBe(true);
   });
 
   it('signed fixtures carry no legacy relation/basis wire fields', () => {
@@ -145,6 +150,78 @@ describe('RM v1 signed vertical slice (I1)', () => {
       for (const legacy of ['authorizedBy', 'derivedFrom', 'supportedBy', 'authorizationBasis', 'scopeRef', 'qi-vc'])
         expect(serialized, `${resource.uri} contains ${legacy}`).not.toContain(legacy);
     }
+  });
+
+  describe('credential status (gate 3)', () => {
+    const statusOf = (result: Awaited<ReturnType<typeof evaluateRmSlice>>['result'], uri: string) =>
+      result.trace.find(t => t.nodeUse.startsWith(`${uri} |`) && t.predicate === 'credential-status');
+    /** A producer status list with the given bits set, signed by `keyName`. */
+    async function producerList(setBits: number[], keyName = 'producer', issuer = URI.PRODUCER, encoded?: string) {
+      const bits = new Uint8Array(MIN_STATUS_BITS / 8);
+      for (const bit of setBits) bits[bit >> 3]! |= 1 << (7 - (bit & 7));
+      const list = json(URI.PRODUCER_STATUS);
+      list.issuer = issuer;
+      (list.credentialSubject as JsonObject).encodedList = encoded ?? encodeStatusList(bits);
+      return resign(list, keyName, `${issuer}#key-1`);
+    }
+
+    it('every credential in the chain is not revoked under a fresh, authorized list', async () => {
+      const { result } = await evaluateRmSlice(request(), session(), manifest, profile);
+      for (const uri of [URI.D, URI.A, URI.O, URI.S, URI.H]) {
+        expect(statusOf(result, uri), uri).toMatchObject({ gate: 3, state: 'established' });
+      }
+      expect(result.resources.filter(r => r.kind === 'status').map(r => r.uri).sort()).toEqual([
+        'https://lab.vc4qi.example/status/1', 'https://nab.vc4qi.example/status/1', URI.PRODUCER_STATUS]);
+      expect(result.decision).toBe('not_established');
+    });
+
+    it('P09: an authenticated revocation of the target contradicts it and rejects', async () => {
+      const s = session({ [URI.PRODUCER_STATUS]: await producerList([1]) }); // D178 is index 1
+      const { result } = await evaluateRmSlice(request(), s, manifest, profile);
+      expect(statusOf(result, URI.D)).toMatchObject({ state: 'contradicted' });
+      expect(statusOf(result, URI.O)).toMatchObject({ state: 'established' }); // index 0 clear
+      expect(result.decision).toBe('reject');
+    });
+
+    it('P08: a correctly signed list from a party without status authority establishes nothing', async () => {
+      const s = session({ [URI.PRODUCER_STATUS]: await producerList([], 'lab', URI.LAB) });
+      const { result } = await evaluateRmSlice(request(), s, manifest, profile);
+      expect(statusOf(result, URI.D)).toMatchObject({ state: 'not_established' });
+      expect(statusOf(result, URI.D)?.reason).toMatch(/may not state status/);
+      expect(result.decision).toBe('not_established');
+    });
+
+    it('P09: a stale or unavailable list is not established, never contradicted', async () => {
+      const stale = await evaluateRmSlice(request({ evaluationTime: '2026-11-15T00:00:00Z' }), session(), manifest, profile);
+      expect(statusOf(stale.result, URI.D)?.reason).toMatch(/freshness/);
+      expect(stale.result.decision).toBe('not_established');
+      const missing = await evaluateRmSlice(request(), session({ [URI.PRODUCER_STATUS]: null }), manifest, profile);
+      expect(statusOf(missing.result, URI.D)).toMatchObject({ state: 'not_established' });
+      expect(statusOf(missing.result, URI.D)?.reason).toMatch(/unavailable|not protected/);
+    });
+
+    it('a tampered status list is not used', async () => {
+      const list = json(URI.PRODUCER_STATUS);
+      (list.credentialSubject as JsonObject).encodedList = encodeStatusList(new Uint8Array(MIN_STATUS_BITS / 8).fill(255));
+      const { result } = await evaluateRmSlice(request(), session({ [URI.PRODUCER_STATUS]: serialize(list) }), manifest, profile);
+      expect(statusOf(result, URI.D)).toMatchObject({ state: 'not_established' });
+      expect(statusOf(result, URI.D)?.reason).toMatch(/not protected/);
+    });
+
+    it('P16: a signed decompression bomb stops at the size bound', async () => {
+      const bomb = encodeStatusList(new Uint8Array(3 * 1024 * 1024));
+      const s = session({ [URI.PRODUCER_STATUS]: await producerList([], 'producer', URI.PRODUCER, bomb) });
+      const { result } = await evaluateRmSlice(request(), s, manifest, profile);
+      expect(statusOf(result, URI.D)).toMatchObject({ state: 'not_established' });
+      expect(statusOf(result, URI.D)?.reason).toMatch(/exceeds/);
+    });
+
+    it('status is not evaluated for an unprotected artifact', async () => {
+      const document = json(URI.D);
+      document.validUntil = '2029-01-01T00:00:00Z'; // changed without re-signing
+      const { result } = await evaluateRmSlice(request(), session({ [URI.D]: serialize(document) }), manifest, profile);
+      expect(statusOf(result, URI.D)).toMatchObject({ execution: 'not_run' });
+    });
   });
 
   describe('negative controls', () => {
@@ -170,7 +247,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
       expect(artifact.checks.at(-1)).toMatchObject({ check: 'signature', state: 'contradicted' });
       expect(artifact.facts).toEqual([]);
       expect(artifact.validity.execution).toBe('not_run');
-      const { result } = await evaluateRmSlice(request(), session({ [URI.D]: serialize(document) }), manifest);
+      const { result } = await evaluateRmSlice(request(), session({ [URI.D]: serialize(document) }), manifest, profile);
       expect(result.decision).toBe('reject');
       expect(result.authorization[0]?.reasons[0]).toMatch(/not protected/);
       const signature = result.trace.find(t => t.nodeUse.startsWith(`${URI.D} |`) && t.predicate === 'signature');
@@ -217,7 +294,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
       const s = session({ [URI.O]: `${text(URI.O)} ` });
       const artifactO = await verifyRmArtifact(URI.O, s, { manifest, evaluationTime: NOW });
       expect(artifactO.protection.state).toBe('established');
-      const { result } = await evaluateRmSlice(request(), session({ [URI.O]: `${text(URI.O)} ` }), manifest);
+      const { result } = await evaluateRmSlice(request(), session({ [URI.O]: `${text(URI.O)} ` }), manifest, profile);
       const integrity = result.artifactVerification.find(r => r.artifactId === URI.O && r.reasons[0]?.startsWith('integrity'));
       expect(integrity?.state).toBe('contradicted');
       expect(result.decision).toBe('reject');
@@ -225,7 +302,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
 
     it('a missing referenced study is not established, not rejected', async () => {
       const { result } = await evaluateRmSlice(
-        request({ suppliedEvidence: [URI.A, URI.O, URI.H] }), session({ [URI.S]: null }), manifest);
+        request({ suppliedEvidence: [URI.A, URI.O, URI.H] }), session({ [URI.S]: null }), manifest, profile);
       const integrity = result.artifactVerification.find(r => r.artifactId === URI.S);
       expect(integrity?.state).toBe('not_established');
       expect(result.decision).toBe('not_established');
@@ -251,7 +328,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
     });
 
     it('an expired target is rejected on validity after protection', async () => {
-      const { result } = await evaluateRmSlice(request({ evaluationTime: '2029-01-01T00:00:00Z' }), session(), manifest);
+      const { result } = await evaluateRmSlice(request({ evaluationTime: '2029-01-01T00:00:00Z' }), session(), manifest, profile);
       const validity = result.artifactVerification.find(r => r.artifactId === URI.D && r.reasons[0]?.startsWith('validity'));
       expect(validity?.state).toBe('contradicted');
       expect(result.decision).toBe('reject');
@@ -259,7 +336,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
 
     it('a selected claim outside the protected results is not established', async () => {
       const { result } = await evaluateRmSlice(
-        request({ selectedClaims: [{ id: 'issuer', sourcePointer: '/issuer' }] }), session(), manifest);
+        request({ selectedClaims: [{ id: 'issuer', sourcePointer: '/issuer' }] }), session(), manifest, profile);
       expect(result.authorization[0]).toMatchObject({ state: 'not_established', execution: 'executed' });
     });
   });

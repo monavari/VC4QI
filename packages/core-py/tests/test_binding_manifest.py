@@ -12,8 +12,7 @@ from qi_vc_core.reliance import (
 )
 
 MANIFEST_PATH = (
-    Path(__file__).resolve().parents[3]
-    / "bindings/experimental/rm-v1/manifest.json"
+    Path(__file__).resolve().parents[3] / "bindings/experimental/rm-v1/manifest.json"
 )
 MANIFEST = json.loads(MANIFEST_PATH.read_text())
 
@@ -23,7 +22,9 @@ def test_manifest_loads_but_is_not_installable() -> None:
     assert loaded.id == RM_V1_BINDING_ID
     assert loaded.version == "1"
     assert loaded.installation.status == "incomplete"
-    assert loaded.installation.pending_resources
+    # All resources are pinned; the evaluators (I2-I4) keep it incomplete.
+    assert loaded.installation.pending_resources == ()
+    assert "evaluators" in loaded.installation.reason
     with pytest.raises(TypeError):
         cast(dict[str, Any], loaded.data)["version"] = "changed"
     with pytest.raises(ValueError, match="not installable"):
@@ -49,6 +50,10 @@ def test_manifest_does_not_trust_self_reported_installable_flag() -> None:
 def test_manifest_has_no_legacy_wire_fields() -> None:
     serialized = json.dumps(MANIFEST)
     for term in (
-        "authorizedBy", "derivedFrom", "supportedBy", "authorizationBasis", "scopeRef",
+        "authorizedBy",
+        "derivedFrom",
+        "supportedBy",
+        "authorizationBasis",
+        "scopeRef",
     ):
         assert term not in serialized
