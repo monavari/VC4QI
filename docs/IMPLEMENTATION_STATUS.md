@@ -102,7 +102,7 @@ P15, P16) and P05 is `excluded_unsupported`; the other 67 remain `not_implemente
 Authorization, support and conformity (gates 5–6) are still not implemented, so no
 request can yet be accepted. See the [I2 evidence](plans/standards-first-i2-evidence.md).
 
-## I3 progress, 25 September 2026
+## I3 complete, 25 September 2026
 
 Gate 5 now evaluates the operational-scope authority route (D ← O ← A ← anchor), with
 principal binding, maintenance and projection permissions, and a bounded projection
@@ -113,10 +113,11 @@ Only `termsOfUse` and `evidence` references are followed. Independently discover
 grants are declared unsupported in the manifest (V08). Step 2 added typed references,
 a signed second route (direct accreditation A2) under a fictional two-route profile,
 and the `accreditation-suspension` global restriction outside the OR; failures on
-unused alternatives are diagnostic. Thirty-one cases are `passing` (I3 added V04, V05,
-V07, P06 and C01–C11, C16), 2 are `excluded_unsupported` (P05, V08) and 50 are
-`not_implemented`. Claim scope coverage and conformity are I4, so no request is
-accepted yet. Cycle handling (C12–C15) and V06 are still open. See the
+unused alternatives are diagnostic. Step 3 pinned cycle refusal, shared-node reuse,
+per-role checks, inert unused cycles and provenance-only credentials. I3 is complete:
+36 cases are `passing` (I3 added V04–V07, P06 and C01–C16), 2 are
+`excluded_unsupported` (P05, V08) and 45 are `not_implemented`. Claim scope coverage and
+conformity are I4, so no request is accepted yet. See the
 [I3 evidence](plans/standards-first-i3-evidence.md).
 
 ## Migration and historical claims

@@ -507,3 +507,106 @@ def test_reference_type_mismatch_is_contradicted() -> None:
     reference = basis(result, "authorizing-reference")
     assert reference.state == "contradicted"
     assert "declares RmOperationalScope" in reference.reason
+
+
+# --- C12-C15 and V06: cycles, shared nodes, roles, provenance ----------------------
+
+
+def policy_for(uri: str, kind: str) -> dict[str, Any]:
+    return {
+        "type": "RmAuthorizationPolicy",
+        "authorizationCredential": {"id": uri, "type": kind},
+    }
+
+
+def test_c12_authorization_cycle_is_not_accepted() -> None:
+    o = doc(URI["O"])
+    o["termsOfUse"] = [policy_for(URI["D"], "RmAccreditation")]
+    result = run(reissue({URI["O"]: o}))
+    grant = basis(result, "maintenance-grant")
+    assert grant.state == "not_established"
+    assert "Circular authorization" in grant.reason
+    assert entry(result, "authority").state == "not_established"
+    assert result.decision != "accept"
+
+
+def test_c12_self_reference_is_not_accepted() -> None:
+    def cite_self(d: dict[str, Any]) -> None:
+        d["termsOfUse"] = [policy_for(URI["D"], "RmOperationalScope")]
+
+    result = run(reissue({}, cite_self))
+    assert "Circular authorization" in basis(result, "authorizing-reference").reason
+    assert entry(result, "authority").state == "not_established"
+
+
+def test_c12_mixed_cycle_is_not_accepted() -> None:
+    s = doc(URI["S"])
+    s["termsOfUse"] = [policy_for(URI["D"], "RmLabAuthority")]
+    result = run(reissue({URI["S"]: s}))
+    reference = support(result, "laboratory-authority-reference")
+    assert "Circular authorization" in reference.reason
+    assert result.support[0].state == "not_established"
+    assert result.decision != "accept"
+
+
+def test_c13_shared_accreditation_is_reused_not_a_cycle() -> None:
+    def cite_a(d: dict[str, Any]) -> None:
+        d["termsOfUse"].append(policy_for(URI["A"], "RmAccreditation"))
+
+    result = two_routes(reissue({}, cite_a))
+    assert entry(result, "route:operational-scope").state == "established"
+    assert entry(result, "route:direct-accreditation").state == "established"
+    assert not [t for t in result.trace if "Circular" in t.reason]
+    assert entry(result, "restriction:accreditation-suspension").sources == (URI["A"],)
+    assert entry(result, "authority").state == "established"
+
+
+def test_c14_same_credential_in_two_roles_is_checked_per_role() -> None:
+    o = doc(URI["O"])
+    o["termsOfUse"] = [policy_for(URI["A2"], "RmAccreditation")]
+
+    def cite_a2(d: dict[str, Any]) -> None:
+        d["termsOfUse"].append(policy_for(URI["A2"], "RmAccreditation"))
+
+    overrides = reissue({URI["O"]: o}, cite_a2)
+    req = request(
+        profile=VersionedIdentifier(TWO_ROUTES.id, TWO_ROUTES.version),
+        supplied_evidence=(URI["O"], URI["S"], URI["H"], URI["A2"]),
+    )
+    result = run(overrides, req, TWO_ROUTES)
+    assert basis(result, "projection-permission").state == "contradicted"
+    assert entry(result, "route:operational-scope").state == "contradicted"
+    assert entry(result, "route:direct-accreditation").state == "established"
+    assert entry(result, "authority").state == "established"
+
+
+def test_c15_unused_reference_cycle_changes_nothing() -> None:
+    d197, d520 = URI["D197"], URI["D520"]
+    x, y = doc(d197), doc(d520)
+    x["termsOfUse"] = [policy_for(d520, "RmOperationalScope")]
+    y["termsOfUse"] = [policy_for(d197, "RmOperationalScope")]
+    baseline = run()
+    supplied = (URI["A"], URI["O"], URI["S"], URI["H"], d197, d520)
+    result = run({d197: sign(x), d520: sign(y)}, request(supplied_evidence=supplied))
+    assert entry(result, "authority").state == "established"
+    assert (
+        result.authorization[0].route_witness_ids
+        == baseline.authorization[0].route_witness_ids
+    )
+    assert result.decision == baseline.decision
+
+
+def test_v06_provenance_only_credential_establishes_no_authority() -> None:
+    d = doc(URI["D"])
+    del d["termsOfUse"]
+    d["http://www.w3.org/ns/prov#wasDerivedFrom"] = {"id": URI["O"]}
+    result = run({URI["D"]: sign(d)})
+    schema = next(
+        t
+        for t in result.trace
+        if t.node_use.startswith(URI["D"] + " |") and t.predicate == "schema"
+    )
+    assert schema.state == "contradicted"
+    assert entry(result, "authority").state == "not_established"
+    assert result.authorization[0].state != "established"
+    assert result.authorization[0].route_witness_ids == ()

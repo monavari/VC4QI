@@ -1,10 +1,10 @@
 # I3 evidence: authority routes and required support
 
-**25 September 2026. I3 steps 1 and 2 done in both languages: two authority routes, a
-global suspension restriction and the required-study support are evaluated on the
-signed RM chain.** The legacy evaluator is still the default. Claim scope coverage and
-conformity (I4) are not implemented, so no request is accepted yet. Cycles (C12–C15)
-and V06 are still open (see Limits).
+**25 September 2026. I3 complete in both languages: two authority routes, a global
+suspension restriction, required-study support and cycle handling are evaluated on the
+signed RM chain; C01–C16, V04–V07 and P06 pass and V08 is declared unsupported.** The
+legacy evaluator is still the default. Claim scope coverage and conformity (I4) are not
+implemented, so no request is accepted yet.
 
 ## What was added
 
@@ -78,6 +78,26 @@ Step 2 results: ledger command 72 TS and 70 Python tests, exit 0; TS 363 passed 
 9 network-only legacy failures; Python 316 passed, 1 skipped; Ruff 204 and mypy 198
 unchanged; build, lint, scenarios, schemas and both generator checks pass.
 
+## Step 3: cycles, shared nodes, roles and provenance
+
+No evaluator change was needed: routes are type-directed and every reference is checked
+against the active evaluation stack, while completed nodes are shared. These controls
+(both languages) pin that behaviour on signed data:
+
+| Case | Change | Result |
+| --- | --- | --- |
+| C12 | O re-issued citing D as its accreditation (D → O → D) | maintenance-grant `not_established`, "Circular authorization"; authority `not_established` |
+| C12 | D citing itself as its operational scope | authorizing-reference "Circular authorization" |
+| C12 | S citing D as its laboratory authority (support ↔ authority) | laboratory-authority-reference "Circular authorization"; support `not_established` |
+| C13 | D citing O and A (two-route profile) | A reused by both routes, both established, no cycle reported; the restriction counts A once |
+| C14 | A2 as O's grant and as D's direct accreditation | Per-role checks: projection-permission contradicted, direct route established; authority established |
+| C15 | D197 ↔ D520 reference each other, supplied but unused | Witnesses and decision equal the baseline |
+| V06 | D with only an absolute-IRI `prov:wasDerivedFrom` → O | Signs in safe mode, contradicted at the closed schema; authority `not_established`, no witnesses |
+
+Step 3 results: ledger command 79 TS and 77 Python tests, exit 0; TS 370 passed plus the
+9 network-only legacy failures; Python 323 passed, 1 skipped; Ruff 204, mypy 198, lint
+unchanged. Only test files changed. Ledger: 36 passing, 2 excluded, 45 not implemented.
+
 ## Commands and results (step 1)
 
 ```bash
@@ -107,10 +127,9 @@ Ledger after step 1: V04, V05, V07, P06, C08–C11 and C16 `passing`; V08
   chain references. A suspension of an accreditation nothing references is not
   discovered (consistent with V08). The fixture routes are the RM binding's
   illustrative profile, not a GS or legal rule.
-- **C12–C15:** RM routes are fixed-depth and type-directed (D → O → A, D → S → H), so no
-  required cycle can form on the installed routes. Active-stack cycle detection, shared
-  DAG reuse and inert provenance cycles still need implementation and tests.
-- **V06:** the RM context defines no derivation term, so a `prov:wasDerivedFrom`-only
-  credential cannot be signed in safe mode. A dedicated control is pending.
+- **Cycles:** detection relies on the active stack of typed, fixed-depth RM routes;
+  there is no general memo table of node-use contexts yet, which a binding with open
+  recursion would need. The binding has no provenance vocabulary, so C15 uses an unused
+  reference cycle and V06 an absolute-IRI provenance property.
 - Claim scope coverage, conformity and the S cases are I4. Until then, authorization of
   the selected claim is at best `not_established`.

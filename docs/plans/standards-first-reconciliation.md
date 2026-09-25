@@ -308,7 +308,8 @@ cannot claim every route was disproved. Keep GS independent laboratory authority
 Progress 2026-09-25: step 1 (operational-scope route, required support, composition,
 V08 declared unsupported) is done; see [I3 evidence](standards-first-i3-evidence.md).
 Step 2 (typed references, signed second route A2, `accreditation-suspension`
-restriction, diagnostic unused alternatives) passes C01–C07. Open: C12–C15 and V06.
+restriction, diagnostic unused alternatives) passes C01–C07. Step 3 pins C12–C15 and
+V06 on signed data. I3 exit met (V08 declared unsupported by owner decision).
 
 ### I4 — full signed RM baseline, scope/conformity and language parity
 
