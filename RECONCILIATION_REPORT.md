@@ -1088,3 +1088,189 @@ Headless Chromium 1194 at 390 px: 178 accepts (183 ≤ 200), 197 rejects conform
 (202 > 200), 520 rejects scope with conformity not asked, and the tamper toggle rejects
 authenticity with later gates not asked. No network requests or page errors; no
 horizontal overflow in light or dark mode. Pages deployment itself is not yet executed.
+
+## Standards-first I1 pinned RM resources — 25 September 2026
+
+Continuing I1 at the user's request. Added the hand-authored RM v1 context
+(`bindings/experimental/rm-v1/resources/contexts/rm-1.jsonld`) and a generator,
+`scripts/rm-v1/build-resources.mjs`, that emits the seven schemas and `catalog.json`
+(URI, path, media type, origin, version, SHA-384 SRI over exact bytes; `--check` detects
+stale output). Design choices recorded in the binding README: `rm:` prefix because the
+VCDM 2.0 context protects `exp`; decimal strings typed `xsd:decimal` for exact
+quantities; `@list` for `materials`, `materialPropertiesList` and `results` so native
+index pointers are signed. The VCDM 2.0 bytes are the existing vendored copy; they were
+not compared with W3C's published hash here (network to w3.org is blocked).
+
+New `loadRmV1Catalog` (Node-only `reliance/rm-v1-node.ts`, kept out of the browser-reachable barrel) and `load_rm_v1_catalog` install the index into the isolated catalog.
+The manifest's pending list now names controller documents, the A/O/D178/S/H artifacts
+and the status list instead of the pinned contexts/schemas; it remains `incomplete`.
+
+Results in this environment: `pnpm -C packages/core-ts test` 265 passed, 9 failed. The
+9 failures are the pre-existing legacy canonicalize/proof tests that fetch
+`https://www.w3.org/ns/credentials/v2` over the network (HTTP 403 from this sandbox's
+proxy); they are unchanged by this work and pass in CI. The 7 new TypeScript tests pass
+offline. Python: 222 passed, 1 existing skip (4 new). TS lint, schema validation and
+scenarios exit 0; focused Ruff and mypy on `qi_vc_core/reliance` pass. No signed fixture
+was changed and no acceptance-ledger case is marked passing.
+
+## Standards-first I1 verification-method authorization — 25 September 2026
+
+Added `authorizeAssertionMethod` (TS `reliance/key-authorization.ts`) and its Python
+mirror `authorize_assertion_method`. A proof key counts only when the method URL's
+controller document equals the credential issuer (exact identifiers, no aliases), is
+installed in the isolated catalog (processed as plain JSON), identifies itself by that
+URL, lists exactly one Multikey method with that id controlled by the issuer, carries an
+Ed25519 multikey, and references it from `assertionMethod`. Missing/unsupported inputs
+(no issuer, uninstalled or invalid controller document, non-Multikey type, key
+revocation/expiry metadata, embedded assertion methods) are `not_established`; evidence
+that the key is not the issuer's assertion key is `contradicted`. The established
+outcome returns the raw public key and the controller document's SRI digest.
+
+`testdata/regressions/key-authorization.json` holds 17 shared unsigned cases (KA-01 to
+KA-17), including another controller's valid key, an authentication-only key, a
+controller-id mismatch, duplicate method ids and a P-256 key. Keys are insecure
+fictional fixtures derived from public seeds. All 17 pass in both languages.
+
+Results: TS 283 passed, 9 failed (the same network-fetching legacy tests as above);
+Python 239 passed, 1 existing skip; TS lint exit 0; Ruff and mypy on the reliance
+package and new tests pass. This establishes the authorization rule only: no signed
+artifact uses it yet, and no acceptance-ledger case is marked passing.
+
+## Standards-first I1 signed vertical slice — 25 September 2026
+
+Added `packages/core-ts/scripts/generate-rm-v1-artifacts.ts`, which writes fictional
+controller documents and signed A, H, O, S and D178 under
+`bindings/experimental/rm-v1/test-vectors/signed/` with an exact-byte SHA-384 index.
+Keys derive from public seeds (insecure fixtures); proofs use safe-mode canonicalization
+with the pinned catalog; `relatedResource` digests cover exact referenced bytes. The
+generator lives in the core package because pnpm isolation hides core dependencies from
+root scripts. Added `reliance/rm-v1-artifacts.ts` (`verifyRmArtifact`,
+`evaluateRmSlice`), exported by package subpath only. Details, state rules, the twelve
+negative controls and limits are in
+`docs/plans/standards-first-i1-signed-slice-evidence.md`.
+
+Results: `pnpm -C packages/core-ts test` 302 passed, 9 failed (the same network-fetching
+legacy tests); the 19 new slice tests pass. `pnpm -r build`, TS lint, scenarios and
+schema validation exit 0. The manifest's pending resources are now only the status list;
+it remains `incomplete`. No acceptance-ledger case is marked passing: the new controls
+are I1 protection evidence, not V/P/S/C/E witnesses.
+
+## Standards-first I1 Python slice parity — 25 September 2026
+
+Added `qi_vc_core/reliance/rm_v1_artifacts.py` (`verify_rm_artifact`,
+`evaluate_rm_slice`) mirroring the TypeScript checks, facts and result, and
+`tests/test_rm_v1_slice.py` (18 tests) over the TypeScript-generated bytes, including
+the negative controls. PyLD 3.3.0 has no safe mode, so Python rejects undefined terms and
+types by expanding with a sentinel `@vocab`; this is narrower than jsonld.js safe mode
+and is stated as a limitation in every Python slice result. Added the reviewed
+dependency `jsonschema>=4.23,<5` (4.26.0, MIT, three MIT transitive packages) for schema
+parity; `uv.lock` was updated with `uv add`.
+
+Python verifies all five TypeScript-signed fixtures and rejects tampered copies; a D
+re-signed in Python verified in TypeScript in a one-off check (not committed). This is
+agreement between separate JSON-LD/Ed25519 libraries over shared fixtures, not an
+independent conformance vector.
+
+Results: Python 257 passed, 1 existing skip; package-wide Ruff 204 and mypy 198, both
+unchanged from the baseline (an initial run showed mypy 202 from four new test typing
+errors, fixed before commit). TypeScript unchanged at 302 passed plus the 9
+network-only legacy failures. An open question is recorded in the signed-slice
+evidence: the vendored VCDM 2.0 context has no top-level `@vocab`, which should be
+checked against W3C's published bytes.
+
+## Standards-first I1 exit controls — 25 September 2026
+
+Added the two remaining I1 exit controls in both languages: arbitrary policy type names
+(`AuthorizedByPolicy`, `RmAuthorizationPolicyV2`, `rmAuthorizationPolicy`) are
+contradicted at the schema check with no facts read, and no signed fixture contains a
+legacy relation/basis field or `qi-vc` term. The signed-slice evidence now has an I1
+exit-gate table. I1 is implemented in both languages; two items stay open because they
+need network access: comparing the vendored VCDM 2.0 context with W3C's published bytes
+(including whether it declares `@vocab`), and a full independent transformation vector.
+No acceptance-ledger case is marked passing; I2 is next.
+
+## Poster demonstrator harmonized with the RM v1 implementation — 25 September 2026
+
+At the user's request, `site/m375a` no longer uses its own "vc4qi-rm-exp 0.1" fixtures
+(`eddsa-jcs-2022`, `did:web`, `OperativeGrantPolicy`). The generator now also signs
+D197 and D520 (hypothetical reissues; D178 bytes unchanged), and the page embeds the
+repository's pinned resources and signed fixtures at build time
+(`apps/demo-web/vite.poster.config.ts`, `pnpm -C apps/demo-web build:poster` →
+`site/m375a/verifier.js`, 517 kB, 121 kB gzip, byte-reproducible; CI fails if stale).
+Gates 0–3 run the repository's `verifyRmArtifact` in the browser (pinned contexts and
+schemas, controller-document key authorization, safe-mode `eddsa-rdfc-2022`, exact-byte
+digests, validity). Gates 4–6 are a labelled preview (`apps/demo-web/poster/preview-rules.ts`,
+exact decimal arithmetic) of the I3/I4 rules; status is shown as not checked. The page
+uses the handover's gate numbering 0–6 and marks each gate "repository code" or
+"preview".
+
+Headless Chromium 1194 at 390 px: 178 accepted (183 ≤ 200); 197 rejected at gate 6
+(202 > 200); 520 rejected at gate 5 (520 > 500), decision not asked; tamper rejected at
+gate 2 with gates 4–6 not asked. No network requests, no console errors, no horizontal
+overflow in light or dark mode. Slice tests now cover D197/D520: TS 23, Python 24 pass.
+The preview verdict is not I3/I4 evidence and no acceptance-ledger case changes.
+
+## Milestone audit applied — 25 September 2026
+
+The user asked for an audit of I0–I8 against the handover (the latest paper-derived
+requirement source in the repository; no manuscript file is present). Findings: the
+phases map one-to-one to handover §14 Phases 0–8; all 83 ledger rows match handover §13
+verbatim; `PAPER_FEEDBACK.md` covers all ten §16 items. Gaps now recorded in the plan as
+"Audit" notes: missing §4.3 result fields (request identity, gate trace, resource
+observations) and canonical gate numbering for I2; status authority for I2; a second
+multi-route fixture profile for C01–C06 and an explicit decision on independently
+discovered grants (V08) for I3; two succession profiles for S08 in I4; calibration cases
+S18/S19/S21 moved to I5; poster preview replacement in I7.
+
+Ledger `planned_phase` values now name one owning phase per case where possible (for
+example V02/V03 → I5, P06 → I3, E01–E09 → I6, E10–E14 → I7, E15 → I8). P02, P03, V04 and
+V12 carry I1 partial-evidence notes; every status remains `not_implemented` until
+gate-numbered reliance assertions exist. Added F-7 to `PAPER_FEEDBACK.md` (signed array
+order, protected VCDM terms, cross-language safe-processing difference). Docs-only change.
+
+## Standards-first I2 step 1: result contract — 25 September 2026
+
+The user asked to continue. The reliance contract now carries the handover §4.3 fields
+the audit found missing, in both languages: a required request identity on requests and
+results; a gate-numbered trace (`Gate` 0–6 with `GATE_NAMES`, node-use key, predicate,
+semantic and execution state, reason, sources), validated so that non-canonical gates
+and `not_run` entries that claim a result are refused; and resource observations
+(SHA-384 SRI, kind, source, observation time). The I1 slice evaluator now emits these:
+protection checks map to gates 0–2, `relatedResource` integrity to gate 1, validity to
+gate 3, claim authorization to gate 5 and support/conformity to gate 6. Tests assert the
+target's gate entries, `not_run` states after a tamper, and the five artifact resources.
+
+Results: TS reliance-type and slice tests 45 passed (full suite 310 passed plus the 9
+network-only legacy failures); Python 271 passed, 1 skip; Ruff 204 and mypy 198
+unchanged. The poster bundle rebuilt byte-identically. No acceptance case changes.
+
+## Standards-first I2 step 2: credential status — 25 September 2026
+
+Added a verifier-owned reliance profile (`profiles/rm-verifier-1.json`, loaders in both
+languages), signed Bitstring Status Lists per fictional issuer, `credentialStatus` on
+every RM credential (schemas now require it; a `status-list.json` schema and the status
+list type were added to the manifest), and gate-3 status evaluation with issuer-only
+status authority, explicit freshness and bounded GZIP decoding. The manifest's pending
+resource list is now empty; it stays `incomplete` because the I2–I4 evaluators are not
+done. The slice evaluator moved to `reliance/rm-v1-slice.ts` to keep the artifact
+verifier browser-safe. The legacy status module's DEFLATE-without-prefix encoding is
+recorded as a finding and left unchanged. Details, controls (P08, P09, P10 unit, P16)
+and results are in `docs/plans/standards-first-i2-evidence.md`. No ledger case changes.
+
+## Standards-first I2 step 3: plan, identity, structure, budgets — 25 September 2026
+
+Gate 0 refuses requests that do not name the verifier-selected profile and binding
+(V09) without resolving anything; gate 1 checks that a protected artifact identifies
+itself by its resolved identity (P11); the evaluator takes the catalog and applies the
+request's resource/byte budget to evidence (each distinct resource once) and `maxDepth`
+to status lists, with a separate internal budget for pinned static material (P12, P16).
+Multiple schema declarations are unsupported (V10); standard optional `name` and
+`description` are admitted and inert (V11); placeholder proofs never verify (P07). Both
+languages.
+
+Ledger: V09–V12, P02–P04, P07–P12, P15 and P16 recorded `passing` with commands and
+exit codes (P10 at unit level); P05 `excluded_unsupported` because the RM v1 binding has
+no trust registry. The ledger command exits 0 (63 TS, 58 Python tests). Full results:
+TS 331 passed plus the 9 network-only failures; Python 287 passed, 1 skip; Ruff 204 and
+mypy 198 unchanged; build, lint, scenarios, schemas, generator checks and the poster
+bundle pass. See `docs/plans/standards-first-i2-evidence.md`.

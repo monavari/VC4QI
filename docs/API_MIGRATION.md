@@ -44,3 +44,13 @@ Existing package exports, fixture paths and queries remain available as currentl
 implemented; this note does not promise their indefinite backwards compatibility.
 Python mirrors supported semantic states/records/routes/arithmetic. Its processing of
 TS-derived SD subsets remains distinct from cryptographic SD verification.
+
+## Implemented reliance contract (I1/I2, unreleased)
+
+The new request/result API (TS `reliance` namespace, Python `qi_vc_core.reliance`) is
+unreleased and may still change. As of I2 step 1 it requires `requestId` / `request_id`
+on requests and results. Results carry a gate-numbered `trace` (canonical gates 0–6,
+node-use key, predicate, state, execution, reason, sources) and `resources` observations
+(URI, SHA-384 SRI, kind, source, observation time), as handover §4.3 requires. The
+node-use key combines artifact identity, content digest, role, purpose, profile and
+evaluation time.

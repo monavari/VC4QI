@@ -289,3 +289,28 @@ uses the received proof options. Manuscript protection claims must distinguish t
 metadata fix from the remaining safe-expansion, canonicalization, authorized-controller
 and isolated-catalog work. See the [I1 audit](plans/standards-first-i1-protection-audit.md)
 for code boundaries, executed tests and the signed-slice prerequisites.
+
+## F-7 — Signed facts, array order and cross-language safe processing (2026-09-25)
+
+Implementing the I1 signed slice surfaced three manuscript-relevant constraints.
+
+1. **Array order is not signed by RDF canonicalization unless the binding says so.**
+   `eddsa-rdfc-2022` signs an RDF graph, where plain JSON arrays become unordered sets.
+   A verifier witness that points to `/materialPropertiesList/0/results/0` would then
+   name a position the signature does not protect. The RM v1 context declares
+   `materials`, `materialPropertiesList` and `results` as `@list`, and a test shows that
+   reordering results changes the canonical form. Manuscript text on source-provenance
+   witnesses ("Mapped" obligation) should state that pointer stability is a binding
+   property, not a generic JSON-LD guarantee.
+2. **Local vocabularies must avoid protected VCDM 2.0 terms.** The VCDM 2.0 context
+   protects short terms such as `exp` (JWT), so the local prefix is `rm:`. This extends
+   F-1/F-2: examples in the paper must not reuse protected term names.
+3. **Safe processing is not equal across implementations.** TypeScript uses jsonld.js
+   safe mode; PyLD 3.3.0 has none, so Python rejects undefined terms and types through a
+   sentinel `@vocab` expansion, which is narrower. Closed JSON Schemas reject undeclared
+   properties in both. Any parity claim must name this difference. Separately, the
+   vendored VCDM 2.0 context has no top-level `@vocab`; whether the published context
+   declares one must be checked against W3C's bytes before relying on safe-mode
+   rejection of undefined terms.
+
+See [signed-slice evidence](plans/standards-first-i1-signed-slice-evidence.md).
