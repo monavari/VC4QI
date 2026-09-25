@@ -7,6 +7,11 @@ from .catalog import (
     StaticResourceCatalog,
     sha384_sri,
 )
+from .key_authorization import (
+    KeyAuthorization,
+    authorize_assertion_method,
+    issuer_identifier,
+)
 from .manifest import (
     RM_V1_BINDING_ID,
     BindingInstallation,
@@ -14,7 +19,17 @@ from .manifest import (
     load_binding_manifest,
     require_installable_binding,
 )
+from .profile import RelianceProfile, TrustAnchor, load_reliance_profile
+from .rm_v1 import (
+    RM_V1_CONTEXT,
+    RM_V1_SCHEMA_BASE,
+    RM_V1_VOCAB,
+    VC_V2_CONTEXT,
+    load_rm_v1_catalog,
+    read_pinned_resources,
+)
 from .types import (
+    GATE_NAMES,
     ArtifactVerificationResult,
     ClaimAuthorizationResult,
     ConformityNotRequested,
@@ -22,14 +37,17 @@ from .types import (
     ConformityRequestedResult,
     ConformityResult,
     ExecutionState,
+    Gate,
     PredicateResult,
     RelianceDecision,
     RelianceRequest,
     RelianceResult,
     ResolverLimits,
+    ResourceObservation,
     SelectedClaim,
     SemanticState,
     SupportResult,
+    TraceEntry,
     VersionedIdentifier,
     create_reliance_request,
     create_reliance_result,
@@ -71,4 +89,20 @@ __all__ = [
     "BindingManifest",
     "load_binding_manifest",
     "require_installable_binding",
+    "RM_V1_CONTEXT",
+    "RM_V1_SCHEMA_BASE",
+    "RM_V1_VOCAB",
+    "VC_V2_CONTEXT",
+    "load_rm_v1_catalog",
+    "read_pinned_resources",
+    "KeyAuthorization",
+    "authorize_assertion_method",
+    "issuer_identifier",
+    "GATE_NAMES",
+    "Gate",
+    "ResourceObservation",
+    "TraceEntry",
+    "RelianceProfile",
+    "TrustAnchor",
+    "load_reliance_profile",
 ]

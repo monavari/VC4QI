@@ -1,7 +1,8 @@
 # Implementation status
 
-**Validated 25 September 2026. D0–D4 and I0 complete; I1 is in progress and the
-default runtime remains legacy.**
+**Validated 25 September 2026. D0–D4 and I0 complete; the I1 signed slice is
+implemented in both languages with two network-dependent checks open. The default
+runtime remains legacy.**
 The [handover](plans/standards-first-handover-2026-09-21.txt) and [model](MODEL_SPEC.md)
 are requirements, not implementation evidence. No new-model acceptance case is claimed
 passing by this preparation phase.
@@ -66,6 +67,40 @@ Python passed, 1 skipped**. Build, scenarios, TS lint and schema checks pass; ex
 Python lint debt remains. See [I1 protection audit](plans/standards-first-i1-protection-audit.md).
 The executable manifest, new request/result API, safe protection/catalog path and signed
 RM slice are still pending. I0's four GitHub CI jobs passed for `8356b42`.
+
+## I1 pinned RM resources, 25 September 2026
+
+The experimental RM v1 context and seven JSON Schemas now exist and are pinned, with
+the vendored VCDM 2.0 context, in `bindings/experimental/rm-v1/catalog.json`. Both
+languages install them into the isolated catalog by SHA-384 over exact bytes. TypeScript
+tests prove safe JSON-LD expansion of a certificate-shaped sample, rejection of an
+undefined term, typed decimal/IRI facts, signed result order and offline refusal of an
+unpinned context. Python checks pinning only; Python safe-mode parity remains pending.
+The manifest stays `incomplete`: controller documents, signed D/A artifacts with
+authorized keys, and status resources are next.
+
+## I1 signed slice, 25 September 2026
+
+Verification-method authorization (17 shared vectors, both languages) and a reproducible
+signed fixture set (controller documents plus A, H, O, S, D178) now exist. TypeScript
+`verifyRmArtifact` verifies each from its exact bytes and extracts protected facts with
+source pointers; `evaluateRmSlice` reports authorization, support and conformity as
+`not_run`, so authentic artifacts alone give `not_established`. Twelve negative controls
+pass. Python mirrors the slice (18 tests over the same bytes), using a sentinel
+undefined-term check because PyLD has no safe mode. See the
+[signed-slice evidence](plans/standards-first-i1-signed-slice-evidence.md).
+Status resources and an independent transformation vector remain.
+
+## I2 progress, 25 September 2026
+
+The reliance result now carries a request identity, a gate-numbered trace (0–6) and
+resource observations. Gate 3 checks revocation status from signed Bitstring Status
+Lists with issuer-only authority, explicit freshness and bounded decompression. Gate 0
+refuses unselected profiles; gate 1 checks resolved identity; the request budget bounds
+evidence resolution. Fifteen acceptance cases are `passing` (V09–V12, P02–P04, P07–P12,
+P15, P16) and P05 is `excluded_unsupported`; the other 67 remain `not_implemented`.
+Authorization, support and conformity (gates 5–6) are still not implemented, so no
+request can yet be accepted. See the [I2 evidence](plans/standards-first-i2-evidence.md).
 
 ## Migration and historical claims
 

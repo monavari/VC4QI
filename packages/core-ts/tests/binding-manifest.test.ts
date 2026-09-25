@@ -29,7 +29,9 @@ describe('experimental RM v1 binding manifest', () => {
   it('is explicitly incomplete and cannot be selected', () => {
     const loaded = loadBindingManifest(manifest);
     expect(loaded.installation.status).toBe('incomplete');
-    expect(loaded.installation.pendingResources.length).toBeGreaterThan(0);
+    // All resources are pinned; the evaluators (I2-I4) are what keep it incomplete.
+    expect(loaded.installation.pendingResources).toEqual([]);
+    expect(loaded.installation.reason).toMatch(/evaluators/);
     expect(() => requireInstallableBinding(loaded)).toThrow(/not installable/);
   });
 

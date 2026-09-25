@@ -6,7 +6,7 @@ import hashlib
 from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Literal
+from typing import Literal, Protocol
 
 CatalogErrorCode = Literal[
     "DUPLICATE_RESOURCE",
@@ -123,3 +123,32 @@ class CatalogSession:
         self._resources_used += 1
         self._bytes_used += len(item.content)
         return StaticResource(**vars(item))
+
+
+class ResourceResolver(Protocol):
+    """Anything that resolves pinned resources by URI."""
+
+    def resolve(self, uri: str) -> StaticResource: ...
+
+
+class MemoizingResolver:
+    """Resolve each distinct URI at most once, so a budget counts distinct resources."""
+
+    def __init__(self, inner: ResourceResolver) -> None:
+        self._inner = inner
+        self._cache: dict[str, StaticResource | CatalogError] = {}
+
+    @property
+    def resolved(self) -> frozenset[str]:
+        return frozenset(self._cache)
+
+    def resolve(self, uri: str) -> StaticResource:
+        if uri not in self._cache:
+            try:
+                self._cache[uri] = self._inner.resolve(uri)
+            except CatalogError as error:
+                self._cache[uri] = error
+        entry = self._cache[uri]
+        if isinstance(entry, CatalogError):
+            raise entry
+        return StaticResource(**vars(entry))
