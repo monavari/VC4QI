@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VC4QI</title>
+<meta name="description" content="VC4QI: Verifiable Credentials for Quality Infrastructure. A research reference implementation for evaluating reliance on accreditation, certification and reference-material credentials. BAM.">
+<style>
+:root{
+  --petrol:#00556E; --dark:#002832; --cyan:#00AFF0; --red:#D2001E;
+  --paper:#FFFFFF; --wash:#F1F3F4; --tcyan:#E1F4FC; --line:#DADEE1; --ink:#14232A; --muted:#56656D; --link:#00556E;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --paper:#0E1A1F; --wash:#15252C; --tcyan:#0F2F3C; --line:#26363E; --ink:#E6ECEE; --muted:#9AAAB1; --link:#3FB6D6; --petrol:#0A6A86; }
+}
+:root[data-theme="dark"]{ --paper:#0E1A1F; --wash:#15252C; --tcyan:#0F2F3C; --line:#26363E; --ink:#E6ECEE; --muted:#9AAAB1; --link:#3FB6D6; --petrol:#0A6A86; }
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{ margin:0; background:var(--paper); color:var(--ink); font:16px/1.55 var(--sans); }
+main{ max-width:46rem; margin:0 auto; padding:1.25rem 16px 3rem; }
+a{ color:var(--link); text-underline-offset:3px; }
+:focus-visible{ outline:3px solid var(--cyan); outline-offset:2px; border-radius:4px; }
+.masthead{ display:flex; justify-content:space-between; align-items:baseline; gap:1rem; font-size:.82rem; color:var(--muted); border-bottom:1px solid var(--line); padding-bottom:.6rem; }
+.masthead strong{ color:var(--red); }
+h1{ font-size:clamp(1.6rem, 5vw, 2.2rem); line-height:1.15; margin:1.6rem 0 .5rem; }
+h1 span{ display:block; font-size:.5em; font-weight:500; color:var(--muted); margin-top:.35rem; }
+.lead{ font-size:1.05rem; margin:.6rem 0 0; }
+h2{ font-size:1.15rem; margin:2.2rem 0 .5rem; }
+p{ margin:.5rem 0; }
+.muted{ color:var(--muted); font-size:.92rem; }
+.demo{ display:grid; grid-template-columns:1fr auto; gap:1.2rem; align-items:center; margin-top:1.6rem; padding:1.1rem 1.2rem; border-radius:12px; background:var(--tcyan); border:2px solid var(--cyan); }
+.demo h2{ margin:0 0 .3rem; }
+.demo p{ margin:0 0 .8rem; font-size:.95rem; }
+.btn{ display:inline-block; background:var(--petrol); color:#fff; text-decoration:none; font-weight:650; padding:.55rem 1rem; border-radius:8px; }
+.btn:hover{ filter:brightness(1.1); }
+.qr{ width:8.5rem; background:#fff; border-radius:8px; padding:.25rem; display:block; }
+.qr + small{ display:block; text-align:center; font-size:.72rem; color:var(--muted); margin-top:.25rem; }
+@media (max-width:34rem){ .demo{ grid-template-columns:1fr; } .demo figure{ display:none; } }
+figure{ margin:0; }
+.cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(13rem, 1fr)); gap:.7rem; }
+.card{ background:var(--wash); border-radius:10px; padding:.8rem .9rem; }
+.card b{ display:block; margin-bottom:.2rem; }
+.card p{ margin:0; font-size:.9rem; color:var(--muted); }
+.status{ border-left:4px solid var(--petrol); padding:.2rem 0 .2rem .9rem; }
+ul.links{ list-style:none; padding:0; margin:.4rem 0 0; }
+ul.links li{ padding:.35rem 0; border-bottom:1px solid var(--line); }
+ul.links li span{ display:block; font-size:.85rem; color:var(--muted); }
+code{ font:.88em var(--mono); }
+footer{ margin-top:2.6rem; border-top:1px solid var(--line); padding-top:1rem; font-size:.84rem; color:var(--muted); }
+footer p{ margin:.35rem 0; }
+</style>
+</head>
+<body>
+<main>
+  <div class="masthead"><span><strong>BAM</strong> VC4QI</span><span>Research software</span></div>
+
+  <h1>VC4QI<span>Verifiable Credentials for Quality Infrastructure</span></h1>
+  <p class="lead">Accreditation certificates, operational scopes, calibration and reference-material certificates can be issued as W3C Verifiable Credentials. VC4QI asks what a verifier may actually rely on when it receives them.</p>
+  <p class="muted">Credentials represent institutional authority and evidence. They do not create it. The verifier selects the profile and decides which answers it needs.</p>
+
+  <section class="demo" aria-labelledby="h-demo">
+    <div>
+      <h2 id="h-demo">Try it: BAM-M375a</h2>
+      <p>A certified reference material (CuZn39Pb3, arsenic mass fraction) as a signed credential. Your browser checks the signatures, the authority chain, the accredited scope and a verifier's limit. Switch the value or tamper with it and watch the verdict change.</p>
+      <a class="btn" href="m375a/">Open the demonstrator</a>
+    </div>
+    <figure>
+      <img class="qr" src="assets/qr-m375a.svg" alt="QR code linking to monavari.github.io/VC4QI/m375a/" width="136" height="136">
+      <small>Scan to open on a phone</small>
+    </figure>
+  </section>
+
+  <h2>The questions a verifier asks</h2>
+  <div class="cards">
+    <div class="card"><b>Authentic?</b><p>Signed by the issuer and unchanged since.</p></div>
+    <div class="card"><b>Valid?</b><p>Inside its validity period and not revoked.</p></div>
+    <div class="card"><b>Understood?</b><p>Units and identifiers follow the verifier's profile.</p></div>
+    <div class="card"><b>Authorized?</b><p>The issuer may make this claim: an accreditation chain covers it.</p></div>
+    <div class="card"><b>Supported?</b><p>Required studies exist and come from their own authority.</p></div>
+    <div class="card"><b>Fit for use?</b><p>The value meets the verifier's own requirement.</p></div>
+  </div>
+  <p class="muted">Each answer is yes, no or cannot tell. "Cannot tell" never counts as yes, and "authorized" is a separate question from "fit for use".</p>
+
+  <h2>Project status</h2>
+  <div class="status">
+    <p>VC4QI is research software from BAM. The repository contains a TypeScript reference library with a Python mirror, a browser demo and example credentials. It is migrating to a standards-first reliance model; the new evaluator is being implemented in stages, and the runtime still uses the earlier model.</p>
+    <p class="muted">The BAM-M375a page above is a self-contained illustration of the target model. Its accreditation bodies, laboratory, operational scope, methods and keys are fictional fixtures. No production service, accreditation infrastructure or external endorsement is claimed.</p>
+  </div>
+
+  <h2>Read more</h2>
+  <ul class="links">
+    <li><a href="https://github.com/monavari/VC4QI">Source code on GitHub</a><span>Code under Apache-2.0, documentation under CC BY 4.0</span></li>
+    <li><a href="https://github.com/monavari/VC4QI/blob/main/docs/MODEL_SPEC.md">Model specification</a><span>The standards-first reliance model</span></li>
+    <li><a href="https://github.com/monavari/VC4QI/blob/main/docs/IMPLEMENTATION_STATUS.md">Implementation status</a><span>What runs today, with dated test evidence and limitations</span></li>
+    <li><a href="https://github.com/monavari/VC4QI/blob/main/CITATION.cff">How to cite</a><span>Citation metadata for the software</span></li>
+  </ul>
+
+  <footer>
+    <p>Mehran Monavari, Bundesanstalt für Materialforschung und -prüfung (BAM), Berlin · <a href="mailto:mehran.monavari@bam.de">mehran.monavari@bam.de</a></p>
+    <p>This site is static. It sets no cookies and loads nothing from third parties.</p>
+  </footer>
+</main>
+</body>
+</html>

@@ -1073,3 +1073,18 @@ artifacts remain pending. The complete TypeScript suite passes **267 tests**; fi
 cross-repository checks for this prerequisite are recorded with its commit.
 This prerequisite is TypeScript-only: the current Python PyLD backend does not enforce
 the equivalent safe option, so Python safe-processing parity remains explicit follow-up work.
+
+## Project website and BAM-M375a poster demonstrator — 25 September 2026
+
+At the user's request a static project site was added in `site/`, deployed to GitHub
+Pages by `.github/workflows/pages.yml` (source "GitHub Actions"; `main` only). It holds
+a landing page, the user-supplied BAM-M375a demonstrator at `m375a/` and print QR codes
+for `https://monavari.github.io/VC4QI/m375a/` and the landing page (segno, level Q/H;
+both decoded back to their URLs with OpenCV). The demonstrator footer now states it is a
+self-contained illustration and that the repository's evaluator for this model is still
+being implemented; it is not I1–I8 evidence and changes no acceptance-ledger case.
+
+Headless Chromium 1194 at 390 px: 178 accepts (183 ≤ 200), 197 rejects conformity
+(202 > 200), 520 rejects scope with conformity not asked, and the tamper toggle rejects
+authenticity with later gates not asked. No network requests or page errors; no
+horizontal overflow in light or dark mode. Pages deployment itself is not yet executed.

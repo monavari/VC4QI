@@ -7,6 +7,18 @@ verifier-selected profiles and accepted semantics determine what a verifier can 
 [![CI](https://github.com/monavari/VC4QI/actions/workflows/ci.yml/badge.svg)](https://github.com/monavari/VC4QI/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
+## Project website and poster demo
+
+The static site in [`site/`](site/) is published to GitHub Pages by
+[`pages.yml`](.github/workflows/pages.yml):
+
+- Project page: <https://monavari.github.io/VC4QI/>
+- BAM-M375a demonstrator: <https://monavari.github.io/VC4QI/m375a/>
+  (QR code: [`site/assets/qr-m375a.svg`](site/assets/qr-m375a.svg))
+
+The demonstrator is a self-contained browser illustration of the target reliance model
+with fictional authorities and keys; it does not run the repository's evaluator.
+
 ## Current status
 
 The documentation now specifies the **standards-first target**. Runtime code, v1 schemas,
