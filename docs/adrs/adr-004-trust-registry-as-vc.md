@@ -1,8 +1,10 @@
 # ADR-004 Trust Registry as a Signed Verifiable Credential
 
+> **2026-09-22 applicability:** Superseded by [ADR-010](adr-010-standards-first-reliance.md). Signed registry artifacts remain useful, but the single-root/universal-registry requirement and paths below are historical. Current anchors are independently configured per purpose and registries require protection before use.
+
 ## Status
 
-Accepted
+Superseded by ADR-010
 
 ## Context
 

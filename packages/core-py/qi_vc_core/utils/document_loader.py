@@ -10,10 +10,24 @@ DocumentLoader = Callable[[str], dict[str, Any]]
 
 _REPO_ROOT = Path(__file__).parents[4]
 
+# Mirrors LOCAL_CONTEXT_MAP in packages/core-ts/src/utils/document-loader.ts.
+# Keep the two in step: a URL missing here falls back to the network, which makes
+# canonicalization non-deterministic and, offline, makes proof verification fail
+# for a reason unrelated to the signature.
+_QI_CONTEXTS = "https://w3id.org/qi-vc/contexts/v1"
+
 _LOCAL_CONTEXT_MAP: dict[str, str] = {
-    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld": "contexts/v1/qi-core.jsonld",
-    "https://w3id.org/qi-vc/contexts/v1/qi-calibration.jsonld": "contexts/v1/qi-calibration.jsonld",
-    "https://w3id.org/qi-vc/contexts/v1/qi-rm.jsonld": "contexts/v1/qi-rm.jsonld",
+    f"{_QI_CONTEXTS}/qi-core.jsonld": "contexts/v1/qi-core.jsonld",
+    f"{_QI_CONTEXTS}/qi-calibration.jsonld": "contexts/v1/qi-calibration.jsonld",
+    f"{_QI_CONTEXTS}/qi-rm.jsonld": "contexts/v1/qi-rm.jsonld",
+    f"{_QI_CONTEXTS}/qi-evidence-context.jsonld": (
+        "contexts/v1/qi-evidence-context.jsonld"
+    ),
+    # Vendored W3C contexts, so canonicalization resolves every term offline.
+    "https://www.w3.org/ns/credentials/v2": "contexts/v1/vendor/credentials-v2.jsonld",
+    "https://w3id.org/security/multikey/v1": (
+        "contexts/v1/vendor/security-multikey-v1.jsonld"
+    ),
 }
 
 _context_cache: dict[str, Any] = {}

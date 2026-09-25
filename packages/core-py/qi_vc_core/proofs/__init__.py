@@ -101,14 +101,24 @@ def verify_proof(
     if cryptosuite != "eddsa-rdfc-2022":
         raise ValueError(f"Unsupported cryptosuite: {cryptosuite}")
 
+    # Explicit legacy subset: unsupported signed options must never disappear.
+    supported = {
+        "type", "cryptosuite", "proofPurpose", "verificationMethod",
+        "created", "proofValue",
+    }
+    if (proof_obj.get("type") != "DataIntegrityProof"
+            or proof_obj.get("proofPurpose") != "assertionMethod"
+            or not proof_obj.keys() <= supported
+            or not all(isinstance(proof_obj.get(key), str) for key in (
+                "verificationMethod", "created", "proofValue",
+            ))):
+        return False
+
     # Remove proof to get the unsecured document
     unsecured = {k: v for k, v in signed_credential.items() if k != "proof"}
 
-    proof_config = _build_proof_config(
-        unsecured.get("@context"),
-        proof_obj["verificationMethod"],
-        proof_obj["created"],
-    )
+    proof_config = {k: v for k, v in proof_obj.items() if k != "proofValue"}
+    proof_config["@context"] = unsecured.get("@context")
 
     hash_data = _compute_hash_data(unsecured, proof_config, document_loader)
 

@@ -6,10 +6,16 @@ from typing import Any, Callable
 from ..evidence.types import EvidenceEdge, EvidenceGraph
 from ..policy.types import PolicyProfile
 from ..scope import check_scope_inclusion
-from ..trust_registry import is_trusted_issuer, parse_trust_registry_credential
+from ..trust_registry import (
+    TrustRegistryVerificationError,
+    is_trusted_issuer,
+    verify_trust_registry_credential,
+)
 from ..verifier.trace import trace_entry
 
 JsonObject = dict[str, Any]
+DocumentLoader = Callable[[str], dict[str, Any]]
+KeyResolver = Callable[[str], bytes]
 
 
 def _issuer_id(credential: JsonObject) -> str:
@@ -38,6 +44,10 @@ def evaluate_authorized_by(
     policy: PolicyProfile,
     *,
     resolve_trust_registry: Callable[[str, Any | None], JsonObject] | None = None,
+    # The trust registry is itself a signed credential; its proof is verified
+    # before any entry is read (SEC-1), which needs key resolution.
+    resolve_key: KeyResolver | None = None,
+    document_loader: DocumentLoader | None = None,
 ) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     source = graph.nodes.get(edge.from_)
@@ -56,35 +66,65 @@ def evaluate_authorized_by(
 
     evidence_issuer = _issuer_id(evidence.credential)
     if resolve_trust_registry:
-        registry = parse_trust_registry_credential(resolve_trust_registry(evidence_issuer, edge.authorizationBasis))
-        trusted = is_trusted_issuer(
-            registry,
-            evidence_issuer,
-            edge.authorizationBasis.kind if edge.authorizationBasis else None,
-            edge.authorizationBasis.issuerRole if edge.authorizationBasis else None,
-            _primary_type(evidence.credential),
-        )
-        results.append(trace_entry(
-            id=f"trusted-{evidence_issuer}",
-            level="edge",
-            from_=edge.from_,
-            to=edge.to,
-            relation=edge.relation,
-            status="PASS" if trusted else "FAIL",
-            code="TRUSTED_ISSUER" if trusted else "UNTRUSTED_ISSUER",
-            detail=f"{evidence_issuer} is trusted for {edge.authorizationBasis.kind if edge.authorizationBasis else 'unspecified evidence'}."
-            if trusted else f"{evidence_issuer} is not trusted.",
-        ))
+        try:
+            registry_credential = resolve_trust_registry(evidence_issuer, edge.authorizationBasis)
+            # SEC-1: verify the registry credential's proof before reading any
+            # entry out of it.
+            registry = verify_trust_registry_credential(
+                registry_credential,
+                resolve_key=resolve_key,
+                document_loader=document_loader,
+            )
+            trusted = is_trusted_issuer(
+                registry,
+                evidence_issuer,
+                edge.authorizationBasis.kind if edge.authorizationBasis else None,
+                edge.authorizationBasis.issuerRole if edge.authorizationBasis else None,
+                _primary_type(evidence.credential),
+            )
+            results.append(trace_entry(
+                id=f"trusted-{evidence_issuer}",
+                level="edge",
+                from_=edge.from_,
+                to=edge.to,
+                relation=edge.relation,
+                status="PASS" if trusted else "FAIL",
+                code="TRUSTED_ISSUER" if trusted else "UNTRUSTED_ISSUER",
+                detail=f"{evidence_issuer} is trusted for {edge.authorizationBasis.kind if edge.authorizationBasis else 'unspecified evidence'}."
+                if trusted else f"{evidence_issuer} is not trusted.",
+            ))
+        except Exception as error:  # noqa: BLE001 - surfaced as a reason code
+            # Surface the specific condition rather than one opaque failure, so
+            # the trace distinguishes "not performed" from "failed" (SEC-8).
+            code = (
+                error.code
+                if isinstance(error, TrustRegistryVerificationError)
+                else "TRUST_REGISTRY_ERROR"
+            )
+            results.append(trace_entry(
+                id=f"trust-registry-{evidence_issuer}",
+                level="edge",
+                from_=edge.from_,
+                to=edge.to,
+                relation=edge.relation,
+                status="FAIL",
+                code=code,
+                detail=f"Trust registry check failed: {error}",
+            ))
     else:
+        # FC-2: an authority-conveying edge with no trust registry resolver is a
+        # failure, not a warning. Without registry resolution the issuer's
+        # identifier never resolves through an admitted registry, so the graph is
+        # ill-formed and no verdict is available (MODEL_SPEC section 4).
         results.append(trace_entry(
             id=f"trust-registry-{evidence_issuer}",
             level="edge",
             from_=edge.from_,
             to=edge.to,
             relation=edge.relation,
-            status="WARN",
+            status="FAIL",
             code="TRUST_REGISTRY_NOT_AVAILABLE",
-            detail="No trust registry resolver was provided.",
+            detail="No trust registry resolver was configured, so issuer recognition was never checked.",
         ))
 
     source_issuer = _issuer_id(source.credential)

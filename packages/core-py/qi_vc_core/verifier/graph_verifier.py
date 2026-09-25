@@ -4,9 +4,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from ..assessment import AssessmentEvaluator, evaluate_assessment
 from ..edge import evaluate_edge
 from ..evidence import build_evidence_graph
 from ..policy import PolicyProfile, evaluate_policy
+from ..proofs import verify_proof
 from ..status import check_status_bit
 from ..types import BitstringStatusListEntry
 from .trace import make_verification_trace, trace_entry
@@ -25,6 +27,7 @@ class VerifyGraphOptions:
     max_evidence_nodes: int | None = None
     skip_proof: bool = False
     skip_status: bool = False
+    assessment_evaluator: AssessmentEvaluator | None = None
 
 
 def _credential_id(credential: JsonObject) -> str:
@@ -93,13 +96,55 @@ def _evaluate_proof(credential: JsonObject, policy: PolicyProfile, options: Veri
                 detail="Policy requires a proof.",
             )]
         return []
+    if options.resolve_key is None:
+        # FC-1: absent key resolution fails closed regardless of policy mode. A
+        # credential whose proof was never checked leaves the graph ill-formed,
+        # and the model's guarantees do not range over an ill-formed graph
+        # (MODEL_SPEC section 4), so there is no weaker verdict to give.
+        return [trace_entry(
+            id=f"proof-{cid}",
+            level="credential",
+            target=cid,
+            status="FAIL",
+            code="PROOF_RESOLVER_MISSING",
+            detail="No key resolver was configured, so the proof was never verified.",
+        )]
+
+    proof = credential.get("proof")
+    cryptosuite = proof.get("cryptosuite") if isinstance(proof, dict) else None
+    if cryptosuite == "ecdsa-sd-2023":
+        # D-SD-4: Python does not implement SD crypto. Reported as not
+        # performed, never as a pass.
+        return [trace_entry(
+            id=f"proof-{cid}",
+            level="credential",
+            target=cid,
+            status="FAIL",
+            code="PROOF_SUITE_UNSUPPORTED",
+            detail="Python does not verify ecdsa-sd-2023 proofs (D-SD-4); TypeScript is canonical for SD.",
+        )]
+
+    try:
+        verification_method = str(proof.get("verificationMethod", "")) if isinstance(proof, dict) else ""
+        public_key = options.resolve_key(verification_method)
+        ok = verify_proof(credential, public_key, options.document_loader)
+    except Exception as error:  # noqa: BLE001 - surfaced as a reason code
+        return [trace_entry(
+            id=f"proof-{cid}",
+            level="credential",
+            target=cid,
+            status="FAIL",
+            code="PROOF_VERIFICATION_ERROR",
+            detail=f"Proof verification failed: {error}",
+        )]
+
     return [trace_entry(
         id=f"proof-{cid}",
         level="credential",
         target=cid,
-        status="WARN" if mode != "required" else "FAIL",
-        code="PROOF_RESOLVER_MISSING",
-        detail="Python v0.2 parity verifier did not receive a proof resolver.",
+        status="PASS" if ok else "FAIL",
+        code="PROOF_VALID" if ok else "PROOF_INVALID",
+        detail="Data Integrity proof verified." if ok else "Data Integrity proof failed verification.",
     )]
 
 
@@ -204,6 +249,15 @@ def verify_credential_graph(
 
     for node in graph.nodes.values():
         results.extend(_evaluate_schema(node.credential, policy))
+        results.extend(
+            evaluate_assessment(
+                node.credential,
+                policy,
+                options.assessment_evaluator,
+                target_credential=target_credential,
+                evidence_graph=graph,
+            )
+        )
         results.extend(_evaluate_proof(node.credential, policy, options))
         results.extend(_evaluate_status(node.credential, target_id, policy, options))
         results.extend(_evaluate_terms_of_use(node.credential, policy))
@@ -214,6 +268,8 @@ def verify_credential_graph(
             graph,
             policy,
             resolve_trust_registry=options.resolve_trust_registry,
+            resolve_key=options.resolve_key,
+            document_loader=options.document_loader,
         ))
 
     results.extend(evaluate_policy(graph, policy))

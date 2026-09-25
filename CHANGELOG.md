@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+- Add parallel TS/Python reliance request/result contracts, truth-table operators,
+  an explicitly incomplete RM v1 manifest, and an isolated exact-byte resource catalog.
+- Add an opt-in safe JSON-LD EdDSA path, an isolated catalog-backed document loader,
+  and a W3C-published signature-vector control for the pending signed RM slice.
+- Reject unsupported legacy proof metadata and verify received supported options in both languages; add eight shared controls.
+
+- Repair uv workspace/locked setup and reconcile CI's pnpm pin with package metadata.
+- Restore legacy complete-record containment, pressure bounds, RM alternatives and DCC failure retention in TS/Python.
+- Add 38 shared unsigned scope vectors plus non-finite-bound checks; classify new-profile coverage and existing lint debt.
+
+- Document the standards-first reliance target, binding design, compatibility break and implementation phases.
+- Supersede obsolete agent instructions and wire-model ADRs while preserving historical snapshots and reports.
+- Distinguish current legacy runtime, experimental target, simulated assurance and unsupported integrations.
+- Add requirements traceability and an 83-case acceptance ledger; no new-model execution or release is claimed.
+
 ## v0.3.0
 
 Aligned with manuscript v2.1 (Part A reconciliation):

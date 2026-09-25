@@ -307,3 +307,769 @@ deterministic eddsa chains).
 No new dependencies added. No source code changed — the fix was fixture
 regeneration only. All D-SD-* decisions stand as recorded above; the one new
 decision in this run (GS scope) is logged here.
+
+---
+
+## Stage 1 — SEC-1, FC-1, FC-2 (overhaul work order)
+
+Branch `fix/sec-1-verify-registry`, from `origin/main` @ `8847bc4`.
+
+Scope from `VC4QI_repo_overhaul_handover.md` §4 stage 1: make the trust decision
+cryptographically grounded, and make absent trust infrastructure fail closed.
+
+### Baseline recorded before any edit
+
+```text
+✓ pnpm -r build              (core-ts + demo-web)
+✓ 140 TS tests (15 files)
+✓ 2 scenario tests
+✓ pnpm validate:schemas      6 passed, 0 failed
+✓ 110 Python tests, 1 skip   (D-SD-4)
+```
+
+`AGENTS.md` claims "129 TS tests, 101 Python"; the observed counts above are the
+correct ones. Undercount in the doc, not a regression.
+
+### After stage 1
+
+```text
+✓ pnpm -r build              (core-ts + demo-web)
+✓ 161 TS tests (16 files)    (+21)
+✓ 2 scenario tests
+✓ pnpm validate:schemas      6 passed, 0 failed
+✓ 133 Python tests, 1 skip   (+23)
+✓ ruff 203 errors            (204 on origin/main)
+```
+
+All six worked chains still accept, verified additionally under a **strict
+offline document loader** that refuses any network fetch.
+
+### What changed, and why it was more than the handover described
+
+The handover described SEC-1 as "verify the registry credential's proof before
+parsing". Doing only that would have been cryptographically decorative. See
+`docs/PAPER_FEEDBACK.md` F-3b: with `safe: false` canonicalization, the registry
+proof covered four triples and **not the registry entries**. Closing SEC-1
+therefore also required defining the registry-entry vocabulary
+(`contexts/v1/qi-core.jsonld`, scoped context on `registryEntries`) and really
+signing the fixtures, which previously carried no proof at all.
+
+### Decisions taken
+
+- **D-TR-1 — verified registry as a distinct type.** `isTrustedIssuer` accepts
+  only `VerifiedTrustRegistry`, a branded type unconstructable outside the
+  module; `parseTrustRegistryCredential` is unexported. Python mirrors the
+  intent with a runtime `TypeError`, since it has no equivalent of the brand.
+  Rationale: SEC-1 should be enforced by the type system, not by convention, so
+  a future call site cannot reintroduce the defect.
+- **D-TR-2 — registry verification is independent of `skipProof`.** `skipProof`
+  suppresses proof checks on the graph's own credentials; it does not suppress
+  verification of the trust anchor. Both `fixture-helpers.ts` and
+  `apps/demo-web` therefore supply a key resolver.
+- **D-TR-3 — retrieval loader and canonicalization loader are separate
+  parameters** (`documentLoader` vs `proofDocumentLoader`). A loader that serves
+  the registry for every URL would otherwise be asked to resolve the registry's
+  own `@context` and return the registry itself.
+- **D-TR-4 — scoped, not global, context terms.** The registry entry terms are
+  defined inside a scoped `@context` on `registryEntries` so `status`,
+  `validFrom` and `validUntil` do not shadow the VC-level terms anywhere else.
+
+### Pre-existing defects found while doing this (not caused by stage 1)
+
+1. **`uv sync` / `make test` / `make lint` cannot run.** Root `pyproject.toml`
+   declares `packages/verifier-service` and `packages/lims-adapter` as uv
+   workspace members, but both are empty stubs with no `pyproject.toml`
+   (`verifier-service` holds only `app/.gitkeep`). CI sidesteps this by
+   pip-installing `packages/core-py[dev]` directly. The handover describes both
+   as real packages; they are not.
+2. **Python never verified any proof.** `graph_verifier._evaluate_proof` never
+   referenced `options.resolve_key`. The parity suite did not catch it because
+   every fixture runs with `skip_proof=True`. Fixed in this stage.
+3. **The Python document loader was missing** `qi-evidence-context` and the
+   vendored W3C contexts the TS loader serves. Invisible while Python never
+   canonicalized. Fixed in this stage; the two maps must now be kept in step.
+4. **The `zPlaceholderProof` corpus.** `scripts/generate-v02-fixtures.js:44`
+   emits a literal `proofValue: 'zPlaceholderProof'` for 24 fixtures. Only the
+   trust registries are really signed as of this stage. This is why
+   `skipProof: true` is pervasive, and it is why no test exercises real proof
+   verification through `verifyCredentialGraph`.
+
+### Deliberately not done in stage 1
+
+- `verifier/index.ts` `STATUS_CHECK_FAILED`. The handover groups it with FC-1,
+  but it is a fetch error rather than resolver absence — that is FC-3, whose
+  rule is qualified by a bounded grace period the trace must name. Modelling
+  grace periods is its own stage.
+- **SEC-8 vs `skipProof`.** A run with `skipProof: true` produces an all-`SKIP`
+  trace and `summarizeTrace` still reports `verified: true`. A run in which no
+  check executed is presentable as a pass. `apps/demo-web` depends on this.
+  Needs its own decision.
+- **`binds` can vanish silently.** `evaluateAuthorizedBy.ts` guards the
+  principal-binding comparison with `if (sourceIssuer && evidenceSubject)`; when
+  either is empty no trace entry is emitted at all, so the check disappears
+  rather than failing. Now documented as a predicate in `MODEL_SPEC` §2/§4 (D-3);
+  the code fix belongs with stage 2/3.
+- **SEC-7.** No SSRF guard, size bound or timeout on any fetch, repo-wide
+  (`utils/document-loader.ts`, `trust-registry/index.ts`, `verifier/index.ts`).
+- **ADR-004 artifacts** `schemas/v1/trust-registry-entry.json` and
+  `policies/trust-registry-credential.json` are referenced by the ADR but do not
+  exist.
+
+---
+
+## Stage 2 — D-1, SCO-1, SCO-2, SCO-3, TST-4
+
+Branch `fix/sco-1-governed-identifiers`, stacked on `fix/sec-1-verify-registry`
+(it edits the same `MODEL_SPEC` section and needs stage 1's fixture helpers).
+
+### The unsoundness removed
+
+`scope/index.ts` matched categorical dimensions by lowercasing free text and
+testing substring containment in both directions. `"As"` matched `"Ash"`; a
+scope entry for `"CuZn"` admitted a claim about `"CuZn39Pb3"`. The formal core
+claims soundness relative to a decidable `in`. `in` was decidable and **wrong**,
+in the paper's only witness.
+
+Sites removed: measurand match, `allowedMethods` match, matrix match,
+`allowedForms` match, and the element-symbol regex that parsed `"Arsenic (As)"`
+into `"As"` — which made the label a comparison operand by the back door. The
+derivation check `⊑` was affected too (it lowercased measurands), not only `in`.
+
+### Result
+
+```text
+✓ 176 TS tests (17 files)     (+15 over stage 1)
+✓ 148 Python tests, 1 skip    (+15 over stage 1)
+✓ 2 scenario tests, schemas 6/6, build + tsc + markdownlint green
+✓ ruff 212 (203 at stage 1 tip; the delta is E501 in test_scope.py)
+```
+
+All six worked chains still accept, and scope inclusion genuinely runs on
+identifiers — `SCOPE_INCLUSION_VALID` and `DERIVATION_VALID` appear in the
+traces rather than the check being skipped.
+
+### Decisions taken (stage 2)
+
+- **D-SCO-1 — governed identifiers now, real where they exist.** QUDT for
+  quantity kinds (the repo already uses QUDT unit IRIs); repo-minted
+  `https://w3id.org/qi-vc/terms/v1/...` for matrix, method, element and form,
+  documented in `docs/SCOPE_TERMS.md` as **placeholders standing in for a QI
+  Term-Service (B5/MOD-8), not authoritative identifiers**. Minting these
+  required an explicit override of the AGENTS.md prohibition on inventing
+  vocabulary, taken deliberately rather than by drift.
+- **D-SCO-2 — absent governed term fails.** `UNRESOLVED_SCOPE_TERM`, never a
+  fallback to label comparison (SCO-3, FC-6). This applies symmetrically: a
+  *scope entry* that restricts a dimension by label alone also fails, so an
+  unenforceable limit cannot be silently ignored.
+- **D-SCO-3 — identity yes, subsumption no.** Two identifiers are equal or they
+  are not. Nothing decides that CuZn39Pb3 falls under "non-ferrous metals and
+  alloys"; a taxonomic resolver is a future pluggable interface defaulting to
+  fail-closed (SCO-6).
+- **D-SCO-4 — empty scope confers no scope.** Both scope checkers returned
+  `passed: true` for an empty entry list, and `checkScopeInclusion` passed under
+  the default `optional` mode. A scope check that succeeds against nothing is
+  the same fail-open class as FC-1/FC-2. Now `NO_SCOPE_ENTRY`.
+
+### Honest gaps — D-2's vectors are only partly implementable
+
+The spec now carries the three-case worked example (178 accept / 197
+decision-rule reject / 520 out-of-scope). Only part of it can be exercised
+against this implementation, and pretending otherwise would repeat the defect
+this overhaul exists to fix:
+
+1. **The decision-rule conjunct of `P` does not exist in code.** D-1 moved the
+   decision rule out of `in` and into a separate conjunct; the implementation
+   evaluates `in` (containment) only. There is nothing to compare a policy limit
+   against, so the **197 mg/kg case cannot be tested**. That conjunct is SCO-5
+   (decision rule and guard band supplied by policy at evaluation time, named in
+   the trace) and is not built.
+2. **`DrmdScopeEntry` has no range dimension.** The DCC path checks
+   `range.from`/`range.to`; the RM path checks matrix, form, property and
+   uncertainty only. The paper's worked example turns on an accredited range of
+   50–500 mg/kg, so the **520 mg/kg out-of-scope case cannot be expressed** for
+   an RM credential either.
+
+TST-4 — CuZn39Pb3 against CuZn40Pb2 — **is** implemented, in both languages, as
+the requirements register demands.
+
+### Also not done
+
+- **`⪯ᵢ` orientation declaration (D-5).** Now stated in the spec: a profile must
+  declare the orientation of any dimension it introduces, and an undeclared
+  orientation must not silently pass. Not enforced in code.
+- **Spanning refusal (D-5).** Domination by a single parent record is
+  implemented for `allowedPropertyIris`; the range dimension still searches all
+  matching parents.
+- **The uncertainty floor (F-7 / D-1).** `in` should require that where a scope
+  entry states a capability the reported uncertainty is *not below* it. The
+  implementation models a ceiling only. Recorded in `docs/PAPER_FEEDBACK.md`
+  F-7 already; still open.
+
+---
+
+## GS hair-dryer scenario and generalized assessment path (2026-08-19)
+
+Added a new scenario without modifying the existing
+`testdata/examples/gs-scheme-authorization/` fixture. The source process model
+was the English AP2 GS evaluation report supplied for this task. The scenario
+uses claims from the report's verified process description; its draft questions
+and explicitly unverified AI-generated research notes were not treated as
+requirements or evidence.
+
+### New GS evidence graph
+
+`testdata/examples/gs-hair-dryer-hitl/` models a synthetic hand-held hair dryer:
+
+- the final `GSCertificate` is `authorizedBy` a GS issuing-scope credential;
+- it is `supportedBy` a product type-examination `TestReport` and an initial
+  manufacturer `InspectionReport`;
+- both reports are themselves `authorizedBy` the same issuing scope, because
+  the chosen scenario uses the GS body's in-house laboratory and inspection
+  function under the GS body's legal responsibility;
+- the issuing scope is `derivedFrom` accreditation and independently
+  `authorizedBy` a ZLS `schemeAuthorization` credential.
+
+The factory report covers personnel, equipment, incoming-goods controls,
+production controls, intermediate/final checks, and safety-component
+traceability. The product report covers electrical safety, overheating,
+foreseeable water hazards, materials, ergonomics, marking, and instructions.
+The final certificate is about a product type and its series production, not an
+individual serialized unit.
+
+### Assessment decisions
+
+- **D-AS-1 — assessment is a conjunct of policy `P`.** Added an optional policy
+  `assessment` block and a verifier-supplied evaluator. It supplements schema
+  and scope checks; it cannot override any failed deterministic gate and does
+  not add a fourth evidence relation or basis kind.
+- **D-AS-2 — three admitted methods, no confidence score.** Results identify
+  `agent`, `human`, or `hybrid`, plus assessor/assessment identifiers and an
+  explanation. Outcomes are pass/fail/indeterminate; final verification remains
+  binary with reason codes.
+- **D-AS-3 — required assessment fails closed.** Missing evaluator, evaluator
+  error, disallowed method, invalid result, and required indeterminate result
+  are failures. Optional missing assessment is skipped; optional indeterminate
+  is a warning; a performed fail always fails.
+- **D-AS-4 — HITL orchestration stays outside the kernel.** An adapter may pause
+  externally, collect a human decision, and rerun/resume verification. The
+  verifier does not become a workflow engine. Signed domain reports remain the
+  portable evidence; `assessmentId` may point to an external audit record, but
+  VC4QI does not persist or sign that record.
+- **D-GS-1 — supporting reports do not authorize.** The certificate's links to
+  `TestReport` and `InspectionReport` use `supportedBy` with no
+  `authorizationBasis`. Each report retains its own authorizing edge.
+- **D-GS-2 — no invented GS semantic checker.** The Profile D derivation vector
+  checks the supported structural scope dimension (`authorizedCredentialTypes`).
+  Product-specific scope inclusion remains `ignored`; human/agent assessment
+  covers the sparse content at policy level without pretending to solve B5.
+- **D-GS-3 — JSON-LD safe-mode-clean scenario.** Scenario-local aliases cover
+  existing QI credential types/fields, and product/review facts use absolute
+  schema.org IRIs. A test canonicalizes every graph credential with JSON-LD
+  `safe: true`.
+
+### Remaining `TODO(human)`
+
+- Confirm the exact applicable GS testing bases, versions, product-group scope,
+  and real authorization/accreditation wording before replacing the synthetic
+  values. The AP2 report itself lists the required-document connections as an
+  open question.
+- Decide whether a later deployment requires the runtime assessment result to
+  be issued as its own signed, portable assessment credential. This change
+  deliberately records assessment provenance in the verification trace and an
+  optional external `assessmentId`, without inventing a new credential
+  vocabulary or authority kind.
+
+### Verification
+
+```text
+✓ 183 TypeScript tests (18 files)
+✓ 154 Python tests, 1 intentional SD skip
+✓ 2 repository scenario tests
+✓ schema validation 6/6
+✓ core-ts and demo-web TypeScript checks
+✓ demo-web production build
+✓ ruff on the new/modified assessment tests and assessment module
+✓ git diff --check
+```
+
+The `qi_vc_core` source-package mypy run still reports the same 11 pre-existing
+errors already present at the stage-2 baseline (scope/evidence return typing and
+stale `type: ignore` comments); no new mypy error originates in the assessment
+module. The broader `packages/core-py` path also includes the existing largely
+untyped test corpus and therefore remains substantially noisier.
+
+### GS QR-target revision (2026-08-19)
+
+The first scenario draft stopped at the GS body's product-type certificate.
+That description above is retained as history but is superseded for the final
+application target by the following extension:
+
+- the QR URL identifies a `Product` VC for serialized unit
+  `HD01-2026-000042`;
+- Nordlicht, the fictional manufacturer, issues that unit credential;
+- its `authorizedBy` edge resolves the GS body's `GSCertificate`;
+- the certificate subject is the manufacturer and its `itemReviewed` is the
+  HD-01 product type, so the kernel's ordinary authorization subject binding
+  proves that the certificate authorizes the unit credential's issuer;
+- the certificate remains supported by the type-examination and initial
+  factory-inspection reports, and the inspection explicitly reviews the
+  manufacturer and manufacturing site;
+- the older `gs-scheme-authorization` fixture remains unchanged.
+
+**D-GS-4 — no new QI vocabulary for the delivery credential.** The unit target
+uses the existing schema.org `Product` class through a scenario-local alias.
+The GS semantics are carried by its QR URL and authorizing edge to the
+`GSCertificate`; no new evidence relation, basis kind, or `qi:` value was
+introduced.
+
+**D-GS-5 — proof-enabled canonical pass.** The generator's signing pass now
+signs all seven credentials in this scenario with the repository's TEST ONLY
+fixture key and issuer-specific verification-method identifiers. Both TS and
+Python canonical tests set proof skipping to false. The observed TS trace was:
+
+```text
+verified: true
+target: https://products.nordlicht-appliances.example/hd-01/serial/HD01-2026-000042/gs-mark
+nodesResolved: 7
+edgesEvaluated: 8
+failures: 0
+warnings: 0
+PROOF_VALID: 7
+DIGEST_VALID: 8
+SUBJECT_BOUND: 5
+TRUSTED_ISSUER: 5
+ASSESSMENT_PASSED: 2
+```
+
+### Browser verification correction (2026-08-19)
+
+An end-to-end headless Firefox run selected each GS scenario in the demo and
+clicked `Run Verifier`. The first run exposed a browser-only defect: the shared
+Base58btc decoder used Node's global `Buffer`, which is unavailable in Firefox.
+The proof verifier caught the resulting decode exception and reported every
+graph and trust-registry signature as `PROOF_INVALID`.
+
+`packages/core-ts/src/utils/base58btc.ts` now converts its decoded `BigInt`
+directly to `Uint8Array`, without `Buffer` or a new dependency. Repeating the UI
+run produced:
+
+```text
+Scan one product's GS QR mark: Accepted — 0 failures, 0 warnings
+Separate laboratory tests the product type: Accepted — 0 failures, 0 warnings
+PROOF_INVALID entries displayed: none
+PROOF_VALID entries displayed: yes
+```
+
+The 184-test TypeScript suite, demo typecheck, production build, and
+`git diff --check` remained green after the correction.
+
+### Demo trace replay (2026-08-19)
+
+The demo now replays a completed verification trace in breadth-first graph
+depth order, starting at the scanned product credential and moving upward along
+its evidence edges. Node and edge frames are revealed every 420 ms; scenario
+and pass/fail controls remain disabled during replay, and the final
+Accepted/Rejected badge appears only when replay finishes. This is deliberately
+presentation-only: the kernel still returns one complete, unmodified trace.
+
+A headless Firefox UI run observed progressive trace entry counts and final
+acceptance for both GS scenarios:
+
+```text
+in-house testing: 3.7 s replay, Accepted, 0 failures, 0 warnings
+external test lab: 4.3 s replay, Accepted, 0 failures, 0 warnings
+```
+
+### GS failing-variant correction (2026-08-19)
+
+The GS scenario specs originally had no `failing-target-credential.json`, so
+the demo's Failing selection fell back to the passing target. Both generators
+now emit a failing QR credential with a valid Data Integrity proof but a
+deliberately incorrect `digestSRI` for its referenced GS certificate. The
+complete evidence graphs still resolve and all credential proofs verify; the
+single rejection reason is therefore `DIGEST_MISMATCH`.
+
+Headless Firefox exercised the Failing selector and `Run Verifier` for both
+animated scenarios:
+
+```text
+in-house testing: Rejected — 1 failure, 0 warnings — DIGEST_MISMATCH
+external test lab: Rejected — 1 failure, 0 warnings — DIGEST_MISMATCH
+PROOF_INVALID entries: none
+```
+
+Final regression result: 186 TypeScript tests, 156 Python tests plus one
+intentional skip, repository scenario tests, schema validation, demo typecheck,
+production build, ruff, and `git diff --check` all pass.
+
+Repository verification after adding the vector:
+
+```text
+✓ 184 TypeScript tests (18 files)
+✓ 155 Python tests, 1 intentional SD skip
+✓ 2 repository scenario tests
+✓ schema validation 6/6
+✓ core-ts and demo-web TypeScript checks
+✓ demo-web production build
+✓ targeted ruff and mypy checks
+✓ git diff --check
+```
+
+### Separate testing-laboratory GS vector (2026-08-19)
+
+Added `gs-hair-dryer-external-test-lab-hitl` as a second scenario; the existing
+in-house-laboratory vector is retained. The new graph separates the following
+responsibilities:
+
+- Nordlicht issues the QR-resolved credential for serialized unit
+  `HD01-2026-000043`;
+- the GS body issues the manufacturer-bound `GSCertificate` and performs the
+  initial factory inspection;
+- Hanseatic Product Testing, a distinct laboratory, issues the product
+  `TestReport`; its reviewed-product claim identifies Nordlicht as manufacturer;
+- the laboratory's `TestReport` is `authorizedBy` its own
+  `IssuingScopeCredential`, and that scope is `derivedFrom` a separate
+  accreditation whose subject is the laboratory;
+- the GS body's issuing scope remains separately derived from its accreditation
+  and independently authorized by ZLS.
+
+No new relation, authorization-basis kind, or QI vocabulary term was added. The
+policy selects the external-laboratory path using `issuerRole:
+testingLaboratory` on the report's `operationalScope` edge. The proof-enabled TS
+trace returned:
+
+```text
+verified: true
+target: https://products.nordlicht-appliances.example/hd-01/serial/HD01-2026-000043/gs-mark
+nodesResolved: 9
+edgesEvaluated: 9
+failures: 0
+warnings: 0
+PROOF_VALID: 9
+DIGEST_VALID: 9
+DERIVATION_VALID: 2
+SUBJECT_BOUND: 5
+TRUSTED_ISSUER: 5
+ASSESSMENT_PASSED: 2
+```
+
+### External-laboratory responsibility correction (2026-08-19)
+
+The external-laboratory vector now models the confirmed subcontract workflow:
+
+- Hanseatic Product Testing remains issuer of the `TestReport` about product
+  type `urn:example:product-type:hair-dryer-hd-01`;
+- the report identifies `did:web:gs-body.example` as its Schema.org `customer`,
+  rather than treating the report subject as a transport recipient;
+- the GS body issues the laboratory's `IssuingScopeCredential`, whose subject is
+  `did:web:hanseatic-product-testing.example`;
+- that delegated scope is `derivedFrom` the laboratory's NAB accreditation and
+  independently `authorizedBy` the GS body's own issuing scope;
+- the GS body remains issuer of the `GSCertificate` and factory inspection, and
+  Nordlicht remains issuer of the serialized product QR credential.
+
+No new evidence relation, authorization-basis kind, runtime dependency, or QI
+vocabulary term was added. The general assessment request now receives the
+resolved graph and target when invoked through graph verification. The demo's
+agent/human adapter uses that context to bind report outcome, product type,
+manufacturer, GS customer, certificate, and delegated authority path. A negative
+test that changes the report customer to the manufacturer fails with
+`ASSESSMENT_FAILED`.
+
+Current external-laboratory pass trace:
+
+```text
+verified: true
+nodesResolved: 9
+edgesEvaluated: 10
+failures: 0
+warnings: 0
+PROOF_VALID: 9
+DERIVATION_VALID: 2
+SUBJECT_BOUND: 6
+ASSESSMENT_PASSED: 2
+```
+
+The demo-web runner is covered directly under Vite for both GS scenarios:
+passing variants accept with two completed assessments, while the signed
+digest-mismatch variants reject with `DIGEST_MISMATCH`.
+
+### Independent external-laboratory scope correction (2026-08-19)
+
+This section supersedes the GS-body-issued laboratory delegation described in
+the preceding “External-laboratory responsibility correction.” The confirmed
+model has two independent operational scopes:
+
+- the GS body's scope is issued to and by the GS body, is `derivedFrom` its NAB
+  accreditation, is `authorizedBy` the ZLS scheme authorization, and permits
+  `GSCertificate` and `InspectionReport` issuance;
+- the external laboratory's scope is issued to and by Hanseatic Product
+  Testing, is `derivedFrom` only the laboratory's NAB accreditation, and permits
+  `TestReport` issuance;
+- the laboratory's `TestReport` is `authorizedBy` the laboratory scope;
+- the GS body is the report customer and uses the report as evidence for the GS
+  certificate, but commissioning the test is not the source of the laboratory's
+  competence or authority.
+
+The issuer-grouped demo therefore places the laboratory scope and test report
+inside the external-laboratory frame, the GS scope and GS outputs inside the GS
+body frame, and both accreditation credentials inside the NAB frame. The
+external-laboratory assessment checks the exact NAB issuer, laboratory subject
+binding, report issuer/scope binding, GS-body customer, and absence of a GS
+`authorizedBy` edge on the laboratory scope.
+
+Current external-laboratory pass trace:
+
+```text
+verified: true
+nodesResolved: 9
+edgesEvaluated: 9
+failures: 0
+warnings: 0
+PROOF_VALID: 9
+DERIVATION_VALID: 2
+SUBJECT_BOUND: 5
+ASSESSMENT_PASSED: 2
+```
+
+## Standards-first overhaul planning (2026-09-21)
+
+Planning only, requested before documentation and implementation changes. The
+supplied handover is preserved without modification under
+`docs/plans/standards-first-handover-2026-09-21.txt`. The proposed documentation
+sequence, full document inventory, implementation phases, reuse/replacement
+assessment and evidence requirements are in
+[the reconciliation plan](docs/plans/standards-first-reconciliation.md).
+The accompanying CSV records all 83 acceptance cases as `not_assessed` against
+the new requirements; existing green tests do not establish those cases.
+
+Inspected base: `225e78f37fccb6f3813ba5f0a85ff3e2b2eb72b9` on
+`refactor/manuscript-v2.1`, initially clean. The governed-identifier fix
+`17dc96d` is an ancestor; the later `63231d2` scope patch is unavailable locally.
+The plan preserves the merged GS/assessment history and reproduces the missing
+patch's safety properties through shared regression vectors. No remote refs were
+fetched, and no push, commit, tag, release or manuscript edit was performed.
+
+Fresh baseline checks used Node 20.19.0, pnpm 10.15.1 and Python 3.12.3:
+
+- `pnpm -C packages/core-ts test`: exit 0, 187 passed.
+- `python3 -m pytest packages/core-py/tests -q`: exit 1, system interpreter lacks
+  pytest. Existing `.venv/bin/python -m pytest packages/core-py/tests -q`:
+  exit 0, 157 passed and 1 skipped.
+- `pnpm -r build`: exit 0, including demo build; bundle-size warning remains.
+- `pnpm -r --if-present lint`: exit 0, core TypeScript typecheck-based lint.
+- `pnpm test:scenarios`: exit 0, 2 passed. This is not browser interaction coverage.
+- `pnpm validate:schemas`: exit 0, 4 schemas and 2 examples passed; six examples
+  were skipped because they have no `$schema` field.
+
+Recommendation: retain the repository and useful infrastructure, replace the
+default evaluator contracts in stages, and isolate legacy wire behavior. Update
+active guidance and normative/explanatory documentation together before changing
+the model in runtime code. Active documents have not yet been migrated; historical
+claims above remain historical. No runtime or signed fixture files were changed.
+
+## Standards-first documentation pass (2026-09-22)
+
+The user requested continuation after the planning pass and authorized task-specific
+Astra/Sol/Luna delegation. All three delegated runs failed before producing work with
+"workspace is out of credits". The main agent completed the documentation locally;
+no independent agent review or model-specific output is claimed.
+
+A normal `git fetch origin` completed with exit 0. The remote manuscript branch still
+pointed to `225e78f37fccb6f3813ba5f0a85ff3e2b2eb72b9`, and main to `8847bc4`.
+Created `refactor/standards-first-reconciliation` from the merged baseline, retaining
+registry/governed-identifier and GS/assessment work plus the prior planning artifacts.
+The `63231d2` patch is still unavailable locally. No remote write, tag or release occurred.
+
+### Documentation changes
+
+- Replaced active agent/task guidance and the normative model; preserved exact old task
+  and model snapshots under `docs/history/`. Added ADR-010 and explicit supersession or
+  current-applicability notes without rewriting prior decision bodies.
+- Reconciled architecture, vocabulary, profiles, scope, SD, queries, assessments, parity,
+  schemas/tutorials, scenario/fixture notes, public status, security and contributor guidance.
+- Added the twelve-category manifest guide with a concrete experimental RM candidate,
+  exact candidate paths/IRIs and stated limits, plus API migration and requirements mapping.
+  These are design documents, not newly implemented schemas or an executable manifest.
+- Recorded 69 document/config review dispositions and kept all 83 new acceptance cases
+  `not_assessed`. Existing citation metadata and unrelated conduct/governance rules remain.
+- Appended manuscript corrections. No actual manuscript source was supplied or edited.
+  The updated docs distinguish legacy runtime evidence from the target and experimental,
+  simulated or unsupported behavior. Required command/workspace/CI repairs remain I0/I8.
+
+### Documentation verification
+
+Validation results are recorded below after the final checks. Runtime checks were not
+rerun for this documentation-only pass; the 21 September baseline above remains historical.
+No source, schema, context, policy, signed JSON fixture, dependency or lockfile was changed.
+The Markdown linter was run through transient `npx`, not added as a project dependency.
+It initially found three newly introduced blank-line errors (fixed) and a pre-existing
+duplicate heading in this append-only report. A file-local MD024 setting now checks
+sibling duplicates, allowing historical phase headings to recur without rewriting them.
+The transient linter installation emitted a Node-engine warning for a dependency; the
+actual lint result is recorded separately from that installation warning.
+
+D0–D4 completion is limited to documentation. I0 is next: executable setup/CI repair,
+current checks, consumer inventory and shared safety regressions, followed by I1's signed
+vertical slice. New-model verification and release completion are not claimed.
+
+<!-- markdownlint-configure-file {"MD024": {"siblings_only": true}} -->
+
+## Documentation acceptance and implementation handoff (2026-09-23)
+
+D0–D4 is complete as a documentation-only phase on
+`refactor/standards-first-reconciliation`. HEAD remains the inspected base
+`225e78f37fccb6f3813ba5f0a85ff3e2b2eb72b9`; the documentation changes are local and
+uncommitted. No runtime/model migration, remote write, tag or release is claimed.
+
+Checks performed:
+
+- Markdown lint over all 59 tracked/new project Markdown files: exit 0, using
+  `npx --yes markdownlint-cli@0.41.0 --config .markdownlint.json` with the explicit file list.
+- Local-link/inventory checks: 173 local links resolve; all 59 Markdown files are
+  represented in the 69-entry documentation/config review inventory.
+- All 83 V/P/S/C/E acceptance IDs match the handover and remain `not_assessed`.
+  Documentation completion does not change runtime acceptance status.
+- The source handover SHA-256 matches the value recorded in the plan. Archived old
+  task/model files are byte-identical to their base-commit versions; the report retains
+  its original content as an unchanged prefix.
+- `git diff --check`: exit 0 after removing a trailing-space artifact in changed ADR
+  status metadata. Runtime source, executable configuration, schemas, contexts, signed
+  fixtures, dependency manifests/lockfiles and citation metadata remain unchanged.
+- Historical wire terminology is confined to explicitly labeled legacy/history content
+  or migration explanations. No active instruction requires the old three-relation model.
+
+The two open documents have explicit boundaries: the historical graph ADR points to
+ADR-010, and the RM source note distinguishes an abridged XML transcription from verified
+XML signatures and fictional fixture issuance. The experimental binding draft also keeps
+byte-pinned dependencies distinct from legitimate selective-disclosure representations.
+
+Next is I0 from the active task: repair workspace/CI commands, run the current implementation
+baseline, classify the new acceptance coverage, inventory wire consumers and preserve the
+missing scope patch's safety properties. I1 then implements the machine-readable binding
+manifest and first signed vertical slice. No additional paper source was available to edit.
+
+## Standards-first I0 — 24 September 2026
+
+Documentation D0–D4 was committed as `51fd945` and pushed to
+`refactor/standards-first-reconciliation` after the user explicitly authorized
+incremental branch pushes. Historical content above remains unchanged. I0 preparation
+is now complete; the new evaluator and signed RM baseline remain I1–I8 work.
+
+I0 repairs the uv workspace, adds a locked dependency resolution and aligns Make/CI
+commands with the actual packages. CI uses the package-manager pin and also runs on
+this branch. Development tool additions are Ruff 0.4.5 (the existing pre-commit version)
+and mypy `>=1.10,<2`; no runtime dependency declaration was added. Existing dependency
+bounds resolved newer packages, so the complete suites were rerun after locked setup.
+No signed fixture, context, schema or release metadata was modified.
+
+Shared TS/Python scope fixes implement one-parent complete-record containment,
+finite ordered pressure bounds with supported consistent units, RM complete-alternative
+retries, required DCC method identifiers and retention of earlier group failures.
+The first 36 shared unsigned vectors failed 23 cases in both languages before the fix.
+All now pass; two explicit GS type-domain controls and non-finite-bound tests bring
+the added suite to 39 tests per language. No missing commit was represented as applied.
+
+Executed results: `CI=true make setup`, `make test`, `pnpm -r build`, TypeScript lint,
+root scenarios and schema checks exit 0. Totals: **226 TS tests; 196 Python passed,
+1 existing skip; 2 root scenarios; 4 schemas and 2 examples**. Six schema examples
+remain skipped without `$schema`; Vite retains its bundle-size warning.
+
+Python Ruff and mypy still exit 1. Comparing the same installed tools against an
+extraction of base `225e78f` found Ruff decreased from 208 to 204 diagnostics and mypy
+stayed at 198 in 24 files, with no new file/rule/message diagnostics. `make lint`
+stops on this Ruff debt; mypy was separately executed. No lint rule was suppressed.
+
+The [I0 evidence](docs/plans/standards-first-i0-evidence.md) records exact commands,
+remaining semantic limits, 111 legacy-identifier consumer files and six observed
+static-loader resource hashes. All 83 new-profile acceptance cases are classified
+`not_implemented`; eleven S rows cite partial legacy predicate coverage without
+claiming a new-profile pass. Python's old label-based `check_derivation` helper remains
+deprecated and outside the graph path/assurance of the fixed `check_derived_edge`.
+
+Astra completed bounded read-only reviews; Sol/Luna hit workspace credit limits and
+made no edits, so implementation and validation continued locally. Next is I1:
+executable binding manifest, request/result contract and first signed RM vertical slice.
+
+## Standards-first I1 prerequisite — 24 September 2026
+
+I0 `8356b42` was pushed to the authorized working branch and all four jobs passed in
+[GitHub CI run 36030304329](https://github.com/monavari/VC4QI/actions/runs/36030304329).
+The user requested continuation. A bounded Astra/local protection audit found that
+legacy proof verification rebuilt type/purpose and discarded additional received
+proof options. Seven mutation controls reproduced incorrect acceptance in each language.
+
+Both implementations now reject unsupported metadata and hash their supported received
+proof options. Eight shared controls (seven negatives, one unchanged positive) pass.
+`make test` exits 0: **234 TS; 204 Python passed, 1 existing skip; 2 root scenarios**.
+Build, TS lint and schema validation exit 0 with the already recorded bundle warning
+and schema coverage limitations. No signed fixture or dependency was changed.
+
+[The I1 audit](docs/plans/standards-first-i1-protection-audit.md) records remaining
+protection and catalog work, the minimal manifest/request/result contract and signed
+vertical-slice sequence. F-6 records the manuscript-facing implication. Astra reviewed
+the bounded fix without finding a blocking regression. I1 is in progress, not complete;
+new-profile acceptance remains unimplemented. Existing Python lint debt remains visible.
+
+## Standards-first I1 contract slice — 25 September 2026
+
+The first executable I1 contract slice adds parallel TypeScript/Python immutable
+reliance requests and separated result surfaces, complete three-state truth-table
+operators, and refusal of empty required state lists. A `not_run` predicate must be
+`not_established`. Request validation rejects empty/duplicate claim selection,
+malformed explicit-offset times and resolver budgets outside the shared positive
+safe-integer domain.
+
+The repository-owned [RM v1 manifest](bindings/experimental/rm-v1/manifest.json)
+covers all twelve required categories and validates against a closed top-level schema.
+It explicitly lists missing context/schema resources and remains `incomplete`; both
+libraries refuse to select it. No credential, context, schema or proof was invented to
+make it installable. The legacy evaluator remains the default.
+
+An isolated static catalog verifies SHA-384 SRI against exact input bytes, keeps and
+returns defensive copies, refuses unknown URLs, performs no network I/O, and applies
+request-local resource/byte limits. Astra's review reproduced Node Buffer aliasing and
+mutable-budget bypasses; both were fixed with byte copies and frozen budget snapshots.
+The review also found Python accepted `+01:60` and integers beyond `2^53-1`; parity
+validation now rejects both. No additional manifest/truth-table blocker was found.
+
+Sol left a useful initial TS contract before its delegated run reported workspace-credit
+failure. Luna produced no manifest files before the same failure. Their outputs were
+not trusted without local review and tests; repeated failing delegation was stopped.
+The [contract evidence](docs/plans/standards-first-i1-contract-evidence.md) records the
+implemented boundary and remaining signed-slice work.
+
+Focused final checks pass: **25 TS reliance/manifest/catalog tests**, **11 Python
+counterparts**, TS typecheck, Ruff on the new Python surface and mypy on the new package.
+Full-suite totals and existing warnings/debt are recorded after the final rerun below.
+
+Final I1 contract-slice validation completed on 25 September 2026. `make test` passes
+**259 TypeScript tests; 215 Python tests with 1 existing skip; and 2 root scenarios**.
+`pnpm -r build`, TypeScript lint and schema validation pass; the existing Vite chunk
+warning and six schema-example skips remain. Python-wide Ruff reports 204 existing
+diagnostics (original baseline: 208). Python-wide mypy reports the unchanged baseline
+of 198 errors in 24 legacy files; focused Ruff and mypy checks for the new reliance
+package and tests pass. This evidence completes only the contract/catalog sub-slice.
+The protected signed RM vertical slice remains required before I1 can close.
+
+The user's requested cheaper-model retry then completed. Terra corrected one status
+overclaim: the manifest envelope is complete, while catalog bytes and hashes remain
+pending. Luna found mutable Python runtime inputs, unchecked semantic/execution/decision
+domains and trust in a self-reported installable flag. The implementation now copies
+Python buffers and collections, validates state domains in both languages, rejects year
+zero consistently and refuses all binding selection until catalog-backed installation
+verification exists. Added controls bring the focused totals to **29 TypeScript and 14
+Python tests**. The final complete rerun supersedes the immediately preceding totals:
+**263 TypeScript tests; 218 Python tests with 1 existing skip; and 2 root scenarios**.
+
+The next I1 prerequisite adds opt-in safe JSON-LD canonicalization to the retained EdDSA
+primitive and an isolated, budgeted, catalog-backed document loader for the new reliance
+path. Controls prove undefined terms are rejected, safe issuance/verification round trips,
+loader results are isolated and unknown URIs fail offline. A W3C Appendix B.1 control
+verifies the published combined-hash signature and public key bytes. It is an independent
+primitive vector, not yet a full transformation vector. The legacy default remains
+unchanged. Issuer/controller/`assertionMethod` authorization and the signed RM D/A
+artifacts remain pending. The complete TypeScript suite passes **267 tests**; final
+cross-repository checks for this prerequisite are recorded with its commit.
+This prerequisite is TypeScript-only: the current Python PyLD backend does not enforce
+the equivalent safe option, so Python safe-processing parity remains explicit follow-up work.

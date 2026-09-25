@@ -55,6 +55,7 @@ export interface BitstringStatusListEntry {
 
 export type TraceLevel =
   | 'credential'
+  | 'assessment'
   | 'edge'
   | 'graph'
   | 'policy'
@@ -70,6 +71,9 @@ export interface TraceEntry {
   from?: string;
   to?: string;
   relation?: string;
+  assessmentMethod?: 'agent' | 'human' | 'hybrid';
+  assessorId?: string;
+  assessmentId?: string;
   status: TraceStatus;
   code: string;
   detail: string;

@@ -1,5 +1,7 @@
 # ADR-006 No Distributed Ledger Technology
 
+> **2026-09-22 applicability:** The no-DLT decision remains. The listed registry, suite and hosting choices below describe the historical implementation, not universal requirements of the standards-first target. Accepted profiles specify those choices; see [ADR-010](adr-010-standards-first-reliance.md).
+
 ## Status
 
 Accepted

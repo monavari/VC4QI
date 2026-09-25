@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 # Scenario smoke-tests for the scope-inclusion algorithm (Appendix C, Table C1).
 # Tests are pure unit tests — no verifier chain, no network.
-import pytest
+import re
+
 from qi_vc_core.scope import (
     DccScopeEntry,
     DrmdScopeEntry,
-    ScopeCheckResult,
     check_dcc_scope_inclusion,
     check_derivation,
     check_drmd_scope_inclusion,
@@ -17,13 +17,46 @@ _KPA = {"ucumCode": "kPa", "unitIri": "http://qudt.org/vocab/unit/KiloPA"}
 _PCT = {"ucumCode": "%",   "unitIri": "http://qudt.org/vocab/unit/PERCENT"}
 _MG  = {"ucumCode": "mg/kg", "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-KiloGM"}
 
+# Governed scope terms (SCO-1/SCO-2). Categorical dimensions compare as exact
+# equality over identifiers; the labels below are display only.
+# See docs/SCOPE_TERMS.md.
+_T = "https://w3id.org/qi-vc/terms/v1"
+_PRESSURE = "http://qudt.org/vocab/quantitykind/Pressure"
+
+
+def _slug(label: str) -> str:
+    return re.sub(r"[^A-Za-z0-9]+", "-", label).strip("-")
+
+
+def _method_iri(label: str) -> str:
+    return f"{_T}/method/{_slug(label)}"
+
+
+def _element_iri(symbol: str) -> str:
+    return f"{_T}/element/{symbol}"
+
+
+def _matrix_iri(label: str) -> str:
+    return f"{_T}/matrix/{_slug(label)}"
+
+
+def _form_iri(label: str) -> str:
+    return f"{_T}/form/{_slug(label)}"
+
+
+def _element_iri_from_name(name: str) -> str:
+    """Test-side convenience only: production code never parses a label."""
+    m = re.search(r"\(([A-Z][a-z]?)\)", name)
+    return _element_iri(m.group(1) if m else name)
+
 
 def _dcc(value_kpa: float, method: str, expanded_u_kpa: float) -> dict:
     return {
         "credentialSubject": {
             "measurementResults": [{
                 "measurand": "Pressure",
-                "usedMethods": [{"reference": method}],
+                "quantityKindIri": _PRESSURE,
+                "usedMethods": [{"reference": method, "methodIri": _method_iri(method)}],
                 "results": [{
                     "data": {
                         "quantity": {
@@ -45,7 +78,9 @@ def _dcc(value_kpa: float, method: str, expanded_u_kpa: float) -> dict:
 def _pressure_entry(range_to_kpa: float = 600.0, max_rel_pct: float = 0.05) -> DccScopeEntry:
     return DccScopeEntry(
         measurand="pressure",
+        quantity_kind_iri=_PRESSURE,
         allowed_methods=["DKD-R 6-1:2014", "EA-10/17"],
+        allowed_method_iris=[_method_iri("DKD-R 6-1:2014"), _method_iri("EA-10/17")],
         range_from=0,
         range_to=range_to_kpa,
         range_unit=_KPA,
@@ -63,8 +98,11 @@ def _drmd_entry(
     ]
     return DrmdScopeEntry(
         matrix=["non-ferrous metals and alloys"],
+        matrix_iris=[_matrix_iri("non-ferrous metals and alloys")],
         allowed_properties=props,
+        allowed_property_iris=[_element_iri(p) for p in props],
         allowed_forms=["disc", "powder", "chips"],
+        allowed_form_iris=[_form_iri(f) for f in ("disc", "powder", "chips")],
         uncertainty_max_relative_u_k2=max_rel_u_k2,
     )
 
@@ -72,15 +110,15 @@ def _drmd_entry(
 def _brass_drmd(extra_certified: list[dict] | None = None) -> dict:
     """Minimal M375a DRMD with Cu/Zn/Pb (certified) and Si (informative)."""
     certified_results = [
-        {"name": "Copper (Cu)",  "data": {"quantity": {"value": 57.68, "unit": _PCT,
+        {"name": "Copper (Cu)", "propertyIri": _element_iri("Cu"), "data": {"quantity": {"value": 57.68, "unit": _PCT,
             "uncertainty": {"expandedUncertainty": 0.14, "coverageFactor": 2, "coverageProbability": 0.95}}}},
-        {"name": "Zinc (Zn)",    "data": {"quantity": {"value": 38.2,  "unit": _PCT,
+        {"name": "Zinc (Zn)", "propertyIri": _element_iri("Zn"), "data": {"quantity": {"value": 38.2,  "unit": _PCT,
             "uncertainty": {"expandedUncertainty": 0.4,  "coverageFactor": 2, "coverageProbability": 0.95}}}},
-        {"name": "Lead (Pb)",    "data": {"quantity": {"value": 3.07,  "unit": _PCT,
+        {"name": "Lead (Pb)", "propertyIri": _element_iri("Pb"), "data": {"quantity": {"value": 3.07,  "unit": _PCT,
             "uncertainty": {"expandedUncertainty": 0.06, "coverageFactor": 2, "coverageProbability": 0.95}}}},
-        {"name": "Manganese (Mn)", "data": {"quantity": {"value": 139.5, "unit": _MG,
+        {"name": "Manganese (Mn)", "propertyIri": _element_iri("Mn"), "data": {"quantity": {"value": 139.5, "unit": _MG,
             "uncertainty": {"expandedUncertainty": 1.7,  "coverageFactor": 2, "coverageProbability": 0.95}}}},
-        {"name": "Silver (Ag)",  "data": {"quantity": {"value": 50.6,  "unit": _MG,
+        {"name": "Silver (Ag)", "propertyIri": _element_iri("Ag"), "data": {"quantity": {"value": 50.6,  "unit": _MG,
             "uncertainty": {"expandedUncertainty": 1.4,  "coverageFactor": 2, "coverageProbability": 0.95}}}},
     ]
     if extra_certified:
@@ -88,7 +126,11 @@ def _brass_drmd(extra_certified: list[dict] | None = None) -> dict:
 
     return {
         "credentialSubject": {
-            "materials": [{"name": "CuZn39Pb3"}],
+            "materials": [{
+                "name": "CuZn39Pb3",
+                "matrixIri": _matrix_iri("non-ferrous metals and alloys"),
+                "formIri": _form_iri("disc"),
+            }],
             "materialPropertiesList": [
                 {
                     "isCertified": True,
@@ -99,7 +141,7 @@ def _brass_drmd(extra_certified: list[dict] | None = None) -> dict:
                     "isCertified": False,
                     "propertyIdentifiers": ["massFraction"],
                     "results": [
-                        {"name": "Silicon (Si)", "data": {"quantity": {"value": 103, "unit": _MG,
+                        {"name": "Silicon (Si)", "propertyIri": _element_iri("Si"), "data": {"quantity": {"value": 103, "unit": _MG,
                             "uncertainty": {"expandedUncertainty": 12, "coverageFactor": 2, "coverageProbability": 0.95}}}},
                     ],
                 },
@@ -157,11 +199,16 @@ class TestDccScopeInclusion:
         result = check_dcc_scope_inclusion(dcc, [_pressure_entry(range_to_kpa=600)])
         assert result.passed is True
 
-    def test_no_scope_entries_passes(self):
-        """Empty scope entry list: no constraints → pass."""
+    def test_no_scope_entries_fails(self):
+        """Empty scope entry list confers no scope, so it cannot be satisfied.
+
+        Previously returned passed=True: a scope check that succeeded against
+        nothing at all.
+        """
         dcc = _dcc(9999, "ANYTHING", 999)
         result = check_dcc_scope_inclusion(dcc, [])
-        assert result.passed is True
+        assert result.passed is False
+        assert "NO_SCOPE_ENTRY" in [v.code for v in result.violations]
 
     def test_unit_conversion_bar_to_kpa(self):
         """300 bar ≈ 30000 kPa — should exceed 600 kPa scope."""
@@ -170,7 +217,11 @@ class TestDccScopeInclusion:
             "credentialSubject": {
                 "measurementResults": [{
                     "measurand": "Pressure",
-                    "usedMethods": [{"reference": "DKD-R 6-1:2014"}],
+                    "quantityKindIri": _PRESSURE,
+                    "usedMethods": [{
+                        "reference": "DKD-R 6-1:2014",
+                        "methodIri": _method_iri("DKD-R 6-1:2014"),
+                    }],
                     "results": [{"data": {"quantity": {
                         "value": 300,
                         "unit": bar_unit,
@@ -193,23 +244,23 @@ class TestDrmdScopeInclusion:
         drmd = _brass_drmd()
         result = check_drmd_scope_inclusion(
             drmd, [_drmd_entry()],
-            matrix="non-ferrous metals and alloys",
-            form="disc",
+            matrix=_matrix_iri("non-ferrous metals and alloys"),
+            form=_form_iri("disc"),
         )
         assert result.passed is True
         assert result.violations == []
 
     def test_T5_property_not_in_allowed(self):
         """T5: DRMD certifies Ti which is absent from allowedProperties → MATRIX_PROPERTY_MISMATCH."""
-        extra = [{"name": "Titanium (Ti)", "data": {"quantity": {
+        extra = [{"name": "Titanium (Ti)", "propertyIri": _element_iri("Ti"), "data": {"quantity": {
             "value": 10, "unit": _MG,
             "uncertainty": {"expandedUncertainty": 0.3, "coverageFactor": 2, "coverageProbability": 0.95},
         }}}]
         drmd = _brass_drmd(extra_certified=extra)
         result = check_drmd_scope_inclusion(
             drmd, [_drmd_entry()],
-            matrix="non-ferrous metals and alloys",
-            form="disc",
+            matrix=_matrix_iri("non-ferrous metals and alloys"),
+            form=_form_iri("disc"),
         )
         assert result.passed is False
         codes = [v.code for v in result.violations]
@@ -225,20 +276,20 @@ class TestDrmdScopeInclusion:
         drmd = _brass_drmd()
         result = check_drmd_scope_inclusion(
             drmd, [_drmd_entry(allowed_properties=props_without_cd)],
-            matrix="non-ferrous metals and alloys",
-            form="disc",
+            matrix=_matrix_iri("non-ferrous metals and alloys"),
+            form=_form_iri("disc"),
         )
         # Cd is in the brass drmd (via _brass_drmd which only has Cu/Zn/Pb/Mn/Ag)
         # so this passes — add Cd explicitly to trigger the failure
-        extra_cd = [{"name": "Cadmium (Cd)", "data": {"quantity": {
+        extra_cd = [{"name": "Cadmium (Cd)", "propertyIri": _element_iri("Cd"), "data": {"quantity": {
             "value": 62.4, "unit": _MG,
             "uncertainty": {"expandedUncertainty": 1.5, "coverageFactor": 2, "coverageProbability": 0.95},
         }}}]
         drmd_with_cd = _brass_drmd(extra_certified=extra_cd)
         result2 = check_drmd_scope_inclusion(
             drmd_with_cd, [_drmd_entry(allowed_properties=props_without_cd)],
-            matrix="non-ferrous metals and alloys",
-            form="disc",
+            matrix=_matrix_iri("non-ferrous metals and alloys"),
+            form=_form_iri("disc"),
         )
         assert result2.passed is False
         assert any("Cd" in v.detail for v in result2.violations)
@@ -248,8 +299,8 @@ class TestDrmdScopeInclusion:
         drmd = _brass_drmd()
         result = check_drmd_scope_inclusion(
             drmd, [_drmd_entry()],
-            matrix="iron and steel",
-            form="disc",
+            matrix=_matrix_iri("iron and steel"),
+            form=_form_iri("disc"),
         )
         assert result.passed is False
         assert any(v.code == "MATRIX_PROPERTY_MISMATCH" for v in result.violations)
@@ -259,8 +310,8 @@ class TestDrmdScopeInclusion:
         drmd = _brass_drmd()
         result = check_drmd_scope_inclusion(
             drmd, [_drmd_entry()],
-            matrix="non-ferrous metals and alloys",
-            form="rod",
+            matrix=_matrix_iri("non-ferrous metals and alloys"),
+            form=_form_iri("rod"),
         )
         assert result.passed is False
         assert any(v.code == "MATRIX_PROPERTY_MISMATCH" for v in result.violations)
@@ -269,11 +320,15 @@ class TestDrmdScopeInclusion:
         """U/k=2 = 2/10 = 20% exceeds bound of 5%."""
         drmd = {
             "credentialSubject": {
-                "materials": [{"name": "CuZn39Pb3"}],
+                "materials": [{
+                "name": "CuZn39Pb3",
+                "matrixIri": _matrix_iri("non-ferrous metals and alloys"),
+                "formIri": _form_iri("disc"),
+            }],
                 "materialPropertiesList": [{
                     "isCertified": True,
                     "propertyIdentifiers": ["massFraction"],
-                    "results": [{"name": "Copper (Cu)", "data": {"quantity": {
+                    "results": [{"name": "Copper (Cu)", "propertyIri": _element_iri("Cu"), "data": {"quantity": {
                         "value": 10, "unit": _PCT,
                         "uncertainty": {"expandedUncertainty": 2.0, "coverageFactor": 2, "coverageProbability": 0.95},
                     }}}],
@@ -282,8 +337,8 @@ class TestDrmdScopeInclusion:
         }
         result = check_drmd_scope_inclusion(
             drmd, [_drmd_entry(max_rel_u_k2=0.05)],
-            matrix="non-ferrous metals and alloys",
-            form="disc",
+            matrix=_matrix_iri("non-ferrous metals and alloys"),
+            form=_form_iri("disc"),
         )
         assert result.passed is False
         assert any(v.code == "UNCERTAINTY_WIDENING" for v in result.violations)
@@ -292,11 +347,15 @@ class TestDrmdScopeInclusion:
         """isCertified=False groups are never checked against scope (paper §6.2)."""
         drmd = {
             "credentialSubject": {
-                "materials": [{"name": "CuZn39Pb3"}],
+                "materials": [{
+                "name": "CuZn39Pb3",
+                "matrixIri": _matrix_iri("non-ferrous metals and alloys"),
+                "formIri": _form_iri("disc"),
+            }],
                 "materialPropertiesList": [{
                     "isCertified": False,
                     "propertyIdentifiers": ["massFraction"],
-                    "results": [{"name": "Titanium (Ti)", "data": {"quantity": {
+                    "results": [{"name": "Titanium (Ti)", "propertyIri": _element_iri("Ti"), "data": {"quantity": {
                         "value": 99, "unit": _PCT,
                         "uncertainty": {"expandedUncertainty": 50, "coverageFactor": 2, "coverageProbability": 0.95},
                     }}}],
@@ -305,8 +364,8 @@ class TestDrmdScopeInclusion:
         }
         result = check_drmd_scope_inclusion(
             drmd, [_drmd_entry()],
-            matrix="non-ferrous metals and alloys",
-            form="disc",
+            matrix=_matrix_iri("non-ferrous metals and alloys"),
+            form=_form_iri("disc"),
         )
         assert result.passed is True
 
@@ -314,11 +373,15 @@ class TestDrmdScopeInclusion:
         """57.68 % = 576800 mg/kg; relative U still 0.14/57.68 ≈ 0.24% < 5%."""
         drmd = {
             "credentialSubject": {
-                "materials": [{"name": "CuZn39Pb3"}],
+                "materials": [{
+                "name": "CuZn39Pb3",
+                "matrixIri": _matrix_iri("non-ferrous metals and alloys"),
+                "formIri": _form_iri("disc"),
+            }],
                 "materialPropertiesList": [{
                     "isCertified": True,
                     "propertyIdentifiers": ["massFraction"],
-                    "results": [{"name": "Copper (Cu)", "data": {"quantity": {
+                    "results": [{"name": "Copper (Cu)", "propertyIri": _element_iri("Cu"), "data": {"quantity": {
                         "value": 57.68, "unit": _PCT,
                         "uncertainty": {"expandedUncertainty": 0.14, "coverageFactor": 2, "coverageProbability": 0.95},
                     }}}],
@@ -327,8 +390,8 @@ class TestDrmdScopeInclusion:
         }
         result = check_drmd_scope_inclusion(
             drmd, [_drmd_entry()],
-            matrix="non-ferrous metals and alloys",
-            form="disc",
+            matrix=_matrix_iri("non-ferrous metals and alloys"),
+            form=_form_iri("disc"),
         )
         assert result.passed is True
 

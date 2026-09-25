@@ -1,6 +1,70 @@
 import { useDemoStore, runVerifier } from '../store/index.js';
 import { SCENARIOS } from '../scenarios/index.js';
 import clsx from 'clsx';
+import type { TraceEntry, VerificationTrace } from '@qi-vc/core';
+
+const REPLAY_STEP_MS = 420;
+
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => window.setTimeout(resolve, ms));
+}
+
+/**
+ * Order a completed verifier trace into visual frames that follow evidence
+ * edges from the scanned target outward toward the authority roots. This is a
+ * presentation-only replay; the verifier still computes one complete result.
+ */
+function traceReplayFrames(
+  scenario: (typeof SCENARIOS)[number],
+  trace: VerificationTrace,
+): TraceEntry[][] {
+  const targetId = scenario.nodes.find(node => node.isTarget)?.id ?? trace.target;
+  const depth = new Map<string, number>([[targetId, 0]]);
+  const queue = [targetId];
+
+  while (queue.length > 0) {
+    const from = queue.shift()!;
+    const nextDepth = (depth.get(from) ?? 0) + 1;
+    for (const edge of scenario.edges.filter(candidate => candidate.from === from)) {
+      if (depth.has(edge.to)) continue;
+      depth.set(edge.to, nextDepth);
+      queue.push(edge.to);
+    }
+  }
+
+  const indexed = trace.results.map((entry, index) => ({ entry, index }));
+  const used = new Set<number>();
+  const frames: TraceEntry[][] = [];
+  const maxDepth = Math.max(0, ...depth.values());
+
+  for (let currentDepth = 0; currentDepth <= maxDepth; currentDepth++) {
+    const nodeIds = new Set(
+      [...depth.entries()]
+        .filter(([, value]) => value === currentDepth)
+        .map(([id]) => id),
+    );
+
+    const nodeFrame = indexed.filter(({ entry, index }) =>
+      !used.has(index) &&
+      entry.level !== 'policy' &&
+      !entry.from &&
+      !entry.to &&
+      Boolean(entry.target && nodeIds.has(entry.target)));
+    nodeFrame.forEach(({ index }) => used.add(index));
+    if (nodeFrame.length > 0) frames.push(nodeFrame.map(({ entry }) => entry));
+
+    const edgeFrame = indexed.filter(({ entry, index }) =>
+      !used.has(index) && Boolean(entry.from && nodeIds.has(entry.from)));
+    edgeFrame.forEach(({ index }) => used.add(index));
+    if (edgeFrame.length > 0) frames.push(edgeFrame.map(({ entry }) => entry));
+  }
+
+  const finalFrame = indexed
+    .filter(({ index }) => !used.has(index))
+    .map(({ entry }) => entry);
+  if (finalFrame.length > 0) frames.push(finalFrame);
+  return frames;
+}
 
 const PROFILE_COLORS: Record<string, string> = {
   A: 'bg-blue-50   text-blue-700   border-blue-300',
@@ -19,6 +83,12 @@ export function Sidebar() {
     setTrace(null);
     try {
       const result = await runVerifier(activeScenario, mode);
+      const revealed: TraceEntry[] = [];
+      for (const frame of traceReplayFrames(activeScenario, result)) {
+        revealed.push(...frame);
+        setTrace({ ...result, results: [...revealed] });
+        await delay(REPLAY_STEP_MS);
+      }
       setTrace(result);
     } finally {
       setRunning(false);
@@ -41,9 +111,10 @@ export function Sidebar() {
           {SCENARIOS.map((sc) => (
             <button
               key={sc.id}
+              disabled={running}
               onClick={() => setScenario(sc.id)}
               className={clsx(
-                'w-full text-left rounded px-2 py-1.5 transition-all',
+                'w-full text-left rounded px-2 py-1.5 transition-all disabled:cursor-not-allowed disabled:opacity-50',
                 activeScenario.id === sc.id
                   ? 'bg-slate-100 ring-1 ring-slate-300'
                   : 'hover:bg-slate-50',
@@ -65,6 +136,7 @@ export function Sidebar() {
         <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest mb-1.5">Variant</p>
         <div className="flex rounded overflow-hidden border border-slate-200">
           <button
+            disabled={running}
             onClick={() => setMode('passing')}
             className={clsx('flex-1 py-1 text-[11px] font-medium transition-colors',
               mode === 'passing' ? 'bg-green-600 text-white' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50')}
@@ -72,6 +144,7 @@ export function Sidebar() {
             Passing
           </button>
           <button
+            disabled={running}
             onClick={() => setMode('failing')}
             className={clsx('flex-1 py-1 text-[11px] font-medium transition-colors border-l border-slate-200',
               mode === 'failing' ? 'bg-red-600 text-white' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50')}
@@ -98,7 +171,7 @@ export function Sidebar() {
       </div>
 
       {/* Result badge */}
-      {trace && (
+      {trace && !running && (
         <div className="px-3 pb-2">
           <div className={clsx(
             'rounded px-2.5 py-2 flex items-center gap-2 border',

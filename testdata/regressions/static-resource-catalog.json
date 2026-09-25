@@ -1,0 +1,8 @@
+{
+  "uri": "https://vc4qi.example/resources/catalog-control.json",
+  "mediaType": "application/json",
+  "contentUtf8": "{\"value\":1}\n",
+  "digestSRI": "sha384-ble6iP2DdQ1uREQPsBMMb67FZIcWXy5pmM9gYfWekFQ8cyiEcOlepk+mEGB3WsBW",
+  "origin": "VC4QI deterministic regression fixture",
+  "version": "1"
+}

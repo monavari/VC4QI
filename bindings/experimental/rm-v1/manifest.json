@@ -1,0 +1,161 @@
+{
+  "$schema": "./manifest.schema.json",
+  "id": "https://vc4qi.example/bindings/rm/1",
+  "version": "1",
+  "status": "experimental",
+  "owner": {
+    "name": "VC4QI repository fixture governance",
+    "source": "docs/BINDING_MANIFEST.md",
+    "authority": "local-research-fixture-only"
+  },
+  "installation": {
+    "status": "incomplete",
+    "reason": "The safe context, schemas, signed RM artifacts, controller documents and status resources are I1 pending resources.",
+    "pendingResources": [
+      "https://vc4qi.example/contexts/rm/1",
+      "https://vc4qi.example/schemas/rm/1/accreditation.json",
+      "https://vc4qi.example/schemas/rm/1/operational-scope.json",
+      "https://vc4qi.example/schemas/rm/1/certificate.json",
+      "https://vc4qi.example/schemas/rm/1/study.json",
+      "https://vc4qi.example/schemas/rm/1/lab-authority.json",
+      "https://vc4qi.example/schemas/rm/1/authorization-policy.json",
+      "https://vc4qi.example/schemas/rm/1/study-reference.json"
+    ]
+  },
+  "carrierAndSchema": {
+    "model": "W3C Verifiable Credentials Data Model 2.0",
+    "modelContext": "https://www.w3.org/ns/credentials/v2",
+    "requiredContexts": [
+      "https://www.w3.org/ns/credentials/v2",
+      "https://vc4qi.example/contexts/rm/1"
+    ],
+    "credentialTypes": [
+      "https://www.w3.org/2018/credentials#VerifiableCredential",
+      "https://vc4qi.example/bindings/rm/1#RmAccreditation",
+      "https://vc4qi.example/bindings/rm/1#RmOperationalScope",
+      "https://vc4qi.example/bindings/rm/1#RmCertificate",
+      "https://vc4qi.example/bindings/rm/1#RmStudy",
+      "https://vc4qi.example/bindings/rm/1#RmLabAuthority"
+    ],
+    "schemaUris": [
+      "https://vc4qi.example/schemas/rm/1/accreditation.json",
+      "https://vc4qi.example/schemas/rm/1/operational-scope.json",
+      "https://vc4qi.example/schemas/rm/1/certificate.json",
+      "https://vc4qi.example/schemas/rm/1/study.json",
+      "https://vc4qi.example/schemas/rm/1/lab-authority.json",
+      "https://vc4qi.example/schemas/rm/1/authorization-policy.json",
+      "https://vc4qi.example/schemas/rm/1/study-reference.json"
+    ],
+    "composition": "exact-listed-context-and-schema-combinations-only"
+  },
+  "factMappings": [
+    {"fact": "grantorOrActor", "nativePath": "/issuer", "expandedIri": "https://www.w3.org/2018/credentials#issuer"},
+    {"fact": "grantee", "nativePath": "/credentialSubject/id", "expandedIri": "@id"},
+    {"fact": "permittedActivity", "nativePath": "/credentialSubject/permittedActivity", "expandedIri": "https://vc4qi.example/bindings/rm/1#permittedActivity"},
+    {"fact": "scopeRecords", "nativePath": "/credentialSubject/scope", "expandedIri": "https://vc4qi.example/bindings/rm/1#scope"},
+    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/bindings/rm/1#authorizationCredential"},
+    {"fact": "requiredStudy", "nativePath": "/evidence/*/id", "expandedIri": "https://www.w3.org/2018/credentials#evidence"},
+    {"fact": "validFrom", "nativePath": "/validFrom", "expandedIri": "https://www.w3.org/2018/credentials#validFrom"},
+    {"fact": "validUntil", "nativePath": "/validUntil", "expandedIri": "https://www.w3.org/2018/credentials#validUntil"},
+    {"fact": "activityTime", "nativePath": "/credentialSubject/activityTime", "expandedIri": "https://vc4qi.example/bindings/rm/1#activityTime"},
+    {"fact": "selectedResult", "nativePath": "/credentialSubject/materialPropertiesList/*/results/*", "expandedIri": "https://vc4qi.example/bindings/rm/1#results"}
+  ],
+  "cardinality": {
+    "credentialSubject": {"minimum": 1, "maximum": 1},
+    "material": {"minimum": 1, "maximum": 1},
+    "scopeRecords": {"minimum": 1},
+    "selectedAuthorizingPoliciesPerUse": {"minimum": 1, "maximum": 1},
+    "supportReferences": {"minimum": 1},
+    "multipleRecognizedDeclarations": "unsupported-unless-exact-deterministic-composition-is-listed",
+    "ambiguousSelection": "not_established"
+  },
+  "discoveryAndIntegrity": {
+    "referenceCarriers": ["termsOfUse", "evidence", "relatedResource", "credentialSchema"],
+    "discovery": "supplied-or-installed-static-catalog-only",
+    "unknownUri": "not_established",
+    "immutableRepresentation": "original-secured-bytes",
+    "digestAlgorithm": "sha384",
+    "digestEncoding": "SRI",
+    "digestInput": "exact-original-secured-bytes",
+    "independentGrantBinding": "authenticated-grant-must-name-the-exercising-actor-and-activity"
+  },
+  "recognizedTypes": {
+    "authorizationPolicy": "https://vc4qi.example/bindings/rm/1#RmAuthorizationPolicy",
+    "authorizationPolicyEstablishes": ["authorizing-reference-candidate"],
+    "supportEvidence": "https://vc4qi.example/bindings/rm/1#RmStudyReference",
+    "supportEvidenceEstablishes": ["support-reference-candidate"],
+    "nonEstablishingByItself": ["authority", "scope", "support-applicability", "conformity"]
+  },
+  "principalAndRights": {
+    "principalEqualityEvaluator": "https://vc4qi.example/evaluators/exact-identifier/1",
+    "identityAliases": "none",
+    "activities": {
+      "issueRmCertificate": "https://vc4qi.example/bindings/rm/1#issueRmCertificate",
+      "maintainRmScope": "https://vc4qi.example/bindings/rm/1#maintainRmScope",
+      "issueRmStudy": "https://vc4qi.example/bindings/rm/1#issueRmStudy"
+    },
+    "rules": [
+      "A grantee equals the producer exercising certificate issuance and scope maintenance.",
+      "O issuer and grantee equal that producer and O is contained by A.",
+      "D issuer equals O grantee.",
+      "S issuer equals H laboratory grantee.",
+      "Commissioning a study grants no laboratory competence."
+    ]
+  },
+  "scopeAndMapping": {
+    "mappingVersion": "rm-experimental-mapping-1",
+    "recordEvaluator": "https://vc4qi.example/evaluators/rm-complete-record/1",
+    "quantityEvaluator": "https://vc4qi.example/evaluators/exact-mass-fraction/1",
+    "dimensions": ["matrixIri", "formIri", "propertyIri", "methodIri", "quantityKindIri", "range"],
+    "units": {"mg/kg": "1e-6", "kg/kg": "1"},
+    "boundaries": "inclusive",
+    "missingOrEmptyRestrictedDimension": "not_established",
+    "recordCombination": "one-complete-record-per-claim-no-splicing",
+    "uncertainty": {"requiredCoverageFactor": "2", "nonnegative": true, "accreditationCeiling": "none"},
+    "unsupported": ["asymmetric-uncertainty", "display-label-equality", "substring-matching", "implicit-method-succession"]
+  },
+  "routesAndRestrictions": {
+    "certificateRoute": ["O-authorizes-D", "A-authorizes-O-maintenance", "O-contained-by-A"],
+    "studyRoute": ["H-authorizes-S"],
+    "requiredSupport": ["S", "H"],
+    "globalRestrictions": ["applicable-suspension", "request-time-policy"],
+    "routeComposition": "AND-within-route-OR-between-complete-routes",
+    "baselineAlternatives": 1,
+    "provenanceDoesNotEstablish": ["permission", "containment"]
+  },
+  "protectionTimeAndResolution": {
+    "proofSuites": ["eddsa-rdfc-2022"],
+    "proofPurpose": "assertionMethod",
+    "verificationMethodRule": "exact-installed-method-controlled-by-issuer-and-authorized-for-assertionMethod",
+    "safeJsonLd": true,
+    "proofCollections": "unsupported-in-initial-slice",
+    "status": "authenticated-current-status-required-for-non-anchor-A-O-D-S-H",
+    "validity": ["validFrom", "validUntil"],
+    "freshness": "explicit-request-profile-value-no-default",
+    "historicalReliance": "unsupported-without-authenticated-historical-evidence",
+    "resolver": {"network": false, "unknownUri": "refuse", "budgets": ["maxResources", "maxDepth", "maxBytes"]},
+    "installedEvaluatorsOnly": true,
+    "issuerProvidedExecutableCode": false
+  },
+  "supportAndDisclosure": {
+    "objectApplicability": ["materialBatch", "activity", "method", "activityTime"],
+    "supportSubjectNeedNotEqualTargetIssuer": true,
+    "mandatoryDisclosure": [
+      "issuer", "credentialSubject/id", "activityTime", "selectedResult",
+      "restrictions", "authorizingReference", "requiredStudy", "relatedResource", "proof"
+    ],
+    "missingMandatoryDisclosure": "not_established",
+    "presentationProtection": "separate-from-reliance",
+    "holderBinding": "unsupported-in-initial-slice"
+  },
+  "evidenceAndExclusions": {
+    "acceptanceLedger": "docs/plans/standards-first-acceptance.csv",
+    "testVectorRoots": ["testdata/regressions", "bindings/experimental/rm-v1/test-vectors"],
+    "implementationEvidence": "docs/plans/standards-first-i1-protection-audit.md",
+    "unsupported": [
+      "production-accreditation", "legal-effect", "physical-sample-truth",
+      "public-example-namespace-resolution", "general-ontology-reasoning",
+      "wallet-interoperability", "external-recognition-adapter", "timestamp-service"
+    ]
+  }
+}

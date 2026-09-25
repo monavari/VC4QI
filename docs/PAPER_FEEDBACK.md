@@ -1,5 +1,8 @@
 # Implementation feedback to the manuscript
 
+> Historical findings below retain their original revision context. The standards-first
+> corrections at the end supersede F-4/F-5 as current implementation guidance.
+
 Items where implementing the model surfaced a constraint, ambiguity, or
 contradiction with a standard the paper relies on. Per research SOP, these are
 recorded here so the manuscript can be reconciled with what the standards
@@ -82,6 +85,49 @@ to an absolute IRI under a safe-mode processor.
 — adopting a disclosure-capable cryptosuite is not just a proof-format swap; it
 disciplines the vocabulary to be fully and correctly defined against the W3C base
 context. F-1 and F-2 are instances of this.
+
+---
+
+## F-3b — safe mode off means a signature covers only what the context defines
+
+**Status:** partially fixed for the trust registry in the SEC-1 work; the general
+case is recorded here and not yet addressed.
+
+`canonicalize/index.ts:22` sets `safe: false`, commented "Allow non-IRI properties
+to be silently dropped". F-3 framed this as a *disclosure* requirement. It is more
+than that: with safe mode off, URDNA2015 drops every term the `@context` does not
+define, so **a Data Integrity proof covers only the subset of the document that
+the context happens to define.** A field that is dropped is not signed, and
+tampering with it is undetectable.
+
+This was live, not theoretical. `TrustRegistryCredential` fixtures referenced
+`qi-evidence-context`, which does not define `registryEntries`. The signed
+N-Quads were four triples — type, credentialSubject reference, issuer, validFrom.
+The registry entries themselves were outside the signature. A signed registry
+could have an issuer appended, or a `revoked` entry flipped to `active`, and the
+proof still verified. Demonstrated before the fix, and now pinned by eight tamper
+vectors in `trust-registry.test.ts` and `test_trust_registry.py`.
+
+**Measured blast radius** (42 credentials under `testdata/examples/` and
+`examples/`, canonicalized with `safe: true`):
+
+- 10 clean, **32 drop at least one property**.
+- The dominant cause is `$schema`, a housekeeping pointer rather than a claim.
+  A leaf-by-leaf check of the worked example
+  (`reference-material-recursive/target-credential.json`) found **0 claim values
+  outside the signature**, so the paper's worked instance is not compromised.
+- **One case is security-relevant and still open.** In
+  `*/status-list.json`, `credentialSubject` carries no `"type": "BitstringStatusList"`,
+  and the W3C context scopes `encodedList` under that type. `encodedList` is
+  therefore dropped: the revocation bitstring is **not covered by the status list
+  credential's signature**. This is latent today only because status lists are
+  never proof-verified (`status/index.ts` has no proof handling and the fixtures
+  carry no proof). It becomes live the moment FC-3 / status verification is
+  implemented, and it is the same defect class as the trust registry one.
+
+**Recommended follow-up, as its own stage:** add `"type": "BitstringStatusList"`
+to the status-list fixtures, define or remove `$schema`, then turn safe mode on
+and keep it on, so a dropped term is a loud error rather than a silent hole.
 
 ---
 
@@ -185,3 +231,61 @@ fully machine-expressible. Guard-band evaluation (B5) and trust-registry resolut
 2. Add a listing showing the GS Profile D DCQL output above as Listing X — it is the
    clearest concrete demonstration that the structural policy half is fully
    machine-expressible in the v0.3.0 implementation.
+
+## Standards-first manuscript corrections (2026-09-22)
+
+The supplied handover is an implementation specification, not a manuscript source.
+No paper file was edited. Retain the existing title and framework structure; map these
+corrections to actual manuscript sections when those sources are available.
+
+1. Frame the contribution as explicit conditions for QI reliance. Do not claim invention
+   of recursive recognition or basic scope checks, or derive novelty from another demo's bugs.
+2. Replace the universal three-relation/six-basis serialization and mandatory custom
+   scopeRef with accepted native bindings, protected mappings and verifier-owned witnesses.
+   F-4 describes a superseded model. Provenance is not institutional permission.
+3. Separate verification from reliance and semantic states from execution metadata. Required
+   unknowns block reliance. Complete routes and applicable global restrictions need explicit
+   composition; all required recursive support needs well-founded justification.
+4. Explain accepted semantics and decision-preserving mappings with original source provenance.
+   Underdetermination without interpretation is distinct from mathematical undecidability.
+   Conditional results need supported terminating evaluators and bounded route search.
+5. Keep scope inclusion, calibration capability floors, optional customer limits and conformity
+   separate. Remove generic RM uncertainty ceilings. Show 178→183 (accept), 197→202 (conformity
+   rejection), 520 (scope rejection, decision not run), backed by actual witnesses when available.
+6. Explain local scope evaluation and independently authorized predicate answers. Bind answers to
+   the exact question and time/version. A signed point answer cannot establish whole-scope
+   containment or prove semantic truth independently of its attesting authority.
+7. Recognized Entities is a pinned experimental baseline with actual action/output-validation
+   capabilities. Recognition is not the whole QI reliance calculus. Schema validators can express
+   numeric bounds, enums and logical combinations; explain additional interpretation and
+   cross-artifact/authority requirements without claiming schemas are inherently incapable.
+8. F-5's old policy/query paths and test totals do not establish new profile expressibility.
+   Request matching is distinct from reliance, presentation protection and sufficient disclosure.
+   Python semantic SD parity is not SD crypto parity.
+9. F-1 through F-3b remain relevant safe-processing findings. Current status/registry/proof
+   assurance must be backed by specific tests; native XML and JSON wrappers have distinct proofs.
+10. Report actual implemented/experimental/simulated/unsupported mechanisms. Fixture identity
+    agreement does not establish physical sample truth or production accreditation. Verify exact
+    European specification versions before making format/legal claims; no such claims are added here.
+11. Remove blanket linear-total-cost claims; distinguish traversal, route search, crypto, schema/RDF,
+    quantity matching and resolution. Tests and conditional arguments do not prove deployed interoperability.
+12. Preserve historical citations and verify archive targets before associating them with a new
+    version. A local commit or bibliography placeholder is not a published release or DOI.
+
+Current target: [MODEL_SPEC](MODEL_SPEC.md). Actual capability evidence:
+[IMPLEMENTATION_STATUS](IMPLEMENTATION_STATUS.md). Full requirements and acceptance:
+[traceability](plans/standards-first-traceability.md). No new-model execution is claimed.
+
+## F-6 — Proof metadata must be verified as received (2026-09-24)
+
+The legacy TS/Python proof verifiers reconstructed `type` and `proofPurpose` and
+ignored additional proof options. Seven shared mutation controls reproduced successful
+verification of these unsupported changes. The I1 prerequisite now validates the
+supported six-field subset and hashes the received options; all eight controls pass.
+This repairs a specific implementation defect, not complete suite conformance.
+
+The [EdDSA proof-verification algorithm](https://www.w3.org/TR/2025/REC-vc-di-eddsa-20250515/#verify-proof-eddsa-rdfc-2022)
+uses the received proof options. Manuscript protection claims must distinguish this
+metadata fix from the remaining safe-expansion, canonicalization, authorized-controller
+and isolated-catalog work. See the [I1 audit](plans/standards-first-i1-protection-audit.md)
+for code boundaries, executed tests and the signed-slice prerequisites.

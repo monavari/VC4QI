@@ -1,0 +1,13 @@
+{
+  "description": "Mutations applied after signing an unchanged legacy credential; unsupported proof options must not be silently discarded.",
+  "vectors": [
+    {"id": "unchanged-control", "set": {}, "remove": [], "expected": true},
+    {"id": "wrong-type", "set": {"type": "OtherProof"}, "remove": [], "expected": false},
+    {"id": "wrong-purpose", "set": {"proofPurpose": "authentication"}, "remove": [], "expected": false},
+    {"id": "missing-type", "set": {}, "remove": ["type"], "expected": false},
+    {"id": "missing-purpose", "set": {}, "remove": ["proofPurpose"], "expected": false},
+    {"id": "extra-challenge", "set": {"challenge": "unprotected-challenge"}, "remove": [], "expected": false},
+    {"id": "extra-domain", "set": {"domain": "https://vc4qi.example/verifier"}, "remove": [], "expected": false},
+    {"id": "unknown-option", "set": {"unrecognizedOption": true}, "remove": [], "expected": false}
+  ]
+}

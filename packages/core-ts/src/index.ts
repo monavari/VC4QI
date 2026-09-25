@@ -13,4 +13,6 @@ export * as evidence from './evidence/index.js';
 export * as policy from './policy/index.js';
 export * as edge from './edge/index.js';
 export * as terms from './terms/index.js';
+export * as assessment from './assessment/index.js';
 export * as presentationQuery from './presentation-query/index.js';
+export * as reliance from './reliance/index.js';

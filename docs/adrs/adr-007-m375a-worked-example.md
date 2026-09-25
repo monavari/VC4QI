@@ -1,8 +1,10 @@
 # ADR-007 M375a Worked Example as Canonical DRMD Reference
 
+> **2026-09-22 applicability:** Superseded by [ADR-010](adr-010-standards-first-reliance.md). Paths, placeholder proofs, missing-matrix bypass and paper references below are historical. The new baseline uses fictional signed A/O/D/S/H artifacts; native source provenance is retained without real-institution endorsement or XML signature claims.
+
 ## Status
 
-Accepted
+Superseded by ADR-010
 
 ## Context
 

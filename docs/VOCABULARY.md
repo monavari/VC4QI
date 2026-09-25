@@ -1,44 +1,36 @@
-# Vocabulary
+# Vocabulary and ownership
 
-VC4QI reuses standard VC 2.0 properties before minting QI-specific terms.
+**Target binding rules; existing v1 artifacts are legacy.** No universal serialized
+edge/basis vocabulary is required by the [model](MODEL_SPEC.md).
 
-Standard properties keep their VC meanings:
-
-- `@context` gives terms semantic meaning.
-- `type` identifies broad credential and artifact categories.
-- `credentialSchema` points to structural validation rules.
-- `evidence` carries authorizing, supporting, and derived-from references.
-- `credentialStatus` carries revocation and suspension status.
-- `termsOfUse` carries disclosure obligations, audit access, market-surveillance
-  rules, and usage restrictions.
-
-## Evidence relations
-
-QI terms are profile terms under `https://w3id.org/qi-vc/vocab/v1#`. Values in
-credentials are bare tokens — the JSON-LD context (`@type: @vocab`) expands them
-to their full IRIs at the semantic layer.
-
-Three `relation` values are defined:
-
-| Token | Semantics |
+| Surface | Accepted responsibility |
 | --- | --- |
-| `authorizedBy` | Independent grant on the issuer's own terms. Requires `authorizationBasis`. |
-| `derivedFrom` | Subset of a parent scope. Requires `authorizationBasis`. Triggers derivation check. |
-| `supportedBy` | Non-authorizing supporting evidence. Must NOT carry `authorizationBasis`. |
+| `@context` | Versioned JSON-LD meaning, with safe processing and no protected-term redefinition |
+| `type`, `credentialSchema` | Declared artifact types and applicable validation; verifier-controlled dispatch |
+| `termsOfUse` | Recognized policy/authorization interpretation under a specific accepted binding |
+| `evidence` | Recognized non-authorizing supporting information in the baseline binding |
+| `relatedResource` | Resource integrity according to the chosen standard representation rules |
+| `credentialStatus` | Selected status mechanism with authenticated signer, applicability and freshness |
+| DCMI conformance declaration | Profile identification, not a requirement that the verifier trust that profile |
 
-## Authorization basis kinds
+These are carrier roles; VCDM does not define the QI reliance calculus. A type named
+like a trust policy has no authority without an accepted interpretation. Native domain
+standards may supply their own links, which a binding preserves and interprets explicitly.
+See [manifest requirements](BINDING_MANIFEST.md) for exact paths/IRIs and cardinalities.
 
-`authorizationBasis.kind` describes the kind of evidence a policy may evaluate.
-It does not itself grant permission. Six values are defined:
+Internal software names such as node-use, bounded projection, route, support, witness,
+`established`, `contradicted`, `not_established` and `not_run` are not credential terms.
+A verifier-owned record witness replaces a universal mandatory custom claim-to-parent pointer.
 
-| Token | Meaning |
-| --- | --- |
-| `accreditation` | Formal third-party accreditation (e.g., ISO/IEC 17025). |
-| `legalMandate` | Statutory or regulatory authority. |
-| `notification` | Notified body status under EU legislation. |
-| `schemeAuthorization` | Authorization by a certification scheme owner. |
-| `recognition` | Mutual recognition arrangement between bodies. |
-| `operationalScope` | Self-declared operational scope (e.g., RM producer, market surveillance). |
+Existing `contexts/v1/`, schemas and fixtures still use `CredentialEvidenceReference`,
+`authorizedBy`, `derivedFrom`, `supportedBy`, `authorizationBasis.kind` and sometimes
+`scopeRef`. These describe the legacy profile only. The new default must not emit or
+require them, nor rename the same generic wrapper to simulate a standards migration.
+PROV provenance supplies neither permission nor operational containment.
 
-DPP vocabularies are adjacent vocabularies to align with. VC4QI does not redefine
-or replace them.
+Local RM fixture vocabulary is authorized only as a versioned experimental binding in
+an unmistakable `.example` namespace. Exact domain terms must be documented and mapped
+safely; no plausible external SIS/SIRP terms or institutional endorsement may be invented.
+Unknown optional annotations remain inert. Missing required meaning blocks reliance.
+Use W3C/schema.org terms without shadowing `issuer`, `name`, `description`, `digestSRI`
+or `digestMultibase`. Binding configuration is not a new credential vocabulary.

@@ -17,9 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 9
+      - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -32,16 +30,19 @@ jobs:
           python-version: '3.12'
 
       - name: Install uv
-        run: pip install uv
+        run: python -m pip install uv==0.12.17
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Install locked Python workspace
+        run: uv sync --locked --all-packages --extra dev
 
       - name: Run TypeScript tests
         run: pnpm test
 
       - name: Run Python tests
-        run: uv run pytest
+        run: uv run --locked --all-packages --extra dev pytest packages/core-py/tests
 
       - name: Validate schemas
         run: pnpm validate:schemas

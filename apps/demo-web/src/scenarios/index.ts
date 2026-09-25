@@ -48,7 +48,7 @@ export interface PolicyProfile {
 }
 
 export type EdgeRelation = 'authorizedBy' | 'derivedFrom' | 'supportedBy';
-export type ActorRole = 'accreditationBody' | 'lab' | 'schemeAuthority' | 'nmi' | 'rmProducer';
+export type ActorRole = 'accreditationBody' | 'lab' | 'schemeAuthority' | 'nmi' | 'rmProducer' | 'manufacturer';
 
 export interface ScenarioActor {
   id: string;
@@ -108,6 +108,7 @@ interface ScenarioSpec {
 
 const DEFAULT_TYPE_LABELS: Record<string, string> = {
   TestReport: 'Test Report',
+  InspectionReport: 'Factory Inspection',
   DigitalCalibrationCertificate: 'Calibration Certificate',
   AccreditationCertificate: 'Accreditation',
   LegalMandateEvidence: 'Legal Mandate',
@@ -117,6 +118,7 @@ const DEFAULT_TYPE_LABELS: Record<string, string> = {
   SchemeAuthorizationCredential: 'Scheme Authorization',
   SchemeAuthorizationEvidence: 'Scheme Authorization',
   GSCertificate: 'GS Certificate',
+  Product: 'GS-marked product unit',
   ReferenceMaterialCertificate: 'RM Certificate',
   ReferenceMaterialStudy: 'RM Study',
 };
@@ -132,6 +134,28 @@ function issuerDid(cred: JsonObject): string {
   if (typeof iss === 'string') return iss;
   if (iss && typeof iss === 'object') return ((iss as JsonObject).id as string) ?? 'unknown';
   return 'unknown';
+}
+
+function credentialSubjectId(cred: JsonObject): string {
+  const subject = cred.credentialSubject;
+  return subject && typeof subject === 'object' && !Array.isArray(subject)
+    ? String((subject as JsonObject).id ?? '')
+    : '';
+}
+
+function nodeLabel(cred: JsonObject, type: string, typeLabels: Record<string, string>): string {
+  const issuer = issuerDid(cred);
+  const subject = credentialSubjectId(cred);
+  if (type === 'IssuingScopeCredential') {
+    return issuer === 'did:web:gs-body.example'
+      ? 'GS Body Operational Scope'
+      : 'External Lab Operational Scope';
+  }
+  if (type === 'AccreditationCertificate') {
+    if (subject === 'did:web:gs-body.example') return 'GS Body Accreditation';
+    if (subject === 'did:web:hanseatic-product-testing.example') return 'External Lab Accreditation';
+  }
+  return typeLabels[type] ?? type;
 }
 
 /** Guess an actor role from credential type — only used when no override is given. */
@@ -188,7 +212,7 @@ function deriveGraph(spec: ScenarioSpec, target: JsonObject, docs: Record<string
     const type = credentialType(cred);
     nodes.push({
       id,
-      label: typeLabels[type] ?? type,
+      label: nodeLabel(cred, type, typeLabels),
       credentialType: type,
       actorId: actorIdFor(cred),
       credential: cred,
@@ -298,22 +322,6 @@ const SPECS: ScenarioSpec[] = [
     },
   },
   {
-    id: 'gs-scheme-authorization',
-    profile: 'D',
-    dir: 'gs-scheme-authorization',
-    title: 'Profile D — Notification / Scheme (GS mark)',
-    subtitle: 'Notified body composing accreditation + scheme authority',
-    description:
-      'A GS product-safety certificate authorized jointly by a scheme authorization ' +
-      '(independent authority, no subset check) and a competence accreditation. ' +
-      'Key structural test: the independent scheme edge is not subset-bounded by accreditation.',
-    actors: {
-      'did:web:nab.example': { label: 'Accreditation Body', role: 'accreditationBody' },
-      'did:web:scheme-authority.example': { label: 'Scheme Authority', role: 'schemeAuthority' },
-      'did:web:gs-body.example': { label: 'Notified Body (GS)', role: 'lab' },
-    },
-  },
-  {
     id: 'reference-material-recursive',
     profile: 'E',
     dir: 'reference-material-recursive',
@@ -345,13 +353,61 @@ const SPECS: ScenarioSpec[] = [
       'did:web:lab.example': { label: 'Calibration / Test Lab', role: 'lab' },
     },
   },
+  {
+    id: 'gs-hair-dryer-hitl',
+    profile: 'D',
+    dir: 'gs-hair-dryer-hitl',
+    title: 'Profile D — GS hair dryer with HITL',
+    subtitle: 'Scan one product’s GS QR mark',
+    description:
+      'Scanning the QR mark resolves a manufacturer-issued credential for one serialized ' +
+      'hair dryer. That unit credential is authorized by the GS body’s type-level ' +
+      'certificate, which is supported by a product type-examination report and initial ' +
+      'factory inspection. Sparse report semantics are assessed by an agent and a human, ' +
+      'while the GS issuing scope composes accreditation with ZLS scheme authorization.',
+    actors: {
+      'did:web:nab.example': { label: 'Accreditation Body', role: 'accreditationBody' },
+      'did:web:zls.example': { label: 'ZLS Scheme Authority', role: 'schemeAuthority' },
+      'did:web:gs-body.example': { label: 'GS Body + In-house Lab', role: 'lab' },
+      'did:web:nordlicht-appliances.example': { label: 'Nordlicht Manufacturer', role: 'manufacturer' },
+    },
+  },
+  {
+    id: 'gs-hair-dryer-external-test-lab-hitl',
+    profile: 'D',
+    dir: 'gs-hair-dryer-external-test-lab-hitl',
+    title: 'Profile D — GS with external test lab',
+    subtitle: 'Separate laboratory tests the product type',
+    description:
+      'Scanning the QR mark resolves a manufacturer-issued credential for serialized ' +
+      'hair dryer HD01-2026-000043. A separate accredited testing laboratory issues ' +
+      'the product type-examination report to the GS body under its own operational ' +
+      'scope derived from NAB accreditation. The GS body commissions and uses that ' +
+      'report, while retaining certification responsibility and performing the ' +
+      'factory inspection under its separate NAB- and ZLS-backed GS scope.',
+    actors: {
+      'did:web:nab.example': { label: 'Accreditation Body', role: 'accreditationBody' },
+      'did:web:zls.example': { label: 'ZLS Scheme Authority', role: 'schemeAuthority' },
+      'did:web:gs-body.example': { label: 'GS Certification + Inspection Body', role: 'lab' },
+      'did:web:hanseatic-product-testing.example': { label: 'External Product Testing Lab', role: 'lab' },
+      'did:web:nordlicht-appliances.example': { label: 'Nordlicht Manufacturer', role: 'manufacturer' },
+    },
+  },
 ];
 
 export const SCENARIOS: Scenario[] = SPECS.map(buildScenario);
 
-export const scenarioA = SCENARIOS[0]!;
-export const scenarioB = SCENARIOS[1]!;
-export const scenarioC = SCENARIOS[2]!;
-export const scenarioD = SCENARIOS[3]!;
-export const scenarioE = SCENARIOS[4]!;
-export const scenarioF = SCENARIOS[5]!;
+function scenarioById(id: string): Scenario {
+  const scenario = SCENARIOS.find(candidate => candidate.id === id);
+  if (!scenario) throw new Error(`Missing scenario ${id}`);
+  return scenario;
+}
+
+export const scenarioA = scenarioById('calibration-direct');
+export const scenarioB = scenarioById('calibration-capability');
+export const scenarioC = scenarioById('nmi-legal-mandate');
+export const scenarioD = scenarioById('gs-hair-dryer-hitl');
+export const scenarioE = scenarioById('reference-material-recursive');
+export const scenarioF = scenarioById('test-report-supported-dcc');
+export const scenarioGsHairDryer = scenarioD;
+export const scenarioGsExternalTestLab = scenarioById('gs-hair-dryer-external-test-lab-hitl');

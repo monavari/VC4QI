@@ -9,6 +9,7 @@ from .types import (
 )
 from .issuer import issue, issue_dcc, issue_rmc
 from .verifier import VerifyGraphOptions, verify_credential_graph
+from .assessment import AssessmentRequest, AssessmentResult
 
 __all__ = [
     "Ed25519KeyPair",
@@ -22,4 +23,6 @@ __all__ = [
     "issue_rmc",
     "verify_credential_graph",
     "VerifyGraphOptions",
+    "AssessmentRequest",
+    "AssessmentResult",
 ]

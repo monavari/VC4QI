@@ -1,7 +1,8 @@
 {
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
-    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld"
+    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld"
   ],
   "type": [
     "VerifiableCredential",
@@ -25,5 +26,13 @@
         ]
       }
     ]
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:web:test.example.com#key-1",
+    "created": "2026-01-01T00:00:00Z",
+    "proofValue": "z37wdkzut5nWKiKDiv4wi1oxiZznLp67koG6ymnaDX1woVKjTW41L6YnRyDfSMwQbRWpanNr2B8oJN5B8EfgPW2W4"
   }
 }
