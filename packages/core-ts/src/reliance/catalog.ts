@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { createHash } from 'node:crypto';
+import type { DocumentLoader } from '../types.js';
 
 export type CatalogErrorCode =
   | 'DUPLICATE_RESOURCE'
@@ -106,4 +107,30 @@ export class CatalogSession {
     this.#bytesUsed += entry.bytes.byteLength;
     return { ...entry, bytes: Uint8Array.from(entry.bytes) };
   }
+}
+
+/** Adapt one budgeted catalog session to an isolated, offline JSON-LD loader. */
+export function catalogDocumentLoader(session: CatalogSession): DocumentLoader {
+  return async (url: string) => {
+    const resource = session.resolve(url);
+    if (resource.mediaType !== 'application/json' &&
+        resource.mediaType !== 'application/ld+json' &&
+        !resource.mediaType.endsWith('+json')) {
+      throw new CatalogError(
+        'INVALID_RESOURCE',
+        `JSON-LD resource ${url} has unsupported media type ${resource.mediaType}.`,
+      );
+    }
+    let document: unknown;
+    try {
+      const source = new TextDecoder('utf-8', { fatal: true }).decode(resource.bytes);
+      document = JSON.parse(source) as unknown;
+    } catch (error) {
+      throw new CatalogError(
+        'INVALID_RESOURCE',
+        `JSON-LD resource ${url} is not valid UTF-8 JSON: ${String(error)}.`,
+      );
+    }
+    return { contextUrl: null, document, documentUrl: url };
+  };
 }

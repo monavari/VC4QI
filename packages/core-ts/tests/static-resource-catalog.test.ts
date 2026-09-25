@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  CatalogError, StaticResourceCatalog, sha384SRI,
+  catalogDocumentLoader, CatalogError, StaticResourceCatalog, sha384SRI,
 } from '../src/reliance/catalog.js';
 
 const fixture = JSON.parse(readFileSync(
@@ -70,5 +70,43 @@ describe('isolated static resource catalog', () => {
     session.resolve(input.uri);
     expect(() => session.resolve(input.uri))
       .toThrowError(expect.objectContaining({ code: 'RESOURCE_BUDGET_EXCEEDED' }));
+  });
+
+  it('adapts one isolated session to an offline JSON-LD loader', async () => {
+    const uri = 'https://vc4qi.example/contexts/catalog-test/1';
+    const contextBytes = new TextEncoder().encode(JSON.stringify({
+      '@context': { value: 'https://vc4qi.example/vocab#value' },
+    }));
+    const catalog = new StaticResourceCatalog([{
+      uri,
+      mediaType: 'application/ld+json',
+      bytes: contextBytes,
+      digestSRI: sha384SRI(contextBytes),
+      origin: 'catalog loader regression',
+      version: '1',
+    }]);
+    const loader = catalogDocumentLoader(catalog.openSession({
+      maxResources: 3, maxBytes: contextBytes.length * 3,
+    }));
+    const first = await loader(uri);
+    (first.document as { changed?: boolean }).changed = true;
+    const second = await loader(uri);
+    expect(second.document).toEqual({
+      '@context': { value: 'https://vc4qi.example/vocab#value' },
+    });
+    await expect(loader('https://vc4qi.example/contexts/missing'))
+      .rejects.toMatchObject({ code: 'RESOURCE_NOT_FOUND' });
+
+    const invalidBytes = Uint8Array.from([0xff]);
+    const invalidLoader = catalogDocumentLoader(new StaticResourceCatalog([{
+      uri: `${uri}/invalid`,
+      mediaType: 'application/ld+json',
+      bytes: invalidBytes,
+      digestSRI: sha384SRI(invalidBytes),
+      origin: 'invalid UTF-8 regression',
+      version: '1',
+    }]).openSession({ maxResources: 1, maxBytes: 1 }));
+    await expect(invalidLoader(`${uri}/invalid`))
+      .rejects.toMatchObject({ code: 'INVALID_RESOURCE' });
   });
 });

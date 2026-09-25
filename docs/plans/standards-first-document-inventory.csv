@@ -74,6 +74,7 @@ docs/plans/standards-first-static-resources.csv,2026-09-24,added_I0,Observed imp
 uv.lock,2026-09-24,added_I0,Observed implementation evidence and reproducibility; see I0 report for boundaries.
 docs/plans/standards-first-i1-protection-audit.md,2026-09-24,added_I1_prerequisite,"Protection findings, bounded metadata fix and remaining signed-slice sequence."
 docs/plans/standards-first-i1-contract-evidence.md,2026-09-25,added_I1_contract,"Request/result, manifest and immutable catalog evidence with explicit remaining signed-slice work."
+docs/plans/standards-first-i1-safe-protection-evidence.md,2026-09-25,added_I1_protection,"Safe JSON-LD and isolated-loader prerequisite with published signature control and explicit authorization limits."
 bindings/experimental/rm-v1/README.md,2026-09-25,added_I1_contract,"Experimental binding status, ownership and installation boundary."
 bindings/experimental/rm-v1/test-vectors/README.md,2026-09-25,added_I1_contract,"Explicit empty signed-vector state and planned generated evidence."
 bindings/experimental/rm-v1/manifest.json,2026-09-25,added_I1_contract,"Twelve-category data-only manifest; explicitly incomplete and non-installable."

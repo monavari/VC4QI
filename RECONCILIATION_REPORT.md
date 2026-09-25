@@ -1061,3 +1061,15 @@ zero consistently and refuses all binding selection until catalog-backed install
 verification exists. Added controls bring the focused totals to **29 TypeScript and 14
 Python tests**. The final complete rerun supersedes the immediately preceding totals:
 **263 TypeScript tests; 218 Python tests with 1 existing skip; and 2 root scenarios**.
+
+The next I1 prerequisite adds opt-in safe JSON-LD canonicalization to the retained EdDSA
+primitive and an isolated, budgeted, catalog-backed document loader for the new reliance
+path. Controls prove undefined terms are rejected, safe issuance/verification round trips,
+loader results are isolated and unknown URIs fail offline. A W3C Appendix B.1 control
+verifies the published combined-hash signature and public key bytes. It is an independent
+primitive vector, not yet a full transformation vector. The legacy default remains
+unchanged. Issuer/controller/`assertionMethod` authorization and the signed RM D/A
+artifacts remain pending. The complete TypeScript suite passes **267 tests**; final
+cross-repository checks for this prerequisite are recorded with its commit.
+This prerequisite is TypeScript-only: the current Python PyLD backend does not enforce
+the equivalent safe option, so Python safe-processing parity remains explicit follow-up work.

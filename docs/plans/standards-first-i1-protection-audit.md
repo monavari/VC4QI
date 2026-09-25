@@ -60,12 +60,16 @@ Astra reviewed the bounded fix and found no blocking regression within this scop
    budgets. Keep artifact identity distinct from contextual node-use identity.
    The incomplete manifest, isolated catalog and contract evidence are recorded in
    [the I1 contract slice](standards-first-i1-contract-evidence.md).
-3. Establish an audited protection path with an independent published signature vector,
-   explicit supported proof options, safe context processing and exact method/controller
-   binding. Test type/purpose/options, unauthorized valid keys and unsafe terms separately.
+3. **In progress:** establish an audited protection path with independent published
+   vectors, explicit supported proof options, safe context processing and exact
+   method/controller binding. TypeScript safe canonicalization, unsafe-term rejection
+   and the W3C published combined-hash signature control are complete; Python safe-path
+   parity, a full transform vector and issuer/controller/`assertionMethod` binding remain
+   pending.
 4. **Partially complete:** the immutable byte catalog has bounded resolution,
-   original-byte retention, isolation and distinct missing/mismatch errors. Populate
-   it with the signed slice and bind its observations into the new result contract.
+   original-byte retention, isolation, an offline JSON-LD loader and distinct
+   missing/mismatch errors. Populate it with the signed slice and bind its observations
+   into the new result contract.
 5. Generate a signed fictional RM target and authoritative artifact using safe contexts
    and schemas; extract facts only after protection, preserving native source pointers.
    Pin every used static resource. Leave authority/status/support/conformity as explicitly
