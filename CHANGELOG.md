@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add signed RM v1 fixtures, verification-method authorization, Bitstring status lists
+  and a gate-numbered reliance trace (I1/I2), plus the operational-scope authority route,
+  exact-decimal bounded projection and required study support with its own laboratory
+  authority (I3). Independently discovered grants are declared unsupported. Claim scope
+  and conformity (I4) are pending, so the new evaluator accepts no request yet.
+
 - Add parallel TS/Python reliance request/result contracts, truth-table operators,
   an explicitly incomplete RM v1 manifest, and an isolated exact-byte resource catalog.
 - Add an opt-in safe JSON-LD EdDSA path, an isolated catalog-backed document loader,

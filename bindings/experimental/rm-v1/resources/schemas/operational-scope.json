@@ -14,7 +14,6 @@
     "credentialSchema",
     "credentialSubject",
     "credentialStatus",
-    "termsOfUse",
     "relatedResource"
   ],
   "properties": {
@@ -169,7 +168,7 @@
     "termsOfUse": {
       "type": "array",
       "minItems": 1,
-      "maxItems": 1,
+      "maxItems": 4,
       "items": {
         "type": "object",
         "required": [

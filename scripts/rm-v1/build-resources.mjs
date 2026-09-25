@@ -137,8 +137,8 @@ const schemas = {
   'operational-scope.json': credentialSchema(
     'operational-scope.json', 'RmOperationalScope', 'RM operational scope (O)',
     grantSubject(scopeRecord, [`${ACT}issueRmCertificate`]),
-    { termsOfUse: { type: 'array', minItems: 1, maxItems: 1, items: authorizationPolicy }, relatedResource },
-    ['termsOfUse', 'relatedResource'],
+    { termsOfUse: { type: 'array', minItems: 1, maxItems: 4, items: authorizationPolicy }, relatedResource },
+    ['relatedResource'],
   ),
   'certificate.json': credentialSchema(
     'certificate.json', 'RmCertificate', 'RM certificate (D)',
@@ -155,11 +155,13 @@ const schemas = {
       },
     }),
     {
-      termsOfUse: { type: 'array', minItems: 1, maxItems: 1, items: authorizationPolicy },
+      // Optional here: a missing authority or support reference is decided at gates
+      // 5-6 (not established), not rejected as a structural error.
+      termsOfUse: { type: 'array', minItems: 1, maxItems: 4, items: authorizationPolicy },
       evidence: nonemptySet(studyReference),
       relatedResource,
     },
-    ['termsOfUse', 'evidence', 'relatedResource'],
+    ['relatedResource'],
   ),
   'study.json': credentialSchema(
     'study.json', 'RmStudy', 'RM homogeneity/stability study (S)',
@@ -171,8 +173,8 @@ const schemas = {
       matrixIri: iri,
       outcomeIri: iri,
     }),
-    { termsOfUse: { type: 'array', minItems: 1, maxItems: 1, items: authorizationPolicy }, relatedResource },
-    ['termsOfUse', 'relatedResource'],
+    { termsOfUse: { type: 'array', minItems: 1, maxItems: 4, items: authorizationPolicy }, relatedResource },
+    ['relatedResource'],
   ),
   'lab-authority.json': credentialSchema(
     'lab-authority.json', 'RmLabAuthority', 'Study laboratory authority (H)',

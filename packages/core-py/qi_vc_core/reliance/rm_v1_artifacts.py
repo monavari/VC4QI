@@ -38,6 +38,7 @@ from .key_authorization import KeyAuthorization, authorize_assertion_method
 from .manifest import RM_V1_BINDING_ID, BindingManifest
 from .profile import RelianceProfile
 from .rm_v1 import RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, VC_V2_CONTEXT
+from .rm_v1_authority import NodeFacts, certificate_authority, certificate_support
 from .status_list import StatusOutcome, evaluate_status
 from .types import (
     ArtifactVerificationResult,
@@ -662,17 +663,53 @@ def evaluate_rm_slice(
         catalog.open_session(CatalogBudget(limits.max_resources, limits.max_bytes))
     )
     static = MemoizingResolver(catalog.open_session(STATIC_RESOURCE_BUDGET))
-    target = verify_rm_artifact(
-        request.target_id, session, manifest, request.evaluation_time, static
-    )
-    artifacts = [target] + [
-        verify_rm_artifact(uri, session, manifest, request.evaluation_time, static)
-        for uri in request.supplied_evidence
-        if uri != request.target_id
-    ]
 
     def read(uri: str) -> dict[str, Any]:
         return dict(json.loads(session.resolve(uri).content.decode("utf-8")))
+
+    target = verify_rm_artifact(
+        request.target_id, session, manifest, request.evaluation_time, static
+    )
+    artifacts = [target]
+    depth: dict[str, int] = {request.target_id: 0}
+    for uri in request.supplied_evidence:
+        if uri in depth:
+            continue
+        depth[uri] = 1
+        artifacts.append(
+            verify_rm_artifact(uri, session, manifest, request.evaluation_time, static)
+        )
+    # Follow the chain's own references (termsOfUse, evidence) from protected
+    # credentials, within maxDepth; supplied-but-unreferenced credentials stay inert.
+    index = 0
+    while index < len(artifacts):
+        current = artifacts[index]
+        index += 1
+        at = depth[current.artifact_id]
+        if current.protection.state != "established" or at + 1 > limits.max_depth:
+            continue
+        document = read(current.artifact_id)
+        references: list[str] = []
+        for policy in document.get("termsOfUse") or []:
+            credential = (
+                policy.get("authorizationCredential")
+                if isinstance(policy, dict)
+                else None
+            )
+            if isinstance(credential, dict) and isinstance(credential.get("id"), str):
+                references.append(credential["id"])
+        for evidence in document.get("evidence") or []:
+            if isinstance(evidence, dict) and isinstance(evidence.get("id"), str):
+                references.append(evidence["id"])
+        for uri in references:
+            if uri in depth:
+                continue
+            depth[uri] = at + 1
+            artifacts.append(
+                verify_rm_artifact(
+                    uri, session, manifest, request.evaluation_time, static
+                )
+            )
 
     # Gate 1 identity: a protected artifact must identify itself by the identity it
     # was resolved under (P11).
@@ -702,12 +739,12 @@ def evaluate_rm_slice(
     # Gate 3 status: each status list is verified once as an artifact in its own right.
     lists: dict[str, RmArtifactVerification] = {}
     status: dict[str, StatusOutcome | None] = {}
-    for index, artifact in enumerate(artifacts):
+    for artifact in artifacts:
         if artifact.protection.state != "established":
             status[artifact.artifact_id] = None
             continue
-        # The target is depth 0 and supplied evidence depth 1; its list is one deeper.
-        list_depth = (0 if index == 0 else 1) + 1
+        # A status list is one level deeper than the credential that names it.
+        list_depth = depth[artifact.artifact_id] + 1
         if list_depth > limits.max_depth:
             status[artifact.artifact_id] = StatusOutcome(
                 "not_established",
@@ -799,11 +836,44 @@ def evaluate_rm_slice(
             for check in artifact.related_resources
         )
 
-    target_document: Any = None
-    if target.protection.state == "established":
-        target_document = json.loads(
-            session.resolve(request.target_id).content.decode("utf-8")
+    # Gates 5-6: only credentials usable after gates 0-3 contribute facts.
+    facts: dict[str, NodeFacts] = {}
+    for artifact in artifacts:
+        checked_identity = identity[artifact.artifact_id]
+        outcome = status[artifact.artifact_id]
+        parts: list[tuple[str, SemanticState, str]] = [
+            (
+                "protection",
+                artifact.protection.state,
+                " ".join(artifact.protection.reasons),
+            ),
+            (
+                "identity",
+                checked_identity.state if checked_identity else "not_established",
+                " ".join(checked_identity.reasons)
+                if checked_identity
+                else "not evaluated",
+            ),
+            ("validity", artifact.validity.state, " ".join(artifact.validity.reasons)),
+            (
+                "status",
+                outcome.state if outcome else "not_established",
+                outcome.reason if outcome else "not evaluated",
+            ),
+        ]
+        usable = semantic_and(tuple(p[1] for p in parts))
+        facts[artifact.artifact_id] = NodeFacts(
+            uri=artifact.artifact_id,
+            usable=usable,
+            reason="; ".join(f"{p[0]}: {p[2]}" for p in parts if p[1] != "established")
+            or "usable",
+            document=read(artifact.artifact_id) if usable == "established" else None,
         )
+    authority = certificate_authority(facts[request.target_id], facts.get, profile)
+    supported = certificate_support(facts[request.target_id], facts.get, profile)
+    winner = next((r for r in authority.routes if r.state == "established"), None)
+
+    target_document = facts[request.target_id].document
     authorization: list[ClaimAuthorizationResult] = []
     for claim in request.selected_claims:
         in_target = (
@@ -811,45 +881,50 @@ def evaluate_rm_slice(
             and _selected_result(claim.source_pointer)
             and resolve_pointer(target_document, claim.source_pointer) is not _MISSING
         )
-        if in_target:
-            base = _not_run(
-                "Claim authorization (routes, scope, principal binding) "
-                "is implemented in I3/I4."
+        if not in_target:
+            reason = (
+                "The target is not usable, so its claims are not read."
+                if target_document is None
+                else f"Selected claim {claim.source_pointer} is not a result "
+                "in the usable target."
             )
-        elif target_document is None:
-            base = _predicate(
-                "not_established",
-                ("The target is not protected, so its claims are not read.",),
+            authorization.append(
+                ClaimAuthorizationResult(
+                    state="not_established",
+                    execution="executed",
+                    reasons=(reason,),
+                    source_pointers=(),
+                    claim_id=claim.id,
+                    route_witness_ids=(),
+                )
             )
-        else:
-            base = _predicate(
-                "not_established",
-                (
-                    f"Selected claim {claim.source_pointer} is not a result "
-                    "in the protected target.",
-                ),
-            )
+            continue
+        # Claim scope coverage is I4; until then a route never establishes the claim.
         authorization.append(
             ClaimAuthorizationResult(
-                state=base.state,
-                execution=base.execution,
-                reasons=base.reasons,
-                source_pointers=base.source_pointers,
+                state="contradicted"
+                if authority.state == "contradicted"
+                else "not_established",
+                execution="executed",
+                reasons=(
+                    authority.reason,
+                    "Claim scope coverage is implemented in I4.",
+                ),
+                source_pointers=(claim.source_pointer,),
                 claim_id=claim.id,
-                route_witness_ids=(),
+                route_witness_ids=(f"route:{winner.id}", *winner.chain)
+                if winner
+                else (),
             )
         )
-    support_base = _not_run(
-        "Required-study support and laboratory authority are implemented in I3."
-    )
     support = (
         SupportResult(
-            state=support_base.state,
-            execution=support_base.execution,
-            reasons=support_base.reasons,
-            source_pointers=(),
+            state=supported.state,
+            execution="executed",
+            reasons=(supported.reason,),
+            source_pointers=("/evidence",),
             obligation_id="rm-v1:required-study",
-            witness_ids=(),
+            witness_ids=supported.chain if supported.state == "established" else (),
         ),
     )
     conformity: ConformityResult
@@ -972,6 +1047,55 @@ def evaluate_rm_slice(
                 claim_result.source_pointers,
             )
         )
+    for restriction in authority.restrictions:
+        trace.append(
+            TraceEntry(
+                5,
+                target_use,
+                restriction.id,
+                restriction.state,
+                "executed",
+                restriction.reason,
+                restriction.sources,
+            )
+        )
+    for route in authority.routes:
+        if route.execution == "not_run":
+            trace.append(
+                TraceEntry(
+                    5,
+                    target_use,
+                    f"route:{route.id}",
+                    "not_established",
+                    "not_run",
+                    "Not evaluated: the route budget was exhausted.",
+                    (),
+                )
+            )
+        for basis in route.bases:
+            trace.append(
+                TraceEntry(
+                    5,
+                    target_use,
+                    f"route:{route.id}:{basis.id}",
+                    basis.state,
+                    "executed",
+                    basis.reason,
+                    basis.sources,
+                )
+            )
+    for basis in supported.bases:
+        trace.append(
+            TraceEntry(
+                6,
+                target_use,
+                f"support:{basis.id}",
+                basis.state,
+                "executed",
+                basis.reason,
+                basis.sources,
+            )
+        )
     for obligation in support:
         trace.append(
             TraceEntry(
@@ -1011,8 +1135,8 @@ def evaluate_rm_slice(
             trace=tuple(trace),
             resources=tuple(resources),
             limitations=(
-                "Authorization, support and conformity are not implemented yet "
-                "and never establish reliance.",
+                "Claim scope coverage and conformity are implemented in I4; "
+                "until then no request is accepted.",
                 "Python rejects undefined terms/types via a sentinel @vocab, "
                 "not full JSON-LD safe mode.",
             ),
