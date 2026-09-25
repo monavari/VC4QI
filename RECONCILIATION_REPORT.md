@@ -1135,3 +1135,22 @@ Results: TS 283 passed, 9 failed (the same network-fetching legacy tests as abov
 Python 239 passed, 1 existing skip; TS lint exit 0; Ruff and mypy on the reliance
 package and new tests pass. This establishes the authorization rule only: no signed
 artifact uses it yet, and no acceptance-ledger case is marked passing.
+
+## Standards-first I1 signed vertical slice — 25 September 2026
+
+Added `packages/core-ts/scripts/generate-rm-v1-artifacts.ts`, which writes fictional
+controller documents and signed A, H, O, S and D178 under
+`bindings/experimental/rm-v1/test-vectors/signed/` with an exact-byte SHA-384 index.
+Keys derive from public seeds (insecure fixtures); proofs use safe-mode canonicalization
+with the pinned catalog; `relatedResource` digests cover exact referenced bytes. The
+generator lives in the core package because pnpm isolation hides core dependencies from
+root scripts. Added `reliance/rm-v1-artifacts.ts` (`verifyRmArtifact`,
+`evaluateRmSlice`), exported by package subpath only. Details, state rules, the twelve
+negative controls and limits are in
+`docs/plans/standards-first-i1-signed-slice-evidence.md`.
+
+Results: `pnpm -C packages/core-ts test` 302 passed, 9 failed (the same network-fetching
+legacy tests); the 19 new slice tests pass. `pnpm -r build`, TS lint, scenarios and
+schema validation exit 0. The manifest's pending resources are now only the status list;
+it remains `incomplete`. No acceptance-ledger case is marked passing: the new controls
+are I1 protection evidence, not V/P/S/C/E witnesses.
