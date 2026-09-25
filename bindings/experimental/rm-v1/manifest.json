@@ -10,7 +10,7 @@
   },
   "installation": {
     "status": "incomplete",
-    "reason": "Contexts and schemas are pinned in catalog.json; controller documents and signed A/H/O/S/D178 fixtures are pinned in test-vectors/signed/catalog.json and verify in TypeScript. Status resources, Python safe-mode protection parity and the I2-I4 evaluators are still required before selection.",
+    "reason": "Contexts and schemas are pinned in catalog.json; controller documents and signed A/H/O/S/D178 fixtures are pinned in test-vectors/signed/catalog.json and verify in TypeScript and Python. Status resources, a full independent transformation vector and the I2-I4 evaluators are still required before selection.",
     "pendingResources": [
       "https://producer.vc4qi.example/status/1"
     ]
