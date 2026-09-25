@@ -1,0 +1,821 @@
+{
+  "description": "Shared unsigned regression vectors for RM v1 verification-method authorization. The key must be listed in the issuer's own controller document, be a Multikey Ed25519 key controlled by the issuer, and be referenced from assertionMethod. Keys are insecure fictional fixtures derived from public seeds.",
+  "mediaType": "application/json",
+  "cases": [
+    {
+      "id": "KA-01",
+      "description": "Issuer's own key listed for assertionMethod",
+      "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        },
+        {
+          "uri": "https://nab.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://nab.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://nab.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://nab.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkpUmf1eA7Ge6yJdfDkRyADs7yQ86SEw5Gi2uzm2MuDuEc"
+              }
+            ],
+            "assertionMethod": [
+              "https://nab.vc4qi.example/controller#key-1"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "established",
+        "code": "AUTHORIZED"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-02",
+      "description": "Issuer given as an object with id",
+      "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        },
+        {
+          "uri": "https://nab.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://nab.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://nab.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://nab.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkpUmf1eA7Ge6yJdfDkRyADs7yQ86SEw5Gi2uzm2MuDuEc"
+              }
+            ],
+            "assertionMethod": [
+              "https://nab.vc4qi.example/controller#key-1"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "established",
+        "code": "AUTHORIZED"
+      },
+      "issuer": {
+        "id": "https://producer.vc4qi.example/controller"
+      }
+    },
+    {
+      "id": "KA-03",
+      "description": "Credential has no issuer identifier",
+      "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        },
+        {
+          "uri": "https://nab.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://nab.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://nab.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://nab.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkpUmf1eA7Ge6yJdfDkRyADs7yQ86SEw5Gi2uzm2MuDuEc"
+              }
+            ],
+            "assertionMethod": [
+              "https://nab.vc4qi.example/controller#key-1"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "not_established",
+        "code": "ISSUER_MISSING"
+      }
+    },
+    {
+      "id": "KA-04",
+      "description": "Relative verification method reference",
+      "verificationMethod": "#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        },
+        {
+          "uri": "https://nab.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://nab.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://nab.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://nab.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkpUmf1eA7Ge6yJdfDkRyADs7yQ86SEw5Gi2uzm2MuDuEc"
+              }
+            ],
+            "assertionMethod": [
+              "https://nab.vc4qi.example/controller#key-1"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "contradicted",
+        "code": "MALFORMED_METHOD"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-05",
+      "description": "Verification method without a fragment",
+      "verificationMethod": "https://producer.vc4qi.example/controller",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        },
+        {
+          "uri": "https://nab.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://nab.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://nab.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://nab.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkpUmf1eA7Ge6yJdfDkRyADs7yQ86SEw5Gi2uzm2MuDuEc"
+              }
+            ],
+            "assertionMethod": [
+              "https://nab.vc4qi.example/controller#key-1"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "contradicted",
+        "code": "MALFORMED_METHOD"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-06",
+      "description": "Valid key of another controller (NAB) used for a producer credential",
+      "verificationMethod": "https://nab.vc4qi.example/controller#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        },
+        {
+          "uri": "https://nab.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://nab.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://nab.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://nab.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkpUmf1eA7Ge6yJdfDkRyADs7yQ86SEw5Gi2uzm2MuDuEc"
+              }
+            ],
+            "assertionMethod": [
+              "https://nab.vc4qi.example/controller#key-1"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "contradicted",
+        "code": "NOT_ISSUER_CONTROLLER"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-07",
+      "description": "Controller document not installed",
+      "verificationMethod": "https://lab.vc4qi.example/controller#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        },
+        {
+          "uri": "https://nab.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://nab.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://nab.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://nab.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkpUmf1eA7Ge6yJdfDkRyADs7yQ86SEw5Gi2uzm2MuDuEc"
+              }
+            ],
+            "assertionMethod": [
+              "https://nab.vc4qi.example/controller#key-1"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "not_established",
+        "code": "CONTROLLER_NOT_INSTALLED"
+      },
+      "issuer": "https://lab.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-08",
+      "description": "Controller document id differs from its URL",
+      "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller/other",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "contradicted",
+        "code": "CONTROLLER_ID_MISMATCH"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-09",
+      "description": "Named method absent from the controller document",
+      "verificationMethod": "https://producer.vc4qi.example/controller#key-9",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        },
+        {
+          "uri": "https://nab.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://nab.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://nab.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://nab.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkpUmf1eA7Ge6yJdfDkRyADs7yQ86SEw5Gi2uzm2MuDuEc"
+              }
+            ],
+            "assertionMethod": [
+              "https://nab.vc4qi.example/controller#key-1"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "contradicted",
+        "code": "METHOD_NOT_FOUND"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-10",
+      "description": "Key listed only for authentication, not assertionMethod",
+      "verificationMethod": "https://producer.vc4qi.example/controller#key-auth",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        },
+        {
+          "uri": "https://nab.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://nab.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://nab.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://nab.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkpUmf1eA7Ge6yJdfDkRyADs7yQ86SEw5Gi2uzm2MuDuEc"
+              }
+            ],
+            "assertionMethod": [
+              "https://nab.vc4qi.example/controller#key-1"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "contradicted",
+        "code": "NOT_ASSERTION_METHOD"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-11",
+      "description": "Unsupported verification method type",
+      "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Ed25519VerificationKey2020",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "not_established",
+        "code": "METHOD_TYPE_UNSUPPORTED"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-12",
+      "description": "Method's controller is another party",
+      "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://nab.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "contradicted",
+        "code": "METHOD_CONTROLLER_MISMATCH"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-13",
+      "description": "Method carries revocation metadata, unsupported in the initial slice",
+      "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq",
+                "revoked": "2026-01-01T00:00:00Z"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "not_established",
+        "code": "METHOD_LIFECYCLE_UNSUPPORTED"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-14",
+      "description": "Public key is not an Ed25519 multikey",
+      "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "zDnaerDaTF5BXEavCrfRZEk316dpbLsfPDZ3WJ5hRTPFU2169"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "contradicted",
+        "code": "INVALID_PUBLIC_KEY"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-15",
+      "description": "Two methods share the named id",
+      "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              }
+            ],
+            "assertionMethod": [
+              "https://producer.vc4qi.example/controller#key-1"
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "contradicted",
+        "code": "METHOD_AMBIGUOUS"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-16",
+      "description": "assertionMethod embeds the method instead of referencing it",
+      "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "content": {
+            "@context": "https://www.w3.org/ns/cid/v1",
+            "id": "https://producer.vc4qi.example/controller",
+            "verificationMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              },
+              {
+                "id": "https://producer.vc4qi.example/controller#key-auth",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkqZxz4bUcFudSyyeSJEvWmuNZTJYYtvuRTWcJ5rE352Bs"
+              }
+            ],
+            "assertionMethod": [
+              {
+                "id": "https://producer.vc4qi.example/controller#key-1",
+                "type": "Multikey",
+                "controller": "https://producer.vc4qi.example/controller",
+                "publicKeyMultibase": "z6MkrnrMDqELd6X47F2jVotBjgtnSu8FNZDgVpRsxnZeX8Kq"
+              }
+            ],
+            "authentication": [
+              "https://producer.vc4qi.example/controller#key-auth"
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "state": "not_established",
+        "code": "EMBEDDED_METHOD_UNSUPPORTED"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    },
+    {
+      "id": "KA-17",
+      "description": "Controller document is not valid JSON",
+      "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
+      "documents": [
+        {
+          "uri": "https://producer.vc4qi.example/controller",
+          "contentUtf8": "{\"id\": "
+        }
+      ],
+      "expected": {
+        "state": "not_established",
+        "code": "INVALID_CONTROLLER_DOCUMENT"
+      },
+      "issuer": "https://producer.vc4qi.example/controller"
+    }
+  ]
+}

@@ -28,8 +28,12 @@ def test_changed_pinned_bytes_fail_installation() -> None:
     resources = read_pinned_resources(RM_V1_DIRECTORY / "catalog.json")
     first = resources[0]
     tampered = StaticResource(
-        uri=first.uri, media_type=first.media_type, content=first.content + b" ",
-        digest_sri=first.digest_sri, origin=first.origin, version=first.version,
+        uri=first.uri,
+        media_type=first.media_type,
+        content=first.content + b" ",
+        digest_sri=first.digest_sri,
+        origin=first.origin,
+        version=first.version,
     )
     with pytest.raises(CatalogError) as caught:
         StaticResourceCatalog([tampered, *resources[1:]])
@@ -38,11 +42,22 @@ def test_changed_pinned_bytes_fail_installation() -> None:
 
 def test_index_paths_cannot_escape_the_repository(tmp_path: Path) -> None:
     index = tmp_path / "catalog.json"
-    index.write_text(json.dumps({"resources": [{
-        "uri": "https://vc4qi.example/x", "path": "../outside.json",
-        "mediaType": "application/json", "origin": "test", "version": "1",
-        "digestSRI": "sha384-x",
-    }]}))
+    index.write_text(
+        json.dumps(
+            {
+                "resources": [
+                    {
+                        "uri": "https://vc4qi.example/x",
+                        "path": "../outside.json",
+                        "mediaType": "application/json",
+                        "origin": "test",
+                        "version": "1",
+                        "digestSRI": "sha384-x",
+                    }
+                ]
+            }
+        )
+    )
     with pytest.raises(TypeError):
         read_pinned_resources(index)
 
