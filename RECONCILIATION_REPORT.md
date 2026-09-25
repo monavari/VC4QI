@@ -1274,3 +1274,28 @@ no trust registry. The ledger command exits 0 (63 TS, 58 Python tests). Full res
 TS 331 passed plus the 9 network-only failures; Python 287 passed, 1 skip; Ruff 204 and
 mypy 198 unchanged; build, lint, scenarios, schemas, generator checks and the poster
 bundle pass. See `docs/plans/standards-first-i2-evidence.md`.
+
+## Standards-first I3 step 1: authority routes and required support — 25 September 2026
+
+Gate 5 evaluates the operational-scope route of the RM chain (D ← O ← A ← anchor) with
+nine bases, including principal binding, the accreditation's maintenance/projection
+permission and a bounded projection. The projection compares scope records by exact
+decimal arithmetic across mg/kg and kg/kg, each child inside one complete parent record.
+Complete routes compose as AND within, OR between, restrictions outside; a search cut
+by `maxRoutes` is `not_established`, never a disproof. Gate 6 evaluates the required
+study (batch, property, matrix, outcome, timing) and its own laboratory authority H.
+The evaluator follows only `termsOfUse` and `evidence` references. The profile gained
+an `authority` section. `termsOfUse`/`evidence` became optional in three schemas so
+missing references are evaluated. Resources were regenerated; signed fixtures are
+unchanged. With the owner's agreement, independently discovered grants are declared
+unsupported in the manifest (V08). Both languages; tests re-issue mutated chains so
+integrity failures cannot mask authority results.
+
+Ledger: V04, V05, V07, P06, C08–C11 and C16 `passing` (ledger command exits 0: 62 TS,
+60 Python tests); V08 `excluded_unsupported`; C01–C05 and C07 keep `not_implemented`
+with unit-level composition evidence until a signed second route exists. Full results:
+TS 353 passed plus the 9 network-only legacy failures; Python 306 passed, 1 skip; Ruff
+204 and mypy 198 unchanged; build, lint, scenarios, schemas, generator checks and the
+poster bundle pass (the bundle changes only by the regenerated schemas and manifest).
+Open: second signed route, restriction evaluators, C12–C15, V06. See
+`docs/plans/standards-first-i3-evidence.md`.

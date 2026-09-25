@@ -11,6 +11,9 @@ import {
   nodeUseKey, notRun, predicate, PROTECTION_CHECK_GATES, resolvePointer, verifyRmArtifact,
   type RmArtifactVerification,
 } from './rm-v1-artifacts.js';
+import {
+  certificateAuthority, certificateSupport, type NodeFacts,
+} from './rm-v1-authority.js';
 import { evaluateStatus, type StatusOutcome } from './status-list.js';
 import type {
   ArtifactVerificationResult, RelianceRequest, RelianceResult, ResourceObservation, SemanticState,
@@ -55,17 +58,37 @@ export async function evaluateRmSlice(
   }));
   const staticResolver = memoizingResolver(catalog.openSession(STATIC_RESOURCE_BUDGET));
   const options = { manifest, evaluationTime: request.evaluationTime, staticResolver };
+  const read = (uri: string) => JSON.parse(new TextDecoder().decode(session.resolve(uri).bytes)) as Record<string, unknown>;
   const target = await verifyRmArtifact(request.targetId, session, options);
-  const evidence: RmArtifactVerification[] = [];
+  const artifacts: RmArtifactVerification[] = [target];
+  const depth = new Map<string, number>([[request.targetId, 0]]);
   for (const uri of request.suppliedEvidence) {
-    if (uri !== request.targetId) evidence.push(await verifyRmArtifact(uri, session, options));
+    if (depth.has(uri)) continue;
+    depth.set(uri, 1);
+    artifacts.push(await verifyRmArtifact(uri, session, options));
   }
-  const artifacts = [target, ...evidence];
+  // Follow the chain's own references (termsOfUse, evidence) from protected
+  // credentials, within maxDepth; supplied-but-unreferenced credentials stay inert.
+  for (let index = 0; index < artifacts.length; index++) {
+    const artifact = artifacts[index]!;
+    const at = depth.get(artifact.artifactId)!;
+    if (artifact.protection.state !== 'established' || at + 1 > request.resolverLimits.maxDepth) continue;
+    const document = read(artifact.artifactId);
+    const references = [
+      ...(Array.isArray(document.termsOfUse) ? document.termsOfUse : [])
+        .map(p => (p as { authorizationCredential?: { id?: unknown } })?.authorizationCredential?.id),
+      ...(Array.isArray(document.evidence) ? document.evidence : []).map(e => (e as { id?: unknown })?.id),
+    ].filter((uri): uri is string => typeof uri === 'string');
+    for (const uri of references) {
+      if (depth.has(uri)) continue;
+      depth.set(uri, at + 1);
+      artifacts.push(await verifyRmArtifact(uri, session, options));
+    }
+  }
 
   // Gate 3 status: each status list is verified once as an artifact in its own right.
   const lists = new Map<string, RmArtifactVerification>();
   const status = new Map<string, StatusOutcome | undefined>();
-  const read = (uri: string) => JSON.parse(new TextDecoder().decode(session.resolve(uri).bytes)) as Record<string, unknown>;
   // Gate 1 identity: a protected artifact must identify itself by the identity it was
   // resolved under (P11); conflicting content under one identity cannot be installed.
   const identity = new Map<string, ReturnType<typeof predicate> | undefined>();
@@ -77,11 +100,11 @@ export async function evaluateRmSlice(
       : predicate('contradicted', [`Artifact resolved as ${artifact.artifactId} identifies itself as ${String(id)}.`], ['/id']));
   }
 
-  for (const [index, artifact] of artifacts.entries()) {
+  for (const artifact of artifacts) {
     if (artifact.protection.state !== 'established') { status.set(artifact.artifactId, undefined); continue; }
     const document = read(artifact.artifactId);
-    // The target is depth 0 and supplied evidence depth 1; its status list is one deeper.
-    const listDepth = (index === 0 ? 0 : 1) + 1;
+    // A status list is one level deeper than the credential that names it.
+    const listDepth = depth.get(artifact.artifactId)! + 1;
     if (listDepth > request.resolverLimits.maxDepth) {
       status.set(artifact.artifactId, { state: 'not_established', sources: ['/credentialStatus'],
         reason: `Status list is at depth ${listDepth}, beyond the request's maxDepth ${request.resolverLimits.maxDepth}.` });
@@ -128,24 +151,50 @@ export async function evaluateRmSlice(
     })),
   ]);
 
-  const targetDocument = target.protection.state === 'established' ? read(request.targetId) as unknown : undefined;
+  // Gates 5-6: only credentials usable after gates 0-3 contribute facts.
+  const facts = new Map<string, NodeFacts>();
+  for (const artifact of artifacts) {
+    const parts: [string, SemanticState, string][] = [
+      ['protection', artifact.protection.state, artifact.protection.reasons.join(' ')],
+      ['identity', identity.get(artifact.artifactId)?.state ?? 'not_established', identity.get(artifact.artifactId)?.reasons.join(' ') ?? 'not evaluated'],
+      ['validity', artifact.validity.state, artifact.validity.reasons.join(' ')],
+      ['status', status.get(artifact.artifactId)?.state ?? 'not_established', status.get(artifact.artifactId)?.reason ?? 'not evaluated'],
+    ];
+    const usable = semanticAnd(parts.map(p => p[1]));
+    facts.set(artifact.artifactId, {
+      uri: artifact.artifactId,
+      usable,
+      reason: parts.filter(p => p[1] !== 'established').map(p => `${p[0]}: ${p[2]}`).join('; ') || 'usable',
+      ...(usable === 'established' ? { document: read(artifact.artifactId) } : {}),
+    });
+  }
+  const lookup = (uri: string) => facts.get(uri);
+  const authority = certificateAuthority(facts.get(request.targetId)!, lookup, profile);
+  const supported = certificateSupport(facts.get(request.targetId)!, lookup, profile);
+  const winner = authority.routes.find(r => r.state === 'established');
+
+  const targetDocument = facts.get(request.targetId)?.document as unknown;
   const authorization = request.selectedClaims.map(claim => {
     const inTarget = targetDocument !== undefined && SELECTED_RESULT.test(claim.sourcePointer)
       && resolvePointer(targetDocument, claim.sourcePointer) !== undefined;
+    if (!inTarget) {
+      return { claimId: claim.id, routeWitnessIds: [], ...predicate('not_established', [targetDocument === undefined
+        ? 'The target is not usable, so its claims are not read.'
+        : `Selected claim ${claim.sourcePointer} is not a result in the usable target.`]) };
+    }
+    // Claim scope coverage (the claimed value inside one record of O) is I4; until
+    // then an established route can never establish the claim.
     return {
       claimId: claim.id,
-      routeWitnessIds: [],
-      ...(inTarget
-        ? notRun('Claim authorization (routes, scope, principal binding) is implemented in I3/I4.')
-        : predicate('not_established', [targetDocument === undefined
-          ? 'The target is not protected, so its claims are not read.'
-          : `Selected claim ${claim.sourcePointer} is not a result in the protected target.`])),
+      routeWitnessIds: winner ? [`route:${winner.id}`, ...winner.chain] : [],
+      ...predicate(authority.state === 'contradicted' ? 'contradicted' : 'not_established',
+        [authority.reason, 'Claim scope coverage is implemented in I4.'], [claim.sourcePointer]),
     };
   });
   const support = [{
     obligationId: 'rm-v1:required-study',
-    witnessIds: [],
-    ...notRun('Required-study support and laboratory authority are implemented in I3.'),
+    witnessIds: supported.state === 'established' ? [...supported.chain] : [],
+    ...predicate(supported.state, [supported.reason], ['/evidence']),
   }];
   const conformity = request.conformity
     ? { requested: true as const, ...request.conformity, ...notRun('Conformity is implemented in I4.') }
@@ -202,6 +251,24 @@ export async function evaluateRmSlice(
     trace.push({ gate: 5, nodeUse: targetUse, predicate: `claim-authorization:${claim.claimId}`,
       state: claim.state, execution: claim.execution, reason: claim.reasons.join(' '), sources: [...claim.sourcePointers] });
   }
+  for (const restriction of authority.restrictions) {
+    trace.push({ gate: 5, nodeUse: targetUse, predicate: restriction.id, state: restriction.state,
+      execution: 'executed', reason: restriction.reason, sources: [...restriction.sources] });
+  }
+  for (const route of authority.routes) {
+    if (route.execution === 'not_run') {
+      trace.push({ gate: 5, nodeUse: targetUse, predicate: `route:${route.id}`, state: 'not_established',
+        execution: 'not_run', reason: 'Not evaluated: the route budget was exhausted.', sources: [] });
+    }
+    for (const basis of route.bases) {
+      trace.push({ gate: 5, nodeUse: targetUse, predicate: `route:${route.id}:${basis.id}`, state: basis.state,
+        execution: 'executed', reason: basis.reason, sources: [...basis.sources] });
+    }
+  }
+  for (const basis of supported.bases) {
+    trace.push({ gate: 6, nodeUse: targetUse, predicate: `support:${basis.id}`, state: basis.state,
+      execution: 'executed', reason: basis.reason, sources: [...basis.sources] });
+  }
   for (const obligation of support) {
     trace.push({ gate: 6, nodeUse: targetUse, predicate: obligation.obligationId, state: obligation.state,
       execution: obligation.execution, reason: obligation.reasons.join(' '), sources: [] });
@@ -224,7 +291,7 @@ export async function evaluateRmSlice(
     trace,
     resources,
     limitations: [
-      'Authorization, support and conformity are not implemented yet and never establish reliance.',
+      'Claim scope coverage and conformity are implemented in I4; until then no request is accepted.',
     ],
   });
   return Object.freeze({ result, artifacts: Object.freeze(artifacts) });
