@@ -14,7 +14,7 @@ import {
 import {
   certificateAuthority, certificateSupport, type NodeFacts,
 } from './rm-v1-authority.js';
-import { evaluateStatus, type StatusOutcome } from './status-list.js';
+import { evaluateStatus, selectStatusEntry, type StatusOutcome, type StatusPolicy } from './status-list.js';
 import type {
   ArtifactVerificationResult, RelianceRequest, RelianceResult, ResourceObservation, SemanticState,
   TraceEntry,
@@ -100,17 +100,14 @@ export async function evaluateRmSlice(
       : predicate('contradicted', [`Artifact resolved as ${artifact.artifactId} identifies itself as ${String(id)}.`], ['/id']));
   }
 
-  for (const artifact of artifacts) {
-    if (artifact.protection.state !== 'established') { status.set(artifact.artifactId, undefined); continue; }
-    const document = read(artifact.artifactId);
+  const statusFor = async (artifactId: string, document: Record<string, unknown>, policy: StatusPolicy): Promise<StatusOutcome> => {
     // A status list is one level deeper than the credential that names it.
-    const listDepth = depth.get(artifact.artifactId)! + 1;
+    const listDepth = depth.get(artifactId)! + 1;
     if (listDepth > request.resolverLimits.maxDepth) {
-      status.set(artifact.artifactId, { state: 'not_established', sources: ['/credentialStatus'],
-        reason: `Status list is at depth ${listDepth}, beyond the request's maxDepth ${request.resolverLimits.maxDepth}.` });
-      continue;
+      return { state: 'not_established', sources: ['/credentialStatus'],
+        reason: `Status list is at depth ${listDepth}, beyond the request's maxDepth ${request.resolverLimits.maxDepth}.` };
     }
-    const entry = document.credentialStatus as { statusListCredential?: unknown } | undefined;
+    const entry = selectStatusEntry(document, policy.purposes).entry;
     const listUri = typeof entry?.statusListCredential === 'string' ? entry.statusListCredential : undefined;
     let list: Record<string, unknown> | undefined;
     let listState: SemanticState = 'not_established';
@@ -126,13 +123,24 @@ export async function evaluateRmSlice(
         listState = listResult.protection.state;
       }
     }
-    status.set(artifact.artifactId,
-      evaluateStatus(document, list, listState, profile.credentialStatus, request.evaluationTime));
+    return evaluateStatus(document, list, listState, policy, request.evaluationTime);
+  };
+  // Suspension entries are not a gate-3 property of the credential: they are read
+  // only by the profile's global restriction (gate 5), which applies to every route.
+  const suspensionPolicy: StatusPolicy = { required: true, purposes: ['suspension'], maxAgeSeconds: profile.credentialStatus.maxAgeSeconds };
+  const suspension = new Map<string, StatusOutcome>();
+  for (const artifact of artifacts) {
+    if (artifact.protection.state !== 'established') { status.set(artifact.artifactId, undefined); continue; }
+    const document = read(artifact.artifactId);
+    status.set(artifact.artifactId, await statusFor(artifact.artifactId, document, profile.credentialStatus));
+    if (selectStatusEntry(document, ['suspension']).entry !== undefined) {
+      suspension.set(artifact.artifactId, await statusFor(artifact.artifactId, document, suspensionPolicy));
+    }
   }
 
   // Per artifact: protection, validity, and the integrity of each relatedResource it
   // names. A digest mismatch contradicts; an unavailable reference is not established.
-  const artifactVerification: ArtifactVerificationResult[] = artifacts.flatMap(artifact => [
+  const verificationOf = (artifact: RmArtifactVerification): ArtifactVerificationResult[] => [
     artifact.protection,
     identity.get(artifact.artifactId)
       ? { artifactId: artifact.artifactId, ...identity.get(artifact.artifactId)!,
@@ -149,7 +157,8 @@ export async function evaluateRmSlice(
       artifactId: check.id,
       ...predicate(check.state, [`integrity (from ${artifact.artifactId}): ${check.reason}`], ['/relatedResource']),
     })),
-  ]);
+  ];
+  const artifactVerification = artifacts.flatMap(verificationOf);
 
   // Gates 5-6: only credentials usable after gates 0-3 contribute facts.
   const facts = new Map<string, NodeFacts>();
@@ -161,11 +170,13 @@ export async function evaluateRmSlice(
       ['status', status.get(artifact.artifactId)?.state ?? 'not_established', status.get(artifact.artifactId)?.reason ?? 'not evaluated'],
     ];
     const usable = semanticAnd(parts.map(p => p[1]));
+    const suspended = suspension.get(artifact.artifactId);
     facts.set(artifact.artifactId, {
       uri: artifact.artifactId,
       usable,
       reason: parts.filter(p => p[1] !== 'established').map(p => `${p[0]}: ${p[2]}`).join('; ') || 'usable',
       ...(usable === 'established' ? { document: read(artifact.artifactId) } : {}),
+      ...(suspended ? { suspension: { state: suspended.state, reason: suspended.reason } } : {}),
     });
   }
   const lookup = (uri: string) => facts.get(uri);
@@ -200,8 +211,14 @@ export async function evaluateRmSlice(
     ? { requested: true as const, ...request.conformity, ...notRun('Conformity is implemented in I4.') }
     : { requested: false as const, execution: 'not_run' as const };
 
+  // Only the target and the credentials on the selected witness paths decide the
+  // request; a failed credential on an unused alternative is diagnostic (C03, C07).
+  // Failures on those alternatives still reach the decision through the route and
+  // support states when no complete route or support is established.
+  const decisive = new Set<string>([request.targetId, ...(winner?.chain ?? []),
+    ...(supported.state === 'established' ? supported.chain : [])]);
   const required: SemanticState[] = [
-    ...artifactVerification.map(result => result.state),
+    ...artifacts.filter(a => decisive.has(a.artifactId)).flatMap(verificationOf).map(result => result.state),
     ...authorization.map(result => result.state),
     ...support.map(result => result.state),
     ...(conformity.requested ? [conformity.state] : []),
@@ -255,11 +272,14 @@ export async function evaluateRmSlice(
     trace.push({ gate: 5, nodeUse: targetUse, predicate: restriction.id, state: restriction.state,
       execution: 'executed', reason: restriction.reason, sources: [...restriction.sources] });
   }
+  trace.push({ gate: 5, nodeUse: targetUse, predicate: 'authority', state: authority.state, execution: 'executed',
+    reason: authority.reason, sources: winner ? [...winner.chain] : [] });
   for (const route of authority.routes) {
-    if (route.execution === 'not_run') {
-      trace.push({ gate: 5, nodeUse: targetUse, predicate: `route:${route.id}`, state: 'not_established',
-        execution: 'not_run', reason: 'Not evaluated: the route budget was exhausted.', sources: [] });
-    }
+    trace.push(route.execution === 'not_run'
+      ? { gate: 5, nodeUse: targetUse, predicate: `route:${route.id}`, state: 'not_established',
+        execution: 'not_run', reason: 'Not evaluated: the route budget was exhausted.', sources: [] }
+      : { gate: 5, nodeUse: targetUse, predicate: `route:${route.id}`, state: route.state,
+        execution: 'executed', reason: `Route ${route.id} is ${route.state}.`, sources: [...route.chain] });
     for (const basis of route.bases) {
       trace.push({ gate: 5, nodeUse: targetUse, predicate: `route:${route.id}:${basis.id}`, state: basis.state,
         execution: 'executed', reason: basis.reason, sources: [...basis.sources] });
@@ -292,6 +312,7 @@ export async function evaluateRmSlice(
     resources,
     limitations: [
       'Claim scope coverage and conformity are implemented in I4; until then no request is accepted.',
+      'Verification failures of credentials outside the selected route and support chains are reported but do not decide the request.',
     ],
   });
   return Object.freeze({ result, artifacts: Object.freeze(artifacts) });

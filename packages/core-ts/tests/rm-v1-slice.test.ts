@@ -178,7 +178,8 @@ describe('RM v1 signed vertical slice (I1)', () => {
         expect(statusOf(result, uri), uri).toMatchObject({ gate: 3, state: 'established' });
       }
       expect(result.resources.filter(r => r.kind === 'status').map(r => r.uri).sort()).toEqual([
-        'https://lab.vc4qi.example/status/1', 'https://nab.vc4qi.example/status/1', URI.PRODUCER_STATUS]);
+        'https://lab.vc4qi.example/status/1', 'https://nab.vc4qi.example/status/1',
+        'https://nab.vc4qi.example/status/suspension/1', URI.PRODUCER_STATUS]);
       expect(result.decision).toBe('not_established');
     });
 

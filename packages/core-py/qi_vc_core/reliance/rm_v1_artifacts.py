@@ -39,7 +39,12 @@ from .manifest import RM_V1_BINDING_ID, BindingManifest
 from .profile import RelianceProfile
 from .rm_v1 import RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, VC_V2_CONTEXT
 from .rm_v1_authority import NodeFacts, certificate_authority, certificate_support
-from .status_list import StatusOutcome, evaluate_status
+from .status_list import (
+    StatusOutcome,
+    StatusPolicy,
+    evaluate_status,
+    select_status_entry,
+)
 from .types import (
     ArtifactVerificationResult,
     ClaimAuthorizationResult,
@@ -739,25 +744,21 @@ def evaluate_rm_slice(
     # Gate 3 status: each status list is verified once as an artifact in its own right.
     lists: dict[str, RmArtifactVerification] = {}
     status: dict[str, StatusOutcome | None] = {}
-    for artifact in artifacts:
-        if artifact.protection.state != "established":
-            status[artifact.artifact_id] = None
-            continue
+
+    def status_for(
+        artifact_id: str, document: dict[str, Any], policy: StatusPolicy
+    ) -> StatusOutcome:
         # A status list is one level deeper than the credential that names it.
-        list_depth = depth[artifact.artifact_id] + 1
+        list_depth = depth[artifact_id] + 1
         if list_depth > limits.max_depth:
-            status[artifact.artifact_id] = StatusOutcome(
+            return StatusOutcome(
                 "not_established",
                 f"Status list is at depth {list_depth}, beyond the request's maxDepth "
                 f"{limits.max_depth}.",
                 ("/credentialStatus",),
             )
-            continue
-        document = read(artifact.artifact_id)
-        entry = document.get("credentialStatus")
-        list_uri = (
-            entry.get("statusListCredential") if isinstance(entry, dict) else None
-        )
+        entry, _ = select_status_entry(document, policy.purposes)
+        list_uri = entry.get("statusListCredential") if entry is not None else None
         status_list: dict[str, Any] | None = None
         list_state: SemanticState = "not_established"
         if isinstance(list_uri, str):
@@ -778,17 +779,33 @@ def evaluate_rm_slice(
                 # Resolved but not protected: its contents are never read.
                 status_list = {}
                 list_state = checked.protection.state
-        status[artifact.artifact_id] = evaluate_status(
-            document,
-            status_list,
-            list_state,
-            profile.credential_status,
-            request.evaluation_time,
+        return evaluate_status(
+            document, status_list, list_state, policy, request.evaluation_time
         )
 
-    verification: list[ArtifactVerificationResult] = []
+    # Suspension entries are not a gate-3 property of the credential: they are read
+    # only by the profile's global restriction (gate 5), which applies to every route.
+    suspension_policy = StatusPolicy(
+        True, ("suspension",), profile.credential_status.max_age_seconds
+    )
+    suspension: dict[str, StatusOutcome] = {}
     for artifact in artifacts:
-        verification.append(artifact.protection)
+        if artifact.protection.state != "established":
+            status[artifact.artifact_id] = None
+            continue
+        document = read(artifact.artifact_id)
+        status[artifact.artifact_id] = status_for(
+            artifact.artifact_id, document, profile.credential_status
+        )
+        if select_status_entry(document, ("suspension",))[0] is not None:
+            suspension[artifact.artifact_id] = status_for(
+                artifact.artifact_id, document, suspension_policy
+            )
+
+    def verification_of(
+        artifact: RmArtifactVerification,
+    ) -> list[ArtifactVerificationResult]:
+        verification: list[ArtifactVerificationResult] = [artifact.protection]
         checked_identity = identity[artifact.artifact_id]
         identity_result = checked_identity or _not_run(
             "Not evaluated because protection is not established."
@@ -835,6 +852,9 @@ def evaluate_rm_slice(
             )
             for check in artifact.related_resources
         )
+        return verification
+
+    verification = [entry for a in artifacts for entry in verification_of(a)]
 
     # Gates 5-6: only credentials usable after gates 0-3 contribute facts.
     facts: dict[str, NodeFacts] = {}
@@ -868,6 +888,14 @@ def evaluate_rm_slice(
             reason="; ".join(f"{p[0]}: {p[2]}" for p in parts if p[1] != "established")
             or "usable",
             document=read(artifact.artifact_id) if usable == "established" else None,
+            suspension=(
+                (
+                    suspension[artifact.artifact_id].state,
+                    suspension[artifact.artifact_id].reason,
+                )
+                if artifact.artifact_id in suspension
+                else None
+            ),
         )
     authority = certificate_authority(facts[request.target_id], facts.get, profile)
     supported = certificate_support(facts[request.target_id], facts.get, profile)
@@ -941,7 +969,19 @@ def evaluate_rm_slice(
     else:
         conformity = ConformityNotRequested()
 
-    required: list[SemanticState] = [r.state for r in verification]
+    # Only the target and the credentials on the selected witness paths decide the
+    # request; a failed credential on an unused alternative is diagnostic (C03, C07).
+    decisive = {
+        request.target_id,
+        *(winner.chain if winner else ()),
+        *(supported.chain if supported.state == "established" else ()),
+    }
+    required: list[SemanticState] = [
+        r.state
+        for a in artifacts
+        if a.artifact_id in decisive
+        for r in verification_of(a)
+    ]
     required += [r.state for r in authorization] + [r.state for r in support]
     if isinstance(conformity, ConformityRequestedResult):
         required.append(conformity.state)
@@ -1059,6 +1099,17 @@ def evaluate_rm_slice(
                 restriction.sources,
             )
         )
+    trace.append(
+        TraceEntry(
+            5,
+            target_use,
+            "authority",
+            authority.state,
+            "executed",
+            authority.reason,
+            winner.chain if winner else (),
+        )
+    )
     for route in authority.routes:
         if route.execution == "not_run":
             trace.append(
@@ -1070,6 +1121,18 @@ def evaluate_rm_slice(
                     "not_run",
                     "Not evaluated: the route budget was exhausted.",
                     (),
+                )
+            )
+        else:
+            trace.append(
+                TraceEntry(
+                    5,
+                    target_use,
+                    f"route:{route.id}",
+                    route.state,
+                    "executed",
+                    f"Route {route.id} is {route.state}.",
+                    route.chain,
                 )
             )
         for basis in route.bases:
@@ -1137,6 +1200,8 @@ def evaluate_rm_slice(
             limitations=(
                 "Claim scope coverage and conformity are implemented in I4; "
                 "until then no request is accepted.",
+                "Verification failures of credentials outside the selected route and "
+                "support chains are reported but do not decide the request.",
                 "Python rejects undefined terms/types via a sentinel @vocab, "
                 "not full JSON-LD safe mode.",
             ),
