@@ -1,0 +1,49 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+    "rm": "https://vc4qi.example/bindings/rm/1#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+
+    "RmAccreditation": "rm:RmAccreditation",
+    "RmOperationalScope": "rm:RmOperationalScope",
+    "RmCertificate": "rm:RmCertificate",
+    "RmStudy": "rm:RmStudy",
+    "RmLabAuthority": "rm:RmLabAuthority",
+    "RmAuthorizationPolicy": "rm:RmAuthorizationPolicy",
+    "RmStudyReference": "rm:RmStudyReference",
+
+    "permittedActivity": {"@id": "rm:permittedActivity", "@type": "@id", "@container": "@set"},
+    "scope": {"@id": "rm:scope", "@container": "@set"},
+    "matrixIri": {"@id": "rm:matrixIri", "@type": "@id"},
+    "formIri": {"@id": "rm:formIri", "@type": "@id"},
+    "allowedPropertyIris": {"@id": "rm:allowedPropertyIris", "@type": "@id", "@container": "@set"},
+    "allowedMethodIris": {"@id": "rm:allowedMethodIris", "@type": "@id", "@container": "@set"},
+    "quantityKindIri": {"@id": "rm:quantityKind", "@type": "@id"},
+    "range": "rm:range",
+    "from": {"@id": "rm:from", "@type": "xsd:decimal"},
+    "to": {"@id": "rm:to", "@type": "xsd:decimal"},
+    "unit": "rm:unit",
+
+    "authorizationCredential": "rm:authorizationCredential",
+    "activityTime": {"@id": "rm:activityTime", "@type": "xsd:dateTime"},
+
+    "materials": {"@id": "rm:materials", "@container": "@list"},
+    "materialPropertiesList": {"@id": "rm:materialPropertiesList", "@container": "@list"},
+    "isCertified": {"@id": "rm:isCertified", "@type": "xsd:boolean"},
+    "results": {"@id": "rm:results", "@container": "@list"},
+    "propertyIri": {"@id": "rm:propertyIri", "@type": "@id"},
+    "methodIri": {"@id": "rm:methodIri", "@type": "@id"},
+    "studyTypeIri": {"@id": "rm:studyTypeIri", "@type": "@id"},
+    "studyTypeIris": {"@id": "rm:studyTypeIris", "@type": "@id", "@container": "@set"},
+    "outcomeIri": {"@id": "rm:outcomeIri", "@type": "@id"},
+    "data": "rm:data",
+    "quantity": "rm:quantity",
+    "quantityKind": {"@id": "rm:quantityKind", "@type": "@id"},
+    "value": {"@id": "rm:value", "@type": "xsd:decimal"},
+    "ucumCode": "rm:ucumCode",
+    "uncertainty": "rm:uncertainty",
+    "expandedUncertainty": {"@id": "rm:expandedUncertainty", "@type": "xsd:decimal"},
+    "coverageFactor": {"@id": "rm:coverageFactor", "@type": "xsd:decimal"}
+  }
+}

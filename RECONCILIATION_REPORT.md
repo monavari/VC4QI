@@ -1088,3 +1088,27 @@ Headless Chromium 1194 at 390 px: 178 accepts (183 ≤ 200), 197 rejects conform
 (202 > 200), 520 rejects scope with conformity not asked, and the tamper toggle rejects
 authenticity with later gates not asked. No network requests or page errors; no
 horizontal overflow in light or dark mode. Pages deployment itself is not yet executed.
+
+## Standards-first I1 pinned RM resources — 25 September 2026
+
+Continuing I1 at the user's request. Added the hand-authored RM v1 context
+(`bindings/experimental/rm-v1/resources/contexts/rm-1.jsonld`) and a generator,
+`scripts/rm-v1/build-resources.mjs`, that emits the seven schemas and `catalog.json`
+(URI, path, media type, origin, version, SHA-384 SRI over exact bytes; `--check` detects
+stale output). Design choices recorded in the binding README: `rm:` prefix because the
+VCDM 2.0 context protects `exp`; decimal strings typed `xsd:decimal` for exact
+quantities; `@list` for `materials`, `materialPropertiesList` and `results` so native
+index pointers are signed. The VCDM 2.0 bytes are the existing vendored copy; they were
+not compared with W3C's published hash here (network to w3.org is blocked).
+
+New `loadRmV1Catalog`/`load_rm_v1_catalog` install the index into the isolated catalog.
+The manifest's pending list now names controller documents, the A/O/D178/S/H artifacts
+and the status list instead of the pinned contexts/schemas; it remains `incomplete`.
+
+Results in this environment: `pnpm -C packages/core-ts test` 265 passed, 9 failed. The
+9 failures are the pre-existing legacy canonicalize/proof tests that fetch
+`https://www.w3.org/ns/credentials/v2` over the network (HTTP 403 from this sandbox's
+proxy); they are unchanged by this work and pass in CI. The 7 new TypeScript tests pass
+offline. Python: 222 passed, 1 existing skip (4 new). TS lint, schema validation and
+scenarios exit 0; focused Ruff and mypy on `qi_vc_core/reliance` pass. No signed fixture
+was changed and no acceptance-ledger case is marked passing.

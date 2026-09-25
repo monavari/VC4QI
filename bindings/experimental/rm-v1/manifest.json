@@ -10,16 +10,17 @@
   },
   "installation": {
     "status": "incomplete",
-    "reason": "The safe context, schemas, signed RM artifacts, controller documents and status resources are I1 pending resources.",
+    "reason": "Contexts and schemas are pinned in catalog.json. Controller documents, the signed RM artifacts and status resources are still pending I1/I2 resources.",
     "pendingResources": [
-      "https://vc4qi.example/contexts/rm/1",
-      "https://vc4qi.example/schemas/rm/1/accreditation.json",
-      "https://vc4qi.example/schemas/rm/1/operational-scope.json",
-      "https://vc4qi.example/schemas/rm/1/certificate.json",
-      "https://vc4qi.example/schemas/rm/1/study.json",
-      "https://vc4qi.example/schemas/rm/1/lab-authority.json",
-      "https://vc4qi.example/schemas/rm/1/authorization-policy.json",
-      "https://vc4qi.example/schemas/rm/1/study-reference.json"
+      "https://nab.vc4qi.example/controller",
+      "https://producer.vc4qi.example/controller",
+      "https://lab.vc4qi.example/controller",
+      "https://nab.vc4qi.example/credentials/A",
+      "https://producer.vc4qi.example/credentials/O",
+      "https://producer.vc4qi.example/credentials/D178",
+      "https://lab.vc4qi.example/credentials/S",
+      "https://nab.vc4qi.example/credentials/H",
+      "https://producer.vc4qi.example/status/1"
     ]
   },
   "carrierAndSchema": {
@@ -46,7 +47,10 @@
       "https://vc4qi.example/schemas/rm/1/authorization-policy.json",
       "https://vc4qi.example/schemas/rm/1/study-reference.json"
     ],
-    "composition": "exact-listed-context-and-schema-combinations-only"
+    "composition": "exact-listed-context-and-schema-combinations-only",
+    "pinnedResourceIndex": "bindings/experimental/rm-v1/catalog.json",
+    "decimalEncoding": "JSON strings typed xsd:decimal for every quantity, bound and uncertainty",
+    "orderedCollections": ["materials", "materialPropertiesList", "results"]
   },
   "factMappings": [
     {"fact": "grantorOrActor", "nativePath": "/issuer", "expandedIri": "https://www.w3.org/2018/credentials#issuer"},
