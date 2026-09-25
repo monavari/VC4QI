@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:poster": "tsc --noEmit -p poster/tsconfig.json && vite build --config vite.poster.config.ts",
+    "typecheck:poster": "tsc --noEmit -p poster/tsconfig.json"
   },
   "dependencies": {
     "@noble/hashes": "^1.8.0",

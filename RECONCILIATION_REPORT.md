@@ -1188,3 +1188,24 @@ exit-gate table. I1 is implemented in both languages; two items stay open becaus
 need network access: comparing the vendored VCDM 2.0 context with W3C's published bytes
 (including whether it declares `@vocab`), and a full independent transformation vector.
 No acceptance-ledger case is marked passing; I2 is next.
+
+## Poster demonstrator harmonized with the RM v1 implementation — 25 September 2026
+
+At the user's request, `site/m375a` no longer uses its own "vc4qi-rm-exp 0.1" fixtures
+(`eddsa-jcs-2022`, `did:web`, `OperativeGrantPolicy`). The generator now also signs
+D197 and D520 (hypothetical reissues; D178 bytes unchanged), and the page embeds the
+repository's pinned resources and signed fixtures at build time
+(`apps/demo-web/vite.poster.config.ts`, `pnpm -C apps/demo-web build:poster` →
+`site/m375a/verifier.js`, 517 kB, 121 kB gzip, byte-reproducible; CI fails if stale).
+Gates 0–3 run the repository's `verifyRmArtifact` in the browser (pinned contexts and
+schemas, controller-document key authorization, safe-mode `eddsa-rdfc-2022`, exact-byte
+digests, validity). Gates 4–6 are a labelled preview (`apps/demo-web/poster/preview-rules.ts`,
+exact decimal arithmetic) of the I3/I4 rules; status is shown as not checked. The page
+uses the handover's gate numbering 0–6 and marks each gate "repository code" or
+"preview".
+
+Headless Chromium 1194 at 390 px: 178 accepted (183 ≤ 200); 197 rejected at gate 6
+(202 > 200); 520 rejected at gate 5 (520 > 500), decision not asked; tamper rejected at
+gate 2 with gates 4–6 not asked. No network requests, no console errors, no horizontal
+overflow in light or dark mode. Slice tests now cover D197/D520: TS 23, Python 24 pass.
+The preview verdict is not I3/I4 evidence and no acceptance-ledger case changes.

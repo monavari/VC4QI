@@ -46,6 +46,8 @@ URI = {
     "O": "https://producer.vc4qi.example/credentials/O",
     "S": "https://lab.vc4qi.example/credentials/S",
     "D": "https://producer.vc4qi.example/credentials/D178",
+    "D197": "https://producer.vc4qi.example/credentials/D197",
+    "D520": "https://producer.vc4qi.example/credentials/D520",
     "PRODUCER": "https://producer.vc4qi.example/controller",
     "LAB": "https://lab.vc4qi.example/controller",
 }
@@ -139,7 +141,7 @@ def verify(
     return verify_rm_artifact(uri, session(overrides), MANIFEST, evaluation_time)
 
 
-@pytest.mark.parametrize("name", ["A", "H", "O", "S", "D"])
+@pytest.mark.parametrize("name", ["A", "H", "O", "S", "D", "D197", "D520"])
 def test_typescript_signed_fixtures_verify_in_python(name: str) -> None:
     result = verify(URI[name])
     assert result.protection.state == "established", result.protection.reasons

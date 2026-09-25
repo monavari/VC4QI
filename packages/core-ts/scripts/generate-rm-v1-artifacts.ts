@@ -2,7 +2,8 @@
 // Generates the signed experimental RM v1 vertical-slice fixtures:
 //   controller documents for the fictional NAB, producer and laboratory, and
 //   signed credentials A (accreditation), H (lab authority), O (operational scope),
-//   S (homogeneity study) and D178 (RM certificate, x = 178 mg/kg, U = 5, k = 2).
+//   S (homogeneity study) and D178 (RM certificate, x = 178 mg/kg, U = 5, k = 2),
+//   plus D197 and D520, hypothetical reissues with the same inputs and x = 197 / 520.
 //
 //   pnpm -C packages/core-ts exec tsx scripts/generate-rm-v1-artifacts.ts          # write files
 //   pnpm -C packages/core-ts exec tsx scripts/generate-rm-v1-artifacts.ts --check  # fail if stale
@@ -179,32 +180,36 @@ async function main() {
     relatedResource: integrity([H_ID, hText]),
   }, lab, '2026-01-15T00:00:00Z')), FIXTURE);
 
-  const D_ID = 'https://producer.vc4qi.example/credentials/D178';
-  record(D_ID, 'credentials/D178.json', 'application/vc', serialize(await sign({
-    ...envelope(D_ID, 'RmCertificate', 'certificate.json', PRODUCER,
-      '2026-02-01T00:00:00Z', '2028-02-01T00:00:00Z'),
-    credentialSubject: {
-      id: BATCH,
-      activityTime: '2026-01-20T00:00:00Z',
-      materials: [{ matrixIri: rm('CuZn39Pb3'), formIri: rm('Disc'), name: 'Fictional CuZn39Pb3 brass disc' }],
-      materialPropertiesList: [{
-        isCertified: true,
-        results: [{
-          propertyIri: rm('As'),
-          methodIri: rm('M1'),
-          data: { quantity: {
-            quantityKind: rm('MassFraction'),
-            value: '178',
-            unit: { ucumCode: 'mg/kg' },
-            uncertainty: { expandedUncertainty: '5', coverageFactor: '2' },
-          } },
+  // D178 is the certificate; D197 and D520 are hypothetical reissues by the same
+  // fictional producer (fresh valid signatures) for the 197/520 witness cases.
+  for (const value of ['178', '197', '520']) {
+    const D_ID = `https://producer.vc4qi.example/credentials/D${value}`;
+    record(D_ID, `credentials/D${value}.json`, 'application/vc', serialize(await sign({
+      ...envelope(D_ID, 'RmCertificate', 'certificate.json', PRODUCER,
+        '2026-02-01T00:00:00Z', '2028-02-01T00:00:00Z'),
+      credentialSubject: {
+        id: BATCH,
+        activityTime: '2026-01-20T00:00:00Z',
+        materials: [{ matrixIri: rm('CuZn39Pb3'), formIri: rm('Disc'), name: 'Fictional CuZn39Pb3 brass disc' }],
+        materialPropertiesList: [{
+          isCertified: true,
+          results: [{
+            propertyIri: rm('As'),
+            methodIri: rm('M1'),
+            data: { quantity: {
+              quantityKind: rm('MassFraction'),
+              value,
+              unit: { ucumCode: 'mg/kg' },
+              uncertainty: { expandedUncertainty: '5', coverageFactor: '2' },
+            } },
+          }],
         }],
-      }],
-    },
-    termsOfUse: policy(O_ID),
-    evidence: [{ id: S_ID, type: 'RmStudyReference' }],
-    relatedResource: integrity([O_ID, oText], [S_ID, sText]),
-  }, producer, '2026-02-01T00:00:00Z')), FIXTURE);
+      },
+      termsOfUse: policy(O_ID),
+      evidence: [{ id: S_ID, type: 'RmStudyReference' }],
+      relatedResource: integrity([O_ID, oText], [S_ID, sText]),
+    }, producer, '2026-02-01T00:00:00Z')), FIXTURE);
+  }
 
   outputs.set('catalog.json', `${JSON.stringify({
     description: 'Signed RM v1 vertical-slice fixtures. digestSRI is SHA-384 over the exact file bytes. '
