@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reject unsupported legacy proof metadata and verify received supported options in both languages; add eight shared controls.
+
 - Repair uv workspace/locked setup and reconcile CI's pnpm pin with package metadata.
 - Restore legacy complete-record containment, pressure bounds, RM alternatives and DCC failure retention in TS/Python.
 - Add 38 shared unsigned scope vectors plus non-finite-bound checks; classify new-profile coverage and existing lint debt.

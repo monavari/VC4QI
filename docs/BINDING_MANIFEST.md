@@ -119,6 +119,9 @@ without the necessary authenticated historical scope/status evidence.
 
 ## Protection, integrity and disclosure
 
+The [I1 protection audit](plans/standards-first-i1-protection-audit.md) records the first
+legacy metadata fix and the remaining prerequisites. The signed slice is not complete.
+
 Use existing Ed25519/Data Integrity integration only after I1 audits its claimed suite
 transforms, safe expansion and authorized `assertionMethod`/controller mapping. A valid
 signature under an unrelated key is insufficient. TS SD is a separately tested supported
@@ -151,8 +154,8 @@ against placing objects intended for selective/unlinkable disclosure in `related
 
 The 178/197/520 and boundary witnesses, V/P/S/C controls, disclosure insufficiency and
 offline E15 cases are specified in the [ledger](plans/standards-first-acceptance.csv).
-I1 pins actual file paths and independent crypto vectors; every case remains unassessed
-until tested. The local baseline makes no real accreditation, legal compliance, physical
+I1 pins actual file paths and independent crypto vectors; new-profile cases remain
+`not_implemented` until their executable contracts and tests exist. The local baseline makes no real accreditation, legal compliance, physical
 sample truth, public deployment or production ontology claim.
 
 External authority answers and Recognized Entities are additional I6 bindings with their

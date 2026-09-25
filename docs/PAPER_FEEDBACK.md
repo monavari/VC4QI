@@ -275,3 +275,17 @@ corrections to actual manuscript sections when those sources are available.
 Current target: [MODEL_SPEC](MODEL_SPEC.md). Actual capability evidence:
 [IMPLEMENTATION_STATUS](IMPLEMENTATION_STATUS.md). Full requirements and acceptance:
 [traceability](plans/standards-first-traceability.md). No new-model execution is claimed.
+
+## F-6 — Proof metadata must be verified as received (2026-09-24)
+
+The legacy TS/Python proof verifiers reconstructed `type` and `proofPurpose` and
+ignored additional proof options. Seven shared mutation controls reproduced successful
+verification of these unsupported changes. The I1 prerequisite now validates the
+supported six-field subset and hashes the received options; all eight controls pass.
+This repairs a specific implementation defect, not complete suite conformance.
+
+The [EdDSA proof-verification algorithm](https://www.w3.org/TR/2025/REC-vc-di-eddsa-20250515/#verify-proof-eddsa-rdfc-2022)
+uses the received proof options. Manuscript protection claims must distinguish this
+metadata fix from the remaining safe-expansion, canonicalization, authorized-controller
+and isolated-catalog work. See the [I1 audit](plans/standards-first-i1-protection-audit.md)
+for code boundaries, executed tests and the signed-slice prerequisites.

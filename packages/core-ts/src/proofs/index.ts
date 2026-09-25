@@ -105,14 +105,19 @@ export async function verifyProof(
     throw new Error('eddsa-rdfc-2022 proof is missing the required "created" property.');
   }
 
+  // This legacy API supports only this proof-option subset. Never silently
+  // discard an incoming purpose/type or an unsupported signed option.
+  const supported = ['type', 'cryptosuite', 'proofPurpose', 'verificationMethod', 'created', 'proofValue'];
+  if (proof.type !== 'DataIntegrityProof' || proof.proofPurpose !== 'assertionMethod' ||
+      Object.keys(proof).some(key => !supported.includes(key)) ||
+      typeof proof.verificationMethod !== 'string' || typeof proof.created !== 'string' ||
+      typeof proof.proofValue !== 'string') return false;
+
   // Remove proof to get the unsecured document
   const { proof: _proof, ...unsecuredDocument } = signedCredential;
 
-  const proofConfig = buildProofConfig(
-    unsecuredDocument['@context'],
-    proof.verificationMethod,
-    proof.created,
-  );
+  const { proofValue: _proofValue, ...proofOptions } = proof;
+  const proofConfig = { ...proofOptions, '@context': unsecuredDocument['@context'] };
 
   const hashData = await computeHashData(
     unsecuredDocument as JsonObject,
