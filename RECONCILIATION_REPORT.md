@@ -1321,3 +1321,19 @@ legacy failures; Python 316 passed, 1 skip; Ruff 204 and mypy 198 unchanged; bui
 lint, scenarios, schemas, generator checks pass; fixtures, resources and the poster
 bundle were regenerated and the poster still renders "Accepted". Open: C12–C15, V06.
 See `docs/plans/standards-first-i3-evidence.md`.
+
+## Standards-first I3 step 3: cycles, shared nodes and provenance — 25 September 2026
+
+Signed controls in both languages, with no evaluator change: an authorization cycle,
+a self-reference and a support/authority mixed cycle are each refused on the active
+stack ("Circular authorization", never accepted) (C12); one accreditation shared by
+two routes is reused and counted once by the restriction (C13); a credential in two
+roles is checked per role (C14); an unused reference cycle among supplied credentials
+leaves witnesses and decision unchanged (C15); a provenance-only certificate
+establishes no authority (V06). Cycle handling relies on typed fixed-depth routes; a
+general node-use memo table is not implemented and is recorded as a limit.
+
+Ledger: C12–C15 and V06 `passing`; I3 exit met (C01–C16, V04–V07, P06; V08 excluded).
+Totals 36 passing, 2 excluded, 45 not implemented. Ledger command 79 TS and 77 Python
+tests, exit 0; TS 370 passed plus the 9 network-only failures; Python 323 passed, 1
+skip; Ruff 204 and mypy 198 unchanged. See `docs/plans/standards-first-i3-evidence.md`.
