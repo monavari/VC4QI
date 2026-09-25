@@ -56,6 +56,16 @@ Python lint retains baseline debt: Ruff core diagnostics decreased 208→204, my
 for exact commands, inventories and limitations. All 83 new-profile acceptance cases
 remain unimplemented; eleven have partial legacy predicate evidence.
 
+## I1 prerequisite, 24 September 2026
+
+The proof verifiers now reject unsupported received metadata and preserve supported
+options in their hash input. Seven bypass controls failed before the fix; all eight
+shared controls now pass in each language. Current totals are **234 TS passed; 204
+Python passed, 1 skipped**. Build, scenarios, TS lint and schema checks pass; existing
+Python lint debt remains. See [I1 protection audit](plans/standards-first-i1-protection-audit.md).
+The executable manifest, new request/result API, safe protection/catalog path and signed
+RM slice are still pending. I0's four GitHub CI jobs passed for `8356b42`.
+
 ## Migration and historical claims
 
 Work branch: `refactor/standards-first-reconciliation`, retaining merged registry,

@@ -990,3 +990,23 @@ deprecated and outside the graph path/assurance of the fixed `check_derived_edge
 Astra completed bounded read-only reviews; Sol/Luna hit workspace credit limits and
 made no edits, so implementation and validation continued locally. Next is I1:
 executable binding manifest, request/result contract and first signed RM vertical slice.
+
+## Standards-first I1 prerequisite — 24 September 2026
+
+I0 `8356b42` was pushed to the authorized working branch and all four jobs passed in
+[GitHub CI run 36030304329](https://github.com/monavari/VC4QI/actions/runs/36030304329).
+The user requested continuation. A bounded Astra/local protection audit found that
+legacy proof verification rebuilt type/purpose and discarded additional received
+proof options. Seven mutation controls reproduced incorrect acceptance in each language.
+
+Both implementations now reject unsupported metadata and hash their supported received
+proof options. Eight shared controls (seven negatives, one unchanged positive) pass.
+`make test` exits 0: **234 TS; 204 Python passed, 1 existing skip; 2 root scenarios**.
+Build, TS lint and schema validation exit 0 with the already recorded bundle warning
+and schema coverage limitations. No signed fixture or dependency was changed.
+
+[The I1 audit](docs/plans/standards-first-i1-protection-audit.md) records remaining
+protection and catalog work, the minimal manifest/request/result contract and signed
+vertical-slice sequence. F-6 records the manuscript-facing implication. Astra reviewed
+the bounded fix without finding a blocking regression. I1 is in progress, not complete;
+new-profile acceptance remains unimplemented. Existing Python lint debt remains visible.

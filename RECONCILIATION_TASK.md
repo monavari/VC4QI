@@ -1,6 +1,6 @@
 # Standards-first reconciliation — active task
 
-**Documentation D0–D4 and preparation I0 complete. Next: I1 signed binding slice.**
+**Documentation D0–D4 and preparation I0 complete. I1 in progress: signed binding slice.**
 
 [I0 evidence, 24 September 2026](docs/plans/standards-first-i0-evidence.md) records
 passing runtime checks and existing Python lint debt. The evaluator remains legacy.
@@ -24,6 +24,9 @@ Keep the existing repository and replace the evaluator in stages. The current ba
 and GS/assessment work. The later `63231d2` scope patch is absent locally; I0 reproduced
 its safety properties in shared unsigned regression vectors without claiming to apply it.
 Work on `refactor/standards-first-reconciliation` under [AGENTS.md](AGENTS.md).
+
+I1's first prerequisite fixes legacy proof-option handling; its remaining protection
+and signed-slice work is in the [I1 audit](docs/plans/standards-first-i1-protection-audit.md).
 
 ## Ordered work
 
