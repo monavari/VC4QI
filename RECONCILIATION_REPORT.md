@@ -1177,3 +1177,14 @@ errors, fixed before commit). TypeScript unchanged at 302 passed plus the 9
 network-only legacy failures. An open question is recorded in the signed-slice
 evidence: the vendored VCDM 2.0 context has no top-level `@vocab`, which should be
 checked against W3C's published bytes.
+
+## Standards-first I1 exit controls — 25 September 2026
+
+Added the two remaining I1 exit controls in both languages: arbitrary policy type names
+(`AuthorizedByPolicy`, `RmAuthorizationPolicyV2`, `rmAuthorizationPolicy`) are
+contradicted at the schema check with no facts read, and no signed fixture contains a
+legacy relation/basis field or `qi-vc` term. The signed-slice evidence now has an I1
+exit-gate table. I1 is implemented in both languages; two items stay open because they
+need network access: comparing the vendored VCDM 2.0 context with W3C's published bytes
+(including whether it declares `@vocab`), and a full independent transformation vector.
+No acceptance-ledger case is marked passing; I2 is next.

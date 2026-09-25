@@ -26,7 +26,7 @@ digest mismatch, expiry). Contradiction yields `reject`; otherwise the I1 decisi
 
 ## Results
 
-`packages/core-ts/tests/rm-v1-slice.test.ts`: 19 tests pass. Each of A, H, O, S and D178
+`packages/core-ts/tests/rm-v1-slice.test.ts`: 21 tests pass (Python mirror: 22). Each of A, H, O, S and D178
 passes all eight protection checks, validity at 2026-09-25 and `relatedResource`
 integrity. D178 facts include `/issuer`, `/termsOfUse/0/authorizationCredential/id`,
 `/evidence/0/id` and the selected result at
@@ -45,7 +45,23 @@ Negative controls, all passing:
 - missing S → integrity `not_established`, decision `not_established`;
 - missing target or controller document → `not_established`;
 - reversed contexts or a proof set → not established; expired target → `reject`;
-- a selected claim outside the protected results → claim `not_established`.
+- a selected claim outside the protected results → claim `not_established`;
+- arbitrary policy type names (`AuthorizedByPolicy`, `RmAuthorizationPolicyV2`,
+  `rmAuthorizationPolicy`) → schema contradicted, no facts;
+- no signed fixture contains a legacy relation/basis field (`authorizedBy`,
+  `derivedFrom`, `supportedBy`, `authorizationBasis`, `scopeRef`) or `qi-vc` term.
+
+## I1 exit gate
+
+| Plan exit criterion | Status |
+| --- | --- |
+| Both languages verify supported baseline protection | Done (TS safe mode; Python sentinel undefined-term check) |
+| Protected facts through exact native paths, with provenance | Done (RFC 6901 pointers, artifact SRI digest, controller-document digest) |
+| New credentials carry no legacy relation/basis contract | Done (tested) |
+| Arbitrary policy names and unsafe expansion as negative controls | Done |
+| Exact integrity representation settled | Done: SHA-384 SRI over exact secured bytes |
+| Static dependencies pinned with provenance and hashes | Done, except the published-hash comparison for the VCDM 2.0 context (network) |
+| Independent suite vectors | Open: only the W3C B.1 primitive control; full transformation vector needs network |
 
 Python: `pytest packages/core-py/tests` 257 passed, 1 existing skip. Ruff (204) and
 mypy (198) package-wide counts are unchanged from the recorded baseline; the new modules

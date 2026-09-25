@@ -392,8 +392,10 @@ handover does not supply require a localized `TODO(human)` and report entry; the
 do not block the fictional RM baseline or independent work.
 
 D0–D4 and I0 are complete, with validation and remaining baseline debt recorded in the
-report. I1's executable binding/request/result contract and isolated catalog are complete.
-The signed protected vertical slice is next, before broader evaluator replacement.
+report. I1's contract, catalog, pinned resources, key authorization and signed slice are
+implemented in both languages; the published-context comparison and an independent
+transformation vector remain open. I2, the protected graph compiler and seven-gate
+evaluator, is next.
 
 The user requested Astra for hard semantic/design review, Sol for implementation
 and Luna at max reasoning for bounded documentation/consistency tasks. These three
