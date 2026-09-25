@@ -326,3 +326,31 @@ def test_selected_claim_outside_protected_results_is_not_established() -> None:
         "not_established",
         "executed",
     )
+
+
+def test_signed_fixtures_carry_no_legacy_wire_fields() -> None:
+    for resource in SIGNED:
+        serialized = resource.content.decode("utf-8")
+        for legacy in (
+            "authorizedBy",
+            "derivedFrom",
+            "supportedBy",
+            "authorizationBasis",
+            "scopeRef",
+            "qi-vc",
+        ):
+            assert legacy not in serialized, (resource.uri, legacy)
+
+
+@pytest.mark.parametrize(
+    "name", ["AuthorizedByPolicy", "RmAuthorizationPolicyV2", "rmAuthorizationPolicy"]
+)
+def test_arbitrary_authorization_policy_name_is_not_accepted(name: str) -> None:
+    document = doc(URI["D"])
+    document["termsOfUse"][0]["type"] = name
+    artifact = verify(URI["D"], {URI["D"]: serialize(document)})
+    assert (artifact.checks[-1].check, artifact.checks[-1].state) == (
+        "schema",
+        "contradicted",
+    )
+    assert artifact.facts == ()

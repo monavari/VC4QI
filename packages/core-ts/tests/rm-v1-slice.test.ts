@@ -120,7 +120,25 @@ describe('RM v1 signed vertical slice (I1)', () => {
     expect(Object.isFrozen(result)).toBe(true);
   });
 
+  it('signed fixtures carry no legacy relation/basis wire fields', () => {
+    for (const resource of signed) {
+      const serialized = new TextDecoder().decode(resource.bytes);
+      for (const legacy of ['authorizedBy', 'derivedFrom', 'supportedBy', 'authorizationBasis', 'scopeRef', 'qi-vc'])
+        expect(serialized, `${resource.uri} contains ${legacy}`).not.toContain(legacy);
+    }
+  });
+
   describe('negative controls', () => {
+    it('an arbitrary authorization policy name is not accepted', async () => {
+      for (const name of ['AuthorizedByPolicy', 'RmAuthorizationPolicyV2', 'rmAuthorizationPolicy']) {
+        const document = json(URI.D);
+        (document.termsOfUse as JsonObject[])[0]!.type = name;
+        const artifact = await verifyRmArtifact(URI.D, session({ [URI.D]: serialize(document) }), { manifest, evaluationTime: NOW });
+        expect(artifact.checks.at(-1), name).toMatchObject({ check: 'schema', state: 'contradicted' });
+        expect(artifact.facts).toEqual([]);
+      }
+    });
+
     it('a changed value without re-signing is rejected and yields no facts', async () => {
       const document = json(URI.D);
       ((document.credentialSubject as JsonObject).materialPropertiesList as JsonObject[])[0]!
