@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add parallel TS/Python reliance request/result contracts, truth-table operators,
+  an explicitly incomplete RM v1 manifest, and an isolated exact-byte resource catalog.
 - Reject unsupported legacy proof metadata and verify received supported options in both languages; add eight shared controls.
 
 - Repair uv workspace/locked setup and reconcile CI's pnpm pin with package metadata.

@@ -1,9 +1,10 @@
 # Binding manifest and experimental RM design
 
-**Design contract only, 22 September 2026. No new binding is implemented yet.**
-The machine-readable manifest, contexts, schemas and signed vertical slice are I1
-outputs. This document enumerates their mandatory content and a concrete local RM
-candidate; it is not external conformance or an executable schema. Compare the
+**Design contract updated 25 September 2026. The RM v1 manifest exists but is not
+installable; the signed vertical slice remains pending.** The machine-readable
+[manifest and schema](../bindings/experimental/rm-v1/) implement the twelve-category
+envelope with explicit pending resources. This document explains the candidate; it
+is not external conformance. Compare the
 [model](MODEL_SPEC.md), [vocabulary](VOCABULARY.md) and handover §3.3.
 
 ## Manifest contract
@@ -26,6 +27,8 @@ candidate; it is not external conformance or an executable schema. Compare the
 Configuration selects installed, reviewed evaluators. It must not load executable
 code from an issuer-provided URL. Missing required mapping is not an established
 predicate. Changes to meaning require an explicit manifest version and regression tests.
+The current manifest's `installation.status` is `incomplete`, and both libraries
+refuse to select it. See the [contract evidence](plans/standards-first-i1-contract-evidence.md).
 
 ## Candidate local RM binding
 

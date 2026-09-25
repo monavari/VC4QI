@@ -25,8 +25,10 @@ and GS/assessment work. The later `63231d2` scope patch is absent locally; I0 re
 its safety properties in shared unsigned regression vectors without claiming to apply it.
 Work on `refactor/standards-first-reconciliation` under [AGENTS.md](AGENTS.md).
 
-I1's first prerequisite fixes legacy proof-option handling; its remaining protection
-and signed-slice work is in the [I1 audit](docs/plans/standards-first-i1-protection-audit.md).
+I1's proof-option prerequisite and request/result/manifest/catalog slice are complete.
+The remaining protected signed-slice work is tracked in the
+[I1 audit](docs/plans/standards-first-i1-protection-audit.md) and
+[contract evidence](docs/plans/standards-first-i1-contract-evidence.md).
 
 ## Ordered work
 

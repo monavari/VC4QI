@@ -1,7 +1,7 @@
 # API and wire migration
 
-**Planned compatibility break. Runtime APIs below remain legacy until I5.** No new
-entry point, binding manifest or software release is claimed by this documentation.
+**Planned compatibility break. The new contract types exist alongside the legacy
+runtime; the default evaluator remains legacy until I5.** No new release is claimed.
 See [MODEL_SPEC](MODEL_SPEC.md) and [the execution plan](plans/standards-first-reconciliation.md).
 
 | Current surface | Target contract |
@@ -14,8 +14,11 @@ See [MODEL_SPEC](MODEL_SPEC.md) and [the execution plan](plans/standards-first-r
 | Mandatory custom per-claim `scopeRef` | Verifier-owned claim-to-record witness, preserving native links where domain bindings define them |
 | Legacy policy/query paths | Manifest/profile-derived accepted paths and complete reliance obligations; query match alone is insufficient |
 
-Exact function names and JSON property names are software choices finalized in I1.
-The target result must identify request/profile/claims, per-artifact verification,
+The first contract API is exported as `reliance` in TypeScript and
+`qi_vc_core.reliance` in Python. `createRelianceRequest`/`create_reliance_request`
+validate immutable requests; semantic AND/OR and decision helpers implement the model
+truth tables. No evaluator consumes these requests yet. The target result must identify
+request/profile/claims, per-artifact verification,
 per-claim authorization/routes/restrictions, support/applicability, conformity rule and
 arithmetic (or not-requested/not-run), overall reliance, trace/provenance, resources and
 limitations. `not_run` is not a fourth semantic evidence state.

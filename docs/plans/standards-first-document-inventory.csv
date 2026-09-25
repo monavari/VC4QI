@@ -26,7 +26,7 @@ docs/NON_GOALS.md,2026-09-22,updated,Reconcile target versus current legacy beha
 docs/PAPER_FEEDBACK.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
 docs/POLICY_PROFILES.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
 docs/PRESENTATION_QUERY.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
-docs/PYTHON_PARITY.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/PYTHON_PARITY.md,2026-09-25,updated_I1_contract,"Record target parity, contract/catalog tests and unchanged Python typing-debt boundary."
 docs/SCOPE_TERMS.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
 docs/SELECTIVE_DISCLOSURE.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
 docs/VOCABULARY.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
@@ -73,3 +73,8 @@ docs/plans/standards-first-wire-consumers.csv,2026-09-24,added_I0,Observed imple
 docs/plans/standards-first-static-resources.csv,2026-09-24,added_I0,Observed implementation evidence and reproducibility; see I0 report for boundaries.
 uv.lock,2026-09-24,added_I0,Observed implementation evidence and reproducibility; see I0 report for boundaries.
 docs/plans/standards-first-i1-protection-audit.md,2026-09-24,added_I1_prerequisite,"Protection findings, bounded metadata fix and remaining signed-slice sequence."
+docs/plans/standards-first-i1-contract-evidence.md,2026-09-25,added_I1_contract,"Request/result, manifest and immutable catalog evidence with explicit remaining signed-slice work."
+bindings/experimental/rm-v1/README.md,2026-09-25,added_I1_contract,"Experimental binding status, ownership and installation boundary."
+bindings/experimental/rm-v1/test-vectors/README.md,2026-09-25,added_I1_contract,"Explicit empty signed-vector state and planned generated evidence."
+bindings/experimental/rm-v1/manifest.json,2026-09-25,added_I1_contract,"Twelve-category data-only manifest; explicitly incomplete and non-installable."
+bindings/experimental/rm-v1/manifest.schema.json,2026-09-25,added_I1_contract,"Closed top-level JSON Schema for the experimental manifest."
