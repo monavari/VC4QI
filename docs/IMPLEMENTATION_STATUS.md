@@ -78,6 +78,16 @@ unpinned context. Python checks pinning only; Python safe-mode parity remains pe
 The manifest stays `incomplete`: controller documents, signed D/A artifacts with
 authorized keys, and status resources are next.
 
+## I1 signed slice, 25 September 2026
+
+Verification-method authorization (17 shared vectors, both languages) and a reproducible
+signed fixture set (controller documents plus A, H, O, S, D178) now exist. TypeScript
+`verifyRmArtifact` verifies each from its exact bytes and extracts protected facts with
+source pointers; `evaluateRmSlice` reports authorization, support and conformity as
+`not_run`, so authentic artifacts alone give `not_established`. Twelve negative controls
+pass. See the [signed-slice evidence](plans/standards-first-i1-signed-slice-evidence.md).
+Python protection parity and status resources remain.
+
 ## Migration and historical claims
 
 Work branch: `refactor/standards-first-reconciliation`, retaining merged registry,

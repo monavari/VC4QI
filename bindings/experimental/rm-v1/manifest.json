@@ -10,16 +10,8 @@
   },
   "installation": {
     "status": "incomplete",
-    "reason": "Contexts and schemas are pinned in catalog.json. Controller documents, the signed RM artifacts and status resources are still pending I1/I2 resources.",
+    "reason": "Contexts and schemas are pinned in catalog.json; controller documents and signed A/H/O/S/D178 fixtures are pinned in test-vectors/signed/catalog.json and verify in TypeScript. Status resources, Python safe-mode protection parity and the I2-I4 evaluators are still required before selection.",
     "pendingResources": [
-      "https://nab.vc4qi.example/controller",
-      "https://producer.vc4qi.example/controller",
-      "https://lab.vc4qi.example/controller",
-      "https://nab.vc4qi.example/credentials/A",
-      "https://producer.vc4qi.example/credentials/O",
-      "https://producer.vc4qi.example/credentials/D178",
-      "https://lab.vc4qi.example/credentials/S",
-      "https://nab.vc4qi.example/credentials/H",
       "https://producer.vc4qi.example/status/1"
     ]
   },
@@ -155,7 +147,7 @@
   "evidenceAndExclusions": {
     "acceptanceLedger": "docs/plans/standards-first-acceptance.csv",
     "testVectorRoots": ["testdata/regressions", "bindings/experimental/rm-v1/test-vectors"],
-    "implementationEvidence": "docs/plans/standards-first-i1-protection-audit.md",
+    "implementationEvidence": "docs/plans/standards-first-i1-signed-slice-evidence.md",
     "unsupported": [
       "production-accreditation", "legal-effect", "physical-sample-truth",
       "public-example-namespace-resolution", "general-ontology-reasoning",
