@@ -1,0 +1,21 @@
+{
+  "extends": "../../../packages/core-ts/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "../../..",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "types": [
+      "node"
+    ],
+    "typeRoots": [
+      "../../../packages/core-ts/node_modules/@types"
+    ]
+  },
+  "include": [
+    "*.ts",
+    "../../../packages/core-ts/src/declarations.d.ts"
+  ]
+}

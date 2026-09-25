@@ -22,6 +22,10 @@ jobs:
       - run: pnpm --if-present -r lint
       - run: pnpm --if-present -r test
       - run: pnpm test:scenarios
+      - name: Poster verifier bundle is up to date
+        run: |
+          pnpm -C apps/demo-web build:poster
+          git diff --exit-code site/m375a/verifier.js
 
   test-py:
     name: Python tests

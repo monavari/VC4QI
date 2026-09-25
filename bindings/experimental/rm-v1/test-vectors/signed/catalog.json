@@ -64,6 +64,22 @@
       "origin": "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
       "digestSRI": "sha384-/OY+ZE8k+vk41I2/+GPXr63cvr8S5jPh+bZYCx9/Ew0iSBkKXu3tImRYmObOAzJ6"
+    },
+    {
+      "uri": "https://producer.vc4qi.example/credentials/D197",
+      "path": "bindings/experimental/rm-v1/test-vectors/signed/credentials/D197.json",
+      "mediaType": "application/vc",
+      "origin": "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)",
+      "version": "1",
+      "digestSRI": "sha384-TsIEaedBujWCXCODetr90esDWAXwin9tC9Zf42nuo6xLVSnTt12+lbjb7lhGge9c"
+    },
+    {
+      "uri": "https://producer.vc4qi.example/credentials/D520",
+      "path": "bindings/experimental/rm-v1/test-vectors/signed/credentials/D520.json",
+      "mediaType": "application/vc",
+      "origin": "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)",
+      "version": "1",
+      "digestSRI": "sha384-IGdgOLQxhhvQIYA+CV07RtrfTdOadITyxzS1eoar/rgiS7/W6h10fLN48OxhDw+3"
     }
   ]
 }

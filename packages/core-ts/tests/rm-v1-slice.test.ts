@@ -24,6 +24,8 @@ const URI = {
   O: 'https://producer.vc4qi.example/credentials/O',
   S: 'https://lab.vc4qi.example/credentials/S',
   D: 'https://producer.vc4qi.example/credentials/D178',
+  D197: 'https://producer.vc4qi.example/credentials/D197',
+  D520: 'https://producer.vc4qi.example/credentials/D520',
   PRODUCER: 'https://producer.vc4qi.example/controller',
   LAB: 'https://lab.vc4qi.example/controller',
 };
@@ -86,7 +88,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
     expect(() => execFileSync(tsx, [script, '--check'], { stdio: 'pipe' })).not.toThrow();
   });
 
-  it.each(['A', 'H', 'O', 'S', 'D'] as const)('%s is protected, authorized, valid and integrity-bound', async name => {
+  it.each(['A', 'H', 'O', 'S', 'D', 'D197', 'D520'] as const)('%s is protected, authorized, valid and integrity-bound', async name => {
     const result = await verifyRmArtifact(URI[name], session(), { manifest, evaluationTime: NOW });
     expect(result.protection.state, result.protection.reasons.join('; ')).toBe('established');
     expect(result.checks.map(c => c.check)).toEqual(
