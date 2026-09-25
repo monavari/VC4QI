@@ -9,6 +9,39 @@ export type ExecutionState = 'executed' | 'not_run';
 /** Overall outcome of the verifier-owned reliance request. */
 export type RelianceDecision = 'accept' | 'reject' | 'not_established';
 
+/**
+ * Canonical gate numbers (handover §5.3), used in code, tests, docs and UI:
+ * 0 plan and structure, 1 resource identity, 2 protection, 3 temporal
+ * applicability, 4 meaning and mapping, 5 authority and scope, 6 support and decision.
+ */
+export type Gate = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export const GATE_NAMES = Object.freeze([
+  'plan-and-structure', 'resource-identity', 'protection', 'temporal-applicability',
+  'meaning-and-mapping', 'authority-and-scope', 'support-and-decision',
+] as const);
+
+/** One evaluated predicate for one use of an artifact, with its input provenance. */
+export interface TraceEntry {
+  readonly gate: Gate;
+  /** Node-use key: artifact identity, role, purpose, profile and time context. */
+  readonly nodeUse: string;
+  readonly predicate: string;
+  readonly state: SemanticState;
+  readonly execution: ExecutionState;
+  readonly reason: string;
+  /** Protected source pointers or resource identities the predicate read. */
+  readonly sources: readonly string[];
+}
+
+/** A resource identity observed during evaluation. */
+export interface ResourceObservation {
+  readonly uri: string;
+  readonly digestSRI: string;
+  readonly kind: 'static' | 'artifact' | 'status';
+  readonly source: 'catalog' | 'supplied';
+  readonly observedAt: string;
+}
+
 export interface VersionedIdentifier {
   readonly id: string;
   readonly version: string;
@@ -33,6 +66,7 @@ export interface ConformityRequest {
 }
 
 export interface RelianceRequest {
+  readonly requestId: string;
   readonly targetId: string;
   readonly selectedClaims: readonly SelectedClaim[];
   readonly purpose: string;
@@ -80,6 +114,7 @@ export type ConformityResult =
     } & PredicateResult);
 
 export interface RelianceResult {
+  readonly requestId: string;
   readonly targetId: string;
   readonly binding: VersionedIdentifier;
   readonly profile: VersionedIdentifier;
@@ -88,5 +123,7 @@ export interface RelianceResult {
   readonly support: readonly SupportResult[];
   readonly conformity: ConformityResult;
   readonly decision: RelianceDecision;
+  readonly trace: readonly TraceEntry[];
+  readonly resources: readonly ResourceObservation[];
   readonly limitations: readonly string[];
 }

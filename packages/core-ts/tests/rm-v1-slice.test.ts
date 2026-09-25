@@ -66,6 +66,7 @@ async function resign(document: JsonObject, keyName: string, method: string): Pr
 
 function request(overrides: Partial<Parameters<typeof createRelianceRequest>[0]> = {}) {
   return createRelianceRequest({
+    requestId: 'urn:uuid:rm-v1-slice-request',
     targetId: URI.D,
     selectedClaims: [{ id: 'as-mass-fraction', sourcePointer: '/credentialSubject/materialPropertiesList/0/results/0' }],
     purpose: 'use-as-calibrant',
@@ -122,6 +123,22 @@ describe('RM v1 signed vertical slice (I1)', () => {
     expect(Object.isFrozen(result)).toBe(true);
   });
 
+  it('reports a gate-numbered trace per node-use and the observed resources', async () => {
+    const { result } = await evaluateRmSlice(request(), session(), manifest);
+    expect(result.requestId).toBe('urn:uuid:rm-v1-slice-request');
+    const target = result.trace.filter(t => t.nodeUse.startsWith(`${URI.D} |`));
+    expect(target.every(t => t.nodeUse.includes('| target |'))).toBe(true);
+    const byPredicate = (p: string) => target.find(t => t.predicate === p);
+    expect(byPredicate('schema')).toMatchObject({ gate: 0, state: 'established' });
+    expect(byPredicate('related-resource-integrity')).toMatchObject({ gate: 1, state: 'established' });
+    expect(byPredicate('signature')).toMatchObject({ gate: 2, state: 'established' });
+    expect(byPredicate('validity-period')).toMatchObject({ gate: 3, state: 'established' });
+    expect(byPredicate('claim-authorization:as-mass-fraction')).toMatchObject({ gate: 5, execution: 'not_run' });
+    expect(byPredicate('conformity:as-plus-u-le-200')).toMatchObject({ gate: 6, execution: 'not_run' });
+    expect(result.resources.map(r => r.uri).sort()).toEqual([URI.A, URI.D, URI.H, URI.O, URI.S].sort());
+    expect(result.resources.every(r => r.kind === 'artifact' && r.digestSRI.startsWith('sha384-'))).toBe(true);
+  });
+
   it('signed fixtures carry no legacy relation/basis wire fields', () => {
     for (const resource of signed) {
       const serialized = new TextDecoder().decode(resource.bytes);
@@ -156,6 +173,10 @@ describe('RM v1 signed vertical slice (I1)', () => {
       const { result } = await evaluateRmSlice(request(), session({ [URI.D]: serialize(document) }), manifest);
       expect(result.decision).toBe('reject');
       expect(result.authorization[0]?.reasons[0]).toMatch(/not protected/);
+      const signature = result.trace.find(t => t.nodeUse.startsWith(`${URI.D} |`) && t.predicate === 'signature');
+      expect(signature).toMatchObject({ gate: 2, state: 'contradicted' });
+      const validity = result.trace.find(t => t.nodeUse.startsWith(`${URI.D} |`) && t.predicate === 'validity-period');
+      expect(validity).toMatchObject({ gate: 3, execution: 'not_run' });
     });
 
     it('a valid signature by another party\'s key is rejected (unauthorized key)', async () => {
