@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Pinned static resources for the experimental RM v1 binding (mirrors rm-v1.ts)."""
+
 from __future__ import annotations
 
 import json

@@ -7,6 +7,11 @@ from .catalog import (
     StaticResourceCatalog,
     sha384_sri,
 )
+from .key_authorization import (
+    KeyAuthorization,
+    authorize_assertion_method,
+    issuer_identifier,
+)
 from .manifest import (
     RM_V1_BINDING_ID,
     BindingInstallation,
@@ -85,4 +90,7 @@ __all__ = [
     "VC_V2_CONTEXT",
     "load_rm_v1_catalog",
     "read_pinned_resources",
+    "KeyAuthorization",
+    "authorize_assertion_method",
+    "issuer_identifier",
 ]

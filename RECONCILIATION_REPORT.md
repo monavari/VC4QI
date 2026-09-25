@@ -1112,3 +1112,26 @@ proxy); they are unchanged by this work and pass in CI. The 7 new TypeScript tes
 offline. Python: 222 passed, 1 existing skip (4 new). TS lint, schema validation and
 scenarios exit 0; focused Ruff and mypy on `qi_vc_core/reliance` pass. No signed fixture
 was changed and no acceptance-ledger case is marked passing.
+
+## Standards-first I1 verification-method authorization — 25 September 2026
+
+Added `authorizeAssertionMethod` (TS `reliance/key-authorization.ts`) and its Python
+mirror `authorize_assertion_method`. A proof key counts only when the method URL's
+controller document equals the credential issuer (exact identifiers, no aliases), is
+installed in the isolated catalog (processed as plain JSON), identifies itself by that
+URL, lists exactly one Multikey method with that id controlled by the issuer, carries an
+Ed25519 multikey, and references it from `assertionMethod`. Missing/unsupported inputs
+(no issuer, uninstalled or invalid controller document, non-Multikey type, key
+revocation/expiry metadata, embedded assertion methods) are `not_established`; evidence
+that the key is not the issuer's assertion key is `contradicted`. The established
+outcome returns the raw public key and the controller document's SRI digest.
+
+`testdata/regressions/key-authorization.json` holds 17 shared unsigned cases (KA-01 to
+KA-17), including another controller's valid key, an authentication-only key, a
+controller-id mismatch, duplicate method ids and a P-256 key. Keys are insecure
+fictional fixtures derived from public seeds. All 17 pass in both languages.
+
+Results: TS 283 passed, 9 failed (the same network-fetching legacy tests as above);
+Python 239 passed, 1 existing skip; TS lint exit 0; Ruff and mypy on the reliance
+package and new tests pass. This establishes the authorization rule only: no signed
+artifact uses it yet, and no acceptance-ledger case is marked passing.
