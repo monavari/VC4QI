@@ -1209,3 +1209,21 @@ Headless Chromium 1194 at 390 px: 178 accepted (183 ≤ 200); 197 rejected at ga
 gate 2 with gates 4–6 not asked. No network requests, no console errors, no horizontal
 overflow in light or dark mode. Slice tests now cover D197/D520: TS 23, Python 24 pass.
 The preview verdict is not I3/I4 evidence and no acceptance-ledger case changes.
+
+## Milestone audit applied — 25 September 2026
+
+The user asked for an audit of I0–I8 against the handover (the latest paper-derived
+requirement source in the repository; no manuscript file is present). Findings: the
+phases map one-to-one to handover §14 Phases 0–8; all 83 ledger rows match handover §13
+verbatim; `PAPER_FEEDBACK.md` covers all ten §16 items. Gaps now recorded in the plan as
+"Audit" notes: missing §4.3 result fields (request identity, gate trace, resource
+observations) and canonical gate numbering for I2; status authority for I2; a second
+multi-route fixture profile for C01–C06 and an explicit decision on independently
+discovered grants (V08) for I3; two succession profiles for S08 in I4; calibration cases
+S18/S19/S21 moved to I5; poster preview replacement in I7.
+
+Ledger `planned_phase` values now name one owning phase per case where possible (for
+example V02/V03 → I5, P06 → I3, E01–E09 → I6, E10–E14 → I7, E15 → I8). P02, P03, V04 and
+V12 carry I1 partial-evidence notes; every status remains `not_implemented` until
+gate-numbered reliance assertions exist. Added F-7 to `PAPER_FEEDBACK.md` (signed array
+order, protected VCDM terms, cross-language safe-processing difference). Docs-only change.
