@@ -85,8 +85,10 @@ signed fixture set (controller documents plus A, H, O, S, D178) now exist. TypeS
 `verifyRmArtifact` verifies each from its exact bytes and extracts protected facts with
 source pointers; `evaluateRmSlice` reports authorization, support and conformity as
 `not_run`, so authentic artifacts alone give `not_established`. Twelve negative controls
-pass. See the [signed-slice evidence](plans/standards-first-i1-signed-slice-evidence.md).
-Python protection parity and status resources remain.
+pass. Python mirrors the slice (18 tests over the same bytes), using a sentinel
+undefined-term check because PyLD has no safe mode. See the
+[signed-slice evidence](plans/standards-first-i1-signed-slice-evidence.md).
+Status resources and an independent transformation vector remain.
 
 ## Migration and historical claims
 
