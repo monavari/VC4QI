@@ -5,7 +5,8 @@ import { composeAuthority, type BasisResult, type RouteResult } from '../src/rel
 import { evaluateRmSlice } from '../src/reliance/rm-v1-slice.js';
 import type { JsonObject } from '../src/types.js';
 import {
-  catalogWith, json, manifest, profile, profileJson, reissue, request, resign, serialize, URI,
+  catalogWith, json, manifest, profile, profileJson, reissue, request, resign, serialize, statusListWith,
+  twoRouteProfile, URI,
 } from './rm-v1-helpers.js';
 
 type Result = Awaited<ReturnType<typeof evaluateRmSlice>>['result'];
@@ -196,6 +197,194 @@ describe('I3 route composition (C01-C07, C16)', () => {
     const result = await run({}, request(), p);
     expect(result.trace.find(t => t.predicate === 'route:operational-scope')).toMatchObject({ execution: 'not_run' });
     expect(result.authorization[0]?.state).toBe('not_established');
+  });
+});
+
+describe('I3 signed route composition under the two-route profile (C01-C07)', () => {
+  const twoRoutes = (overrides: Record<string, string | null> = {}) => run(overrides,
+    request({ profile: { id: twoRouteProfile.id, version: twoRouteProfile.version } }), twoRouteProfile);
+  /** D re-issued citing both O (operational-scope route) and A2 (direct-accreditation route). */
+  const citingA2 = (changed: Record<string, JsonObject> = {}) => reissue(changed, d => {
+    (d.termsOfUse as JsonObject[]).push({ type: 'RmAuthorizationPolicy',
+      authorizationCredential: { id: URI.A2, type: 'RmAccreditation' } });
+  });
+  const trace = (result: Result, predicate: string) => result.trace.find(t => t.predicate === predicate);
+  const grantedToLab = (uri: string) => { const d = json(uri); subject(d).id = URI.LAB; return d; };
+
+  it('C01: every basis of a complete route established establishes it, and the restriction holds', async () => {
+    const result = await twoRoutes(await citingA2());
+    expect(trace(result, 'route:operational-scope')).toMatchObject({ state: 'established' });
+    expect(trace(result, 'route:direct-accreditation')).toMatchObject({ state: 'established' });
+    expect(trace(result, 'restriction:accreditation-suspension')).toMatchObject({ state: 'established' });
+    // The restriction covers both of the actor's accreditations reached, on either route.
+    expect([...trace(result, 'restriction:accreditation-suspension')!.sources].sort()).toEqual([URI.A, URI.A2].sort());
+    expect(trace(result, 'authority')).toMatchObject({ state: 'established' });
+  });
+
+  it('C02: a scope without its accreditation grant is not enough (one basis alone never authorizes)', async () => {
+    const O = json(URI.O);
+    delete O.termsOfUse;
+    const result = await run(await reissue({ [URI.O]: O }));
+    expect(basis(result, 'maintenance-grant')).toMatchObject({ state: 'not_established' });
+    expect(trace(result, 'route:operational-scope')).toMatchObject({ state: 'not_established' });
+    expect(trace(result, 'authority')).toMatchObject({ state: 'not_established' });
+    expect(result.decision).toBe('not_established');
+  });
+
+  it('C03: one route contradicted and another complete route established authorizes', async () => {
+    const result = await twoRoutes(await citingA2({ [URI.O]: grantedToLab(URI.O) }));
+    expect(trace(result, 'route:operational-scope')).toMatchObject({ state: 'contradicted' });
+    expect(trace(result, 'route:direct-accreditation')).toMatchObject({ state: 'established' });
+    expect(trace(result, 'authority')).toMatchObject({ state: 'established' });
+    expect(result.authorization[0]?.routeWitnessIds).toEqual(['route:direct-accreditation', URI.D, URI.A2]);
+    expect(result.decision).toBe('not_established'); // claim scope (I4) is still pending, never reject
+  });
+
+  it('C04: every permitted route contradicted rejects', async () => {
+    const overrides = await citingA2({ [URI.O]: grantedToLab(URI.O) });
+    overrides[URI.A2] = await resign(grantedToLab(URI.A2));
+    const result = await twoRoutes(overrides);
+    expect(trace(result, 'route:operational-scope')).toMatchObject({ state: 'contradicted' });
+    expect(trace(result, 'route:direct-accreditation')).toMatchObject({ state: 'contradicted' });
+    expect(trace(result, 'authority')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
+  });
+
+  it('C05: one route contradicted and another unresolved is not established', async () => {
+    const overrides = await citingA2({ [URI.O]: grantedToLab(URI.O) });
+    overrides[URI.A2] = null;
+    const result = await twoRoutes(overrides);
+    expect(trace(result, 'route:operational-scope')).toMatchObject({ state: 'contradicted' });
+    expect(trace(result, 'route:direct-accreditation')).toMatchObject({ state: 'not_established' });
+    expect(trace(result, 'authority')).toMatchObject({ state: 'not_established' });
+    expect(result.decision).toBe('not_established');
+  });
+
+  it('C06: a suspension of the actor\'s accreditation rejects although another route is complete', async () => {
+    const overrides = await citingA2();
+    overrides[URI.NAB_SUSPENSION] = await statusListWith(URI.NAB_SUSPENSION, [2]); // A2 suspended
+    const result = await twoRoutes(overrides);
+    expect(trace(result, 'route:operational-scope')).toMatchObject({ state: 'established' });
+    expect(trace(result, 'restriction:accreditation-suspension')).toMatchObject({ state: 'contradicted' });
+    expect(trace(result, 'restriction:accreditation-suspension')?.reason).toMatch(/A2: Suspended/);
+    expect(trace(result, 'authority')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
+  });
+
+  it('C06: the single-route profile applies the same restriction', async () => {
+    const result = await run({ [URI.NAB_SUSPENSION]: await statusListWith(URI.NAB_SUSPENSION, [0]) }); // A suspended
+    expect(basis(result, 'trust-anchor')).toMatchObject({ state: 'established' });
+    expect(trace(result, 'restriction:accreditation-suspension')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
+  });
+
+  it('C07: a revoked, unused alternative is diagnostic, not an invented suspension', async () => {
+    const overrides = await citingA2();
+    overrides[URI.NAB_STATUS] = await statusListWith(URI.NAB_STATUS, [2]); // A2 revoked
+    const result = await twoRoutes(overrides);
+    expect(result.trace.find(t => t.nodeUse.startsWith(`${URI.A2} |`) && t.predicate === 'credential-status'))
+      .toMatchObject({ state: 'contradicted' });
+    expect(trace(result, 'route:direct-accreditation')).toMatchObject({ state: 'contradicted' });
+    expect(trace(result, 'restriction:accreditation-suspension')).toMatchObject({ state: 'established' });
+    expect(trace(result, 'authority')).toMatchObject({ state: 'established' });
+    expect(result.decision).toBe('not_established'); // A2's revocation does not reject the request
+  });
+
+  it('a suspension status that cannot be read never lets the restriction hold', async () => {
+    const result = await run({ [URI.NAB_SUSPENSION]: null });
+    expect(trace(result, 'restriction:accreditation-suspension')).toMatchObject({ state: 'not_established' });
+    expect(trace(result, 'authority')).toMatchObject({ state: 'not_established' });
+  });
+
+  it('a reference whose declared type does not match the credential is contradicted', async () => {
+    const result = await run(await reissue({}, d => {
+      ((d.termsOfUse as JsonObject[])[0]!.authorizationCredential as JsonObject).id = URI.A2;
+    }), request({ suppliedEvidence: [URI.A, URI.O, URI.S, URI.H, URI.A2] }));
+    expect(basis(result, 'authorizing-reference')).toMatchObject({ state: 'contradicted' });
+    expect(basis(result, 'authorizing-reference')?.reason).toMatch(/declares RmOperationalScope/);
+  });
+});
+
+describe('I3 cycles, shared nodes and roles (C12-C15, V06)', () => {
+  const twoRoutes = (overrides: Record<string, string | null> = {}, req = request()) => run(overrides,
+    { ...req, profile: { id: twoRouteProfile.id, version: twoRouteProfile.version } }, twoRouteProfile);
+  const trace = (result: Result, predicate: string) => result.trace.find(t => t.predicate === predicate);
+  const policyFor = (id: string, type: string) => ({ type: 'RmAuthorizationPolicy', authorizationCredential: { id, type } });
+
+  it('C12: an authorization cycle D -> O -> D is not accepted', async () => {
+    const O = json(URI.O);
+    O.termsOfUse = [policyFor(URI.D, 'RmAccreditation')];
+    const result = await run(await reissue({ [URI.O]: O }));
+    expect(basis(result, 'maintenance-grant')).toMatchObject({ state: 'not_established' });
+    expect(basis(result, 'maintenance-grant')?.reason).toMatch(/Circular authorization/);
+    expect(trace(result, 'authority')).toMatchObject({ state: 'not_established' });
+    expect(result.decision).not.toBe('accept');
+  });
+
+  it('C12: a self-referencing authorization is not accepted', async () => {
+    const result = await run(await reissue({}, d => { d.termsOfUse = [policyFor(URI.D, 'RmOperationalScope')]; }));
+    expect(basis(result, 'authorizing-reference')?.reason).toMatch(/Circular authorization/);
+    expect(trace(result, 'authority')).toMatchObject({ state: 'not_established' });
+  });
+
+  it('C12: a mixed cycle (study authorized by the certificate it supports) is not accepted', async () => {
+    const S = json(URI.S);
+    S.termsOfUse = [policyFor(URI.D, 'RmLabAuthority')];
+    const result = await run(await reissue({ [URI.S]: S }));
+    expect(supportBasis(result, 'laboratory-authority-reference')?.reason).toMatch(/Circular authorization/);
+    expect(result.support[0]?.state).toBe('not_established');
+    expect(result.decision).not.toBe('accept');
+  });
+
+  it('C13: one accreditation shared by two routes is reused, not mistaken for a cycle', async () => {
+    const overrides = await reissue({}, d => { (d.termsOfUse as JsonObject[]).push(policyFor(URI.A, 'RmAccreditation')); });
+    const result = await twoRoutes(overrides);
+    expect(trace(result, 'route:operational-scope')).toMatchObject({ state: 'established' });
+    expect(trace(result, 'route:direct-accreditation')).toMatchObject({ state: 'established' });
+    expect(result.trace.filter(t => /Circular/.test(t.reason))).toEqual([]);
+    expect(trace(result, 'restriction:accreditation-suspension')?.sources).toEqual([URI.A]); // counted once
+    expect(trace(result, 'authority')).toMatchObject({ state: 'established' });
+  });
+
+  it('C14: the same credential in two roles is checked independently for each role', async () => {
+    // A2 grants certification but not scope maintenance: valid as a direct
+    // accreditation, invalid as the grant behind an operational scope.
+    const O = json(URI.O);
+    O.termsOfUse = [policyFor(URI.A2, 'RmAccreditation')];
+    const overrides = await reissue({ [URI.O]: O }, d => {
+      (d.termsOfUse as JsonObject[]).push(policyFor(URI.A2, 'RmAccreditation'));
+    });
+    const result = await twoRoutes(overrides, request({ suppliedEvidence: [URI.O, URI.S, URI.H, URI.A2] }));
+    expect(basis(result, 'projection-permission')).toMatchObject({ state: 'contradicted' });
+    expect(trace(result, 'route:operational-scope')).toMatchObject({ state: 'contradicted' });
+    expect(trace(result, 'route:direct-accreditation')).toMatchObject({ state: 'established' });
+    expect(trace(result, 'authority')).toMatchObject({ state: 'established' });
+  });
+
+  it('C15: an unused reference cycle among supplied credentials changes nothing', async () => {
+    const D197 = 'https://producer.vc4qi.example/credentials/D197';
+    const D520 = 'https://producer.vc4qi.example/credentials/D520';
+    const x = json(D197), y = json(D520);
+    x.termsOfUse = [policyFor(D520, 'RmOperationalScope')];
+    y.termsOfUse = [policyFor(D197, 'RmOperationalScope')];
+    const baseline = await run();
+    const result = await run({ [D197]: await resign(x), [D520]: await resign(y) },
+      request({ suppliedEvidence: [URI.A, URI.O, URI.S, URI.H, D197, D520] }));
+    expect(trace(result, 'authority')).toMatchObject({ state: 'established' });
+    expect(result.authorization[0]?.routeWitnessIds).toEqual(baseline.authorization[0]?.routeWitnessIds);
+    expect(result.decision).toBe(baseline.decision);
+  });
+
+  it('V06: a provenance-only credential establishes no authority', async () => {
+    const D = json(URI.D);
+    delete D.termsOfUse;
+    D['http://www.w3.org/ns/prov#wasDerivedFrom'] = { id: URI.O };
+    const result = await run({ [URI.D]: await resign(D) });
+    expect(result.trace.find(t => t.nodeUse.startsWith(`${URI.D} |`) && t.predicate === 'schema'))
+      .toMatchObject({ state: 'contradicted' });
+    expect(trace(result, 'authority')).toMatchObject({ state: 'not_established' });
+    expect(result.authorization[0]?.state).not.toBe('established');
+    expect(result.authorization[0]?.routeWitnessIds).toEqual([]);
   });
 });
 
