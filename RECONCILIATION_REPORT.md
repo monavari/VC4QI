@@ -1256,3 +1256,21 @@ done. The slice evaluator moved to `reliance/rm-v1-slice.ts` to keep the artifac
 verifier browser-safe. The legacy status module's DEFLATE-without-prefix encoding is
 recorded as a finding and left unchanged. Details, controls (P08, P09, P10 unit, P16)
 and results are in `docs/plans/standards-first-i2-evidence.md`. No ledger case changes.
+
+## Standards-first I2 step 3: plan, identity, structure, budgets — 25 September 2026
+
+Gate 0 refuses requests that do not name the verifier-selected profile and binding
+(V09) without resolving anything; gate 1 checks that a protected artifact identifies
+itself by its resolved identity (P11); the evaluator takes the catalog and applies the
+request's resource/byte budget to evidence (each distinct resource once) and `maxDepth`
+to status lists, with a separate internal budget for pinned static material (P12, P16).
+Multiple schema declarations are unsupported (V10); standard optional `name` and
+`description` are admitted and inert (V11); placeholder proofs never verify (P07). Both
+languages.
+
+Ledger: V09–V12, P02–P04, P07–P12, P15 and P16 recorded `passing` with commands and
+exit codes (P10 at unit level); P05 `excluded_unsupported` because the RM v1 binding has
+no trust registry. The ledger command exits 0 (63 TS, 58 Python tests). Full results:
+TS 331 passed plus the 9 network-only failures; Python 287 passed, 1 skip; Ruff 204 and
+mypy 198 unchanged; build, lint, scenarios, schemas, generator checks and the poster
+bundle pass. See `docs/plans/standards-first-i2-evidence.md`.

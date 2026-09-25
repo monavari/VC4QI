@@ -16,7 +16,7 @@ from typing import Any, Literal
 from urllib.parse import urlsplit
 
 from ..utils.base58btc import from_multibase
-from .catalog import CatalogError, CatalogSession
+from .catalog import CatalogError, ResourceResolver
 from .types import SemanticState
 
 KeyAuthorizationCode = Literal[
@@ -85,7 +85,7 @@ def _decode_ed25519_multikey(value: Any) -> bytes | None:
 
 
 def authorize_assertion_method(
-    issuer: Any, verification_method: Any, session: CatalogSession
+    issuer: Any, verification_method: Any, session: ResourceResolver
 ) -> KeyAuthorization:
     """Decide whether verification_method may produce assertion proofs for issuer.
 
