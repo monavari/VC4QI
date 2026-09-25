@@ -23,6 +23,7 @@ import {
   catalogDocumentLoader, RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, RM_V1_VOCAB, sha384SRI, VC_V2_CONTEXT,
 } from '../src/reliance/index.js';
 import { loadRmV1Catalog } from '../src/reliance/rm-v1-node.js';
+import { encodeStatusList, MIN_STATUS_BITS } from '../src/reliance/status-list.js';
 import type { JsonObject } from '../src/types.js';
 import { toMultibase } from '../src/utils/base58btc.js';
 
@@ -35,6 +36,22 @@ const NAB = 'https://nab.vc4qi.example/controller';
 const PRODUCER = 'https://producer.vc4qi.example/controller';
 const LAB = 'https://lab.vc4qi.example/controller';
 const BATCH = 'urn:vc4qi-example:batch:cuzn39pb3-disc-lot-1';
+
+// Revocation status: one Bitstring Status List per issuer, all bits clear.
+const STATUS_LIST = {
+  nab: 'https://nab.vc4qi.example/status/1',
+  producer: 'https://producer.vc4qi.example/status/1',
+  lab: 'https://lab.vc4qi.example/status/1',
+} as const;
+const STATUS_ENTRY: Record<string, [string, number]> = {
+  'https://nab.vc4qi.example/credentials/A': [STATUS_LIST.nab, 0],
+  'https://nab.vc4qi.example/credentials/H': [STATUS_LIST.nab, 1],
+  'https://producer.vc4qi.example/credentials/O': [STATUS_LIST.producer, 0],
+  'https://producer.vc4qi.example/credentials/D178': [STATUS_LIST.producer, 1],
+  'https://producer.vc4qi.example/credentials/D197': [STATUS_LIST.producer, 2],
+  'https://producer.vc4qi.example/credentials/D520': [STATUS_LIST.producer, 3],
+  'https://lab.vc4qi.example/credentials/S': [STATUS_LIST.lab, 0],
+};
 
 interface Party { name: string; controller: string; seed: Uint8Array; publicKey: Uint8Array }
 
@@ -76,7 +93,18 @@ function record(uri: string, file: string, mediaType: string, text: string, orig
   return text;
 }
 
-async function sign(document: JsonObject, signer: Party, created: string): Promise<JsonObject> {
+async function sign(unsigned: JsonObject, signer: Party, created: string): Promise<JsonObject> {
+  const entry = STATUS_ENTRY[String(unsigned.id)];
+  const document: JsonObject = entry === undefined ? unsigned : {
+    ...unsigned,
+    credentialStatus: {
+      id: `${entry[0]}#${entry[1]}`,
+      type: 'BitstringStatusListEntry',
+      statusPurpose: 'revocation',
+      statusListIndex: String(entry[1]),
+      statusListCredential: entry[0],
+    },
+  };
   // Fresh budgeted session per proof; resolution is offline and catalog-only.
   const loader = catalogDocumentLoader(loadRmV1Catalog().openSession({ maxResources: 64, maxBytes: 1_000_000 }));
   const proof = await createProof(document, {
@@ -123,6 +151,27 @@ async function main() {
   for (const p of [nab, producer, lab]) {
     record(p.controller, `controllers/${p.name}.json`, 'application/json',
       serialize(controllerDocument(p)), FIXTURE);
+  }
+
+  // Status lists are signed by the issuer of the credentials they cover.
+  const clearList = encodeStatusList(new Uint8Array(MIN_STATUS_BITS / 8));
+  for (const p of [nab, producer, lab]) {
+    const listId = STATUS_LIST[p.name as keyof typeof STATUS_LIST];
+    record(listId, `status/${p.name}.json`, 'application/vc', serialize(await sign({
+      '@context': [VC_V2_CONTEXT],
+      id: listId,
+      type: ['VerifiableCredential', 'BitstringStatusListCredential'],
+      issuer: p.controller,
+      validFrom: '2026-09-01T00:00:00Z',
+      validUntil: '2027-09-01T00:00:00Z',
+      credentialSchema: { id: `${RM_V1_SCHEMA_BASE}status-list.json`, type: 'JsonSchema' },
+      credentialSubject: {
+        id: `${listId}#list`,
+        type: 'BitstringStatusList',
+        statusPurpose: 'revocation',
+        encodedList: clearList,
+      },
+    }, p, '2026-09-01T00:00:00Z')), FIXTURE);
   }
 
   const A_ID = 'https://nab.vc4qi.example/credentials/A';

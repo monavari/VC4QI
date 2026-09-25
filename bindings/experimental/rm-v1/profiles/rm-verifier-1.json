@@ -1,0 +1,18 @@
+{
+  "id": "https://vc4qi.example/profiles/rm-verifier",
+  "version": "1",
+  "status": "experimental",
+  "description": "Verifier-owned reliance profile for the experimental RM v1 binding. Fictional fixture configuration; not an external standard.",
+  "binding": {"id": "https://vc4qi.example/bindings/rm/1", "version": "1"},
+  "trustAnchors": [
+    {
+      "id": "https://nab.vc4qi.example/controller",
+      "purposes": ["accredit-rm-producers", "recognize-rm-laboratories"]
+    }
+  ],
+  "credentialStatus": {
+    "required": true,
+    "purposes": ["revocation"],
+    "maxAgeSeconds": 2592000
+  }
+}

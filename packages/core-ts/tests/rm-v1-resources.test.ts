@@ -64,6 +64,13 @@ function sampleCertificate(): JsonObject {
       id: 'https://producer.vc4qi.example/credentials/O',
       digestSRI: `sha384-${'A'.repeat(64)}`,
     }],
+    credentialStatus: {
+      id: 'https://producer.vc4qi.example/status/1#9',
+      type: 'BitstringStatusListEntry',
+      statusPurpose: 'revocation',
+      statusListIndex: '9',
+      statusListCredential: 'https://producer.vc4qi.example/status/1',
+    },
   };
 }
 

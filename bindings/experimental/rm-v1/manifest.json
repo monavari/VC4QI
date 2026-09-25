@@ -10,10 +10,8 @@
   },
   "installation": {
     "status": "incomplete",
-    "reason": "Contexts and schemas are pinned in catalog.json; controller documents and signed A/H/O/S/D178 fixtures are pinned in test-vectors/signed/catalog.json and verify in TypeScript and Python. Status resources, a full independent transformation vector and the I2-I4 evaluators are still required before selection.",
-    "pendingResources": [
-      "https://producer.vc4qi.example/status/1"
-    ]
+    "reason": "Contexts, schemas, controller documents, signed A/H/O/S/D fixtures and status lists are pinned and verify in TypeScript and Python. The I2-I4 evaluators (authorization, support, conformity) and an independent transformation vector are still required before selection.",
+    "pendingResources": []
   },
   "carrierAndSchema": {
     "model": "W3C Verifiable Credentials Data Model 2.0",
@@ -28,7 +26,8 @@
       "https://vc4qi.example/bindings/rm/1#RmOperationalScope",
       "https://vc4qi.example/bindings/rm/1#RmCertificate",
       "https://vc4qi.example/bindings/rm/1#RmStudy",
-      "https://vc4qi.example/bindings/rm/1#RmLabAuthority"
+      "https://vc4qi.example/bindings/rm/1#RmLabAuthority",
+      "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential"
     ],
     "schemaUris": [
       "https://vc4qi.example/schemas/rm/1/accreditation.json",
@@ -37,8 +36,10 @@
       "https://vc4qi.example/schemas/rm/1/study.json",
       "https://vc4qi.example/schemas/rm/1/lab-authority.json",
       "https://vc4qi.example/schemas/rm/1/authorization-policy.json",
-      "https://vc4qi.example/schemas/rm/1/study-reference.json"
+      "https://vc4qi.example/schemas/rm/1/study-reference.json",
+      "https://vc4qi.example/schemas/rm/1/status-list.json"
     ],
+    "statusListCarrier": "BitstringStatusListCredential with the VCDM 2.0 context only",
     "composition": "exact-listed-context-and-schema-combinations-only",
     "pinnedResourceIndex": "bindings/experimental/rm-v1/catalog.json",
     "decimalEncoding": "JSON strings typed xsd:decimal for every quantity, bound and uncertainty",
@@ -125,9 +126,11 @@
     "verificationMethodRule": "exact-installed-method-controlled-by-issuer-and-authorized-for-assertionMethod",
     "safeJsonLd": true,
     "proofCollections": "unsupported-in-initial-slice",
-    "status": "authenticated-current-status-required-for-non-anchor-A-O-D-S-H",
+    "status": "authenticated-current-revocation-status-required-for-A-O-D-S-H",
+    "statusMechanism": "W3C Bitstring Status List v1.0: multibase base64url GZIP encodedList, bounded decompression",
+    "statusAuthority": "status-list-issuer-equals-credential-issuer",
     "validity": ["validFrom", "validUntil"],
-    "freshness": "explicit-request-profile-value-no-default",
+    "freshness": "verifier-profile maxAgeSeconds from the status list validFrom; no default",
     "historicalReliance": "unsupported-without-authenticated-historical-evidence",
     "resolver": {"network": false, "unknownUri": "refuse", "budgets": ["maxResources", "maxDepth", "maxBytes"]},
     "installedEvaluatorsOnly": true,

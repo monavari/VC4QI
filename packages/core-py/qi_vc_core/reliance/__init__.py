@@ -19,6 +19,7 @@ from .manifest import (
     load_binding_manifest,
     require_installable_binding,
 )
+from .profile import RelianceProfile, TrustAnchor, load_reliance_profile
 from .rm_v1 import (
     RM_V1_CONTEXT,
     RM_V1_SCHEMA_BASE,
@@ -101,4 +102,7 @@ __all__ = [
     "Gate",
     "ResourceObservation",
     "TraceEntry",
+    "RelianceProfile",
+    "TrustAnchor",
+    "load_reliance_profile",
 ]

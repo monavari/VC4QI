@@ -78,6 +78,13 @@ const quantity = closed({
   unit: closed({ ucumCode: { enum: ['mg/kg', 'kg/kg'] } }),
   uncertainty: closed({ expandedUncertainty: decimal, coverageFactor: decimal }),
 });
+const credentialStatus = closed({
+  id: iri,
+  type: { const: 'BitstringStatusListEntry' },
+  statusPurpose: { const: 'revocation' },
+  statusListIndex: { type: 'string', pattern: '^(0|[1-9][0-9]*)$' },
+  statusListCredential: iri,
+});
 const result = closed({
   propertyIri: iri,
   methodIri: iri,
@@ -97,6 +104,7 @@ function credentialSchema(file, rmType, title, subject, extra = {}, requiredExtr
     credentialSchema: closed({ id: { const: id }, type: { const: 'JsonSchema' } }),
     credentialSubject: subject,
     ...extra,
+    credentialStatus,
     proof,
   };
   return {
@@ -106,7 +114,7 @@ function credentialSchema(file, rmType, title, subject, extra = {}, requiredExtr
     description: 'Experimental VC4QI RM binding v1 fixture schema. Not an external standard.',
     ...closed(properties, [
       '@context', 'id', 'type', 'issuer', 'validFrom', 'validUntil',
-      'credentialSchema', 'credentialSubject', ...requiredExtra,
+      'credentialSchema', 'credentialSubject', 'credentialStatus', ...requiredExtra,
     ]),
   };
 }
@@ -167,6 +175,28 @@ const schemas = {
     'lab-authority.json', 'RmLabAuthority', 'Study laboratory authority (H)',
     grantSubject(labScopeRecord, [`${ACT}issueRmStudy`]),
   ),
+  'status-list.json': {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    $id: `${SCHEMA_BASE}status-list.json`,
+    title: 'Bitstring Status List credential for RM v1 fixtures',
+    description: 'Experimental VC4QI RM binding v1 fixture schema. Not an external standard.',
+    ...closed({
+      '@context': { const: [VC_V2] },
+      id: iri,
+      type: { const: ['VerifiableCredential', 'BitstringStatusListCredential'] },
+      issuer: iri,
+      validFrom: dateTime,
+      validUntil: dateTime,
+      credentialSchema: closed({ id: { const: `${SCHEMA_BASE}status-list.json` }, type: { const: 'JsonSchema' } }),
+      credentialSubject: closed({
+        id: iri,
+        type: { const: 'BitstringStatusList' },
+        statusPurpose: { const: 'revocation' },
+        encodedList: { type: 'string', pattern: '^u[A-Za-z0-9_-]+$' },
+      }),
+      proof,
+    }, ['@context', 'id', 'type', 'issuer', 'validFrom', 'validUntil', 'credentialSchema', 'credentialSubject']),
+  },
   'authorization-policy.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     $id: `${SCHEMA_BASE}authorization-policy.json`,
