@@ -12,6 +12,7 @@ import {
 
 function validRequest(): RelianceRequestInput {
   return {
+    requestId: 'urn:uuid:request-001',
     targetId: 'urn:uuid:rm-certificate-001',
     selectedClaims: [{
       id: 'arsenic-mass-fraction',
@@ -168,6 +169,7 @@ describe('three-state semantic operators', () => {
 describe('reliance result contract', () => {
   it('keeps artifact verification separate and records unrequested conformity as not_run', () => {
     const result = createRelianceResult({
+      requestId: 'urn:uuid:request-001',
       targetId: 'urn:uuid:rm-certificate-001',
       binding: { id: 'https://rm-binding.example/v1', version: '1.0.0' },
       profile: { id: 'https://rm-profile.example/current-reliance', version: '1.0.0' },
@@ -202,6 +204,7 @@ describe('reliance result contract', () => {
 
   it('does not allow not_run to establish or contradict a predicate', () => {
     expect(() => createRelianceResult({
+      requestId: 'urn:uuid:request-001',
       targetId: 'urn:uuid:rm-certificate-001',
       binding: { id: 'https://vc4qi.example/bindings/rm/1', version: '1' },
       profile: { id: 'https://vc4qi.example/profiles/rm/current-reliance/1', version: '1' },
@@ -221,6 +224,7 @@ describe('reliance result contract', () => {
 
   it('rejects invalid runtime execution and decision values', () => {
     const base = {
+      requestId: 'urn:uuid:request-001',
       targetId: 'urn:uuid:rm-certificate-001',
       binding: { id: 'https://vc4qi.example/bindings/rm/1', version: '1' },
       profile: { id: 'https://vc4qi.example/profiles/rm/current-reliance/1', version: '1' },
@@ -244,5 +248,48 @@ describe('reliance result contract', () => {
       artifactVerification: [],
       decision: 'invalid',
     } as unknown as Parameters<typeof createRelianceResult>[0])).toThrow(/reliance decision/);
+  });
+});
+
+describe('reliance trace and resource contract (I2)', () => {
+  const base = () => ({
+    requestId: 'urn:uuid:request-001',
+    targetId: 'urn:uuid:rm-certificate-001',
+    binding: { id: 'https://vc4qi.example/bindings/rm/1', version: '1' },
+    profile: { id: 'https://vc4qi.example/profiles/rm-verifier', version: '1' },
+    artifactVerification: [],
+    authorization: [],
+    support: [],
+    conformity: { requested: false as const, execution: 'not_run' as const },
+    decision: 'not_established' as const,
+  });
+  const entry = {
+    gate: 2 as const, nodeUse: 'urn:uuid:rm-certificate-001#target', predicate: 'signature',
+    state: 'established' as const, execution: 'executed' as const, reason: 'verifies', sources: ['/proof'],
+  };
+  const resource = {
+    uri: 'https://vc4qi.example/contexts/rm/1', digestSRI: `sha384-${'A'.repeat(64)}`,
+    kind: 'static' as const, source: 'catalog' as const, observedAt: '2026-09-25T10:15:30Z',
+  };
+
+  it('requires a request identity on requests and results', () => {
+    expect(() => createRelianceRequest({ ...validRequest(), requestId: ' ' })).toThrow(/requestId/);
+    expect(() => createRelianceResult({ ...base(), requestId: '' })).toThrow(/requestId/);
+  });
+
+  it('keeps frozen gate-numbered trace entries and resource observations', () => {
+    const result = createRelianceResult({ ...base(), trace: [entry], resources: [resource] });
+    expect(result.requestId).toBe('urn:uuid:request-001');
+    expect(result.trace).toEqual([entry]);
+    expect(result.resources).toEqual([resource]);
+    expect(Object.isFrozen(result.trace[0])).toBe(true);
+    expect(Object.isFrozen(result.trace[0]?.sources)).toBe(true);
+  });
+
+  it('rejects non-canonical gates, not_run entries that establish, and bad resources', () => {
+    expect(() => createRelianceResult({ ...base(), trace: [{ ...entry, gate: 7 as never }] })).toThrow(/gate/);
+    expect(() => createRelianceResult({ ...base(), trace: [{ ...entry, execution: 'not_run' }] })).toThrow(/not run/);
+    expect(() => createRelianceResult({ ...base(), resources: [{ ...resource, digestSRI: 'sha256-x' }] })).toThrow(/SHA-384/);
+    expect(() => createRelianceResult({ ...base(), resources: [{ ...resource, observedAt: 'yesterday' }] })).toThrow(/observedAt/);
   });
 });

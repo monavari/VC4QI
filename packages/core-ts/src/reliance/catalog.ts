@@ -50,6 +50,33 @@ export function sha384SRI(bytes: Uint8Array): `sha384-${string}` {
   return `sha384-${digest}`;
 }
 
+/** Anything that resolves pinned resources by URI (a session, or a memoizing wrapper). */
+export interface ResourceResolver {
+  resolve(uri: string): StaticResource;
+}
+
+/**
+ * Resolve each distinct URI at most once through `inner`, so a budget counts distinct
+ * resources per evaluation rather than repeated reads. Returns fresh byte copies.
+ */
+export function memoizingResolver(inner: ResourceResolver): ResourceResolver & { readonly resolved: ReadonlySet<string> } {
+  const cache = new Map<string, StaticResource | CatalogError>();
+  return {
+    get resolved() { return new Set(cache.keys()); },
+    resolve(uri: string): StaticResource {
+      if (!cache.has(uri)) {
+        try { cache.set(uri, inner.resolve(uri)); } catch (error) {
+          if (!(error instanceof CatalogError)) throw error;
+          cache.set(uri, error);
+        }
+      }
+      const entry = cache.get(uri)!;
+      if (entry instanceof CatalogError) throw entry;
+      return { ...entry, bytes: Uint8Array.from(entry.bytes) };
+    },
+  };
+}
+
 export class StaticResourceCatalog {
   readonly #resources = new Map<string, Omit<StaticResource, 'bytes'> & { bytes: Uint8Array }>();
 
@@ -110,7 +137,7 @@ export class CatalogSession {
 }
 
 /** Adapt one budgeted catalog session to an isolated, offline JSON-LD loader. */
-export function catalogDocumentLoader(session: CatalogSession): DocumentLoader {
+export function catalogDocumentLoader(session: ResourceResolver): DocumentLoader {
   return async (url: string) => {
     const resource = session.resolve(url);
     if (resource.mediaType !== 'application/json' &&

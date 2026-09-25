@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vc4qi.example/schemas/rm/1/study-reference.json",
+  "title": "RM required-study reference entry in evidence",
+  "type": "object",
+  "required": [
+    "id",
+    "type"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "type": {
+      "const": "RmStudyReference"
+    }
+  },
+  "additionalProperties": false
+}

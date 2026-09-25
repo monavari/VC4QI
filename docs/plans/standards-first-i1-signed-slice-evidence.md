@@ -1,0 +1,102 @@
+# I1 signed RM vertical-slice evidence
+
+**25 September 2026. The signed vertical slice is implemented in TypeScript and
+mirrored in Python; status resources, an independent transformation vector and the
+I2–I4 evaluators remain.**
+This evidence establishes protection, validity and integrity of fictional signed
+artifacts. It establishes no authorization, support, conformity or overall reliance.
+
+## What is implemented
+
+| Part | Location | Behaviour |
+| --- | --- | --- |
+| Pinned resources | `bindings/experimental/rm-v1/catalog.json`, `scripts/rm-v1/build-resources.mjs` | RM v1 context, seven schemas and the vendored VCDM 2.0 context, SHA-384 over exact bytes |
+| Key authorization | `reliance/key-authorization.ts`, Python `key_authorization.py` | Proof key must be the issuer's own Ed25519 Multikey, referenced from `assertionMethod` in its catalog-installed controller document; 17 shared vectors |
+| Signed fixtures | `rm-v1/test-vectors/signed/`, `packages/core-ts/scripts/generate-rm-v1-artifacts.ts` | Controller documents and A, H, O, S, D178; reproducible from public seeds; `--check` mode |
+| Artifact verification | `reliance/rm-v1-artifacts.ts` (`verifyRmArtifact`) | resolve → strict JSON → exact context pair → recognized type + declared schema → pinned JSON Schema → one proof → key authorization → Ed25519 signature over safe-mode RDFC canonicalization, offline |
+| Protected facts | same | Only after protection: manifest native paths evaluated to concrete RFC 6901 pointers |
+| Slice evaluation | same (`evaluateRmSlice`) | Protection, validity and `relatedResource` integrity executed; authorization, support, conformity `not_run`; decision is never `accept` |
+| Python mirror | `qi_vc_core/reliance/rm_v1_artifacts.py` | Same ordered checks, facts and slice result; `jsonschema` for the pinned schemas; sentinel-`@vocab` undefined-term check in place of safe mode |
+
+State rules: missing or unsupported inputs are `not_established` (unavailable artifact
+or controller document, unsupported context combination, proof set); evidence of
+failure is `contradicted` (schema violation, key not the issuer's, bad signature,
+digest mismatch, expiry). Contradiction yields `reject`; otherwise the I1 decision is
+`not_established` because the unexecuted obligations cannot establish anything.
+
+## Results
+
+`packages/core-ts/tests/rm-v1-slice.test.ts`: 21 tests pass (Python mirror: 22). Each of A, H, O, S and D178
+passes all eight protection checks, validity at 2026-09-25 and `relatedResource`
+integrity. D178 facts include `/issuer`, `/termsOfUse/0/authorizationCredential/id`,
+`/evidence/0/id` and the selected result at
+`/credentialSubject/materialPropertiesList/0/results/0` (value `"178"`). Authentic D with
+A/O/S/H yields decision `not_established`, with authorization, support and requested
+conformity `not_run`.
+
+Negative controls, all passing:
+
+- value changed to 150 without re-signing → signature contradicted, no facts, `reject`;
+- D correctly signed by the laboratory's own key → key `NOT_ISSUER_CONTROLLER`;
+- proof naming the producer's key but made with the laboratory's → signature contradicted;
+- control: the genuine key re-signing changed content verifies;
+- undeclared claim → safe-mode signing refuses it, schema check contradicts it;
+- one extra byte in O → O's signature holds but D's `relatedResource` digest contradicts → `reject`;
+- missing S → integrity `not_established`, decision `not_established`;
+- missing target or controller document → `not_established`;
+- reversed contexts or a proof set → not established; expired target → `reject`;
+- a selected claim outside the protected results → claim `not_established`;
+- arbitrary policy type names (`AuthorizedByPolicy`, `RmAuthorizationPolicyV2`,
+  `rmAuthorizationPolicy`) → schema contradicted, no facts;
+- no signed fixture contains a legacy relation/basis field (`authorizedBy`,
+  `derivedFrom`, `supportedBy`, `authorizationBasis`, `scopeRef`) or `qi-vc` term.
+
+## I1 exit gate
+
+| Plan exit criterion | Status |
+| --- | --- |
+| Both languages verify supported baseline protection | Done (TS safe mode; Python sentinel undefined-term check) |
+| Protected facts through exact native paths, with provenance | Done (RFC 6901 pointers, artifact SRI digest, controller-document digest) |
+| New credentials carry no legacy relation/basis contract | Done (tested) |
+| Arbitrary policy names and unsafe expansion as negative controls | Done |
+| Exact integrity representation settled | Done: SHA-384 SRI over exact secured bytes |
+| Static dependencies pinned with provenance and hashes | Done, except the published-hash comparison for the VCDM 2.0 context (network) |
+| Independent suite vectors | Open: only the W3C B.1 primitive control; full transformation vector needs network |
+
+Python: `pytest packages/core-py/tests` 257 passed, 1 existing skip. Ruff (204) and
+mypy (198) package-wide counts are unchanged from the recorded baseline; the new modules
+and tests are clean.
+
+Full-suite results in this environment: `pnpm -C packages/core-ts test` 302 passed, 9
+failed; the 9 are pre-existing legacy tests that fetch the W3C context over the network
+(blocked here) and pass in CI. `pnpm -r build` (including the browser demo), TS lint,
+scenarios and schema validation exit 0.
+
+## Limits and remaining I1 work
+
+- **Python parity.** `tests/test_rm_v1_slice.py` (18 tests) runs the same positive
+  path and negative controls over the TypeScript-generated bytes and passes. PyLD 3.3.0
+  has no safe mode; Python instead expands the document with an extra sentinel `@vocab`
+  and rejects any term or type that lands in it. That catches undefined terms and types
+  but not every condition jsonld.js safe mode reports (for example other dropped or
+  invalid values). The closed JSON Schemas run first in both languages and reject
+  undeclared properties regardless. Python's `uri` format check (absolute, has a scheme,
+  no whitespace) is narrower than ajv-formats' RFC 3986 grammar.
+- **Cross-library agreement, not conformance.** Python (PyLD + PyNaCl) verifies all five
+  TypeScript-signed fixtures and rejects tampered copies; a D re-signed in Python verified
+  in TypeScript (one-off check, recorded here, not a committed test). The two use
+  separate JSON-LD and Ed25519 libraries, but they share the fixtures and this
+  repository's proof code; this is not an independent conformance vector. The published
+  W3C Appendix B.1 control still covers the signature primitive only.
+- **New dependency.** `jsonschema>=4.23,<5` (resolved 4.26.0, MIT; transitive
+  `jsonschema-specifications`, `referencing`, `rpds-py`, all MIT) was added to core-py
+  for schema-validation parity.
+- **Open question on the vendored context.** The vendored VCDM 2.0 context has no
+  top-level `@vocab`. If the context W3C publishes declares an issuer-dependent `@vocab`,
+  undefined terms would expand instead of being rejected by safe mode, and the
+  undefined-term controls would rely on the closed schemas alone. This must be checked
+  against the published bytes and hash with network access.
+- **Status.** No status list exists yet; status is reported as a limitation.
+- **Published context hash.** The vendored VCDM 2.0 context was not compared with the
+  hash W3C publishes (network blocked here).
+- The manifest stays `incomplete`; no acceptance-ledger case is marked passing.

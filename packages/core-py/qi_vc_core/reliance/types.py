@@ -9,6 +9,17 @@ from typing import Literal
 SemanticState = Literal["established", "contradicted", "not_established"]
 ExecutionState = Literal["executed", "not_run"]
 RelianceDecision = Literal["accept", "reject", "not_established"]
+Gate = Literal[0, 1, 2, 3, 4, 5, 6]
+# Canonical gate numbers (handover section 5.3), shared with the TypeScript core.
+GATE_NAMES: tuple[str, ...] = (
+    "plan-and-structure",
+    "resource-identity",
+    "protection",
+    "temporal-applicability",
+    "meaning-and-mapping",
+    "authority-and-scope",
+    "support-and-decision",
+)
 
 
 @dataclass(frozen=True)
@@ -37,7 +48,30 @@ class ConformityRequest:
 
 
 @dataclass(frozen=True)
+class TraceEntry:
+    """One evaluated predicate for one use of an artifact, with input provenance."""
+
+    gate: Gate
+    node_use: str
+    predicate: str
+    state: SemanticState
+    execution: ExecutionState
+    reason: str
+    sources: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ResourceObservation:
+    uri: str
+    digest_sri: str
+    kind: Literal["static", "artifact", "status"]
+    source: Literal["catalog", "supplied"]
+    observed_at: str
+
+
+@dataclass(frozen=True)
 class RelianceRequest:
+    request_id: str
     target_id: str
     selected_claims: tuple[SelectedClaim, ...]
     purpose: str
@@ -94,6 +128,7 @@ ConformityResult = ConformityNotRequested | ConformityRequestedResult
 
 @dataclass(frozen=True)
 class RelianceResult:
+    request_id: str
     target_id: str
     binding: VersionedIdentifier
     profile: VersionedIdentifier
@@ -102,6 +137,8 @@ class RelianceResult:
     support: tuple[SupportResult, ...]
     conformity: ConformityResult
     decision: RelianceDecision
+    trace: tuple[TraceEntry, ...] = ()
+    resources: tuple[ResourceObservation, ...] = ()
     limitations: tuple[str, ...] = ()
 
 
@@ -116,8 +153,7 @@ def _unique(values: tuple[str, ...], field: str) -> None:
 
 
 _OFFSET_TIME = re.compile(
-    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?"
-    r"(?:Z|[+-](\d{2}):(\d{2}))$"
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?" r"(?:Z|[+-](\d{2}):(\d{2}))$"
 )
 _MAX_SAFE_INTEGER = 2**53 - 1
 _SEMANTIC_STATES = ("established", "contradicted", "not_established")
@@ -158,6 +194,7 @@ def _versioned(value: VersionedIdentifier, field: str) -> None:
 
 
 def create_reliance_request(value: RelianceRequest) -> RelianceRequest:
+    _nonempty(value.request_id, "request_id")
     _nonempty(value.target_id, "target_id")
     _nonempty(value.purpose, "purpose")
     _nonempty(value.trust_config_id, "trust_config_id")
@@ -185,6 +222,7 @@ def create_reliance_request(value: RelianceRequest) -> RelianceRequest:
         _nonempty(value.conformity.requirement_id, "conformity.requirement_id")
         _nonempty(value.conformity.decision_rule_id, "conformity.decision_rule_id")
     return RelianceRequest(
+        request_id=value.request_id,
         target_id=value.target_id,
         selected_claims=tuple(
             SelectedClaim(id=claim.id, source_pointer=claim.source_pointer)
@@ -222,7 +260,59 @@ def _predicate(value: PredicateResult) -> None:
         raise ValueError("A predicate that was not run must be not_established.")
 
 
+_SRI384 = re.compile(r"^sha384-[A-Za-z0-9+/]{64}$")
+
+
+def _trace_entry(entry: TraceEntry, index: int) -> TraceEntry:
+    if (
+        isinstance(entry.gate, bool)
+        or not isinstance(entry.gate, int)
+        or not 0 <= entry.gate <= 6
+    ):
+        raise ValueError(f"trace[{index}].gate must be a canonical gate number 0-6.")
+    _nonempty(entry.node_use, f"trace[{index}].node_use")
+    _nonempty(entry.predicate, f"trace[{index}].predicate")
+    _nonempty(entry.reason, f"trace[{index}].reason")
+    _predicate(
+        PredicateResult(
+            state=entry.state,
+            execution=entry.execution,
+            reasons=(entry.reason,),
+            source_pointers=tuple(entry.sources),
+        )
+    )
+    return TraceEntry(
+        gate=entry.gate,
+        node_use=entry.node_use,
+        predicate=entry.predicate,
+        state=entry.state,
+        execution=entry.execution,
+        reason=entry.reason,
+        sources=tuple(entry.sources),
+    )
+
+
+def _resource(resource: ResourceObservation, index: int) -> ResourceObservation:
+    _nonempty(resource.uri, f"resources[{index}].uri")
+    if not _SRI384.fullmatch(resource.digest_sri):
+        raise ValueError(f"resources[{index}].digest_sri must be a SHA-384 SRI value.")
+    if resource.kind not in ("static", "artifact", "status") or resource.source not in (
+        "catalog",
+        "supplied",
+    ):
+        raise ValueError(f"resources[{index}] has an unsupported kind or source.")
+    _iso_time(resource.observed_at, f"resources[{index}].observed_at")
+    return ResourceObservation(
+        uri=resource.uri,
+        digest_sri=resource.digest_sri,
+        kind=resource.kind,
+        source=resource.source,
+        observed_at=resource.observed_at,
+    )
+
+
 def create_reliance_result(value: RelianceResult) -> RelianceResult:
+    _nonempty(value.request_id, "request_id")
     _nonempty(value.target_id, "target_id")
     _versioned(value.binding, "binding")
     _versioned(value.profile, "profile")
@@ -261,6 +351,7 @@ def create_reliance_result(value: RelianceResult) -> RelianceResult:
     if value.decision not in _RELIANCE_DECISIONS:
         raise ValueError(f"Unsupported reliance decision: {value.decision}.")
     return RelianceResult(
+        request_id=value.request_id,
         target_id=value.target_id,
         binding=VersionedIdentifier(id=value.binding.id, version=value.binding.version),
         profile=VersionedIdentifier(id=value.profile.id, version=value.profile.version),
@@ -298,6 +389,8 @@ def create_reliance_result(value: RelianceResult) -> RelianceResult:
         ),
         conformity=conformity,
         decision=value.decision,
+        trace=tuple(_trace_entry(entry, i) for i, entry in enumerate(value.trace)),
+        resources=tuple(_resource(item, i) for i, item in enumerate(value.resources)),
         limitations=tuple(value.limitations),
     )
 

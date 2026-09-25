@@ -1,14 +1,16 @@
 # Standards-first reconciliation: documentation and implementation plan
 
 Prepared 21 September 2026; documentation validated 23 September; I0 completed 24 September.
-**Status: D0–D4 and I0 complete; the I1 contract/catalog slice is complete and its
-signed protected mapping remains in progress.**
+**Status: D0–D4 and I0 complete; I1 implemented in both languages (two
+network-dependent checks open); I2 next.** The 25 September milestone audit added the
+phase assignments and requirements marked "Audit" below.
 
 [I0 evidence](standards-first-i0-evidence.md) records the repaired setup, regression
 results, remaining lint debt and inventories. The
 [I1 contract evidence](standards-first-i1-contract-evidence.md) records the immutable
-request/result API, incomplete manifest and exact-byte catalog. Next is the signed
-protected mapping slice required to finish I1.
+request/result API, incomplete manifest and exact-byte catalog; the
+[signed-slice evidence](standards-first-i1-signed-slice-evidence.md) records the signed
+RM slice, key authorization, Python parity and the I1 exit gate.
 
 ## Recommendation and scope
 
@@ -272,9 +274,17 @@ registries/status, deterministic dispatch, identity conflicts and temporal polic
 Separate artifact caches from contextual reliance caches and dynamic observations.
 Implement semantic aggregation independent of display trace counts.
 
-Exit: relevant V/P cases prove no higher-gate authority from failed lower gates,
-no all-SKIP acceptance, correct missing-versus-contradicted states, and bounded
-resource failures. Original signed bytes are never repaired before verification.
+Audit: extend the result with the handover §4.3 fields the I1 contract lacks: request
+identity, a trace entry per gate/node-use/predicate with input provenance, and
+resource observations (content identities, retrieval sources/times, status
+observations). Use the canonical gate numbers 0–6 in code, tests, docs and UI. Fold the
+I1 slice evaluator into this compiler rather than keeping a parallel path. Add the RM
+status list with authenticated status authority (P08–P10) and bounded decompression.
+
+Exit: V09–V11, P04, P05, P07–P12, P15 and P16 prove no higher-gate authority from
+failed lower gates, no all-SKIP acceptance, correct missing-versus-contradicted states,
+and bounded resource failures; P02/P03/V12 gain gate-numbered assertions. Original
+signed bytes are never repaired before verification.
 
 ### I3 — complete authorization routes and recursive support
 
@@ -285,7 +295,13 @@ authority before checking batch/material/instrument/method/time applicability.
 Memoize complete node-use context and detect required recursion on the active
 stack; allow shared DAG reuse and inert unrelated provenance cycles.
 
-Exit: C01–C16 and principal controls pass with signed semantic fixtures. Wrong
+Audit: the RM binding has one route, so C01–C06 need a second signed fixture profile
+with alternative complete routes (for example competence AND scheme permission, OR
+statutory authority) and an applicable global suspension. Decide and implement or
+explicitly declare unsupported the independently discovered grant rule (V08, handover
+§3.3 item 5); record it in the manifest. V05–V07 and P06 belong here.
+
+Exit: C01–C16, V05–V08 and P06 pass with signed semantic fixtures. Wrong
 batch is contradicted; missing study is not established. Incomplete route search
 cannot claim every route was disproved. Keep GS independent laboratory authority.
 
@@ -303,7 +319,12 @@ authorization-only requests. Port each predicate and its shared vectors together
 | x=197, U=5 | Established | 197+5=202 > 200 | reject for conformity |
 | x=520, U=5 | Contradicted: above 500 | not_run | reject for scope |
 
-Exit: S01–S24 plus x=197 authorization-only, x=195 exact decision boundary,
+Audit: S08 needs two selectable profiles (M2 as accepted successor of M1 versus
+explicit extension) plus the missing-interpretation case. S18, S19 and S21 are
+calibration (DCC) cases and move to I5 with the migrated calibration binding. P01 and
+V01 are the first cases that can pass end to end, here.
+
+Exit: S01–S24 except S18/S19/S21, plus x=197 authorization-only, x=195 exact decision boundary,
 x=500 inclusive scope, both interval endpoints, missing/invalid units, mg/kg↔kg/kg,
 no record splicing and no RM uncertainty ceiling. Compare states, selected
 records/routes and normalized arithmetic across languages. The paper witness must
@@ -317,8 +338,8 @@ before mapping them and never imply converted signatures remain valid. Migrate
 all six base use cases and retain both GS application variants. Replace old
 presentation-query paths and document API/schema/profile version breaks.
 
-Exit: the default new path has no dependency on legacy wire enums, and V01–V12
-cover explicit compatibility behavior. Do not weaken expected results just to
+Exit: the default new path has no dependency on legacy wire enums, V02/V03 cover
+explicit legacy compatibility, and S18/S19/S21 pass under the migrated calibration binding. Do not weaken expected results just to
 restore green tests. Draft a coherent next pre-1.0 version such as 0.4.0 using
 repository conventions; final numbering/metadata follows the migration evidence.
 
@@ -347,6 +368,9 @@ Use fictional reissuance for legitimate changed values; expose a separate tamper
 control. Retain TS `ecdsa-sd-2023`, test mandatory evidence disclosure, and handle
 legitimate suite-derived representations without naïve identity conflicts. Python
 SD remains semantic verification of a TS-derived subset, explicitly not SD crypto.
+
+Audit: the poster page (`site/m375a`) already runs `verifyRmArtifact` for gates 0–3 with
+a labelled preview of gates 4–6; switch its preview to the real I3/I4 evaluator here.
 
 Exit: E10–E14 and actual UI interaction tests, including transitions 178→197→520,
 inspector selection, unavailable history and simulation labels. A Vite build or
@@ -392,8 +416,10 @@ handover does not supply require a localized `TODO(human)` and report entry; the
 do not block the fictional RM baseline or independent work.
 
 D0–D4 and I0 are complete, with validation and remaining baseline debt recorded in the
-report. I1's executable binding/request/result contract and isolated catalog are complete.
-The signed protected vertical slice is next, before broader evaluator replacement.
+report. I1's contract, catalog, pinned resources, key authorization and signed slice are
+implemented in both languages; the published-context comparison and an independent
+transformation vector remain open. I2, the protected graph compiler and seven-gate
+evaluator, is next.
 
 The user requested Astra for hard semantic/design review, Sol for implementation
 and Luna at max reasoning for bounded documentation/consistency tasks. These three

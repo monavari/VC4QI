@@ -19,7 +19,10 @@
     "./edge": "./src/edge/index.ts",
     "./presentation-query": "./src/presentation-query/index.ts",
     "./terms": "./src/terms/index.ts",
-    "./assessment": "./src/assessment/index.ts"
+    "./assessment": "./src/assessment/index.ts",
+    "./reliance/rm-v1-node": "./src/reliance/rm-v1-node.ts",
+    "./reliance/rm-v1-artifacts": "./src/reliance/rm-v1-artifacts.ts",
+    "./reliance/rm-v1-slice": "./src/reliance/rm-v1-slice.ts"
   },
   "scripts": {
     "test": "vitest run",

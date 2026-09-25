@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vc4qi.example/schemas/rm/1/accreditation.json",
+  "title": "RM producer accreditation (A)",
+  "description": "Experimental VC4QI RM binding v1 fixture schema. Not an external standard.",
+  "type": "object",
+  "required": [
+    "@context",
+    "id",
+    "type",
+    "issuer",
+    "validFrom",
+    "validUntil",
+    "credentialSchema",
+    "credentialSubject",
+    "credentialStatus"
+  ],
+  "properties": {
+    "@context": {
+      "const": [
+        "https://www.w3.org/ns/credentials/v2",
+        "https://vc4qi.example/contexts/rm/1"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "type": {
+      "const": [
+        "VerifiableCredential",
+        "RmAccreditation"
+      ]
+    },
+    "issuer": {
+      "type": "string",
+      "format": "uri"
+    },
+    "validFrom": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "validUntil": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "credentialSchema": {
+      "type": "object",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "const": "https://vc4qi.example/schemas/rm/1/accreditation.json"
+        },
+        "type": {
+          "const": "JsonSchema"
+        }
+      },
+      "additionalProperties": false
+    },
+    "credentialSubject": {
+      "type": "object",
+      "required": [
+        "id",
+        "permittedActivity",
+        "scope"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "permittedActivity": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "https://vc4qi.example/bindings/rm/1#issueRmCertificate",
+              "https://vc4qi.example/bindings/rm/1#maintainRmScope"
+            ]
+          }
+        },
+        "scope": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "matrixIri",
+              "formIri",
+              "allowedPropertyIris",
+              "allowedMethodIris",
+              "quantityKindIri",
+              "range"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uri"
+              },
+              "matrixIri": {
+                "type": "string",
+                "format": "uri"
+              },
+              "formIri": {
+                "type": "string",
+                "format": "uri"
+              },
+              "allowedPropertyIris": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              },
+              "allowedMethodIris": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              },
+              "quantityKindIri": {
+                "type": "string",
+                "format": "uri"
+              },
+              "range": {
+                "type": "object",
+                "required": [
+                  "from",
+                  "to",
+                  "unit"
+                ],
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                  },
+                  "to": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                  },
+                  "unit": {
+                    "enum": [
+                      "mg/kg",
+                      "kg/kg"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "credentialStatus": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "statusPurpose",
+        "statusListIndex",
+        "statusListCredential"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "type": {
+          "const": "BitstringStatusListEntry"
+        },
+        "statusPurpose": {
+          "const": "revocation"
+        },
+        "statusListIndex": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$"
+        },
+        "statusListCredential": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": false
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "proof": {
+      "type": "object",
+      "required": [
+        "type",
+        "cryptosuite",
+        "proofPurpose",
+        "verificationMethod",
+        "created",
+        "proofValue"
+      ],
+      "properties": {
+        "type": {
+          "const": "DataIntegrityProof"
+        },
+        "cryptosuite": {
+          "const": "eddsa-rdfc-2022"
+        },
+        "proofPurpose": {
+          "const": "assertionMethod"
+        },
+        "verificationMethod": {
+          "type": "string",
+          "format": "uri"
+        },
+        "created": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$"
+        },
+        "proofValue": {
+          "type": "string",
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
