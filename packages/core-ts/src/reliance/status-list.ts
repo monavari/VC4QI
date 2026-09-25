@@ -76,6 +76,27 @@ function isObject(value: unknown): value is Record<string, unknown> {
 }
 
 /**
+ * The credential's single status entry for one of `purposes`. VCDM 2.0 allows one
+ * entry or an array; entries for other purposes are left to whoever evaluates them
+ * (suspension is a global restriction in RM v1). Several entries for the requested
+ * purposes are ambiguous and never "take the first".
+ */
+export function selectStatusEntry(
+  credential: Record<string, unknown>, purposes: readonly string[],
+): { entry?: Record<string, unknown>; reason?: string } {
+  const value = credential.credentialStatus;
+  if (value === undefined) return {};
+  const entries = Array.isArray(value) ? value : [value];
+  if (entries.length === 0 || !entries.every(isObject)) return { reason: 'Unsupported credentialStatus form.' };
+  const matching = entries.filter(entry => purposes.includes(String(entry.statusPurpose)));
+  if (matching.length > 1) return { reason: `Several status entries for ${purposes.join('/')}.` };
+  if (matching.length === 0) {
+    return { reason: `No status entry has an accepted purpose (${purposes.join(', ')}); found ${entries.map(e => String(e.statusPurpose)).join(', ')}.` };
+  }
+  return { entry: matching[0]! };
+}
+
+/**
  * Evaluate the target's `credentialStatus` against an already verified status-list
  * credential. `list` is undefined when the list could not be resolved; `listProtected`
  * reports whether the list's own protection and validity were established.
@@ -89,21 +110,20 @@ export function evaluateStatus(
   policy: StatusPolicy,
   evaluationTime: string,
 ): StatusOutcome {
-  const entry = credential.credentialStatus;
-  if (entry === undefined) {
+  const selected = selectStatusEntry(credential, policy.purposes);
+  const entry = selected.entry;
+  if (entry === undefined && selected.reason === undefined) {
     return policy.required
       ? { state: 'not_established', reason: 'Status is required by the profile but the credential names none.', sources: [] }
       : { state: 'established', reason: 'The profile does not require status for this credential.', sources: [] };
   }
-  if (!isObject(entry) || entry.type !== 'BitstringStatusListEntry' ||
+  if (entry === undefined) return { state: 'not_established', reason: selected.reason!, sources: ['/credentialStatus'] };
+  if (entry.type !== 'BitstringStatusListEntry' ||
       typeof entry.statusListCredential !== 'string' || typeof entry.statusListIndex !== 'string') {
     return { state: 'not_established', reason: 'Unsupported credentialStatus form.', sources: ['/credentialStatus'] };
   }
   const listUri = entry.statusListCredential;
   const sources = ['/credentialStatus', listUri];
-  if (!policy.purposes.includes(String(entry.statusPurpose))) {
-    return { state: 'not_established', reason: `Status purpose ${String(entry.statusPurpose)} is not accepted by the profile.`, listUri, sources };
-  }
   if (list === undefined) {
     return { state: 'not_established', reason: `Status list ${listUri} is unavailable.`, listUri, sources };
   }
@@ -127,13 +147,14 @@ export function evaluateStatus(
   if (!/^(0|[1-9][0-9]*)$/.test(entry.statusListIndex)) {
     return { state: 'not_established', reason: 'statusListIndex is not a non-negative integer.', listUri, sources };
   }
-  let revoked: boolean;
+  let set: boolean;
   try {
-    revoked = statusBit(decodeStatusList(subject.encodedList), Number(entry.statusListIndex));
+    set = statusBit(decodeStatusList(subject.encodedList), Number(entry.statusListIndex));
   } catch (error) {
     return { state: 'not_established', reason: `Status list cannot be read: ${(error as Error).message}`, listUri, sources };
   }
-  return revoked
-    ? { state: 'contradicted', reason: `Revoked: bit ${entry.statusListIndex} of ${listUri} is set.`, listUri, sources }
-    : { state: 'established', reason: `Not revoked: bit ${entry.statusListIndex} of ${listUri} is clear.`, listUri, sources };
+  const [yes, no] = entry.statusPurpose === 'suspension' ? ['Suspended', 'Not suspended'] : ['Revoked', 'Not revoked'];
+  return set
+    ? { state: 'contradicted', reason: `${yes}: bit ${entry.statusListIndex} of ${listUri} is set.`, listUri, sources }
+    : { state: 'established', reason: `${no}: bit ${entry.statusListIndex} of ${listUri} is clear.`, listUri, sources };
 }

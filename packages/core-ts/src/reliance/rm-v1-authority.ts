@@ -30,6 +30,8 @@ export interface NodeFacts {
   readonly usable: SemanticState;
   readonly reason: string;
   readonly document?: Doc;
+  /** The issuer's suspension status, if the credential names one; read only by global restrictions. */
+  readonly suspension?: { readonly state: SemanticState; readonly reason: string };
 }
 export type NodeLookup = (uri: string) => NodeFacts | undefined;
 
@@ -63,19 +65,27 @@ const subjectOf = (doc: Doc): Doc => (isObject(doc.credentialSubject) ? doc.cred
 const typeOf = (doc: Doc): string | undefined => (Array.isArray(doc.type) ? String(doc.type[1]) : undefined);
 const permits = (doc: Doc, activity: string) => list(subjectOf(doc).permittedActivity).includes(activity);
 
+/** Credentials referenced by recognized authorization policies in `doc.termsOfUse`, with their declared types. */
+function policyReferences(doc: Doc): { id: string; type: unknown }[] {
+  return list(doc.termsOfUse)
+    .filter(isObject)
+    .filter(policy => policy.type === 'RmAuthorizationPolicy' && isObject(policy.authorizationCredential))
+    .map(policy => policy.authorizationCredential as Doc)
+    .filter(ref => typeof ref.id === 'string')
+    .map(ref => ({ id: ref.id as string, type: ref.type }));
+}
+
 /**
  * The single authorizing credential of `wantedType` referenced from `doc.termsOfUse`
- * by a recognized policy. Unrecognized policy types establish nothing (V04);
- * several references of the same type are ambiguous, never "take the first".
+ * by a recognized policy. References are typed, so a route selects its reference by
+ * the declared type even when the credential is unavailable; the resolved credential
+ * must have that type. Unrecognized policy types establish nothing (V04); several
+ * references of the same type are ambiguous, never "take the first".
  */
 function authorizingReference(
   id: string, doc: Doc, wantedType: string, lookup: NodeLookup, stack: readonly string[],
 ): { basis: BasisResult; node?: NodeFacts & { document: Doc } } {
-  const candidates = list(doc.termsOfUse)
-    .filter(isObject)
-    .filter(policy => policy.type === 'RmAuthorizationPolicy' && isObject(policy.authorizationCredential))
-    .map(policy => String((policy.authorizationCredential as Doc).id))
-    .filter(uri => { const node = lookup(uri); return node?.document === undefined || typeOf(node.document) === wantedType; });
+  const candidates = policyReferences(doc).filter(ref => ref.type === wantedType).map(ref => ref.id);
   if (candidates.length === 0) {
     return { basis: unknown(id, `No recognized authorization policy references a ${wantedType}.`, ['/termsOfUse']) };
   }
@@ -91,6 +101,9 @@ function authorizingReference(
   if (node.usable !== 'established' || node.document === undefined) {
     return { basis: { id, state: node.usable === 'contradicted' ? 'contradicted' : 'not_established',
       reason: `Referenced ${wantedType} ${uri} is not usable: ${node.reason}`, sources: ['/termsOfUse', uri] } };
+  }
+  if (typeOf(node.document) !== wantedType) {
+    return { basis: no(id, `Reference declares ${wantedType}, but ${uri} is a ${String(typeOf(node.document))}.`, ['/termsOfUse', uri]) };
   }
   return { basis: ok(id, `References ${wantedType} ${uri}.`, ['/termsOfUse', uri]), node: node as NodeFacts & { document: Doc } };
 }
@@ -174,6 +187,58 @@ export const CERTIFICATE_ROUTES = Object.freeze({
 });
 
 /**
+ * Global restriction "accreditation-suspension": an anchor's suspension of the
+ * actor's accreditation governs the whole certification activity, so it applies to
+ * every route, including routes that do not use that accreditation (C06).
+ *
+ * Applicability (the profile's rule, not a guess): every usable RmAccreditation that
+ * a configured accreditation anchor issued to the target's issuer and that the
+ * target's authorization references reach, on any route, whether or not that route
+ * succeeds. Each must carry the issuer's suspension status with the bit clear; a
+ * missing or unreadable suspension status is not established. A revoked or otherwise
+ * unusable credential grants nothing and is not turned into a restriction (C07).
+ * Suspensions that nothing in the chain references are not discovered (see V08).
+ */
+function accreditationSuspension(target: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile): BasisResult {
+  const id = 'restriction:accreditation-suspension';
+  const actor = target.document.issuer;
+  const seen = new Set<string>([target.uri]);
+  const queue: Doc[] = [target.document];
+  const applicable: NodeFacts[] = [];
+  while (queue.length > 0) {
+    for (const ref of policyReferences(queue.shift()!)) {
+      if (seen.has(ref.id)) continue;
+      seen.add(ref.id);
+      const node = lookup(ref.id);
+      if (node?.usable !== 'established' || node.document === undefined) continue;
+      queue.push(node.document);
+      const doc = node.document;
+      const anchored = profile.trustAnchors.some(a => a.id === doc.issuer && a.purposes.includes('accredit-rm-producers'));
+      if (typeOf(doc) === 'RmAccreditation' && anchored && subjectOf(doc).id === actor) applicable.push(node);
+    }
+  }
+  if (applicable.length === 0) {
+    return unknown(id, `No accreditation of ${String(actor)} is reached, so the absence of a suspension is not established.`);
+  }
+  const parts = applicable.map(node => node.suspension === undefined
+    ? unknown(id, `${node.uri} carries no suspension status.`, [node.uri])
+    : { id, state: node.suspension.state, reason: `${node.uri}: ${node.suspension.reason}`, sources: [node.uri] });
+  const state = semanticAnd(parts.map(p => p.state));
+  return {
+    id,
+    state,
+    reason: state === 'contradicted'
+      ? `The actor's certification activity is suspended. ${parts.filter(p => p.state === 'contradicted').map(p => p.reason).join(' ')}`
+      : parts.map(p => p.reason).join(' '),
+    sources: applicable.map(node => node.uri),
+  };
+}
+
+export const GLOBAL_RESTRICTIONS = Object.freeze({
+  'accreditation-suspension': accreditationSuspension,
+});
+
+/**
  * Compose complete routes: global restrictions are outside the OR, alternatives are
  * OR'ed, and a search cut short by the route budget can never disprove all routes (C16).
  */
@@ -213,8 +278,12 @@ export function certificateAuthority(
       ? route(id, [unknown('installed-evaluator', `Route ${id} has no installed evaluator.`)], [t.uri])
       : evaluate(t, lookup, profile, [t.uri]);
   });
-  const restrictions = profile.authority.globalRestrictions.length === 0
-    ? [] : profile.authority.globalRestrictions.map(r => unknown(`restriction:${r}`, `Global restriction ${r} has no installed evaluator.`));
+  const restrictions = profile.authority.globalRestrictions.map(r => {
+    const evaluate = GLOBAL_RESTRICTIONS[r as keyof typeof GLOBAL_RESTRICTIONS];
+    return evaluate === undefined
+      ? unknown(`restriction:${r}`, `Global restriction ${r} has no installed evaluator.`)
+      : evaluate(t, lookup, profile);
+  });
   return composeAuthority(restrictions, evaluated, ids.slice(budget));
 }
 

@@ -7,6 +7,8 @@
 - `controllers/{nab,producer,lab}.json`: fictional controller documents, each with one
   Ed25519 Multikey referenced from `assertionMethod`.
 - `credentials/A.json` (NAB accredits the producer, M1/M2, 50–500 mg/kg),
+  `A2.json` (NAB accredits the producer to certify directly, M1; the second route,
+  not referenced by D178),
   `H.json` (NAB recognizes the laboratory for homogeneity studies),
   `O.json` (producer's operational scope, M1 only, bound to A),
   `S.json` (laboratory homogeneity study of the batch, bound to H) and
@@ -15,6 +17,10 @@
   the value (fresh valid signatures) for the 197/520 witness cases.
 - `status/{nab,producer,lab}.json`: one signed W3C Bitstring Status List per issuer
   (revocation, all bits clear); every credential above names its list and index.
+  `status/nab-suspension.json` is the NAB's suspension list; A and A2 carry both a
+  revocation and a suspension entry, read by the `accreditation-suspension` restriction.
+- Authorization references in `termsOfUse` are typed (`authorizationCredential`
+  `{id, type}`).
 - `catalog.json`: URI, path, media type and SHA-384 SRI over the exact bytes.
 
 All keys are **insecure fixtures derived from public seeds**. The parties are fictional.

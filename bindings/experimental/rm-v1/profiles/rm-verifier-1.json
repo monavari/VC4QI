@@ -12,7 +12,7 @@
   ],
   "authority": {
     "certificateRoutes": ["operational-scope"],
-    "globalRestrictions": [],
+    "globalRestrictions": ["accreditation-suspension"],
     "maxRoutes": 8
   },
   "credentialStatus": {

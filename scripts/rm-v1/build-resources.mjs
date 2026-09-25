@@ -58,7 +58,12 @@ const relatedResource = nonemptySet(closed({
 }));
 const authorizationPolicy = closed({
   type: { const: 'RmAuthorizationPolicy' },
-  authorizationCredential: closed({ id: iri }),
+  // A typed reference: routes select the reference by its declared type, and the
+  // resolved credential must have that type.
+  authorizationCredential: closed({
+    id: iri,
+    type: { enum: ['RmAccreditation', 'RmOperationalScope', 'RmLabAuthority'] },
+  }),
 });
 const studyReference = closed({
   id: iri,
@@ -78,13 +83,17 @@ const quantity = closed({
   unit: closed({ ucumCode: { enum: ['mg/kg', 'kg/kg'] } }),
   uncertainty: closed({ expandedUncertainty: decimal, coverageFactor: decimal }),
 });
-const credentialStatus = closed({
+const statusEntry = closed({
   id: iri,
   type: { const: 'BitstringStatusListEntry' },
-  statusPurpose: { const: 'revocation' },
+  statusPurpose: { enum: ['revocation', 'suspension'] },
   statusListIndex: { type: 'string', pattern: '^(0|[1-9][0-9]*)$' },
   statusListCredential: iri,
 });
+// One entry, or one entry per purpose (revocation and suspension).
+const credentialStatus = {
+  oneOf: [statusEntry, { type: 'array', minItems: 1, maxItems: 2, items: statusEntry }],
+};
 const result = closed({
   propertyIri: iri,
   methodIri: iri,
@@ -196,7 +205,7 @@ const schemas = {
       credentialSubject: closed({
         id: iri,
         type: { const: 'BitstringStatusList' },
-        statusPurpose: { const: 'revocation' },
+        statusPurpose: { enum: ['revocation', 'suspension'] },
         encodedList: { type: 'string', pattern: '^u[A-Za-z0-9_-]+$' },
       }),
       proof,

@@ -62,6 +62,7 @@
     "material": {"minimum": 1, "maximum": 1},
     "scopeRecords": {"minimum": 1},
     "selectedAuthorizingPoliciesPerUse": {"minimum": 1, "maximum": 1},
+    "authorizingReferenceSelection": "by-declared-reference-type-per-route; resolved credential type must match (else contradicted); several of one type not_established",
     "supportReferences": {"minimum": 1},
     "multipleRecognizedDeclarations": "unsupported-unless-exact-deterministic-composition-is-listed",
     "ambiguousSelection": "not_established"
@@ -113,9 +114,17 @@
   },
   "routesAndRestrictions": {
     "certificateRoute": ["O-authorizes-D", "A-authorizes-O-maintenance", "O-contained-by-A"],
+    "installedCertificateRoutes": {
+      "operational-scope": ["O-authorizes-D", "A-authorizes-O-maintenance", "O-contained-by-A", "A-issuer-is-accreditation-anchor"],
+      "direct-accreditation": ["A-authorizes-D", "A-issuer-is-accreditation-anchor"]
+    },
     "studyRoute": ["H-authorizes-S"],
     "requiredSupport": ["S", "H"],
     "globalRestrictions": ["applicable-suspension", "request-time-policy"],
+    "installedGlobalRestrictions": {
+      "accreditation-suspension": "every usable anchor-issued RmAccreditation of the certificate issuer reached through the target's termsOfUse references, on any route, must carry a fresh issuer suspension status (Bitstring Status List, statusPurpose suspension) with its bit clear; missing or unreadable suspension status is not_established; unusable or unreferenced credentials are not restrictions"
+    },
+    "unusedAlternativeFailures": "diagnostic-only: only the target and the credentials on the selected route and support chains decide the request",
     "routeComposition": "AND-within-route-OR-between-complete-routes",
     "baselineAlternatives": 1,
     "provenanceDoesNotEstablish": ["permission", "containment"]
@@ -126,7 +135,7 @@
     "verificationMethodRule": "exact-installed-method-controlled-by-issuer-and-authorized-for-assertionMethod",
     "safeJsonLd": true,
     "proofCollections": "unsupported-in-initial-slice",
-    "status": "authenticated-current-revocation-status-required-for-A-O-D-S-H",
+    "status": "authenticated-current-revocation-status-required-for-A-O-D-S-H; suspension entries on accreditations are read only by the accreditation-suspension restriction",
     "statusMechanism": "W3C Bitstring Status List v1.0: multibase base64url GZIP encodedList, bounded decompression",
     "statusAuthority": "status-list-issuer-equals-credential-issuer",
     "validity": ["validFrom", "validUntil"],

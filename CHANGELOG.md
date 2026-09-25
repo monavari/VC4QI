@@ -5,7 +5,9 @@
 - Add signed RM v1 fixtures, verification-method authorization, Bitstring status lists
   and a gate-numbered reliance trace (I1/I2), plus the operational-scope authority route,
   exact-decimal bounded projection and required study support with its own laboratory
-  authority (I3). Independently discovered grants are declared unsupported. Claim scope
+  authority (I3), a second signed route with typed authorization references and an
+  accreditation-suspension global restriction outside the route OR (I3). Independently
+  discovered grants are declared unsupported. Claim scope
   and conformity (I4) are pending, so the new evaluator accepts no request yet.
 
 - Add parallel TS/Python reliance request/result contracts, truth-table operators,

@@ -10,6 +10,7 @@ import {
   StaticResourceCatalog, type RelianceRequestInput, type StaticResourceInput,
 } from '../src/reliance/index.js';
 import { readPinnedResources } from '../src/reliance/rm-v1-node.js';
+import { encodeStatusList, MIN_STATUS_BITS } from '../src/reliance/status-list.js';
 import type { JsonObject } from '../src/types.js';
 
 const rmDir = new URL('../../../bindings/experimental/rm-v1/', import.meta.url);
@@ -17,11 +18,17 @@ export const manifest = loadBindingManifest(JSON.parse(readFileSync(new URL('man
 export const profileJson = (): JsonObject =>
   JSON.parse(readFileSync(new URL('profiles/rm-verifier-1.json', rmDir), 'utf8')) as JsonObject;
 export const profile = loadRelianceProfile(profileJson());
+/** The fictional two-route profile: (operational scope within A) OR (direct accreditation). */
+export const twoRouteProfile = loadRelianceProfile(
+  JSON.parse(readFileSync(new URL('profiles/rm-verifier-two-routes-1.json', rmDir), 'utf8')) as JsonObject);
 const pinned = readPinnedResources(new URL('catalog.json', rmDir).pathname);
 export const signed = readPinnedResources(new URL('test-vectors/signed/catalog.json', rmDir).pathname);
 
 export const URI = {
   A: 'https://nab.vc4qi.example/credentials/A',
+  A2: 'https://nab.vc4qi.example/credentials/A2',
+  NAB_STATUS: 'https://nab.vc4qi.example/status/1',
+  NAB_SUSPENSION: 'https://nab.vc4qi.example/status/suspension/1',
   H: 'https://nab.vc4qi.example/credentials/H',
   O: 'https://producer.vc4qi.example/credentials/O',
   S: 'https://lab.vc4qi.example/credentials/S',
@@ -67,6 +74,15 @@ export async function resign(document: JsonObject, issuer = String(document.issu
     documentLoader: catalogDocumentLoader(catalogWith().openSession({ maxResources: 256, maxBytes: 5_000_000 })),
   });
   return serialize({ ...unsigned, proof });
+}
+
+/** The signed status list `uri` re-issued by its own issuer with `setBits` set. */
+export async function statusListWith(uri: string, setBits: number[]): Promise<string> {
+  const bits = new Uint8Array(MIN_STATUS_BITS / 8);
+  for (const bit of setBits) bits[bit >> 3]! |= 1 << (7 - (bit & 7));
+  const list = json(uri);
+  (list.credentialSubject as JsonObject).encodedList = encodeStatusList(bits);
+  return resign(list);
 }
 
 /**
