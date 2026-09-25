@@ -18,6 +18,7 @@ import type {
 
 export * from './catalog.js';
 export * from './manifest.js';
+export * from './rm-v1.js';
 
 export type {
   ArtifactVerificationResult,

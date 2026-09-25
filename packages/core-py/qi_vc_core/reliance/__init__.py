@@ -14,6 +14,14 @@ from .manifest import (
     load_binding_manifest,
     require_installable_binding,
 )
+from .rm_v1 import (
+    RM_V1_CONTEXT,
+    RM_V1_SCHEMA_BASE,
+    RM_V1_VOCAB,
+    VC_V2_CONTEXT,
+    load_rm_v1_catalog,
+    read_pinned_resources,
+)
 from .types import (
     ArtifactVerificationResult,
     ClaimAuthorizationResult,
@@ -71,4 +79,10 @@ __all__ = [
     "BindingManifest",
     "load_binding_manifest",
     "require_installable_binding",
+    "RM_V1_CONTEXT",
+    "RM_V1_SCHEMA_BASE",
+    "RM_V1_VOCAB",
+    "VC_V2_CONTEXT",
+    "load_rm_v1_catalog",
+    "read_pinned_resources",
 ]

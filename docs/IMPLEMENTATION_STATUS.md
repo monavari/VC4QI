@@ -67,6 +67,17 @@ Python lint debt remains. See [I1 protection audit](plans/standards-first-i1-pro
 The executable manifest, new request/result API, safe protection/catalog path and signed
 RM slice are still pending. I0's four GitHub CI jobs passed for `8356b42`.
 
+## I1 pinned RM resources, 25 September 2026
+
+The experimental RM v1 context and seven JSON Schemas now exist and are pinned, with
+the vendored VCDM 2.0 context, in `bindings/experimental/rm-v1/catalog.json`. Both
+languages install them into the isolated catalog by SHA-384 over exact bytes. TypeScript
+tests prove safe JSON-LD expansion of a certificate-shaped sample, rejection of an
+undefined term, typed decimal/IRI facts, signed result order and offline refusal of an
+unpinned context. Python checks pinning only; Python safe-mode parity remains pending.
+The manifest stays `incomplete`: controller documents, signed D/A artifacts with
+authorized keys, and status resources are next.
+
 ## Migration and historical claims
 
 Work branch: `refactor/standards-first-reconciliation`, retaining merged registry,
