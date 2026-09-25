@@ -1,0 +1,15 @@
+{
+  "@context": "https://www.w3.org/ns/cid/v1",
+  "id": "https://nab.vc4qi.example/controller",
+  "verificationMethod": [
+    {
+      "id": "https://nab.vc4qi.example/controller#key-1",
+      "type": "Multikey",
+      "controller": "https://nab.vc4qi.example/controller",
+      "publicKeyMultibase": "z6MkpUmf1eA7Ge6yJdfDkRyADs7yQ86SEw5Gi2uzm2MuDuEc"
+    }
+  ],
+  "assertionMethod": [
+    "https://nab.vc4qi.example/controller#key-1"
+  ]
+}
