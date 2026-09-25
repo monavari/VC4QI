@@ -1,7 +1,7 @@
 # I2 evidence: protected evaluation pipeline
 
-**25 September 2026. I2 in progress: result contract and credential status are
-implemented in both languages.** The legacy evaluator remains the default. No
+**25 September 2026. I2 in progress: result contract, credential status, plan,
+identity, structure and budget checks are implemented in both languages.** The legacy evaluator remains the default. No
 acceptance-ledger case is marked passing until its gate-numbered assertion exists.
 
 ## Step 1: result contract
@@ -42,3 +42,37 @@ specification; the legacy module is unchanged and is not used by the new evaluat
 Results: TS 322 passed plus the 9 network-only legacy failures; Python 278 passed, 1
 skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios, schemas, both generator
 `--check` modes and the byte-reproducible poster bundle (530 kB) pass.
+
+## Step 3: plan, identity, structure and budgets
+
+- **Gate 0 plan (V09).** `evaluateRmSlice` now takes the catalog. A request naming any
+  profile or binding other than the verifier-selected one returns `not_established` with
+  one gate-0 `accepted-plan` trace entry; nothing is resolved or read.
+- **Budgets (P12, P16).** Evidence (artifacts, referenced credentials, status lists)
+  resolves through a session opened with the request's `maxResources`/`maxBytes`, wrapped
+  so each distinct resource counts once. Pinned contexts, schemas and controller
+  documents use a separate internal budget (`STATIC_RESOURCE_BUDGET`). Status lists count
+  as one level deeper than the credential that names them; beyond `maxDepth` they are not
+  established. Exhaustion is reported with `RESOURCE_BUDGET_EXCEEDED`, never as a
+  contradiction.
+- **Gate 1 identity (P11).** A protected artifact must identify itself by the identity it
+  was resolved under; otherwise gate 1 is contradicted. Conflicting content under one
+  identity is refused when the catalog is built.
+- **Structure (V10, V11).** Multiple `credentialSchema` declarations are unsupported
+  (`not_established`). The schemas now admit the standard optional `name` and
+  `description`, which stay inert: re-signing D with a description leaves protection and
+  facts unchanged, while a missing required term is contradicted.
+- **P07.** The new path has no `skipProof`; a placeholder proof is contradicted.
+
+## Acceptance ledger after step 3
+
+Fifteen cases are recorded `passing` with commands, exit codes and test paths: V09–V12,
+P02–P04, P07–P12, P15 and P16. P10 passes at unit level only because RM v1 schemas require
+status. P05 is `excluded_unsupported`: the RM v1 binding has no trust registry, and anchors
+are verifier configuration. P01, P06, P13 and P14 remain for I3/I4. The ledger command
+(`vitest` over the slice, status-list and key-authorization tests; `pytest` over the
+slice and key-authorization tests) exits 0 in both languages: 63 TS and 58 Python tests.
+
+Results: TS 331 passed plus the 9 network-only legacy failures; Python 287 passed, 1
+skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios, schemas, generator checks
+and the reproducible poster bundle (531 kB) pass.

@@ -15,7 +15,7 @@ import addFormatsModule from 'ajv-formats';
 import { verifyProof } from '../proofs/index.js';
 import type { JsonObject } from '../types.js';
 import {
-  catalogDocumentLoader, CatalogError, type CatalogSession, sha384SRI,
+  catalogDocumentLoader, CatalogError, type ResourceResolver, sha384SRI,
 } from './catalog.js';
 import { semanticAnd } from './index.js';
 import { authorizeAssertionMethod, type KeyAuthorization } from './key-authorization.js';
@@ -100,6 +100,12 @@ export interface RmArtifactVerification {
 export interface VerifyRmArtifactOptions {
   readonly manifest: BindingManifest;
   readonly evaluationTime: string;
+  /**
+   * Resolver for pinned static material (contexts, schemas, controller documents).
+   * Defaults to the evidence resolver; the reliance evaluator separates them so the
+   * request budget counts retrieved evidence, not local pinned resources.
+   */
+  readonly staticResolver?: ResourceResolver;
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -166,7 +172,7 @@ function validity(document: JsonObject, evaluationTime: string): PredicateResult
   return predicate('established', [`Valid at ${evaluationTime}.`], pointers);
 }
 
-function relatedResourceChecks(document: JsonObject, session: CatalogSession): RelatedResourceCheck[] {
+function relatedResourceChecks(document: JsonObject, session: ResourceResolver): RelatedResourceCheck[] {
   const references = Array.isArray(document.relatedResource) ? document.relatedResource : [];
   return references.filter(isObject).map(reference => {
     const id = String(reference.id);
@@ -184,9 +190,10 @@ function relatedResourceChecks(document: JsonObject, session: CatalogSession): R
 
 /** Verify one RM v1 artifact from its exact catalog bytes. Never throws for untrusted input. */
 export async function verifyRmArtifact(
-  uri: string, session: CatalogSession, options: VerifyRmArtifactOptions,
+  uri: string, session: ResourceResolver, options: VerifyRmArtifactOptions,
 ): Promise<RmArtifactVerification> {
   const checks: CheckOutcome[] = [];
+  const staticResolver = options.staticResolver ?? session;
   const skipped = notRun('Not evaluated because protection is not established.');
   const finish = (
     extra: Partial<RmArtifactVerification> = {},
@@ -245,6 +252,10 @@ export async function verifyRmArtifact(
   if (schemaId === undefined) {
     return fail('type', 'not_established', 'Credential type is not a recognized RM v1 artifact type.', { digestSRI });
   }
+  if (Array.isArray(document.credentialSchema)) {
+    return fail('type', 'not_established',
+      'Multiple credentialSchema declarations have no accepted composition in this binding.', { digestSRI, artifactType });
+  }
   const declared = isObject(document.credentialSchema) ? document.credentialSchema.id : undefined;
   if (declared !== schemaId) {
     return fail('type', 'contradicted', `${artifactType} must declare schema ${schemaId}.`, { digestSRI, artifactType });
@@ -254,7 +265,7 @@ export async function verifyRmArtifact(
   try {
     const ajv = new Ajv({ allErrors: true, strict: true });
     addFormats(ajv);
-    const schema = JSON.parse(new TextDecoder().decode(session.resolve(schemaId).bytes)) as object;
+    const schema = JSON.parse(new TextDecoder().decode(staticResolver.resolve(schemaId).bytes)) as object;
     const validate = ajv.compile(schema);
     if (!validate(document)) {
       const detail = (validate.errors ?? []).map(e => `${e.instancePath || '/'} ${e.message ?? ''}`).join('; ');
@@ -275,7 +286,7 @@ export async function verifyRmArtifact(
   }
   checks.push({ check: 'proof', state: 'established', reason: 'One eddsa-rdfc-2022 assertionMethod proof.' });
 
-  const keyAuthorization = authorizeAssertionMethod(document.issuer, proof.verificationMethod, session);
+  const keyAuthorization = authorizeAssertionMethod(document.issuer, proof.verificationMethod, staticResolver);
   if (keyAuthorization.state !== 'established' || keyAuthorization.publicKey === undefined) {
     return fail('key', keyAuthorization.state === 'established' ? 'not_established' : keyAuthorization.state,
       `${keyAuthorization.code}: ${keyAuthorization.reason}`, { digestSRI, artifactType, keyAuthorization });
@@ -283,7 +294,7 @@ export async function verifyRmArtifact(
   checks.push({ check: 'key', state: 'established', reason: keyAuthorization.reason });
 
   try {
-    const loader = catalogDocumentLoader(session);
+    const loader = catalogDocumentLoader(staticResolver);
     const valid = await verifyProof(document as JsonObject, keyAuthorization.publicKey, {
       documentLoader: loader, safe: true,
     });

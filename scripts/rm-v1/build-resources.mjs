@@ -105,6 +105,9 @@ function credentialSchema(file, rmType, title, subject, extra = {}, requiredExtr
     credentialSubject: subject,
     ...extra,
     credentialStatus,
+    // Standard optional VCDM 2.0 annotations: allowed, never decision-relevant (V11).
+    name: { type: 'string', minLength: 1 },
+    description: { type: 'string', minLength: 1 },
     proof,
   };
   return {
