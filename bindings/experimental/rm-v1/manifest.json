@@ -10,7 +10,7 @@
   },
   "installation": {
     "status": "incomplete",
-    "reason": "Contexts, schemas, controller documents, signed A/H/O/S/D fixtures and status lists are pinned and verify in TypeScript and Python. The I2-I4 evaluators (authorization, support, conformity) and an independent transformation vector are still required before selection.",
+    "reason": "Contexts, schemas, controller documents, signed A/H/O/S/D fixtures and status lists are pinned and verify in TypeScript and Python. I3 authority routes and required support are evaluated; the I4 evaluators (claim scope coverage, conformity) and an independent transformation vector are still required before selection.",
     "pendingResources": []
   },
   "carrierAndSchema": {
@@ -74,7 +74,7 @@
     "digestAlgorithm": "sha384",
     "digestEncoding": "SRI",
     "digestInput": "exact-original-secured-bytes",
-    "independentGrantBinding": "authenticated-grant-must-name-the-exercising-actor-and-activity"
+    "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse authorizationCredential references on the credential chain; an authenticated grant found by other means establishes nothing (not_established)"
   },
   "recognizedTypes": {
     "authorizationPolicy": "https://vc4qi.example/bindings/rm/1#RmAuthorizationPolicy",

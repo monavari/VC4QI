@@ -305,6 +305,10 @@ Exit: C01–C16, V05–V08 and P06 pass with signed semantic fixtures. Wrong
 batch is contradicted; missing study is not established. Incomplete route search
 cannot claim every route was disproved. Keep GS independent laboratory authority.
 
+Progress 2026-09-25: step 1 (operational-scope route, required support, composition,
+V08 declared unsupported) is done; see [I3 evidence](standards-first-i3-evidence.md).
+Open: the second signed route for C01–C06, restriction evaluators, C12–C15 and V06.
+
 ### I4 — full signed RM baseline, scope/conformity and language parity
 
 Implement A/O/D/S/H: accreditation, permitted operational scope, target RM,

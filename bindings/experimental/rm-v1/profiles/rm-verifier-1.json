@@ -10,6 +10,11 @@
       "purposes": ["accredit-rm-producers", "recognize-rm-laboratories"]
     }
   ],
+  "authority": {
+    "certificateRoutes": ["operational-scope"],
+    "globalRestrictions": [],
+    "maxRoutes": 8
+  },
   "credentialStatus": {
     "required": true,
     "purposes": ["revocation"],
