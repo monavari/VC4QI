@@ -1299,3 +1299,41 @@ TS 353 passed plus the 9 network-only legacy failures; Python 306 passed, 1 skip
 poster bundle pass (the bundle changes only by the regenerated schemas and manifest).
 Open: second signed route, restriction evaluators, C12–C15, V06. See
 `docs/plans/standards-first-i3-evidence.md`.
+
+## Standards-first I3 step 2: second route and global suspension — 25 September 2026
+
+Authorization references in `termsOfUse` are now typed (`{id, type}`): each route selects
+its reference by the declared type and the resolved credential must match, so an
+unavailable reference cannot become ambiguous across routes. A second signed
+accreditation A2 (direct route) and a NAB suspension status list were added to the
+generator; NAB accreditations carry revocation and suspension entries. Gate 3 selects the
+entry for the profile's purposes; suspension is read only by the new
+`accreditation-suspension` global restriction, which covers every usable anchor-issued
+accreditation of the issuer reached on any route and sits outside the route OR. A
+fictional two-route profile exercises composition; the default profile keeps one route
+and gains the restriction. The decision now counts verification only for the target and
+the selected route and support chains, so a failed unused alternative is diagnostic.
+Both languages; the manifest records the installed routes and restriction.
+
+Ledger: C01–C07 `passing` (31 passing, 2 excluded, 50 not implemented). Ledger command:
+72 TS and 70 Python tests, exit 0. Full results: TS 363 passed plus the 9 network-only
+legacy failures; Python 316 passed, 1 skip; Ruff 204 and mypy 198 unchanged; build,
+lint, scenarios, schemas, generator checks pass; fixtures, resources and the poster
+bundle were regenerated and the poster still renders "Accepted". Open: C12–C15, V06.
+See `docs/plans/standards-first-i3-evidence.md`.
+
+## Standards-first I3 step 3: cycles, shared nodes and provenance — 25 September 2026
+
+Signed controls in both languages, with no evaluator change: an authorization cycle,
+a self-reference and a support/authority mixed cycle are each refused on the active
+stack ("Circular authorization", never accepted) (C12); one accreditation shared by
+two routes is reused and counted once by the restriction (C13); a credential in two
+roles is checked per role (C14); an unused reference cycle among supplied credentials
+leaves witnesses and decision unchanged (C15); a provenance-only certificate
+establishes no authority (V06). Cycle handling relies on typed fixed-depth routes; a
+general node-use memo table is not implemented and is recorded as a limit.
+
+Ledger: C12–C15 and V06 `passing`; I3 exit met (C01–C16, V04–V07, P06; V08 excluded).
+Totals 36 passing, 2 excluded, 45 not implemented. Ledger command 79 TS and 77 Python
+tests, exit 0; TS 370 passed plus the 9 network-only failures; Python 323 passed, 1
+skip; Ruff 204 and mypy 198 unchanged. See `docs/plans/standards-first-i3-evidence.md`.

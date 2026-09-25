@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Generates the signed experimental RM v1 vertical-slice fixtures:
 //   controller documents for the fictional NAB, producer and laboratory, and
-//   signed credentials A (accreditation), H (lab authority), O (operational scope),
+//   signed credentials A (accreditation), A2 (a second, direct accreditation that
+//   D178 does not reference), H (lab authority), O (operational scope),
 //   S (homogeneity study) and D178 (RM certificate, x = 178 mg/kg, U = 5, k = 2),
 //   plus D197 and D520, hypothetical reissues with the same inputs and x = 197 / 520.
 //
@@ -37,20 +38,25 @@ const PRODUCER = 'https://producer.vc4qi.example/controller';
 const LAB = 'https://lab.vc4qi.example/controller';
 const BATCH = 'urn:vc4qi-example:batch:cuzn39pb3-disc-lot-1';
 
-// Revocation status: one Bitstring Status List per issuer, all bits clear.
+// Revocation status: one Bitstring Status List per issuer, all bits clear. The NAB
+// also publishes a suspension list for the accreditations it issues; a suspension
+// is evaluated as a global restriction, outside the OR of routes.
 const STATUS_LIST = {
   nab: 'https://nab.vc4qi.example/status/1',
   producer: 'https://producer.vc4qi.example/status/1',
   lab: 'https://lab.vc4qi.example/status/1',
 } as const;
-const STATUS_ENTRY: Record<string, [string, number]> = {
-  'https://nab.vc4qi.example/credentials/A': [STATUS_LIST.nab, 0],
-  'https://nab.vc4qi.example/credentials/H': [STATUS_LIST.nab, 1],
-  'https://producer.vc4qi.example/credentials/O': [STATUS_LIST.producer, 0],
-  'https://producer.vc4qi.example/credentials/D178': [STATUS_LIST.producer, 1],
-  'https://producer.vc4qi.example/credentials/D197': [STATUS_LIST.producer, 2],
-  'https://producer.vc4qi.example/credentials/D520': [STATUS_LIST.producer, 3],
-  'https://lab.vc4qi.example/credentials/S': [STATUS_LIST.lab, 0],
+const SUSPENSION_LIST = 'https://nab.vc4qi.example/status/suspension/1';
+type Entry = [list: string, index: number, purpose: 'revocation' | 'suspension'];
+const STATUS_ENTRY: Record<string, Entry[]> = {
+  'https://nab.vc4qi.example/credentials/A': [[STATUS_LIST.nab, 0, 'revocation'], [SUSPENSION_LIST, 0, 'suspension']],
+  'https://nab.vc4qi.example/credentials/A2': [[STATUS_LIST.nab, 2, 'revocation'], [SUSPENSION_LIST, 2, 'suspension']],
+  'https://nab.vc4qi.example/credentials/H': [[STATUS_LIST.nab, 1, 'revocation']],
+  'https://producer.vc4qi.example/credentials/O': [[STATUS_LIST.producer, 0, 'revocation']],
+  'https://producer.vc4qi.example/credentials/D178': [[STATUS_LIST.producer, 1, 'revocation']],
+  'https://producer.vc4qi.example/credentials/D197': [[STATUS_LIST.producer, 2, 'revocation']],
+  'https://producer.vc4qi.example/credentials/D520': [[STATUS_LIST.producer, 3, 'revocation']],
+  'https://lab.vc4qi.example/credentials/S': [[STATUS_LIST.lab, 0, 'revocation']],
 };
 
 interface Party { name: string; controller: string; seed: Uint8Array; publicKey: Uint8Array }
@@ -94,17 +100,15 @@ function record(uri: string, file: string, mediaType: string, text: string, orig
 }
 
 async function sign(unsigned: JsonObject, signer: Party, created: string): Promise<JsonObject> {
-  const entry = STATUS_ENTRY[String(unsigned.id)];
-  const document: JsonObject = entry === undefined ? unsigned : {
-    ...unsigned,
-    credentialStatus: {
-      id: `${entry[0]}#${entry[1]}`,
-      type: 'BitstringStatusListEntry',
-      statusPurpose: 'revocation',
-      statusListIndex: String(entry[1]),
-      statusListCredential: entry[0],
-    },
-  };
+  const entries = (STATUS_ENTRY[String(unsigned.id)] ?? []).map(([list, at, purpose]) => ({
+    id: `${list}#${at}`,
+    type: 'BitstringStatusListEntry',
+    statusPurpose: purpose,
+    statusListIndex: String(at),
+    statusListCredential: list,
+  }));
+  const document: JsonObject = entries.length === 0 ? unsigned
+    : { ...unsigned, credentialStatus: entries.length === 1 ? entries[0]! : entries };
   // Fresh budgeted session per proof; resolution is offline and catalog-only.
   const loader = catalogDocumentLoader(loadRmV1Catalog().openSession({ maxResources: 64, maxBytes: 1_000_000 }));
   const proof = await createProof(document, {
@@ -129,7 +133,7 @@ function envelope(id: string, type: string, schemaFile: string, issuer: string,
   };
 }
 
-const policy = (id: string) => [{ type: 'RmAuthorizationPolicy', authorizationCredential: { id } }];
+const policy = (id: string, type: string) => [{ type: 'RmAuthorizationPolicy', authorizationCredential: { id, type } }];
 const integrity = (...refs: [string, string][]) =>
   refs.map(([id, text]) => ({ id, digestSRI: sha384SRI(new TextEncoder().encode(text)) }));
 const scopeRecord = (id: string, methods: string[]) => ({
@@ -155,9 +159,14 @@ async function main() {
 
   // Status lists are signed by the issuer of the credentials they cover.
   const clearList = encodeStatusList(new Uint8Array(MIN_STATUS_BITS / 8));
-  for (const p of [nab, producer, lab]) {
-    const listId = STATUS_LIST[p.name as keyof typeof STATUS_LIST];
-    record(listId, `status/${p.name}.json`, 'application/vc', serialize(await sign({
+  const lists: [Party, string, string, 'revocation' | 'suspension'][] = [
+    [nab, STATUS_LIST.nab, 'nab', 'revocation'],
+    [producer, STATUS_LIST.producer, 'producer', 'revocation'],
+    [lab, STATUS_LIST.lab, 'lab', 'revocation'],
+    [nab, SUSPENSION_LIST, 'nab-suspension', 'suspension'],
+  ];
+  for (const [p, listId, file, purpose] of lists) {
+    record(listId, `status/${file}.json`, 'application/vc', serialize(await sign({
       '@context': [VC_V2_CONTEXT],
       id: listId,
       type: ['VerifiableCredential', 'BitstringStatusListCredential'],
@@ -168,7 +177,7 @@ async function main() {
       credentialSubject: {
         id: `${listId}#list`,
         type: 'BitstringStatusList',
-        statusPurpose: 'revocation',
+        statusPurpose: purpose,
         encodedList: clearList,
       },
     }, p, '2026-09-01T00:00:00Z')), FIXTURE);
@@ -182,6 +191,19 @@ async function main() {
       id: PRODUCER,
       permittedActivity: [rm('issueRmCertificate'), rm('maintainRmScope')],
       scope: [scopeRecord(`${A_ID}#scope-as`, ['M1', 'M2'])],
+    },
+  }, nab, '2025-01-01T00:00:00Z')), FIXTURE);
+
+  // A2: a second accreditation granting the producer RM certification directly
+  // (the "direct-accreditation" route). D178 does not reference it.
+  const A2_ID = 'https://nab.vc4qi.example/credentials/A2';
+  record(A2_ID, 'credentials/A2.json', 'application/vc', serialize(await sign({
+    ...envelope(A2_ID, 'RmAccreditation', 'accreditation.json', NAB,
+      '2025-01-01T00:00:00Z', '2030-01-01T00:00:00Z'),
+    credentialSubject: {
+      id: PRODUCER,
+      permittedActivity: [rm('issueRmCertificate')],
+      scope: [scopeRecord(`${A2_ID}#scope-as`, ['M1'])],
     },
   }, nab, '2025-01-01T00:00:00Z')), FIXTURE);
 
@@ -210,7 +232,7 @@ async function main() {
       permittedActivity: [rm('issueRmCertificate')],
       scope: [scopeRecord(`${O_ID}#scope-as-m1`, ['M1'])],
     },
-    termsOfUse: policy(A_ID),
+    termsOfUse: policy(A_ID, 'RmAccreditation'),
     relatedResource: integrity([A_ID, aText]),
   }, producer, '2025-06-01T00:00:00Z')), FIXTURE);
 
@@ -225,7 +247,7 @@ async function main() {
       matrixIri: rm('CuZn39Pb3'),
       outcomeIri: rm('Homogeneous'),
     },
-    termsOfUse: policy(H_ID),
+    termsOfUse: policy(H_ID, 'RmLabAuthority'),
     relatedResource: integrity([H_ID, hText]),
   }, lab, '2026-01-15T00:00:00Z')), FIXTURE);
 
@@ -254,7 +276,7 @@ async function main() {
           }],
         }],
       },
-      termsOfUse: policy(O_ID),
+      termsOfUse: policy(O_ID, 'RmOperationalScope'),
       evidence: [{ id: S_ID, type: 'RmStudyReference' }],
       relatedResource: integrity([O_ID, oText], [S_ID, sText]),
     }, producer, '2026-02-01T00:00:00Z')), FIXTURE);

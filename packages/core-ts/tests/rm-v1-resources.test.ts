@@ -57,7 +57,7 @@ function sampleCertificate(): JsonObject {
     },
     termsOfUse: [{
       type: 'RmAuthorizationPolicy',
-      authorizationCredential: { id: 'https://producer.vc4qi.example/credentials/O' },
+      authorizationCredential: { id: 'https://producer.vc4qi.example/credentials/O', type: 'RmOperationalScope' },
     }],
     evidence: [{ id: 'https://lab.vc4qi.example/credentials/S', type: 'RmStudyReference' }],
     relatedResource: [{

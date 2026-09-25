@@ -1,10 +1,10 @@
 # I3 evidence: authority routes and required support
 
-**25 September 2026. I3 step 1 done in both languages: the operational-scope authority
-route and the required-study support are evaluated on the signed RM chain.** The legacy
-evaluator is still the default. Claim scope coverage and conformity (I4) are not
-implemented, so no request is accepted yet. Cycles, global restriction evaluators and a
-second signed route are still open (see Limits).
+**25 September 2026. I3 complete in both languages: two authority routes, a global
+suspension restriction, required-study support and cycle handling are evaluated on the
+signed RM chain; C01–C16, V04–V07 and P06 pass and V08 is declared unsupported.** The
+legacy evaluator is still the default. Claim scope coverage and conformity (I4) are not
+implemented, so no request is accepted yet.
 
 ## What was added
 
@@ -44,7 +44,61 @@ second signed route are still open (see Limits).
 | C16 | Unexplored route; `maxRoutes` 1 with two routes | `not_established` citing the budget; end to end the second route is `not_run` |
 | Reissue | Re-sign D unchanged | Byte-identical to the signed fixture |
 
-## Commands and results
+## Step 2: second signed route and the global suspension restriction
+
+| Part | Location | Behaviour |
+| --- | --- | --- |
+| Typed references | `build-resources.mjs` (authorization-policy schema), `rm-v1-authority.ts`, `rm_v1_authority.py` | `termsOfUse[].authorizationCredential` is `{id, type}`. A route selects its reference by the declared type, so an unavailable or unusable reference still belongs to exactly one route; the resolved credential must have the declared type, otherwise the reference is contradicted |
+| Second accreditation A2 | generator, `credentials/A2.json` | NAB grants the producer RM certification directly (no scope maintenance). D178 does not reference it, so it confers nothing there (V07) |
+| Suspension status | generator, `status/nab-suspension.json`, `status-list.ts`, `status_list.py` | NAB accreditations carry two Bitstring entries, `revocation` and `suspension` (VCDM 2.0 array). Gate 3 selects the single entry for the profile's purposes (revocation); suspension entries are read only by the restriction. Status wording follows the purpose |
+| `accreditation-suspension` | `rm-v1-authority.ts`, `rm_v1_authority.py`, both profiles | Applies to every usable anchor-issued RmAccreditation of the certificate issuer reached through the target's `termsOfUse` references, on any route and whether or not that route succeeds. Each needs a fresh suspension status from its issuer with the bit clear; a missing or unreadable one is `not_established`. It sits outside the OR, so another route cannot bypass it |
+| Two-route profile | `profiles/rm-verifier-two-routes-1.json` | Fictional: (operational scope within A) OR (direct accreditation), plus the restriction. The default profile keeps the single operational-scope route and gains the restriction |
+| Decisive verification | `rm-v1-slice.ts`, `rm_v1_artifacts.py` | Only the target and the credentials on the selected route and support chains decide the request. A failed credential on an unused alternative is reported but diagnostic (C03, C07); when nothing is established, failures still decide through the route and support states |
+| Trace | same | Gate 5 now records `authority` (the composed result) and `route:<id>` for each executed route, besides each basis and restriction |
+
+Controls (both languages, two-route profile unless noted):
+
+| Case | Change | Result |
+| --- | --- | --- |
+| C01 | D re-issued citing O and A2 | Both routes established; restriction covers A and A2 and holds; authority established |
+| C02 | O without its accreditation reference (default profile) | maintenance-grant `not_established`; route and authority `not_established` |
+| C03 | O granted to the lab; D cites A2 too | operational-scope contradicted, direct-accreditation established; authority established with witnesses `route:direct-accreditation`, D, A2; no reject |
+| C04 | O and A2 granted to the lab | Both routes contradicted → reject |
+| C05 | O granted to the lab; A2 unavailable | Contradicted + unresolved → `not_established` |
+| C06 | A2's suspension bit set; operational route complete | Restriction contradicted ("A2: Suspended") → reject. Also with A suspended under the default profile |
+| C07 | A2's revocation bit set | Direct route contradicted; restriction holds; authority established; A2's failure does not reject |
+| Status | Suspension list unavailable | Restriction and authority `not_established` |
+| Typing | D's O reference retargeted to A2 | authorizing-reference contradicted ("declares RmOperationalScope") |
+
+Regenerated: schemas and catalog, signed fixtures (A, O, S, D178/197/520 bytes change
+through typed references and A's suspension entry; A2 and the suspension list are new),
+and the poster bundle, which still verifies and renders "Accepted" in headless Chromium.
+
+Step 2 results: ledger command 72 TS and 70 Python tests, exit 0; TS 363 passed plus the
+9 network-only legacy failures; Python 316 passed, 1 skipped; Ruff 204 and mypy 198
+unchanged; build, lint, scenarios, schemas and both generator checks pass.
+
+## Step 3: cycles, shared nodes, roles and provenance
+
+No evaluator change was needed: routes are type-directed and every reference is checked
+against the active evaluation stack, while completed nodes are shared. These controls
+(both languages) pin that behaviour on signed data:
+
+| Case | Change | Result |
+| --- | --- | --- |
+| C12 | O re-issued citing D as its accreditation (D → O → D) | maintenance-grant `not_established`, "Circular authorization"; authority `not_established` |
+| C12 | D citing itself as its operational scope | authorizing-reference "Circular authorization" |
+| C12 | S citing D as its laboratory authority (support ↔ authority) | laboratory-authority-reference "Circular authorization"; support `not_established` |
+| C13 | D citing O and A (two-route profile) | A reused by both routes, both established, no cycle reported; the restriction counts A once |
+| C14 | A2 as O's grant and as D's direct accreditation | Per-role checks: projection-permission contradicted, direct route established; authority established |
+| C15 | D197 ↔ D520 reference each other, supplied but unused | Witnesses and decision equal the baseline |
+| V06 | D with only an absolute-IRI `prov:wasDerivedFrom` → O | Signs in safe mode, contradicted at the closed schema; authority `not_established`, no witnesses |
+
+Step 3 results: ledger command 79 TS and 77 Python tests, exit 0; TS 370 passed plus the
+9 network-only legacy failures; Python 323 passed, 1 skipped; Ruff 204, mypy 198, lint
+unchanged. Only test files changed. Ledger: 36 passing, 2 excluded, 45 not implemented.
+
+## Commands and results (step 1)
 
 ```bash
 pnpm -C packages/core-ts exec vitest run tests/rm-v1-authority.test.ts tests/rm-v1-slice.test.ts   # 62 passed, exit 0
@@ -64,20 +118,18 @@ pnpm -C apps/demo-web build:poster  # exit 0; bundle changes only by the regener
 A headless Chromium load of `site/m375a/` renders the accepted preview with no console
 errors.
 
-Ledger: V04, V05, V07, P06, C08, C09, C10, C11 and C16 are `passing`. V08 is
-`excluded_unsupported`. C01–C05 and C07 are still `not_implemented`, with unit-level
-composition evidence recorded.
+Ledger after step 1: V04, V05, V07, P06, C08–C11 and C16 `passing`; V08
+`excluded_unsupported`. After step 2, C01–C07 are also `passing` (31 passing in total).
 
 ## Limits
 
-- **C01–C06:** the profile installs only the operational-scope route. A signed second
-  route fixture (for example direct accreditation, or competence AND scheme
-  permission) and an applicable global suspension are needed before these pass on
-  signed data. No global restriction evaluator is installed; C06 is composition-only.
-- **C12–C15:** RM routes are fixed-depth and type-directed (D → O → A, D → S → H), so no
-  required cycle can form on the installed routes. Active-stack cycle detection, shared
-  DAG reuse and inert provenance cycles still need implementation and tests.
-- **V06:** the RM context defines no derivation term, so a `prov:wasDerivedFrom`-only
-  credential cannot be signed in safe mode. A dedicated control is pending.
+- **Restriction discovery:** the suspension restriction sees only accreditations the
+  chain references. A suspension of an accreditation nothing references is not
+  discovered (consistent with V08). The fixture routes are the RM binding's
+  illustrative profile, not a GS or legal rule.
+- **Cycles:** detection relies on the active stack of typed, fixed-depth RM routes;
+  there is no general memo table of node-use contexts yet, which a binding with open
+  recursion would need. The binding has no provenance vocabulary, so C15 uses an unused
+  reference cycle and V06 an absolute-IRI provenance property.
 - Claim scope coverage, conformity and the S cases are I4. Until then, authorization of
   the selected claim is at best `not_established`.

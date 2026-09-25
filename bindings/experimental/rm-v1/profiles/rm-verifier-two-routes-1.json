@@ -1,8 +1,8 @@
 {
-  "id": "https://vc4qi.example/profiles/rm-verifier",
+  "id": "https://vc4qi.example/profiles/rm-verifier-two-routes",
   "version": "1",
   "status": "experimental",
-  "description": "Verifier-owned reliance profile for the experimental RM v1 binding. Fictional fixture configuration; not an external standard.",
+  "description": "Fictional verifier profile with two complete certificate routes, (operational scope within an accreditation) OR (direct accreditation), and the accreditation-suspension global restriction outside the OR. Exercises route composition (C01-C07); not an external standard.",
   "binding": {"id": "https://vc4qi.example/bindings/rm/1", "version": "1"},
   "trustAnchors": [
     {
@@ -11,7 +11,7 @@
     }
   ],
   "authority": {
-    "certificateRoutes": ["operational-scope"],
+    "certificateRoutes": ["operational-scope", "direct-accreditation"],
     "globalRestrictions": ["accreditation-suspension"],
     "maxRoutes": 8
   },

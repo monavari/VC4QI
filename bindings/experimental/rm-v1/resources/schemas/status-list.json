@@ -75,7 +75,10 @@
           "const": "BitstringStatusList"
         },
         "statusPurpose": {
-          "const": "revocation"
+          "enum": [
+            "revocation",
+            "suspension"
+          ]
         },
         "encodedList": {
           "type": "string",
