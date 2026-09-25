@@ -13,6 +13,8 @@
   `D178.json` (certificate, As = 178 mg/kg, U = 5, k = 2, bound to O, citing S),
   plus `D197.json` and `D520.json`, hypothetical reissues with identical inputs except
   the value (fresh valid signatures) for the 197/520 witness cases.
+- `status/{nab,producer,lab}.json`: one signed W3C Bitstring Status List per issuer
+  (revocation, all bits clear); every credential above names its list and index.
 - `catalog.json`: URI, path, media type and SHA-384 SRI over the exact bytes.
 
 All keys are **insecure fixtures derived from public seeds**. The parties are fictional.

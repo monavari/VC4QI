@@ -1243,3 +1243,16 @@ target's gate entries, `not_run` states after a tamper, and the five artifact re
 Results: TS reliance-type and slice tests 45 passed (full suite 310 passed plus the 9
 network-only legacy failures); Python 271 passed, 1 skip; Ruff 204 and mypy 198
 unchanged. The poster bundle rebuilt byte-identically. No acceptance case changes.
+
+## Standards-first I2 step 2: credential status — 25 September 2026
+
+Added a verifier-owned reliance profile (`profiles/rm-verifier-1.json`, loaders in both
+languages), signed Bitstring Status Lists per fictional issuer, `credentialStatus` on
+every RM credential (schemas now require it; a `status-list.json` schema and the status
+list type were added to the manifest), and gate-3 status evaluation with issuer-only
+status authority, explicit freshness and bounded GZIP decoding. The manifest's pending
+resource list is now empty; it stays `incomplete` because the I2–I4 evaluators are not
+done. The slice evaluator moved to `reliance/rm-v1-slice.ts` to keep the artifact
+verifier browser-safe. The legacy status module's DEFLATE-without-prefix encoding is
+recorded as a finding and left unchanged. Details, controls (P08, P09, P10 unit, P16)
+and results are in `docs/plans/standards-first-i2-evidence.md`. No ledger case changes.

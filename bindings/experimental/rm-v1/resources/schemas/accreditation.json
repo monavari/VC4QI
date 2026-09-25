@@ -12,7 +12,8 @@
     "validFrom",
     "validUntil",
     "credentialSchema",
-    "credentialSubject"
+    "credentialSubject",
+    "credentialStatus"
   ],
   "properties": {
     "@context": {
@@ -160,6 +161,37 @@
             },
             "additionalProperties": false
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    "credentialStatus": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "statusPurpose",
+        "statusListIndex",
+        "statusListCredential"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "type": {
+          "const": "BitstringStatusListEntry"
+        },
+        "statusPurpose": {
+          "const": "revocation"
+        },
+        "statusListIndex": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$"
+        },
+        "statusListCredential": {
+          "type": "string",
+          "format": "uri"
         }
       },
       "additionalProperties": false
