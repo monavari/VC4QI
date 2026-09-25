@@ -10,7 +10,9 @@
   `H.json` (NAB recognizes the laboratory for homogeneity studies),
   `O.json` (producer's operational scope, M1 only, bound to A),
   `S.json` (laboratory homogeneity study of the batch, bound to H) and
-  `D178.json` (certificate, As = 178 mg/kg, U = 5, k = 2, bound to O, citing S).
+  `D178.json` (certificate, As = 178 mg/kg, U = 5, k = 2, bound to O, citing S),
+  plus `D197.json` and `D520.json`, hypothetical reissues with identical inputs except
+  the value (fresh valid signatures) for the 197/520 witness cases.
 - `catalog.json`: URI, path, media type and SHA-384 SRI over the exact bytes.
 
 All keys are **insecure fixtures derived from public seeds**. The parties are fictional.

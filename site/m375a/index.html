@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="data:,">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>BAM-M375a as a Verifiable Credential</title>
-<meta name="description" content="A certified reference material as a W3C Verifiable Credential. Its signatures, authority chain, scope and conformity are checked in your browser. VC4QI demonstrator, BAM.">
+<meta name="description" content="A certified reference material as a W3C Verifiable Credential. The VC4QI repository's own verifier checks its signatures and integrity in your browser; authority, scope and conformity follow the planned rules. VC4QI demonstrator, BAM.">
 <style>
 :root{
   --petrol:#00556E; --dark:#002832; --cyan:#00AFF0; --red:#D2001E; --gray:#BEC3C8;
@@ -105,6 +106,13 @@ dialog h3{ margin:0 0 .2rem; font-size:1.05rem; }
 dialog .close{ float:right; border:1px solid var(--line); background:var(--paper); border-radius:8px; padding:.3rem .7rem; cursor:pointer; }
 footer{ margin-top:2.4rem; border-top:1px solid var(--line); padding-top:1rem; font-size:.82rem; color:var(--muted); }
 footer p{ margin:.35rem 0; }
+
+.src{ font-size:.66rem; font-weight:700; letter-spacing:.02em; padding:.08rem .4rem; border-radius:999px; white-space:nowrap; }
+.src.repository{ background:var(--tpet); color:var(--petrol); }
+.src.preview{ background:var(--wash); color:var(--unk); box-shadow: inset 0 0 0 1px var(--unk); }
+ol.gates summary .t small{ display:block; color:var(--muted); font-size:.78rem; font-weight:400; }
+.legend{ display:flex; flex-wrap:wrap; gap:.4rem .8rem; margin:.2rem 0 .8rem; font-size:.8rem; color:var(--muted); align-items:center; }
+.note{ font-size:.82rem; color:var(--muted); margin:.5rem 0 0; }
 </style>
 </head>
 <body>
@@ -114,16 +122,16 @@ footer p{ margin:.35rem 0; }
     <div class="disc" aria-hidden="true"><div><b>BAM-M375a</b><span>CuZn39Pb3</span></div></div>
     <div>
       <h1>A reference material you can verify</h1>
-      <p>Your browser checks the signatures, the authority chain, the accredited scope and the verifier's limit. Nothing is sent anywhere.</p>
+      <p>Your browser runs the VC4QI repository's own verifier on the signed credentials, then applies the planned authority, scope and decision rules. Nothing is sent anywhere.</p>
     </div>
   </div>
 
   <div class="verdict busy" id="verdict" role="status" aria-live="polite">
     <div class="mark" id="mark">…</div>
-    <div><b id="vTitle">Verifying</b><small id="vSub"></small></div>
+    <div><b id="vTitle">Verifying</b><small id="vSub">Loading the verifier…</small></div>
   </div>
   <div class="scenario" role="group" aria-label="Certified value">
-    <button type="button" data-x="178" aria-pressed="true">x = 178<small>as certified</small></button>
+    <button type="button" data-x="178" aria-pressed="true">x = 178<small>certificate</small></button>
     <button type="button" data-x="197" aria-pressed="false">x = 197<small>hypothetical reissue</small></button>
     <button type="button" data-x="520" aria-pressed="false">x = 520<small>hypothetical reissue</small></button>
   </div>
@@ -137,27 +145,29 @@ footer p{ margin:.35rem 0; }
 
   <section aria-labelledby="h-vc">
     <h2 id="h-vc">The credential</h2>
-    <p class="lede">A W3C Verifiable Credential, grouped by what each part does. Tap "Full JSON" for the exact signed document.</p>
+    <p class="lede">A W3C Verifiable Credential, grouped by what each part does. Tap "Full JSON" for the exact signed bytes.</p>
     <div class="vc" id="vc"></div>
     <details class="raw"><summary>Full JSON</summary><pre id="raw"></pre></details>
   </section>
 
   <section aria-labelledby="h-g">
     <h2 id="h-g">Who stands behind the value</h2>
-    <p class="lede">Arrows point to referenced evidence. Authority is referenced in <code>termsOfUse</code>, support in <code>evidence</code>. Tap a box to read that credential.</p>
+    <p class="lede">Arrows point to referenced credentials. Authority is referenced in <code>termsOfUse</code>, support in <code>evidence</code>, and each reference is bound to the exact bytes by <code>relatedResource</code>. Tap a box to read that credential.</p>
     <div id="graph"></div>
   </section>
 
   <section aria-labelledby="h-t">
-    <h2 id="h-t">The questions a verifier asks</h2>
-    <p class="lede">The verifier picks the profile; the credential cannot pick a weaker one. Each answer is yes, no or cannot tell, and cannot tell never counts as yes. Tap a question for its checks.</p>
+    <h2 id="h-t">The seven gates a verifier checks</h2>
+    <p class="lede">The verifier picks the profile; the credential cannot pick a weaker one. Each answer is yes, no or cannot tell, and cannot tell never counts as yes. A gate only reads facts from credentials that passed the gates before it.</p>
+    <div class="legend"><span class="src repository">repository code</span> runs the repository's verifier today <span class="src preview">preview</span> planned rules, not yet in the repository evaluator</div>
     <ol class="gates" id="gates"></ol>
+    <p class="note">Credential status (revocation) is not checked yet; it is planned for the next phase of the evaluator.</p>
   </section>
 
   <footer>
     <p>Credentials represent authority. They do not create it.</p>
-    <p>Certified value and producer from BAM-M375a. The accreditation bodies, laboratory, operational scope, methods M1 and M2 and all keys are fictional fixtures under the experimental binding vc4qi-rm-exp 0.1. The 197 and 520 cases are hypothetical reissues with their own valid signatures. The questions map to gates 0 to 6 of the paper.</p>
-    <p>This page is a self-contained illustration that runs entirely in your browser. The repository's evaluator for this model is still being implemented.</p>
+    <p>The signed credentials are the repository's RM v1 test fixtures (<code>bindings/experimental/rm-v1</code>), signed with <code>eddsa-rdfc-2022</code>. Gates 0 to 3 run the repository's <code>verifyRmArtifact</code>, bundled for the browser: pinned contexts and schemas, the issuer's own key from its controller document, the Ed25519 signature over the JSON-LD safe-mode canonical form, exact-byte digests and validity. Gates 4 to 6 preview the authority, scope, support and decision rules that the repository is still implementing.</p>
+    <p>Certified value and material from BAM-M375a. The accreditation body, producer, laboratory, operational scope, methods M1 and M2 and all keys are fictional fixtures under the experimental binding <code>vc4qi.example/bindings/rm/1</code>; BAM does not issue these credentials. The 197 and 520 certificates are hypothetical reissues with their own valid signatures.</p>
     <p>Project: <a href="../">monavari.github.io/VC4QI</a> · Code: <a href="https://github.com/monavari/VC4QI">github.com/monavari/VC4QI</a></p>
     <p>Mehran Monavari, BAM Berlin · <a href="mailto:mehran.monavari@bam.de">mehran.monavari@bam.de</a></p>
   </footer>
@@ -168,263 +178,140 @@ footer p{ margin:.35rem 0; }
   <h3 id="sheetTitle"></h3><p class="lede" id="sheetSub"></p><pre id="sheetBody"></pre>
 </dialog>
 
-<script id="data" type="application/json">{"A": {"@context": ["https://www.w3.org/ns/credentials/v2", "https://vc4qi.example/contexts/rm-exp/v0.1"], "id": "https://nab.example/credentials/accreditation-A", "type": ["VerifiableCredential", "AccreditationCertificate"], "issuer": "did:web:nab.example", "validFrom": "2025-01-01T00:00:00Z", "validUntil": "2030-01-01T00:00:00Z", "credentialSubject": {"id": "did:web:rm-producer.example", "standard": "ISO 17034", "activity": "https://vc4qi.example/activities#rm-certification", "mayMaintainOperationalScope": true, "scope": [{"id": "A-1", "property": "As", "matrix": "CuZn39Pb3", "form": "disc", "methods": ["M1", "M2"], "range": {"min": 50, "max": 500, "unit": "mg/kg", "quantityKind": "MassFraction", "includeMin": true, "includeMax": true}}]}, "proof": {"type": "DataIntegrityProof", "cryptosuite": "eddsa-jcs-2022", "created": "2025-01-01T00:00:00Z", "verificationMethod": "did:web:nab.example#key-1", "proofPurpose": "assertionMethod", "proofValue": "z5qeTRd1bjie3opvJDrJdAZAfyz43p9TbF1YYX1LKgDhMmK7kwdiKunhahkXx9qjTrcpGivpxv6R6aebMkR2y5EXk"}}, "H": {"@context": ["https://www.w3.org/ns/credentials/v2", "https://vc4qi.example/contexts/rm-exp/v0.1"], "id": "https://nab.example/credentials/accreditation-H", "type": ["VerifiableCredential", "AccreditationCertificate"], "issuer": "did:web:nab.example", "validFrom": "2025-01-01T00:00:00Z", "validUntil": "2030-01-01T00:00:00Z", "credentialSubject": {"id": "did:web:rm-lab.example", "standard": "ISO/IEC 17025", "activity": "https://vc4qi.example/activities#homogeneity-study", "scope": [{"id": "H-1", "property": "As", "matrix": "CuZn39Pb3"}]}, "proof": {"type": "DataIntegrityProof", "cryptosuite": "eddsa-jcs-2022", "created": "2025-01-01T00:00:00Z", "verificationMethod": "did:web:nab.example#key-1", "proofPurpose": "assertionMethod", "proofValue": "z4wjrPxWZozvkFSuiYDKSGu2eN47tWMAKm1rqE7rXt9PVXTS8sW5fupjYN6Wz6xox7GZqRcCiAGVxzn2R5rxQbLqa"}}, "O": {"@context": ["https://www.w3.org/ns/credentials/v2", "https://vc4qi.example/contexts/rm-exp/v0.1"], "id": "https://rm-producer.example/credentials/opscope-O", "type": ["VerifiableCredential", "OperationalScope"], "issuer": "did:web:rm-producer.example", "validFrom": "2025-06-01T00:00:00Z", "validUntil": "2030-01-01T00:00:00Z", "credentialSubject": {"id": "did:web:rm-producer.example", "activity": "https://vc4qi.example/activities#rm-certification", "scope": [{"id": "O-1", "property": "As", "matrix": "CuZn39Pb3", "form": "disc", "methods": ["M1"], "range": {"min": 50, "max": 500, "unit": "mg/kg", "quantityKind": "MassFraction", "includeMin": true, "includeMax": true}}]}, "termsOfUse": [{"type": "OperativeGrantPolicy", "operativeGrant": "https://nab.example/credentials/accreditation-A", "activity": "https://vc4qi.example/activities#operational-scope-maintenance"}], "relatedResource": [{"id": "https://nab.example/credentials/accreditation-A", "digestSRI": "sha384-aX8Hk6Bh5W5ipB4QBBgj0ydGEIpymr31d9upcZs8N6KBsmDmgCPHuzcMJFBjJHaj"}], "proof": {"type": "DataIntegrityProof", "cryptosuite": "eddsa-jcs-2022", "created": "2025-06-01T00:00:00Z", "verificationMethod": "did:web:rm-producer.example#key-1", "proofPurpose": "assertionMethod", "proofValue": "z4HUgWxq95mmybbJFzia2z3ZY4kJntADQzPs2Qdci31SrMSXs2SrE5u9UTEWsQNXRZjf3vfJxmKm4VEoo8jYYdUi2"}}, "S": {"@context": ["https://www.w3.org/ns/credentials/v2", "https://vc4qi.example/contexts/rm-exp/v0.1"], "id": "https://rm-lab.example/credentials/study-S", "type": ["VerifiableCredential", "ReferenceMaterialStudy"], "issuer": "did:web:rm-lab.example", "validFrom": "2026-01-15T00:00:00Z", "credentialSubject": {"id": "urn:example:lot:BAM-M375a", "studyType": "homogeneity", "property": "As", "matrix": "CuZn39Pb3", "outcome": "homogeneous"}, "termsOfUse": [{"type": "OperativeGrantPolicy", "operativeGrant": "https://nab.example/credentials/accreditation-H", "activity": "https://vc4qi.example/activities#homogeneity-study"}], "relatedResource": [{"id": "https://nab.example/credentials/accreditation-H", "digestSRI": "sha384-FdXx3plijG/f6p+tPBo9vZcH+N8uqn0VHxHthHqqndsyAqcgHo9QD7HDeuZrXwgw"}], "proof": {"type": "DataIntegrityProof", "cryptosuite": "eddsa-jcs-2022", "created": "2026-01-15T00:00:00Z", "verificationMethod": "did:web:rm-lab.example#key-1", "proofPurpose": "assertionMethod", "proofValue": "z2JMF3gFV7oeUiFBv8LX2N9EaS4sHTdnP4pxaxy47irLTdqKqWAp7y9DuRzq4KuQWYYqyGsrqunFiRFYdPw9inX4D"}}, "SL": {"@context": ["https://www.w3.org/ns/credentials/v2", "https://vc4qi.example/contexts/rm-exp/v0.1"], "id": "https://rm-producer.example/status/1", "type": ["VerifiableCredential", "BitstringStatusListCredential"], "issuer": "did:web:rm-producer.example", "validFrom": "2026-09-01T00:00:00Z", "credentialSubject": {"id": "https://rm-producer.example/status/1#list", "type": "BitstringStatusList", "statusPurpose": "revocation", "encodedList": "uH4sIAAAAAAACA-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"}, "proof": {"type": "DataIntegrityProof", "cryptosuite": "eddsa-jcs-2022", "created": "2026-09-01T00:00:00Z", "verificationMethod": "did:web:rm-producer.example#key-1", "proofPurpose": "assertionMethod", "proofValue": "z5zDhT7p4vh3MS6dZb56xUAZbXAm11TiDVTY6QiFuxwuLuKUDLxDULfUzLaLLaqodqx5Enkyiu3Kd7zm52dgjJHCT"}}, "D178": {"@context": ["https://www.w3.org/ns/credentials/v2", "https://vc4qi.example/contexts/rm-exp/v0.1"], "id": "https://rm-producer.example/credentials/rm-cert-D178", "type": ["VerifiableCredential", "ReferenceMaterialCertificate"], "issuer": "did:web:rm-producer.example", "validFrom": "2026-02-01T00:00:00Z", "validUntil": "2028-02-01T00:00:00Z", "credentialSchema": {"id": "https://vc4qi.example/schemas/rm-certificate/v0.1.json", "type": "JsonSchema"}, "credentialSubject": {"id": "urn:example:lot:BAM-M375a", "material": {"name": "BAM-M375a", "matrix": "CuZn39Pb3", "form": "disc", "producer": "Bundesanstalt für Materialforschung und -prüfung (BAM)"}, "certifiedValue": {"property": "As", "quantityKind": "MassFraction", "value": 178, "unit": "mg/kg", "expandedUncertainty": 5, "coverageFactor": 2, "method": "M1"}}, "termsOfUse": [{"type": "OperativeGrantPolicy", "operativeGrant": "https://rm-producer.example/credentials/opscope-O", "activity": "https://vc4qi.example/activities#rm-certification"}], "evidence": [{"id": "https://rm-lab.example/credentials/study-S", "type": ["Evidence", "HomogeneityStudy"]}], "relatedResource": [{"id": "https://rm-producer.example/credentials/opscope-O", "digestSRI": "sha384-agpG5EWqfYGGcUGnfF7FZHYvsXtuPnWtFhsSEK/+IwXMa+RNTFW0bqdoPPY48h0S"}, {"id": "https://rm-lab.example/credentials/study-S", "digestSRI": "sha384-/YLDfeg+KMnNLujPZWzYWqsqUFmriXY+4K+AV7IHw6TQsNLmXdYcwCR0xL22/jnd"}], "credentialStatus": {"id": "https://rm-producer.example/status/1#0", "type": "BitstringStatusListEntry", "statusPurpose": "revocation", "statusListIndex": "0", "statusListCredential": "https://rm-producer.example/status/1"}, "proof": {"type": "DataIntegrityProof", "cryptosuite": "eddsa-jcs-2022", "created": "2026-02-01T00:00:00Z", "verificationMethod": "did:web:rm-producer.example#key-1", "proofPurpose": "assertionMethod", "proofValue": "z3KC2F3Q1Lc5B6GQ8V3m9UxvfUxDttSnVh6zquoNfu9mB5S6rAbBmDWc97M3TpLeF5J7D8QsjeP88sDXmwqTp4s2a"}}, "D197": {"@context": ["https://www.w3.org/ns/credentials/v2", "https://vc4qi.example/contexts/rm-exp/v0.1"], "id": "https://rm-producer.example/credentials/rm-cert-D197", "type": ["VerifiableCredential", "ReferenceMaterialCertificate"], "issuer": "did:web:rm-producer.example", "validFrom": "2026-02-01T00:00:00Z", "validUntil": "2028-02-01T00:00:00Z", "credentialSchema": {"id": "https://vc4qi.example/schemas/rm-certificate/v0.1.json", "type": "JsonSchema"}, "credentialSubject": {"id": "urn:example:lot:BAM-M375a", "material": {"name": "BAM-M375a (what-if reissue)", "matrix": "CuZn39Pb3", "form": "disc", "producer": "Bundesanstalt für Materialforschung und -prüfung (BAM)"}, "certifiedValue": {"property": "As", "quantityKind": "MassFraction", "value": 197, "unit": "mg/kg", "expandedUncertainty": 5, "coverageFactor": 2, "method": "M1"}}, "termsOfUse": [{"type": "OperativeGrantPolicy", "operativeGrant": "https://rm-producer.example/credentials/opscope-O", "activity": "https://vc4qi.example/activities#rm-certification"}], "evidence": [{"id": "https://rm-lab.example/credentials/study-S", "type": ["Evidence", "HomogeneityStudy"]}], "relatedResource": [{"id": "https://rm-producer.example/credentials/opscope-O", "digestSRI": "sha384-agpG5EWqfYGGcUGnfF7FZHYvsXtuPnWtFhsSEK/+IwXMa+RNTFW0bqdoPPY48h0S"}, {"id": "https://rm-lab.example/credentials/study-S", "digestSRI": "sha384-/YLDfeg+KMnNLujPZWzYWqsqUFmriXY+4K+AV7IHw6TQsNLmXdYcwCR0xL22/jnd"}], "credentialStatus": {"id": "https://rm-producer.example/status/1#1", "type": "BitstringStatusListEntry", "statusPurpose": "revocation", "statusListIndex": "1", "statusListCredential": "https://rm-producer.example/status/1"}, "proof": {"type": "DataIntegrityProof", "cryptosuite": "eddsa-jcs-2022", "created": "2026-02-01T00:00:00Z", "verificationMethod": "did:web:rm-producer.example#key-1", "proofPurpose": "assertionMethod", "proofValue": "z2JCWeoP8RCmrJmeuoynjHn1Fcu8F5hp1h9XJmThD18KvqyiXYcXxa37paJSw3gMbxJAQcUPACEEPjNugbgMBpztw"}}, "D520": {"@context": ["https://www.w3.org/ns/credentials/v2", "https://vc4qi.example/contexts/rm-exp/v0.1"], "id": "https://rm-producer.example/credentials/rm-cert-D520", "type": ["VerifiableCredential", "ReferenceMaterialCertificate"], "issuer": "did:web:rm-producer.example", "validFrom": "2026-02-01T00:00:00Z", "validUntil": "2028-02-01T00:00:00Z", "credentialSchema": {"id": "https://vc4qi.example/schemas/rm-certificate/v0.1.json", "type": "JsonSchema"}, "credentialSubject": {"id": "urn:example:lot:BAM-M375a", "material": {"name": "BAM-M375a (what-if reissue)", "matrix": "CuZn39Pb3", "form": "disc", "producer": "Bundesanstalt für Materialforschung und -prüfung (BAM)"}, "certifiedValue": {"property": "As", "quantityKind": "MassFraction", "value": 520, "unit": "mg/kg", "expandedUncertainty": 5, "coverageFactor": 2, "method": "M1"}}, "termsOfUse": [{"type": "OperativeGrantPolicy", "operativeGrant": "https://rm-producer.example/credentials/opscope-O", "activity": "https://vc4qi.example/activities#rm-certification"}], "evidence": [{"id": "https://rm-lab.example/credentials/study-S", "type": ["Evidence", "HomogeneityStudy"]}], "relatedResource": [{"id": "https://rm-producer.example/credentials/opscope-O", "digestSRI": "sha384-agpG5EWqfYGGcUGnfF7FZHYvsXtuPnWtFhsSEK/+IwXMa+RNTFW0bqdoPPY48h0S"}, {"id": "https://rm-lab.example/credentials/study-S", "digestSRI": "sha384-/YLDfeg+KMnNLujPZWzYWqsqUFmriXY+4K+AV7IHw6TQsNLmXdYcwCR0xL22/jnd"}], "credentialStatus": {"id": "https://rm-producer.example/status/1#2", "type": "BitstringStatusListEntry", "statusPurpose": "revocation", "statusListIndex": "2", "statusListCredential": "https://rm-producer.example/status/1"}, "proof": {"type": "DataIntegrityProof", "cryptosuite": "eddsa-jcs-2022", "created": "2026-02-01T00:00:00Z", "verificationMethod": "did:web:rm-producer.example#key-1", "proofPurpose": "assertionMethod", "proofValue": "z4475ZCACf4Qx2DnQzBE1nB1FtdqXePgZMGFStuVDDNpihmQmLvDnz1xR8bxAcdHwW2CKfwhb5i5tqqqaKBc1rEU9"}}, "keys": {"did:web:nab.example": "z6MkgXYBeT7CEX8Sei7jSRPfwezuhuGFFd6WSVSgtenacKSG", "did:web:rm-producer.example": "z6MkukmR2hyq7NMypEPgbDZjoGaSWjvsGwFTKcMDJvhPi4N3", "did:web:rm-lab.example": "z6Mkh1vzSqrjt3oWSTfC97RpY95JBFWKt5PNLJnBXAwjUtNr"}, "anchors": ["did:web:nab.example"], "binding": {"id": "vc4qi-rm-exp", "version": "0.1", "status": "experimental fixture"}}</script>
-<script>
-(function(){
-"use strict";
-var C = JSON.parse(document.getElementById("data").textContent);
-var $ = function(id){ return document.getElementById(id); };
-function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
-var PROFILE = { id:"vc4qi-rm-exp", version:"0.1", limit:200, unit:"mg/kg", quantityKind:"MassFraction",
-  activity:"https://vc4qi.example/activities#rm-certification", maint:"https://vc4qi.example/activities#operational-scope-maintenance",
-  study:"https://vc4qi.example/activities#homogeneity-study", ctx:"https://vc4qi.example/contexts/rm-exp/v0.1" };
-var byId = {}; ["A","H","O","S","SL"].forEach(function(k){ byId[C[k].id] = C[k]; });
+<script type="module">
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const short = iri => String(iri).split(/[#/]/).pop();
+const LABEL = { established: 'yes', contradicted: 'no', not_established: 'cannot tell', not_run: 'not asked' };
+const GATES = [
+  ['Understood?', 'supported credential type, context and schema'],
+  ['Complete and unchanged?', 'referenced credentials match their digests'],
+  ['Authentic?', "signed with the issuer's own key"],
+  ['Valid now?', 'within the validity period'],
+  ['Meaningful?', 'quantity, unit and numbers per the binding'],
+  ['Authorized?', 'accreditation chain and scope'],
+  ['Supported and fit for use?', "required study; the verifier's limit"],
+];
 
-// ---- primitives -------------------------------------------------------
-function jcs(v){
-  if(v === null || typeof v !== "object") return JSON.stringify(v);
-  if(Array.isArray(v)) return "[" + v.map(jcs).join(",") + "]";
-  return "{" + Object.keys(v).sort().map(function(k){ return JSON.stringify(k) + ":" + jcs(v[k]); }).join(",") + "}";
-}
-var B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-function b58dec(s){
-  var bytes = [0];
-  for(var i=0;i<s.length;i++){
-    var c = B58.indexOf(s[i]); if(c < 0) throw new Error("bad base58");
-    for(var j=0;j<bytes.length;j++){ c += bytes[j]*58; bytes[j] = c & 255; c >>= 8; }
-    while(c){ bytes.push(c & 255); c >>= 8; }
-  }
-  for(var k=0;k<s.length && s[k]==="1";k++) bytes.push(0);
-  return new Uint8Array(bytes.reverse());
-}
-function enc(s){ return new TextEncoder().encode(s); }
-async function digest(alg, s){ return new Uint8Array(await crypto.subtle.digest(alg, enc(s))); }
-function b64(u8){ var s=""; u8.forEach(function(b){ s+=String.fromCharCode(b); }); return btoa(s); }
-var st = function(state, text){ return {state:state, text:text}; };
-
-async function checkProof(doc){
-  if(!window.crypto || !crypto.subtle) return st("not_established", "This browser offers no WebCrypto; proof not checked.");
-  var p = doc.proof;
-  if(!p || p.cryptosuite !== "eddsa-jcs-2022") return st("contradicted", "Unsupported or missing proof.");
-  if(p.verificationMethod !== doc.issuer + "#key-1") return st("contradicted", "Key does not belong to the issuer.");
-  var mk = C.keys[doc.issuer];
-  if(!mk) return st("not_established", "No key for " + doc.issuer + " in the trust configuration.");
-  var key;
-  try { key = await crypto.subtle.importKey("raw", b58dec(mk.slice(1)).slice(2), {name:"Ed25519"}, false, ["verify"]); }
-  catch(e){ return st("not_established", "Ed25519 is not supported by this browser; proof not checked."); }
-  var body = JSON.parse(JSON.stringify(doc)); delete body.proof;
-  var cfg = JSON.parse(JSON.stringify(p)); delete cfg.proofValue; cfg["@context"] = doc["@context"];
-  var h1 = await digest("SHA-256", jcs(cfg)), h2 = await digest("SHA-256", jcs(body));
-  var data = new Uint8Array(64); data.set(h1,0); data.set(h2,32);
-  var sig = b58dec(p.proofValue.slice(1));
-  if(sig.length < 64){ var t = new Uint8Array(64); t.set(sig, 64-sig.length); sig = t; }
-  var ok = await crypto.subtle.verify({name:"Ed25519"}, key, sig, data);
-  return ok ? st("established", "Ed25519 signature by " + doc.issuer + " verifies.")
-            : st("contradicted", "Signature does not match the document. The content was changed after signing.");
-}
-async function checkDigest(ref){
-  var t = byId[ref.id]; if(!t) return st("not_established", ref.id + " not in the presented bundle.");
-  var d = "sha384-" + b64(await digest("SHA-384", jcs(t)));
-  return d === ref.digestSRI ? st("established", "Digest of " + short(ref.id) + " matches.") : st("contradicted", "Digest mismatch for " + short(ref.id) + ".");
-}
-async function checkStatus(entry){
-  var sl = byId[entry.statusListCredential];
-  if(!sl) return st("not_established", "Status list not available.");
-  if(typeof DecompressionStream === "undefined") return st("not_established", "Browser cannot decode the status list.");
-  var s = sl.credentialSubject.encodedList.slice(1).replace(/-/g,"+").replace(/_/g,"/");
-  while(s.length % 4) s += "=";
-  var raw = Uint8Array.from(atob(s), function(c){ return c.charCodeAt(0); });
-  var buf = new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer());
-  var i = parseInt(entry.statusListIndex, 10);
-  var bit = (buf[i >> 3] >> (7 - (i & 7))) & 1;
-  return bit ? st("contradicted", "Credential is revoked (index " + i + ").") : st("established", "Not revoked (index " + i + " of " + sl.id.split("/").pop() + ").");
-}
-function short(u){ return u.split("/").pop(); }
-function within(now, doc){
-  var f = doc.validFrom ? Date.parse(doc.validFrom) : -Infinity, u = doc.validUntil ? Date.parse(doc.validUntil) : Infinity;
-  return now >= f && now <= u;
-}
-function all(states){ if(states.some(function(s){return s==="contradicted";})) return "contradicted";
-  if(states.every(function(s){return s==="established";})) return "established"; return "not_established"; }
-
-// ---- evaluation -------------------------------------------------------
-async function evaluate(D){
-  var G = [0,1,2,3,4,5,6,7].map(function(){ return []; });
-  var A = C.A, O = C.O, S = C.S, H = C.H, SL = C.SL, now = Date.now();
-  var cv = D.credentialSubject.certifiedValue, mat = D.credentialSubject.material;
-
-  G[0].push(D.type.indexOf("ReferenceMaterialCertificate")>-1 && D["@context"].indexOf(PROFILE.ctx)>-1
-    ? st("established","Profile " + PROFILE.id + " " + PROFILE.version + " selected by the verifier; credential type and context supported.")
-    : st("not_established","Credential not covered by the selected profile."));
-
-  for(const r of D.relatedResource) G[1].push(await checkDigest(r));
-  for(const r of O.relatedResource) G[1].push(await checkDigest(r));
-  for(const r of S.relatedResource) G[1].push(await checkDigest(r));
-
-  var docs = [["D", D],["O", O],["A", A],["S", S],["H", H],["status list", SL]];
-  for(const pair of docs){ var r = await checkProof(pair[1]); r.text = pair[0] + ": " + r.text; G[2].push(r); }
-
-  if(G[2][0].state !== "established"){
-    var skip = st("not_run","Not evaluated: D's protection is not established, so its content is not used.");
-    G[3].push(skip); G[4].push(skip); G[5].push(skip); G[6].push(skip); G[7].push(skip);
-    var gatesE = G.map(function(list){ return all(list.map(function(r){ return r.state==="not_run" ? "not_established" : r.state; })); });
-    return { G:G, gates:gatesE, reliance: gatesE.indexOf("contradicted")>-1 ? "reject" : "not_established",
-             scope:skip, conf:skip, protection:G[2][0].state, x:cv.value, U:cv.expandedUncertainty };
-  }
-  docs.forEach(function(pair){ G[3].push(within(now, pair[1]) ? st("established", pair[0] + ": valid now.") : st("contradicted", pair[0] + ": outside its validity period.")); });
-  var sr = SL.issuer === D.issuer ? await checkStatus(D.credentialStatus) : st("not_established","Status list signer may not state status for D.");
-  G[3].push(sr);
-
-  var numOk = [cv.value, cv.expandedUncertainty, cv.coverageFactor].every(Number.isFinite) && cv.expandedUncertainty >= 0;
-  G[4].push(cv.unit === PROFILE.unit && cv.quantityKind === PROFILE.quantityKind ? st("established","Mass fraction in mg/kg, supported by the profile.") : st("not_established","Unit or quantity kind not supported."));
-  G[4].push(numOk ? st("established","Value, symmetric expanded uncertainty and k are valid numbers.") : st("contradicted","Invalid numbers."));
-
-  // authority and scope
-  var tou = (D.termsOfUse||[]).find(function(t){ return t.type==="OperativeGrantPolicy" && t.operativeGrant===O.id; });
-  G[5].push(tou && tou.activity===PROFILE.activity ? st("established","D is issued under operational scope O (termsOfUse).") : st("not_established","No recognized authority reference in termsOfUse."));
-  G[5].push(O.credentialSubject.id===D.issuer ? st("established","O is held by D's issuer.") : st("contradicted","O belongs to another actor."));
-  var touO = (O.termsOfUse||[]).find(function(t){ return t.operativeGrant===A.id; });
-  G[5].push(touO && touO.activity===PROFILE.maint && A.credentialSubject.id===O.issuer && A.credentialSubject.mayMaintainOperationalScope===true
-    ? st("established","Accreditation A permits D's issuer to maintain an operational scope.") : st("contradicted","No permission to maintain O."));
-  G[5].push(C.anchors.indexOf(A.issuer)>-1 ? st("established","A is issued by a configured trust anchor (fictional NAB).") : st("not_established","A's issuer is not an anchor."));
-  var contained = O.credentialSubject.scope.every(function(o){ return A.credentialSubject.scope.some(function(a){
-    return a.property===o.property && a.matrix===o.matrix && a.form===o.form && o.methods.every(function(m){ return a.methods.indexOf(m)>-1; })
-      && a.range.unit===o.range.unit && o.range.min>=a.range.min && o.range.max<=a.range.max; }); });
-  G[5].push(contained ? st("established","Bounded projection: O lies within A (methods M1 within M1, M2; 50 to 500 within 50 to 500).") : st("contradicted","O exceeds A."));
-  var rec = O.credentialSubject.scope.find(function(o){ return o.property===cv.property && o.matrix===mat.matrix && o.form===mat.form && o.methods.indexOf(cv.method)>-1 && o.range.unit===cv.unit; });
-  var scope;
-  if(!rec) scope = st("contradicted","No scope record in O covers As, CuZn39Pb3, disc, method " + cv.method + ".");
-  else if(cv.value >= rec.range.min && cv.value <= rec.range.max) scope = st("established","Record " + rec.id + ": 50 ≤ " + cv.value + " ≤ 500 mg/kg.");
-  else scope = st("contradicted","Record " + rec.id + ": " + cv.value + (cv.value > rec.range.max ? " > 500" : " < 50") + " mg/kg, outside the accredited range.");
-  G[5].push(scope);
-
-  // support and decision
-  var sOk = S.credentialSubject.id===D.credentialSubject.id && S.credentialSubject.property===cv.property && S.credentialSubject.matrix===mat.matrix;
-  var ev = (D.evidence||[]).some(function(e){ return e.id===S.id; });
-  G[6].push(ev ? (sOk ? st("established","Study S covers the same lot and property (evidence).") : st("contradicted","Study S concerns another lot or property.")) : st("not_established","No required study in evidence."));
-  var touS = (S.termsOfUse||[]).find(function(t){ return t.operativeGrant===H.id; });
-  G[6].push(touS && touS.activity===PROFILE.study && H.credentialSubject.id===S.issuer && C.anchors.indexOf(H.issuer)>-1
-    ? st("established","S's laboratory is accredited for homogeneity studies (H).") : st("not_established","S lacks its own authority."));
-
-  var pre = all(G.slice(0,6).flat().map(function(r){return r.state;}).concat([G[6][0].state, G[6][1].state]));
-  var conf;
-  if(pre !== "established") conf = st("not_run","Conformity not run: prerequisites are not established.");
-  else { var g = cv.value + cv.expandedUncertainty;
-    conf = g <= PROFILE.limit ? st("established", cv.value + " + " + cv.expandedUncertainty + " = " + g + " ≤ " + PROFILE.limit + " mg/kg.")
-                              : st("contradicted", cv.value + " + " + cv.expandedUncertainty + " = " + g + " > " + PROFILE.limit + " mg/kg."); }
-  G[7].push(conf);
-
-  var gates = G.map(function(list){ return all(list.map(function(r){ return r.state==="not_run" ? "not_established" : r.state; })); });
-  // gate 6 without the not-run conformity when upstream failed
-  var reliance = gates.indexOf("contradicted")>-1 ? "reject" : (gates.every(function(s){return s==="established";}) ? "accept" : "not_established");
-  return { G:G, gates:gates, reliance:reliance, scope:scope, conf:conf, protection:gates[2], x:cv.value, U:cv.expandedUncertainty };
+function fail(message) {
+  $('verdict').className = 'verdict unknown'; $('mark').textContent = '?';
+  $('vTitle').textContent = 'Not established'; $('vSub').textContent = message;
 }
 
-// ---- rendering --------------------------------------------------------
-var QUESTIONS = [["Authentic?","signed by the issuer, unchanged",[1,2]],["Valid?","within validity, not revoked",[3]],["Understood?","units and identifiers per profile",[0,4]],["Authorized?","issuer may claim it: in scope",[5]],["Supported?","required studies apply",[6]],["Fit for use?","meets the verifier\u2019s requirement",[7]]];
-var LABEL = { established:"yes", contradicted:"no", not_established:"cannot tell", not_run:"not asked" };
-var cur = "178", tampered = false;
+let api;
+try { api = await import('./verifier.js'); }
+catch (error) { fail('This browser could not run the verifier (' + error.message + ').'); throw error; }
 
-function current(){
-  var D = JSON.parse(JSON.stringify(C["D" + cur]));
-  if(tampered) D.credentialSubject.certifiedValue.value = 150;
-  return D;
+let cur = '178', tampered = false, seq = 0, last;
+
+function renderVerdict(R) {
+  const v = $('verdict'); let t, s, m;
+  if (R.verdict === 'accept') { v.className = 'verdict'; m = '✓'; t = 'Accepted'; s = 'All seven gates answered yes. ' + R.conformity.text; }
+  else if (R.verdict === 'reject') {
+    v.className = 'verdict reject'; m = '✕';
+    if (R.failedGate === 2) { t = 'Rejected: not authentic'; s = 'The signature no longer matches. Changed values are never used for scope or conformity.'; }
+    else if (R.failedGate === 5) { t = 'Rejected: not authorized'; s = R.scope.text + ' Fit for use not asked.'; }
+    else if (R.failedGate === 6 && R.conformity && R.conformity.run && R.conformity.state === 'contradicted') {
+      t = 'Rejected: not fit for use'; s = 'Authorized, but ' + R.conformity.text + " The verifier's requirement is As + U ≤ 200 mg/kg."; }
+    else { t = 'Rejected at gate ' + R.failedGate; s = 'See the gates below.'; }
+  } else { v.className = 'verdict unknown'; m = '?'; t = 'Not established'; s = 'Some required evidence could not be established. See the gates below.'; }
+  $('mark').textContent = m;
+  $('mark').style.color = R.verdict === 'accept' ? '#00556E' : (R.verdict === 'reject' ? '#D2001E' : '#6B5A1E');
+  $('vTitle').textContent = t; $('vSub').textContent = s;
 }
-function renderVerdict(R){
-  var v = $("verdict"), t, s, m;
-  if(R.reliance==="accept"){ v.className="verdict"; m="✓"; t="Accepted"; s="All six questions answered yes; " + R.conf.text; }
-  else if(R.reliance==="reject"){ v.className="verdict reject"; m="✕";
-    if(R.protection==="contradicted"){ t="Rejected: not authentic"; s="The signature no longer matches. Changed values are never used for scope or conformity."; }
-    else if(R.scope.state==="contradicted"){ t="Rejected: not authorized"; s=R.scope.text + " Fit for use not asked."; }
-    else { t="Rejected: not fit for use"; s="Authorized, but " + R.conf.text + " The verifier\u2019s requirement is As + U \u2264 200 mg/kg."; } }
-  else { v.className="verdict unknown"; m="?"; t="Not established"; s="Some required evidence could not be checked in this browser. See the gates below."; }
-  $("mark").textContent = m; $("mark").style.color = R.reliance==="accept" ? "#00556E" : (R.reliance==="reject" ? "#D2001E" : "#6B5A1E");
-  $("vTitle").textContent = t; $("vSub").textContent = s;
+
+function renderWitness(R) {
+  const g = n => R.gates[n].state;
+  const x = R.values.x, U = R.values.U, sum = (Number(x) + Number(U));
+  const rows = [
+    ['Authentic', g(2) === 'established' ? 'signatures valid' : (g(2) === 'contradicted' ? 'signature broken' : 'not checked'), g(2)],
+    ['Authorized', R.scope ? R.scope.text.split(' mg/kg')[0] : 'not asked', R.scope ? R.scope.state : 'not_run'],
+    ['Fit for use', R.conformity && R.conformity.run ? x + ' + ' + U + ' = ' + sum + (R.conformity.state === 'established' ? ' ≤ 200' : ' > 200') : 'not run',
+      R.conformity && R.conformity.run ? R.conformity.state : 'not_run'],
+  ];
+  $('witness').innerHTML = rows.map(r => "<div class='wrow'><b>" + r[0] + '</b><code>' + esc(r[1]) + "</code><span class='state s-" + r[2] + "'>" + LABEL[r[2]] + '</span></div>').join('');
 }
-function renderWitness(R){
-  var rows = [["Authentic", R.protection==="established" ? "signatures valid" : (R.protection==="contradicted" ? "signature broken" : "not checked"), R.protection],
-              ["Authorized", "50 ≤ " + R.x + " ≤ 500", R.scope.state],
-              ["Fit for use", R.conf.state==="not_run" ? "not run" : R.x + " + " + R.U + " = " + (R.x+R.U) + (R.x+R.U<=200 ? " ≤ 200" : " > 200"), R.conf.state]];
-  $("witness").innerHTML = rows.map(function(r){ return "<div class='wrow'><b>"+r[0]+"</b><code>"+esc(r[1])+"</code><span class='state s-"+r[2]+"'>"+LABEL[r[2]]+"</span></div>"; }).join("");
+
+function blk(cls, k, role, v) { return "<div class='blk " + cls + "'><div class='k'>" + k + '<small>' + role + "</small></div><div class='v'>" + v + '</div></div>'; }
+function renderVC(R) {
+  const D = R.documents.D, s = D.credentialSubject, m = s.materials[0], r = s.materialPropertiesList[0].results[0], q = r.data.quantity;
+  const value = R.tampered ? "<span class='tampered'>" + esc(q.value) + '</span>' : esc(q.value);
+  let h = '<header><b>D  Verifiable Credential</b><span>RmCertificate</span></header>';
+  h += blk('', 'metadata', 'who, what, when', 'type: ' + esc(D.type.join(', ')) + '<br>issuer: ' + esc(D.issuer) + '<br>validFrom: ' + D.validFrom.slice(0, 10) + '<br>validUntil: ' + D.validUntil.slice(0, 10) + '<br>credentialSchema: ' + esc(short(D.credentialSchema.id)));
+  h += blk('subj', 'credentialSubject', 'the claim', 'id: ' + esc(s.id) + '<br>material: ' + esc(m.name) + ', ' + esc(short(m.matrixIri)) + ', ' + esc(short(m.formIri)) + "<br><span class='big'>As = " + value + ' mg/kg</span><br>U = ' + esc(q.uncertainty.expandedUncertainty) + ' mg/kg (k = ' + esc(q.uncertainty.coverageFactor) + '), method ' + esc(short(r.methodIri)));
+  h += blk('tou', 'termsOfUse', 'authority', D.termsOfUse.map(t => esc(t.type) + '<br>→ ' + esc(short(t.authorizationCredential.id))).join('<br>'));
+  h += blk('', 'evidence', 'support', D.evidence.map(e => esc(e.type) + ' → ' + esc(short(e.id))).join('<br>'));
+  h += blk('', 'relatedResource', 'integrity', D.relatedResource.map(x => esc(short(x.id)) + ': ' + esc(x.digestSRI.slice(0, 26)) + '…').join('<br>'));
+  h += blk('', 'proof', 'protection', esc(D.proof.cryptosuite) + '<br>' + esc(D.proof.verificationMethod) + '<br>' + esc(D.proof.proofValue.slice(0, 30)) + '…');
+  $('vc').innerHTML = h;
+  $('raw').textContent = R.texts.D;
 }
-function blk(cls, k, role, v){ return "<div class='blk "+cls+"'><div class='k'>"+k+"<small>"+role+"</small></div><div class='v'>"+v+"</div></div>"; }
-function renderVC(D){
-  var s = D.credentialSubject, cv = s.certifiedValue, x = tampered ? "<span class='tampered'>"+cv.value+"</span>" : cv.value;
-  var h = "<header><b>D  Verifiable Credential</b><span>ReferenceMaterialCertificate</span></header>";
-  h += blk("", "metadata", "who, what, when", "type: "+esc(D.type.join(", "))+"<br>issuer: "+esc(D.issuer)+"<br>validFrom: "+D.validFrom.slice(0,10)+"<br>validUntil: "+D.validUntil.slice(0,10));
-  h += blk("subj", "credentialSubject", "the claim", "id: "+esc(s.id)+"<br>material: "+esc(s.material.name)+", "+esc(s.material.matrix)+", "+esc(s.material.form)+"<br><span class='big'>As = "+x+" mg/kg</span><br>U = "+cv.expandedUncertainty+" mg/kg (k = "+cv.coverageFactor+"), method "+esc(cv.method));
-  h += blk("tou", "termsOfUse", "authority", D.termsOfUse.map(function(t){ return esc(t.type)+"<br>→ "+esc(short(t.operativeGrant))+" · "+esc(t.activity.split("#")[1]); }).join("<br>"));
-  h += blk("", "evidence", "support", D.evidence.map(function(e){ return esc(e.type[1])+" → "+esc(short(e.id)); }).join("<br>"));
-  h += blk("", "relatedResource", "integrity", D.relatedResource.map(function(r){ return esc(short(r.id))+": "+esc(r.digestSRI.slice(0,26))+"…"; }).join("<br>"));
-  h += blk("", "credentialStatus", "status", esc(D.credentialStatus.type)+" #"+esc(D.credentialStatus.statusListIndex));
-  h += blk("", "proof", "protection", esc(D.proof.cryptosuite)+"<br>"+esc(D.proof.proofValue.slice(0,30))+"…");
-  $("vc").innerHTML = h;
-  $("raw").textContent = JSON.stringify(D, null, 2);
-}
-var NODES = {
-  A:{cls:"acc", t:"A  Accreditation", s:"ISO 17034 · 50–500 mg/kg · M1, M2"},
-  H:{cls:"acc", t:"H  Accreditation", s:"ISO/IEC 17025 · study laboratory"},
-  O:{cls:"ops", t:"O  Operational scope", s:"self-issued · 50–500 mg/kg · M1"},
-  S:{cls:"sup", t:"S  Homogeneity study", s:"same lot"},
-  D:{cls:"dom", t:"D  RM certificate", s:""}
+
+const NODES = {
+  A: { cls: 'acc', t: 'A  Accreditation', s: 'M1, M2 · 50–500 mg/kg' },
+  H: { cls: 'acc', t: 'H  Lab authority', s: 'homogeneity studies' },
+  O: { cls: 'ops', t: 'O  Operational scope', s: 'producer-issued · M1 · 50–500 mg/kg' },
+  S: { cls: 'sup', t: 'S  Homogeneity study', s: 'same batch' },
+  D: { cls: 'dom', t: 'D  RM certificate', s: '' },
 };
-function nodeBtn(k, D){
-  var n = NODES[k], b = document.createElement("button");
-  b.type="button"; b.className="node "+n.cls;
-  var sub = k==="D" ? "As = "+D.credentialSubject.certifiedValue.value+" ± 5 mg/kg · M1" : n.s;
-  b.innerHTML = "<b>"+esc(n.t)+"</b><small>"+esc(sub)+"</small>";
-  b.addEventListener("click", function(){ openSheet(k, D); }); return b;
+function nodeBtn(k, R) {
+  const n = NODES[k], b = document.createElement('button');
+  b.type = 'button'; b.className = 'node ' + n.cls;
+  const sub = k === 'D' ? 'As = ' + R.values.x + ' ± ' + R.values.U + ' mg/kg · M1' : n.s;
+  b.innerHTML = '<b>' + esc(n.t) + '</b><small>' + esc(sub) + '</small>';
+  b.addEventListener('click', () => openSheet(k, R)); return b;
 }
-function edge(cls, role, carrier, bad){ var e=document.createElement("div"); e.className="edge "+cls+(bad?" bad":""); e.innerHTML="<div class='stem'></div><div><b>"+esc(role)+"</b><code>"+esc(carrier)+"</code></div>"; return e; }
-function renderGraph(D, R){
-  var g = $("graph"); g.innerHTML = "";
-  var t1=document.createElement("div"); t1.className="tier"; t1.appendChild(nodeBtn("A",D)); t1.appendChild(nodeBtn("H",D)); g.appendChild(t1);
-  var e1=document.createElement("div"); e1.className="edges"; e1.appendChild(edge("", "bounded projection", "termsOfUse · O within A")); e1.appendChild(edge("dash","authority use","termsOfUse")); g.appendChild(e1);
-  var t2=document.createElement("div"); t2.className="tier"; t2.appendChild(nodeBtn("O",D)); t2.appendChild(nodeBtn("S",D)); g.appendChild(t2);
-  var e2=document.createElement("div"); e2.className="edges";
-  e2.appendChild(edge("dash","authority use", R.scope.state==="contradicted" ? "value outside O's range" : "termsOfUse · claim in scope", R.scope.state==="contradicted" && R.protection!=="contradicted"));
-  e2.appendChild(edge("dot","support","evidence")); g.appendChild(e2);
-  var t3=document.createElement("div"); t3.className="tier single"; t3.appendChild(nodeBtn("D",D)); g.appendChild(t3);
+function edge(cls, role, carrier, bad) { const e = document.createElement('div'); e.className = 'edge ' + cls + (bad ? ' bad' : ''); e.innerHTML = "<div class='stem'></div><div><b>" + esc(role) + '</b><code>' + esc(carrier) + '</code></div>'; return e; }
+function renderGraph(R) {
+  const g = $('graph'); g.innerHTML = '';
+  const tier = (...ks) => { const t = document.createElement('div'); t.className = 'tier' + (ks.length === 1 ? ' single' : ''); ks.forEach(k => t.appendChild(nodeBtn(k, R))); return t; };
+  const edges = (...es) => { const d = document.createElement('div'); d.className = 'edges'; es.forEach(e => d.appendChild(e)); return d; };
+  const scopeBad = R.scope && R.scope.state === 'contradicted';
+  g.appendChild(tier('A', 'H'));
+  g.appendChild(edges(edge('', 'bounded projection', 'termsOfUse · O within A'), edge('dash', 'authority use', 'termsOfUse')));
+  g.appendChild(tier('O', 'S'));
+  g.appendChild(edges(edge('dash', 'authority use', scopeBad ? "value outside O's range" : 'termsOfUse · claim in scope', scopeBad), edge('dot', 'support', 'evidence')));
+  g.appendChild(tier('D'));
 }
-function renderGates(R){
-  var ol = $("gates"); ol.innerHTML = "";
-  QUESTIONS.forEach(function(q, i){
-    var list = [].concat.apply([], q[2].map(function(g){ return R.G[g]; }));
-    var states = list.map(function(r){ return r.state; }), s;
-    if(states.indexOf("contradicted")>-1) s = "contradicted";
-    else if(states.every(function(x){ return x==="established"; })) s = "established";
-    else if(states.every(function(x){ return x==="established" || x==="not_run"; })) s = "not_run";
-    else s = "not_established";
-    var li = document.createElement("li"); li.className = "g-"+s;
-    var d = document.createElement("details"); if(s!=="established") d.open = true;
-    d.innerHTML = "<summary><span class='n'>"+(i+1)+"</span><span>"+q[0]+" <small style='color:var(--muted)'>"+q[1]+"</small></span><span class='state s-"+s+"'>"+LABEL[s]+"</span></summary>"
-      + "<ul class='checks'>"+list.map(function(r){ return "<li><span class='state s-"+r.state+"'>"+LABEL[r.state]+"</span><span class='d'>"+esc(r.text)+"</span></li>"; }).join("")+"</ul>";
+
+function renderGates(R) {
+  const ol = $('gates'); ol.innerHTML = '';
+  R.gates.forEach(gate => {
+    const q = GATES[gate.gate], s = gate.state;
+    const li = document.createElement('li'); li.className = 'g-' + s;
+    const d = document.createElement('details'); if (s !== 'established') d.open = true;
+    d.innerHTML = "<summary><span class='n'>" + gate.gate + "</span><span class='t'>" + esc(q[0]) + ' <span class="src ' + gate.source + '">' + (gate.source === 'repository' ? 'repository code' : 'preview') + '</span><small>' + esc(gate.name) + ' · ' + esc(q[1]) + "</small></span><span class='state s-" + s + "'>" + LABEL[s] + '</span></summary>'
+      + "<ul class='checks'>" + gate.checks.map(c => "<li><span class='state s-" + c.state + "'>" + LABEL[c.state] + "</span><span class='d'>" + esc(c.text) + '</span></li>').join('') + '</ul>';
     li.appendChild(d); ol.appendChild(li);
   });
 }
-function openSheet(k, D){
-  var doc = k==="D" ? D : C[k];
-  $("sheetTitle").textContent = NODES[k].t; $("sheetSub").textContent = "Issuer: " + doc.issuer;
-  $("sheetBody").textContent = JSON.stringify(doc, null, 2);
-  var s=$("sheet"); if(s.showModal) s.showModal(); else s.setAttribute("open","");
-}
-$("sheetClose").addEventListener("click", function(){ var s=$("sheet"); if(s.close) s.close(); else s.removeAttribute("open"); });
-$("sheet").addEventListener("click", function(e){ if(e.target===this && this.close) this.close(); });
 
-var seq = 0;
-async function run(){
-  var my = ++seq, D = current();
-  var R = await evaluate(D);
-  if(my !== seq) return;
-  renderVerdict(R); renderWitness(R); renderVC(D); renderGraph(D, R); renderGates(R);
+function openSheet(k, R) {
+  const doc = R.documents[k];
+  $('sheetTitle').textContent = NODES[k].t;
+  const a = R.artifacts[k];
+  $('sheetSub').textContent = 'Issuer: ' + doc.issuer + ' · protection: ' + LABEL[a.protection.state];
+  $('sheetBody').textContent = R.texts[k];
+  const s = $('sheet'); if (s.showModal) s.showModal(); else s.setAttribute('open', '');
 }
-document.querySelectorAll(".scenario button").forEach(function(b){
-  b.addEventListener("click", function(){ cur = b.dataset.x;
-    document.querySelectorAll(".scenario button").forEach(function(o){ o.setAttribute("aria-pressed", String(o===b)); }); run(); });
-});
-$("tamper").addEventListener("change", function(){ tampered = this.checked; run(); });
-run().catch(function(e){ $("vTitle").textContent="Not established"; $("vSub").textContent="Verification could not run: "+e.message; $("verdict").className="verdict unknown"; });
-})();
+$('sheetClose').addEventListener('click', () => { const s = $('sheet'); if (s.close) s.close(); else s.removeAttribute('open'); });
+$('sheet').addEventListener('click', function (e) { if (e.target === this && this.close) this.close(); });
+
+async function run() {
+  const my = ++seq;
+  $('verdict').className = 'verdict busy'; $('mark').textContent = '…'; $('vTitle').textContent = 'Verifying'; $('vSub').textContent = '';
+  const R = await api.evaluateScenario(cur, tampered, new Date().toISOString());
+  if (my !== seq) return;
+  last = R;
+  renderVerdict(R); renderWitness(R); renderVC(R); renderGraph(R); renderGates(R);
+}
+document.querySelectorAll('.scenario button').forEach(b => b.addEventListener('click', () => {
+  cur = b.dataset.x;
+  document.querySelectorAll('.scenario button').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+  run().catch(e => fail('Verification could not run: ' + e.message));
+}));
+$('tamper').addEventListener('change', function () { tampered = this.checked; run().catch(e => fail('Verification could not run: ' + e.message)); });
+run().catch(e => fail('Verification could not run: ' + e.message));
 </script>
 </body>
 </html>

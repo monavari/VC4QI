@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="data:,">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>VC4QI</title>
 <meta name="description" content="VC4QI: Verifiable Credentials for Quality Infrastructure. A research reference implementation for evaluating reliance on accreditation, certification and reference-material credentials. BAM.">
@@ -63,7 +64,7 @@ footer p{ margin:.35rem 0; }
   <section class="demo" aria-labelledby="h-demo">
     <div>
       <h2 id="h-demo">Try it: BAM-M375a</h2>
-      <p>A certified reference material (CuZn39Pb3, arsenic mass fraction) as a signed credential. Your browser checks the signatures, the authority chain, the accredited scope and a verifier's limit. Switch the value or tamper with it and watch the verdict change.</p>
+      <p>A certified reference material (CuZn39Pb3, arsenic mass fraction) as a signed credential. Your browser runs the repository's own verifier on the signed test credentials, then previews the authority, scope and decision rules still being implemented. Switch the value or tamper with it and watch the verdict change.</p>
       <a class="btn" href="m375a/">Open the demonstrator</a>
     </div>
     <figure>
@@ -86,7 +87,7 @@ footer p{ margin:.35rem 0; }
   <h2>Project status</h2>
   <div class="status">
     <p>VC4QI is research software from BAM. The repository contains a TypeScript reference library with a Python mirror, a browser demo and example credentials. It is migrating to a standards-first reliance model; the new evaluator is being implemented in stages, and the runtime still uses the earlier model.</p>
-    <p class="muted">The BAM-M375a page above is a self-contained illustration of the target model. Its accreditation bodies, laboratory, operational scope, methods and keys are fictional fixtures. No production service, accreditation infrastructure or external endorsement is claimed.</p>
+    <p class="muted">The BAM-M375a page runs the repository's signature, schema, key and integrity checks on its experimental RM v1 test credentials. Its authority, scope, support and decision steps are a labelled preview of rules still being implemented. The accreditation body, laboratory, operational scope, methods and keys are fictional fixtures. No production service, accreditation infrastructure or external endorsement is claimed.</p>
   </div>
 
   <h2>Read more</h2>

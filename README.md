@@ -16,8 +16,12 @@ The static site in [`site/`](site/) is published to GitHub Pages by
 - BAM-M375a demonstrator: <https://monavari.github.io/VC4QI/m375a/>
   (QR code: [`site/assets/qr-m375a.svg`](site/assets/qr-m375a.svg))
 
-The demonstrator is a self-contained browser illustration of the target reliance model
-with fictional authorities and keys; it does not run the repository's evaluator.
+The demonstrator runs the repository's `verifyRmArtifact` (gates 0–3) in the browser on the
+signed RM v1 fixtures, bundled by `pnpm -C apps/demo-web build:poster` into
+`site/m375a/verifier.js` (CI checks the bundle is current). Gates 4–6 (meaning,
+authority and scope, support and decision) are a labelled preview in
+`apps/demo-web/poster/preview-rules.ts`, not the repository evaluator; status is not
+checked yet. Authorities and keys are fictional.
 
 ## Current status
 
