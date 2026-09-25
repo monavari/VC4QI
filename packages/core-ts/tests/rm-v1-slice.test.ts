@@ -121,8 +121,12 @@ describe('RM v1 signed vertical slice (I1)', () => {
     const { result } = await evaluateRmSlice(request(), catalogWith(), manifest, profile);
     expect(result.artifactVerification.every(r => r.state === 'established')).toBe(true);
     expect(result.authorization).toHaveLength(1);
-    expect(result.authorization[0]).toMatchObject({ state: 'not_established', execution: 'not_run' });
-    expect(result.support[0]).toMatchObject({ state: 'not_established', execution: 'not_run' });
+    // I3: the authority route and required support are established; the claim stays
+    // not established until claim scope coverage lands in I4.
+    expect(result.authorization[0]).toMatchObject({ state: 'not_established', execution: 'executed' });
+    expect(result.authorization[0]?.routeWitnessIds).toEqual(['route:operational-scope', URI.D, URI.O, URI.A]);
+    expect(result.support[0]).toMatchObject({ state: 'established', execution: 'executed' });
+    expect(result.support[0]?.witnessIds).toEqual([URI.D, URI.S, URI.H]);
     expect(result.conformity).toMatchObject({ requested: true, state: 'not_established', execution: 'not_run' });
     expect(result.decision).toBe('not_established');
     expect(Object.isFrozen(result)).toBe(true);
@@ -138,7 +142,9 @@ describe('RM v1 signed vertical slice (I1)', () => {
     expect(byPredicate('related-resource-integrity')).toMatchObject({ gate: 1, state: 'established' });
     expect(byPredicate('signature')).toMatchObject({ gate: 2, state: 'established' });
     expect(byPredicate('validity-period')).toMatchObject({ gate: 3, state: 'established' });
-    expect(byPredicate('claim-authorization:as-mass-fraction')).toMatchObject({ gate: 5, execution: 'not_run' });
+    expect(byPredicate('claim-authorization:as-mass-fraction')).toMatchObject({ gate: 5, execution: 'executed' });
+    expect(byPredicate('route:operational-scope:bounded-projection')).toMatchObject({ gate: 5, state: 'established' });
+    expect(byPredicate('support:same-batch')).toMatchObject({ gate: 6, state: 'established' });
     expect(byPredicate('conformity:as-plus-u-le-200')).toMatchObject({ gate: 6, execution: 'not_run' });
     expect(result.resources.filter(r => r.kind === 'artifact').map(r => r.uri).sort())
       .toEqual([URI.A, URI.D, URI.H, URI.O, URI.S].sort());
@@ -336,7 +342,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
       expect(artifact.validity.execution).toBe('not_run');
       const { result } = await evaluateRmSlice(request(), catalogWith({ [URI.D]: serialize(document) }), manifest, profile);
       expect(result.decision).toBe('reject');
-      expect(result.authorization[0]?.reasons[0]).toMatch(/not protected/);
+      expect(result.authorization[0]?.reasons[0]).toMatch(/not usable/);
       const signature = result.trace.find(t => t.nodeUse.startsWith(`${URI.D} |`) && t.predicate === 'signature');
       expect(signature).toMatchObject({ gate: 2, state: 'contradicted' });
       const validity = result.trace.find(t => t.nodeUse.startsWith(`${URI.D} |`) && t.predicate === 'validity-period');

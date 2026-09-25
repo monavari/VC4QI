@@ -17,12 +17,20 @@ class TrustAnchor:
 
 
 @dataclass(frozen=True)
+class AuthorityPolicy:
+    certificate_routes: tuple[str, ...]
+    global_restrictions: tuple[str, ...]
+    max_routes: int
+
+
+@dataclass(frozen=True)
 class RelianceProfile:
     id: str
     version: str
     status: Literal["experimental", "production"]
     binding: VersionedIdentifier
     trust_anchors: tuple[TrustAnchor, ...]
+    authority: AuthorityPolicy
     credential_status: StatusPolicy
 
 
@@ -65,6 +73,21 @@ def load_reliance_profile(value: Any) -> RelianceProfile:
         raise TypeError(
             "Reliance profile trustAnchors must list anchors with explicit purposes."
         )
+    authority = value.get("authority")
+    max_routes = authority.get("maxRoutes") if isinstance(authority, dict) else None
+    if (
+        not isinstance(authority, dict)
+        or not _string_list(authority.get("certificateRoutes"))
+        or not isinstance(authority.get("globalRestrictions"), list)
+        or not all(_nonempty(r) for r in authority["globalRestrictions"])
+        or isinstance(max_routes, bool)
+        or not isinstance(max_routes, int)
+        or max_routes <= 0
+    ):
+        raise TypeError(
+            "Reliance profile authority needs certificateRoutes, globalRestrictions "
+            "and a positive maxRoutes."
+        )
     status = value.get("credentialStatus")
     max_age = status.get("maxAgeSeconds") if isinstance(status, dict) else None
     if (
@@ -86,6 +109,11 @@ def load_reliance_profile(value: Any) -> RelianceProfile:
         binding=VersionedIdentifier(binding["id"], binding["version"]),
         trust_anchors=tuple(
             TrustAnchor(a["id"], tuple(a["purposes"])) for a in anchors
+        ),
+        authority=AuthorityPolicy(
+            certificate_routes=tuple(authority["certificateRoutes"]),
+            global_restrictions=tuple(authority["globalRestrictions"]),
+            max_routes=max_routes,
         ),
         credential_status=StatusPolicy(
             required=status["required"],
