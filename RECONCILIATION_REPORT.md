@@ -1227,3 +1227,19 @@ example V02/V03 → I5, P06 → I3, E01–E09 → I6, E10–E14 → I7, E15 → 
 V12 carry I1 partial-evidence notes; every status remains `not_implemented` until
 gate-numbered reliance assertions exist. Added F-7 to `PAPER_FEEDBACK.md` (signed array
 order, protected VCDM terms, cross-language safe-processing difference). Docs-only change.
+
+## Standards-first I2 step 1: result contract — 25 September 2026
+
+The user asked to continue. The reliance contract now carries the handover §4.3 fields
+the audit found missing, in both languages: a required request identity on requests and
+results; a gate-numbered trace (`Gate` 0–6 with `GATE_NAMES`, node-use key, predicate,
+semantic and execution state, reason, sources), validated so that non-canonical gates
+and `not_run` entries that claim a result are refused; and resource observations
+(SHA-384 SRI, kind, source, observation time). The I1 slice evaluator now emits these:
+protection checks map to gates 0–2, `relatedResource` integrity to gate 1, validity to
+gate 3, claim authorization to gate 5 and support/conformity to gate 6. Tests assert the
+target's gate entries, `not_run` states after a tamper, and the five artifact resources.
+
+Results: TS reliance-type and slice tests 45 passed (full suite 310 passed plus the 9
+network-only legacy failures); Python 271 passed, 1 skip; Ruff 204 and mypy 198
+unchanged. The poster bundle rebuilt byte-identically. No acceptance case changes.

@@ -26,7 +26,8 @@ import { authorizeAssertionMethod, type KeyAuthorization } from './key-authoriza
 import { RM_V1_BINDING_ID, type BindingManifest } from './manifest.js';
 import { RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, VC_V2_CONTEXT } from './rm-v1.js';
 import type {
-  ArtifactVerificationResult, PredicateResult, RelianceRequest, RelianceResult, SemanticState,
+  ArtifactVerificationResult, Gate, PredicateResult, RelianceRequest, RelianceResult,
+  ResourceObservation, SemanticState, TraceEntry,
 } from './types.js';
 
 const Ajv = Ajv2020 as unknown as typeof import('ajv/dist/2020.js').default;
@@ -43,6 +44,22 @@ export const RM_V1_ARTIFACT_SCHEMAS: Readonly<Record<string, string>> = Object.f
 
 export type ProtectionCheck =
   | 'resolve' | 'parse' | 'carrier' | 'type' | 'schema' | 'proof' | 'key' | 'signature';
+
+/** Canonical gate (handover §5.3) of each protection check. */
+export const PROTECTION_CHECK_GATES: Readonly<Record<ProtectionCheck, Gate>> = Object.freeze({
+  resolve: 1, parse: 0, carrier: 0, type: 0, schema: 0, proof: 2, key: 2, signature: 2,
+});
+
+/**
+ * Node-use key: the same artifact bytes can discharge different obligations for
+ * different roles, purposes, profiles and times (handover §5.1).
+ */
+export function nodeUseKey(
+  artifactId: string, digestSRI: string | undefined, role: string, request: RelianceRequest,
+): string {
+  return [artifactId, digestSRI ?? 'unresolved', role, request.purpose,
+    `${request.profile.id}@${request.profile.version}`, request.evaluationTime].join(' | ');
+}
 
 export interface CheckOutcome {
   readonly check: ProtectionCheck;
@@ -369,7 +386,43 @@ export async function evaluateRmSlice(
   ];
   const decision = decisionFromRequired(required);
 
+  const trace: TraceEntry[] = [];
+  const resources: ResourceObservation[] = [];
+  artifacts.forEach((artifact, index) => {
+    const role = index === 0 ? 'target' : 'supplied-evidence';
+    const nodeUse = nodeUseKey(artifact.artifactId, artifact.digestSRI, role, request);
+    for (const check of artifact.checks) {
+      trace.push({ gate: PROTECTION_CHECK_GATES[check.check], nodeUse, predicate: check.check,
+        state: check.state, execution: 'executed', reason: check.reason, sources: [artifact.artifactId] });
+    }
+    for (const related of artifact.relatedResources) {
+      trace.push({ gate: 1, nodeUse, predicate: 'related-resource-integrity', state: related.state,
+        execution: 'executed', reason: `${related.id}: ${related.reason}`, sources: ['/relatedResource', related.id] });
+    }
+    trace.push({ gate: 3, nodeUse, predicate: 'validity-period', state: artifact.validity.state,
+      execution: artifact.validity.execution, reason: artifact.validity.reasons.join(' ') || 'Not evaluated.',
+      sources: [...artifact.validity.sourcePointers] });
+    if (artifact.digestSRI !== undefined) {
+      resources.push({ uri: artifact.artifactId, digestSRI: artifact.digestSRI, kind: 'artifact',
+        source: 'catalog', observedAt: request.evaluationTime });
+    }
+  });
+  const targetUse = nodeUseKey(target.artifactId, target.digestSRI, 'target', request);
+  for (const claim of authorization) {
+    trace.push({ gate: 5, nodeUse: targetUse, predicate: `claim-authorization:${claim.claimId}`,
+      state: claim.state, execution: claim.execution, reason: claim.reasons.join(' '), sources: [...claim.sourcePointers] });
+  }
+  for (const obligation of support) {
+    trace.push({ gate: 6, nodeUse: targetUse, predicate: obligation.obligationId, state: obligation.state,
+      execution: obligation.execution, reason: obligation.reasons.join(' '), sources: [] });
+  }
+  if (conformity.requested) {
+    trace.push({ gate: 6, nodeUse: targetUse, predicate: `conformity:${conformity.requirementId}`,
+      state: conformity.state, execution: conformity.execution, reason: conformity.reasons.join(' '), sources: [] });
+  }
+
   const result = createRelianceResult({
+    requestId: request.requestId,
     targetId: request.targetId,
     binding: request.binding,
     profile: request.profile,
@@ -378,6 +431,8 @@ export async function evaluateRmSlice(
     support,
     conformity,
     decision,
+    trace,
+    resources,
     limitations: [
       'I1 slice: authorization, support and conformity are not implemented and never establish reliance.',
       'Credential status is not checked in I1.',

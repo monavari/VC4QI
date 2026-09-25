@@ -10,11 +10,23 @@ from typing import Any, Literal
 RM_V1_BINDING_ID = "https://vc4qi.example/bindings/rm/1"
 
 _REQUIRED_KEYS = {
-    "$schema", "id", "version", "status", "owner", "installation",
-    "carrierAndSchema", "factMappings", "cardinality", "discoveryAndIntegrity",
-    "recognizedTypes", "principalAndRights", "scopeAndMapping",
-    "routesAndRestrictions", "protectionTimeAndResolution",
-    "supportAndDisclosure", "evidenceAndExclusions",
+    "$schema",
+    "id",
+    "version",
+    "status",
+    "owner",
+    "installation",
+    "carrierAndSchema",
+    "factMappings",
+    "cardinality",
+    "discoveryAndIntegrity",
+    "recognizedTypes",
+    "principalAndRights",
+    "scopeAndMapping",
+    "routesAndRestrictions",
+    "protectionTimeAndResolution",
+    "supportAndDisclosure",
+    "evidenceAndExclusions",
 }
 
 
@@ -53,8 +65,10 @@ def load_binding_manifest(value: object) -> BindingManifest:
         )
     identifier, version, status = value["id"], value["version"], value["status"]
     if (
-        not isinstance(identifier, str) or not identifier
-        or not isinstance(version, str) or not version
+        not isinstance(identifier, str)
+        or not identifier
+        or not isinstance(version, str)
+        or not version
         or status not in ("experimental", "production")
     ):
         raise ValueError("Binding manifest identity, version, or status is invalid.")
@@ -66,20 +80,28 @@ def load_binding_manifest(value: object) -> BindingManifest:
     reason = installation.get("reason")
     if (
         installation_status not in ("incomplete", "installable")
-        or not isinstance(reason, str) or not reason
+        or not isinstance(reason, str)
+        or not reason
         or not isinstance(pending, list)
         or any(not isinstance(uri, str) or not uri for uri in pending)
     ):
         raise ValueError("Binding manifest installation state is invalid.")
     mappings = value["factMappings"]
-    if not isinstance(mappings, list) or not mappings or not all(
-        _object(mapping) for mapping in mappings
+    if (
+        not isinstance(mappings, list)
+        or not mappings
+        or not all(_object(mapping) for mapping in mappings)
     ):
         raise ValueError(
             "Binding manifest factMappings must be a nonempty object array."
         )
     for key in _REQUIRED_KEYS - {
-        "$schema", "id", "version", "status", "installation", "factMappings",
+        "$schema",
+        "id",
+        "version",
+        "status",
+        "installation",
+        "factMappings",
     }:
         item = value[key]
         if not isinstance(item, dict) or not item:

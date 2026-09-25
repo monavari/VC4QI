@@ -36,11 +36,14 @@ from .types import (
     ConformityNotRequested,
     ConformityRequestedResult,
     ConformityResult,
+    Gate,
     PredicateResult,
     RelianceRequest,
     RelianceResult,
+    ResourceObservation,
     SemanticState,
     SupportResult,
+    TraceEntry,
     create_reliance_result,
     decision_from_required,
     semantic_and,
@@ -54,6 +57,34 @@ RM_V1_ARTIFACT_SCHEMAS: dict[str, str] = {
     "RmLabAuthority": f"{RM_V1_SCHEMA_BASE}lab-authority.json",
 }
 _UNDEFINED = "urn:vc4qi:undefined-term#"
+# Canonical gate (handover section 5.3) of each protection check.
+PROTECTION_CHECK_GATES: dict[str, Gate] = {
+    "resolve": 1,
+    "parse": 0,
+    "carrier": 0,
+    "type": 0,
+    "schema": 0,
+    "proof": 2,
+    "key": 2,
+    "signature": 2,
+}
+
+
+def node_use_key(
+    artifact_id: str, digest_sri: str | None, role: str, request: RelianceRequest
+) -> str:
+    """Node-use key: artifact identity, role, purpose, profile and time context."""
+    return " | ".join(
+        (
+            artifact_id,
+            digest_sri or "unresolved",
+            role,
+            request.purpose,
+            f"{request.profile.id}@{request.profile.version}",
+            request.evaluation_time,
+        )
+    )
+
 
 ProtectionCheck = Literal[
     "resolve", "parse", "carrier", "type", "schema", "proof", "key", "signature"
@@ -613,8 +644,97 @@ def evaluate_rm_slice(
     required += [r.state for r in authorization] + [r.state for r in support]
     if isinstance(conformity, ConformityRequestedResult):
         required.append(conformity.state)
+    trace: list[TraceEntry] = []
+    resources: list[ResourceObservation] = []
+    for index, artifact in enumerate(artifacts):
+        role = "target" if index == 0 else "supplied-evidence"
+        use = node_use_key(artifact.artifact_id, artifact.digest_sri, role, request)
+        for check in artifact.checks:
+            trace.append(
+                TraceEntry(
+                    PROTECTION_CHECK_GATES[check.check],
+                    use,
+                    check.check,
+                    check.state,
+                    "executed",
+                    check.reason,
+                    (artifact.artifact_id,),
+                )
+            )
+        for related in artifact.related_resources:
+            trace.append(
+                TraceEntry(
+                    1,
+                    use,
+                    "related-resource-integrity",
+                    related.state,
+                    "executed",
+                    f"{related.id}: {related.reason}",
+                    ("/relatedResource", related.id),
+                )
+            )
+        trace.append(
+            TraceEntry(
+                3,
+                use,
+                "validity-period",
+                artifact.validity.state,
+                artifact.validity.execution,
+                " ".join(artifact.validity.reasons) or "Not evaluated.",
+                artifact.validity.source_pointers,
+            )
+        )
+        if artifact.digest_sri is not None:
+            resources.append(
+                ResourceObservation(
+                    artifact.artifact_id,
+                    artifact.digest_sri,
+                    "artifact",
+                    "catalog",
+                    request.evaluation_time,
+                )
+            )
+    target_use = node_use_key(target.artifact_id, target.digest_sri, "target", request)
+    for claim_result in authorization:
+        trace.append(
+            TraceEntry(
+                5,
+                target_use,
+                f"claim-authorization:{claim_result.claim_id}",
+                claim_result.state,
+                claim_result.execution,
+                " ".join(claim_result.reasons),
+                claim_result.source_pointers,
+            )
+        )
+    for obligation in support:
+        trace.append(
+            TraceEntry(
+                6,
+                target_use,
+                obligation.obligation_id,
+                obligation.state,
+                obligation.execution,
+                " ".join(obligation.reasons),
+                (),
+            )
+        )
+    if isinstance(conformity, ConformityRequestedResult):
+        trace.append(
+            TraceEntry(
+                6,
+                target_use,
+                f"conformity:{conformity.requirement_id}",
+                conformity.state,
+                conformity.execution,
+                " ".join(conformity.reasons),
+                (),
+            )
+        )
+
     result = create_reliance_result(
         RelianceResult(
+            request_id=request.request_id,
             target_id=request.target_id,
             binding=request.binding,
             profile=request.profile,
@@ -623,6 +743,8 @@ def evaluate_rm_slice(
             support=support,
             conformity=conformity,
             decision=decision_from_required(tuple(required)),
+            trace=tuple(trace),
+            resources=tuple(resources),
             limitations=(
                 "I1 slice: authorization, support and conformity are not implemented "
                 "and never establish reliance.",
