@@ -1010,3 +1010,54 @@ protection and catalog work, the minimal manifest/request/result contract and si
 vertical-slice sequence. F-6 records the manuscript-facing implication. Astra reviewed
 the bounded fix without finding a blocking regression. I1 is in progress, not complete;
 new-profile acceptance remains unimplemented. Existing Python lint debt remains visible.
+
+## Standards-first I1 contract slice — 25 September 2026
+
+The first executable I1 contract slice adds parallel TypeScript/Python immutable
+reliance requests and separated result surfaces, complete three-state truth-table
+operators, and refusal of empty required state lists. A `not_run` predicate must be
+`not_established`. Request validation rejects empty/duplicate claim selection,
+malformed explicit-offset times and resolver budgets outside the shared positive
+safe-integer domain.
+
+The repository-owned [RM v1 manifest](bindings/experimental/rm-v1/manifest.json)
+covers all twelve required categories and validates against a closed top-level schema.
+It explicitly lists missing context/schema resources and remains `incomplete`; both
+libraries refuse to select it. No credential, context, schema or proof was invented to
+make it installable. The legacy evaluator remains the default.
+
+An isolated static catalog verifies SHA-384 SRI against exact input bytes, keeps and
+returns defensive copies, refuses unknown URLs, performs no network I/O, and applies
+request-local resource/byte limits. Astra's review reproduced Node Buffer aliasing and
+mutable-budget bypasses; both were fixed with byte copies and frozen budget snapshots.
+The review also found Python accepted `+01:60` and integers beyond `2^53-1`; parity
+validation now rejects both. No additional manifest/truth-table blocker was found.
+
+Sol left a useful initial TS contract before its delegated run reported workspace-credit
+failure. Luna produced no manifest files before the same failure. Their outputs were
+not trusted without local review and tests; repeated failing delegation was stopped.
+The [contract evidence](docs/plans/standards-first-i1-contract-evidence.md) records the
+implemented boundary and remaining signed-slice work.
+
+Focused final checks pass: **25 TS reliance/manifest/catalog tests**, **11 Python
+counterparts**, TS typecheck, Ruff on the new Python surface and mypy on the new package.
+Full-suite totals and existing warnings/debt are recorded after the final rerun below.
+
+Final I1 contract-slice validation completed on 25 September 2026. `make test` passes
+**259 TypeScript tests; 215 Python tests with 1 existing skip; and 2 root scenarios**.
+`pnpm -r build`, TypeScript lint and schema validation pass; the existing Vite chunk
+warning and six schema-example skips remain. Python-wide Ruff reports 204 existing
+diagnostics (original baseline: 208). Python-wide mypy reports the unchanged baseline
+of 198 errors in 24 legacy files; focused Ruff and mypy checks for the new reliance
+package and tests pass. This evidence completes only the contract/catalog sub-slice.
+The protected signed RM vertical slice remains required before I1 can close.
+
+The user's requested cheaper-model retry then completed. Terra corrected one status
+overclaim: the manifest envelope is complete, while catalog bytes and hashes remain
+pending. Luna found mutable Python runtime inputs, unchecked semantic/execution/decision
+domains and trust in a self-reported installable flag. The implementation now copies
+Python buffers and collections, validates state domains in both languages, rejects year
+zero consistently and refuses all binding selection until catalog-backed installation
+verification exists. Added controls bring the focused totals to **29 TypeScript and 14
+Python tests**. The final complete rerun supersedes the immediately preceding totals:
+**263 TypeScript tests; 218 Python tests with 1 existing skip; and 2 root scenarios**.

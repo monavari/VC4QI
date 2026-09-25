@@ -20,7 +20,8 @@ full witness executes. TypeScript is canonical; Python mirrors supported semanti
 | TS ECDSA-SD issuance/derivation/verification | Implemented for existing fixtures; new binding/disclosure rules pending |
 | Python processing of TS-derived SD subsets | Semantic evaluation only; no Python SD crypto |
 | Demo | Seven legacy entries covering A–F, including two GS variants; assurance varies by scenario |
-| New bindings, complete routes, three-state reliance and signed RM witness | Documentation/design only; runtime implementation pending |
+| New reliance contract / RM binding | TS/Python request/result and three-state operators; RM v1 manifest is explicitly incomplete and non-installable |
+| Complete routes and signed RM witness | Runtime implementation pending |
 | Authority-issued scope answers / Recognized Entities | Planned experimental adapters, not implemented integrations |
 | Verifier HTTP service / LIMS adapter | Scaffold directories |
 

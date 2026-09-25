@@ -1,6 +1,7 @@
 # Implementation status
 
-**Validated 24 September 2026. D0–D4 and I0 complete; runtime remains legacy.**
+**Validated 25 September 2026. D0–D4 and I0 complete; I1 is in progress and the
+default runtime remains legacy.**
 The [handover](plans/standards-first-handover-2026-09-21.txt) and [model](MODEL_SPEC.md)
 are requirements, not implementation evidence. No new-model acceptance case is claimed
 passing by this preparation phase.
@@ -9,11 +10,11 @@ passing by this preparation phase.
 
 | Area | Existing behavior / evidence | Work still required |
 | --- | --- | --- |
-| Graph/types/policy | Three serialized relations and six basis labels, legacy policy matcher | Binding compiler, contextual node-uses, complete routes/restrictions and explicit legacy adapter |
-| Results | `verified` from absence of FAIL | Three-state obligation evaluation; separate verification and reliance |
+| Graph/types/policy | Legacy runtime plus new immutable request/result types and incomplete RM v1 manifest | Signed protected mapping, binding compiler, contextual node-uses, routes/restrictions and explicit legacy adapter |
+| Results | Three-state operators/result surfaces exist but are not wired to the evaluator | Seven-gate obligation evaluation and witness assembly |
 | Principal/scope | I0 complete-record matching, finite pressure bounds, RM retry and DCC method/group safety | Missing-principal safeguards, binding-defined projection, exact RM quantities and witnesses |
 | RM | Legacy recursive and SD fixtures | Full signed A/O/D/S/H chain; real 178/197/520 scope/conformity witnesses |
-| Protection | Ed25519 integration, signed registry work and TS SD tests | Suite/authorized-key audit; safe general expansion; full authenticated status, resource identity and time rules |
+| Protection | Ed25519 integration; received-option hardening; isolated exact-byte catalog | Independent suite/authorized-key audit; safe expansion; signed RM resources, authenticated status and time rules |
 | Support/assessment | Graph resolution and GS human/agent/hybrid callback | Independent role-specific support authority and batch/instrument/time applicability |
 | TS selective disclosure | Existing ECDSA-SD base/derived examples and tests | New binding mandatory disclosure and suite-aware representation identity |
 | Python SD | Semantic processing of TS-derived subset | Explicit assurance boundary; SD crypto remains unsupported |

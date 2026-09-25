@@ -1,10 +1,14 @@
 # Standards-first reconciliation: documentation and implementation plan
 
 Prepared 21 September 2026; documentation validated 23 September; I0 completed 24 September.
-**Status: D0–D4 and I0 complete; evaluator migration I1–I8 pending.**
+**Status: D0–D4 and I0 complete; the I1 contract/catalog slice is complete and its
+signed protected mapping remains in progress.**
 
 [I0 evidence](standards-first-i0-evidence.md) records the repaired setup, regression
-results, remaining lint debt and inventories. Next is the signed I1 binding slice.
+results, remaining lint debt and inventories. The
+[I1 contract evidence](standards-first-i1-contract-evidence.md) records the immutable
+request/result API, incomplete manifest and exact-byte catalog. Next is the signed
+protected mapping slice required to finish I1.
 
 ## Recommendation and scope
 
@@ -388,8 +392,8 @@ handover does not supply require a localized `TODO(human)` and report entry; the
 do not block the fictional RM baseline or independent work.
 
 D0–D4 and I0 are complete, with validation and remaining baseline debt recorded in the
-report. I1 is next: executable binding/request/result contracts and a signed vertical
-slice before broader evaluator replacement.
+report. I1's executable binding/request/result contract and isolated catalog are complete.
+The signed protected vertical slice is next, before broader evaluator replacement.
 
 The user requested Astra for hard semantic/design review, Sol for implementation
 and Luna at max reasoning for bounded documentation/consistency tasks. These three

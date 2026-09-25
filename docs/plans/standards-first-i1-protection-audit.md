@@ -49,20 +49,23 @@ specification. This patch does not establish complete date validation, proof set
 controller authorization, safe expansion, resource isolation or new-profile reliance.
 Astra reviewed the bounded fix and found no blocking regression within this scope.
 
-## Remaining I1 implementation sequence
+## I1 implementation sequence
 
-1. Create one executable versioned experimental RM manifest covering all twelve
+1. **Contract complete:** create one versioned experimental RM manifest covering all twelve
    [manifest categories](../BINDING_MANIFEST.md), exact native paths/IRIs, supported
-   combinations, cardinalities, installed evaluators, resource hashes and exclusions.
-2. Add verifier-owned request and result contracts in both languages. Include selected
+   combinations, cardinalities, installed evaluators and exclusions. The manifest is
+   deliberately non-installable; pin resource bytes and hashes with the signed slice.
+2. **Complete:** add verifier-owned request and result contracts in both languages. Include selected
    claims, purpose, accepted profile/version, trust, evaluation/activity times and
    budgets. Keep artifact identity distinct from contextual node-use identity.
+   The incomplete manifest, isolated catalog and contract evidence are recorded in
+   [the I1 contract slice](standards-first-i1-contract-evidence.md).
 3. Establish an audited protection path with an independent published signature vector,
    explicit supported proof options, safe context processing and exact method/controller
    binding. Test type/purpose/options, unauthorized valid keys and unsafe terms separately.
-4. Implement an immutable byte catalog with bounded resolution, original-byte retention,
-   isolated resource interpretation and missing-versus-mismatched integrity outcomes.
-   Inventory hashes alone do not enforce these properties.
+4. **Partially complete:** the immutable byte catalog has bounded resolution,
+   original-byte retention, isolation and distinct missing/mismatch errors. Populate
+   it with the signed slice and bind its observations into the new result contract.
 5. Generate a signed fictional RM target and authoritative artifact using safe contexts
    and schemas; extract facts only after protection, preserving native source pointers.
    Pin every used static resource. Leave authority/status/support/conformity as explicitly

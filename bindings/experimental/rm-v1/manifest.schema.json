@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vc4qi.example/schemas/binding-manifest/1",
+  "title": "VC4QI experimental RM binding manifest",
+  "type": "object",
+  "required": [
+    "$schema", "id", "version", "status", "owner", "installation",
+    "carrierAndSchema", "factMappings", "cardinality", "discoveryAndIntegrity",
+    "recognizedTypes", "principalAndRights", "scopeAndMapping",
+    "routesAndRestrictions", "protectionTimeAndResolution",
+    "supportAndDisclosure", "evidenceAndExclusions"
+  ],
+  "properties": {
+    "$schema": {"const": "./manifest.schema.json"},
+    "id": {"const": "https://vc4qi.example/bindings/rm/1"},
+    "version": {"const": "1"},
+    "status": {"const": "experimental"},
+    "owner": {"$ref": "#/$defs/nonemptyObject"},
+    "installation": {
+      "type": "object",
+      "required": ["status", "reason", "pendingResources"],
+      "properties": {
+        "status": {"enum": ["incomplete", "installable"]},
+        "reason": {"type": "string", "minLength": 1},
+        "pendingResources": {"type": "array", "items": {"type": "string", "format": "uri"}, "uniqueItems": true}
+      },
+      "additionalProperties": false
+    },
+    "carrierAndSchema": {"$ref": "#/$defs/nonemptyObject"},
+    "factMappings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["fact", "nativePath", "expandedIri"],
+        "properties": {
+          "fact": {"type": "string", "minLength": 1},
+          "nativePath": {"type": "string", "pattern": "^/"},
+          "expandedIri": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "cardinality": {"$ref": "#/$defs/nonemptyObject"},
+    "discoveryAndIntegrity": {"$ref": "#/$defs/nonemptyObject"},
+    "recognizedTypes": {"$ref": "#/$defs/nonemptyObject"},
+    "principalAndRights": {"$ref": "#/$defs/nonemptyObject"},
+    "scopeAndMapping": {"$ref": "#/$defs/nonemptyObject"},
+    "routesAndRestrictions": {"$ref": "#/$defs/nonemptyObject"},
+    "protectionTimeAndResolution": {"$ref": "#/$defs/nonemptyObject"},
+    "supportAndDisclosure": {"$ref": "#/$defs/nonemptyObject"},
+    "evidenceAndExclusions": {"$ref": "#/$defs/nonemptyObject"}
+  },
+  "$defs": {
+    "nonemptyObject": {"type": "object", "minProperties": 1}
+  },
+  "additionalProperties": false
+}
