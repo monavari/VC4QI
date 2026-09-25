@@ -102,6 +102,20 @@ P15, P16) and P05 is `excluded_unsupported`; the other 67 remain `not_implemente
 Authorization, support and conformity (gates 5–6) are still not implemented, so no
 request can yet be accepted. See the [I2 evidence](plans/standards-first-i2-evidence.md).
 
+## I3 progress, 25 September 2026
+
+Gate 5 now evaluates the operational-scope authority route (D ← O ← A ← anchor), with
+principal binding, maintenance and projection permissions, and a bounded projection
+checked by exact decimal arithmetic. It composes complete routes: AND within a route,
+OR between routes, restrictions outside the OR, and a budget-cut search is never a
+disproof. Gate 6 evaluates the required study, including its own laboratory authority.
+Only `termsOfUse` and `evidence` references are followed. Independently discovered
+grants are declared unsupported in the manifest (V08). Twenty-four cases are `passing`
+(I3 added V04, V05, V07, P06, C08–C11 and C16), 2 are `excluded_unsupported` (P05, V08)
+and 57 are `not_implemented`. Claim scope coverage and conformity are I4, so no request
+is accepted yet. A second signed route, restriction evaluators and cycle handling are
+still open. See the [I3 evidence](plans/standards-first-i3-evidence.md).
+
 ## Migration and historical claims
 
 Work branch: `refactor/standards-first-reconciliation`, retaining merged registry,

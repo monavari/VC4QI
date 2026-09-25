@@ -194,11 +194,20 @@ def test_extracts_protected_facts_with_source_pointers() -> None:
 def test_authentic_artifacts_alone_do_not_establish_reliance() -> None:
     result = evaluate_rm_slice(request(), catalog_with(), MANIFEST, PROFILE).result
     assert all(r.state == "established" for r in result.artifact_verification)
+    # I3: route and support are established; the claim waits for I4 scope coverage.
     assert (result.authorization[0].state, result.authorization[0].execution) == (
         "not_established",
-        "not_run",
+        "executed",
     )
-    assert result.support[0].execution == "not_run"
+    assert result.authorization[0].route_witness_ids == (
+        "route:operational-scope",
+        URI["D"],
+        URI["O"],
+        URI["A"],
+    )
+    assert result.support[0].state == "established"
+    assert result.support[0].witness_ids == (URI["D"], URI["S"], URI["H"])
+    assert result.support[0].execution == "executed"
     assert result.conformity.execution == "not_run"
     assert result.decision == "not_established"
 
@@ -219,7 +228,7 @@ def test_changed_value_without_resigning_is_rejected() -> None:
         request(), catalog_with(overrides), MANIFEST, PROFILE
     ).result
     assert result.decision == "reject"
-    assert "not protected" in result.authorization[0].reasons[0]
+    assert "not usable" in result.authorization[0].reasons[0]
 
 
 def test_valid_signature_by_another_partys_key_is_rejected() -> None:
@@ -296,9 +305,10 @@ def test_missing_study_target_or_controller_is_not_established() -> None:
         MANIFEST,
         PROFILE,
     ).result
-    assert [
+    assert {
         r.state for r in result.artifact_verification if r.artifact_id == URI["S"]
-    ] == ["not_established"]
+    } == {"not_established"}
+    assert result.support[0].state == "not_established"
     assert result.decision == "not_established"
     missing = verify(URI["D"], {URI["D"]: None})
     assert [(c.check, c.state) for c in missing.checks] == [
@@ -395,7 +405,9 @@ def test_gate_numbered_trace_and_resources() -> None:
         "established",
     )
     claim = by["claim-authorization:as-mass-fraction"]
-    assert (claim.gate, claim.execution) == (5, "not_run")
+    assert (claim.gate, claim.execution) == (5, "executed")
+    assert by["route:operational-scope:bounded-projection"].state == "established"
+    assert by["support:same-batch"].state == "established"
     assert by["conformity:as-plus-u-le-200"].gate == 6
     assert sorted(r.uri for r in result.resources if r.kind == "artifact") == sorted(
         URI[k] for k in ("A", "D", "H", "O", "S")

@@ -9,12 +9,20 @@ export interface TrustAnchor {
   readonly purposes: readonly string[];
 }
 
+/** Permitted complete routes (installed evaluator ids), global restrictions and search budget. */
+export interface AuthorityPolicy {
+  readonly certificateRoutes: readonly string[];
+  readonly globalRestrictions: readonly string[];
+  readonly maxRoutes: number;
+}
+
 export interface RelianceProfile {
   readonly id: string;
   readonly version: string;
   readonly status: 'experimental' | 'production';
   readonly binding: VersionedIdentifier;
   readonly trustAnchors: readonly TrustAnchor[];
+  readonly authority: AuthorityPolicy;
   readonly credentialStatus: StatusPolicy;
 }
 
@@ -39,6 +47,12 @@ export function loadRelianceProfile(input: unknown): RelianceProfile {
       input.trustAnchors.some(a => !isObject(a) || !nonempty(a.id) || !stringList(a.purposes))) {
     throw new TypeError('Reliance profile trustAnchors must list anchors with explicit purposes.');
   }
+  const authority = input.authority;
+  if (!isObject(authority) || !stringList(authority.certificateRoutes) ||
+      !Array.isArray(authority.globalRestrictions) || !authority.globalRestrictions.every(nonempty) ||
+      !Number.isSafeInteger(authority.maxRoutes) || (authority.maxRoutes as number) <= 0) {
+    throw new TypeError('Reliance profile authority needs certificateRoutes, globalRestrictions and a positive maxRoutes.');
+  }
   const status = input.credentialStatus;
   if (!isObject(status) || typeof status.required !== 'boolean' || !stringList(status.purposes) ||
       !Number.isSafeInteger(status.maxAgeSeconds) || (status.maxAgeSeconds as number) <= 0) {
@@ -52,6 +66,11 @@ export function loadRelianceProfile(input: unknown): RelianceProfile {
     trustAnchors: Object.freeze(input.trustAnchors.map(a => Object.freeze({
       id: (a as Record<string, string>).id!, purposes: Object.freeze([...(a as { purposes: string[] }).purposes]),
     }))),
+    authority: Object.freeze({
+      certificateRoutes: Object.freeze([...authority.certificateRoutes]),
+      globalRestrictions: Object.freeze([...(authority.globalRestrictions as string[])]),
+      maxRoutes: authority.maxRoutes as number,
+    }),
     credentialStatus: Object.freeze({
       required: status.required, purposes: Object.freeze([...status.purposes]), maxAgeSeconds: status.maxAgeSeconds as number,
     }),
