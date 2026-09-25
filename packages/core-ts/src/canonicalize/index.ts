@@ -15,15 +15,24 @@ import type { DocumentLoader, JsonObject } from '../types.js';
 export async function canonicalize(
   document: JsonObject,
   documentLoader?: DocumentLoader,
+  opts: { safe?: boolean } = {},
 ): Promise<string> {
   const options: Record<string, unknown> = {
     algorithm: 'URDNA2015',
     format: 'application/n-quads',
-    safe: false, // Allow non-IRI properties to be silently dropped (jsonld v8 default is strict)
+    safe: opts.safe ?? false,
   };
   if (documentLoader) options.documentLoader = documentLoader;
 
   return (await jsonld.normalize(document, options)) as string;
+}
+
+/** Canonicalize with JSON-LD safe mode, rejecting undefined properties. */
+export async function canonicalizeSafe(
+  document: JsonObject,
+  documentLoader?: DocumentLoader,
+): Promise<string> {
+  return canonicalize(document, documentLoader, { safe: true });
 }
 
 /**

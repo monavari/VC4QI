@@ -14,7 +14,7 @@ passing by this preparation phase.
 | Results | Three-state operators/result surfaces exist but are not wired to the evaluator | Seven-gate obligation evaluation and witness assembly |
 | Principal/scope | I0 complete-record matching, finite pressure bounds, RM retry and DCC method/group safety | Missing-principal safeguards, binding-defined projection, exact RM quantities and witnesses |
 | RM | Legacy recursive and SD fixtures | Full signed A/O/D/S/H chain; real 178/197/520 scope/conformity witnesses |
-| Protection | Ed25519 integration; received-option hardening; isolated exact-byte catalog | Independent suite/authorized-key audit; safe expansion; signed RM resources, authenticated status and time rules |
+| Protection | Ed25519 integration; received-option hardening; TS opt-in safe expansion and isolated exact-byte catalog/loader; published signature control | Python safe-path parity, full-suite transform vector and authorized-key binding; signed RM resources, authenticated status and time rules |
 | Support/assessment | Graph resolution and GS human/agent/hybrid callback | Independent role-specific support authority and batch/instrument/time applicability |
 | TS selective disclosure | Existing ECDSA-SD base/derived examples and tests | New binding mandatory disclosure and suite-aware representation identity |
 | Python SD | Semantic processing of TS-derived subset | Explicit assurance boundary; SD crypto remains unsupported |

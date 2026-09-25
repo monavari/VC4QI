@@ -34,10 +34,11 @@ async function computeHashData(
   unsecuredDocument: JsonObject,
   proofConfig: JsonObject,
   documentLoader?: DocumentLoader,
+  safe = false,
 ): Promise<Uint8Array> {
   const [canonDoc, canonProof] = await Promise.all([
-    canonicalize(unsecuredDocument, documentLoader),
-    canonicalize(proofConfig, documentLoader),
+    canonicalize(unsecuredDocument, documentLoader, { safe }),
+    canonicalize(proofConfig, documentLoader, { safe }),
   ]);
 
   const docHash = createHash('sha256').update(canonDoc, 'utf8').digest();
@@ -61,6 +62,7 @@ export async function createProof(
   opts: {
     created?: string;
     documentLoader?: DocumentLoader;
+    safe?: boolean;
   } = {},
 ): Promise<DataIntegrityProof> {
   const created = opts.created ?? new Date().toISOString();
@@ -71,7 +73,12 @@ export async function createProof(
     created,
   );
 
-  const hashData = await computeHashData(credential, proofConfig, opts.documentLoader);
+  const hashData = await computeHashData(
+    credential,
+    proofConfig,
+    opts.documentLoader,
+    opts.safe ?? false,
+  );
 
   const signatureBytes = await ed.signAsync(hashData, keyPair.privateKey);
   const proofValue = toMultibase(signatureBytes);
@@ -94,7 +101,7 @@ export async function createProof(
 export async function verifyProof(
   signedCredential: JsonObject,
   publicKey: Uint8Array,
-  opts: { documentLoader?: DocumentLoader } = {},
+  opts: { documentLoader?: DocumentLoader; safe?: boolean } = {},
 ): Promise<boolean> {
   const proof = signedCredential.proof as DataIntegrityProof | undefined;
   if (!proof) throw new Error('No proof found on credential');
@@ -123,6 +130,7 @@ export async function verifyProof(
     unsecuredDocument as JsonObject,
     proofConfig,
     opts.documentLoader,
+    opts.safe ?? false,
   );
 
   try {
