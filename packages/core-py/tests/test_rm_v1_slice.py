@@ -110,6 +110,7 @@ def resign(document: dict[str, Any], key_name: str, method: str) -> str:
 
 def request(**overrides: Any) -> RelianceRequest:
     values: dict[str, Any] = {
+        "request_id": "urn:uuid:rm-v1-slice-request",
         "target_id": URI["D"],
         "selected_claims": (
             SelectedClaim(
@@ -356,3 +357,23 @@ def test_arbitrary_authorization_policy_name_is_not_accepted(name: str) -> None:
         "contradicted",
     )
     assert artifact.facts == ()
+
+
+def test_gate_numbered_trace_and_resources() -> None:
+    result = evaluate_rm_slice(request(), session(), MANIFEST).result
+    assert result.request_id == "urn:uuid:rm-v1-slice-request"
+    target = [t for t in result.trace if t.node_use.startswith(URI["D"] + " |")]
+    assert all("| target |" in t.node_use for t in target)
+    by = {t.predicate: t for t in target}
+    assert (by["schema"].gate, by["schema"].state) == (0, "established")
+    assert (by["related-resource-integrity"].gate, by["signature"].gate) == (1, 2)
+    assert (by["validity-period"].gate, by["validity-period"].state) == (
+        3,
+        "established",
+    )
+    claim = by["claim-authorization:as-mass-fraction"]
+    assert (claim.gate, claim.execution) == (5, "not_run")
+    assert by["conformity:as-plus-u-le-200"].gate == 6
+    assert sorted(r.uri for r in result.resources) == sorted(
+        URI[k] for k in ("A", "D", "H", "O", "S")
+    )

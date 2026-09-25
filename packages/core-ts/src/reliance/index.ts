@@ -5,17 +5,21 @@ import type {
   ClaimAuthorizationResult,
   ConformityRequest,
   ConformityResult,
+  Gate,
   PredicateResult,
   RelianceDecision,
   RelianceRequest,
   RelianceResult,
   ResolverLimits,
+  ResourceObservation,
   SelectedClaim,
   SemanticState,
   SupportResult,
+  TraceEntry,
   VersionedIdentifier,
 } from './types.js';
 
+export { GATE_NAMES } from './types.js';
 export * from './catalog.js';
 export * from './manifest.js';
 export * from './rm-v1.js';
@@ -35,10 +39,14 @@ export type {
   SelectedClaim,
   SemanticState,
   SupportResult,
+  TraceEntry,
+  ResourceObservation,
   VersionedIdentifier,
+  Gate,
 } from './types.js';
 
 export interface RelianceRequestInput {
+  requestId: string;
   targetId: string;
   selectedClaims: readonly SelectedClaim[];
   purpose: string;
@@ -53,6 +61,7 @@ export interface RelianceRequestInput {
 }
 
 export interface RelianceResultInput {
+  requestId: string;
   targetId: string;
   binding: VersionedIdentifier;
   profile: VersionedIdentifier;
@@ -61,6 +70,8 @@ export interface RelianceResultInput {
   support: readonly SupportResult[];
   conformity: ConformityResult;
   decision: RelianceDecision;
+  trace?: readonly TraceEntry[];
+  resources?: readonly ResourceObservation[];
   limitations?: readonly string[];
 }
 
@@ -145,6 +156,7 @@ function freezePredicate<T extends PredicateResult>(value: T): T {
  * nested collection are frozen, so caller mutation cannot change evaluation.
  */
 export function createRelianceRequest(input: RelianceRequestInput): RelianceRequest {
+  requireNonEmpty(input.requestId, 'requestId');
   requireNonEmpty(input.targetId, 'targetId');
   requireNonEmpty(input.purpose, 'purpose');
   requireNonEmpty(input.trustConfigId, 'trustConfigId');
@@ -188,6 +200,7 @@ export function createRelianceRequest(input: RelianceRequestInput): RelianceRequ
     : undefined;
 
   return Object.freeze({
+    requestId: input.requestId,
     targetId: input.targetId,
     selectedClaims,
     purpose: input.purpose,
@@ -203,7 +216,38 @@ export function createRelianceRequest(input: RelianceRequestInput): RelianceRequ
 }
 
 /** Copy and freeze a result without conflating its four evaluation surfaces. */
+function freezeTraceEntry(entry: TraceEntry, index: number): TraceEntry {
+  if (!Number.isInteger(entry.gate) || entry.gate < 0 || entry.gate > 6) {
+    throw new TypeError(`trace[${index}].gate must be a canonical gate number 0-6.`);
+  }
+  requireNonEmpty(entry.nodeUse, `trace[${index}].nodeUse`);
+  requireNonEmpty(entry.predicate, `trace[${index}].predicate`);
+  requireNonEmpty(entry.reason, `trace[${index}].reason`);
+  const checked = freezePredicate({
+    state: entry.state, execution: entry.execution, reasons: [entry.reason], sourcePointers: entry.sources,
+  });
+  return Object.freeze({
+    gate: entry.gate as Gate, nodeUse: entry.nodeUse, predicate: entry.predicate,
+    state: checked.state, execution: checked.execution, reason: entry.reason,
+    sources: Object.freeze([...entry.sources]),
+  });
+}
+
+function freezeResource(resource: ResourceObservation, index: number): ResourceObservation {
+  requireNonEmpty(resource.uri, `resources[${index}].uri`);
+  if (!/^sha384-[A-Za-z0-9+/]{64}$/.test(resource.digestSRI)) {
+    throw new TypeError(`resources[${index}].digestSRI must be a SHA-384 SRI value.`);
+  }
+  if (!['static', 'artifact', 'status'].includes(resource.kind) ||
+      !['catalog', 'supplied'].includes(resource.source)) {
+    throw new TypeError(`resources[${index}] has an unsupported kind or source.`);
+  }
+  requireIsoTime(resource.observedAt, `resources[${index}].observedAt`);
+  return Object.freeze({ ...resource });
+}
+
 export function createRelianceResult(input: RelianceResultInput): RelianceResult {
+  requireNonEmpty(input.requestId, 'requestId');
   requireNonEmpty(input.targetId, 'targetId');
   validateVersionedIdentifier(input.binding, 'binding');
   validateVersionedIdentifier(input.profile, 'profile');
@@ -224,6 +268,7 @@ export function createRelianceResult(input: RelianceResultInput): RelianceResult
   }
 
   return Object.freeze({
+    requestId: input.requestId,
     targetId: input.targetId,
     binding: freezeVersionedIdentifier(input.binding),
     profile: freezeVersionedIdentifier(input.profile),
@@ -242,6 +287,8 @@ export function createRelianceResult(input: RelianceResultInput): RelianceResult
       ? freezePredicate({ ...input.conformity })
       : Object.freeze({ requested: false as const, execution: 'not_run' as const }),
     decision: input.decision,
+    trace: Object.freeze((input.trace ?? []).map(freezeTraceEntry)),
+    resources: Object.freeze((input.resources ?? []).map(freezeResource)),
     limitations: Object.freeze([...(input.limitations ?? [])]),
   });
 }
