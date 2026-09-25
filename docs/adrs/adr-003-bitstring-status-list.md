@@ -1,5 +1,7 @@
 # ADR-003 Bitstring Status List v1.0 over StatusList2021
 
+> **2026-09-22 applicability:** The selected status mechanism remains available. The conformance statement below is historical, not evidence of complete authenticated status verification. The target also requires authorized status signers, applicability, freshness and explicit profile rules; see [ADR-010](adr-010-standards-first-reliance.md).
+
 ## Status
 
 Accepted

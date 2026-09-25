@@ -1,0 +1,112 @@
+path,matched_legacy_identifiers,phase,migration_treatment
+apps/demo-web/src/components/CredentialCard.tsx,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I7,Migrate UI metadata and consumers to compiled evaluator graph.
+apps/demo-web/src/components/CredentialGraph.tsx,authorizedBy;derivedFrom;supportedBy,I7,Migrate UI metadata and consumers to compiled evaluator graph.
+apps/demo-web/src/components/Inspector.tsx,authorizedBy;derivedFrom;supportedBy,I7,Migrate UI metadata and consumers to compiled evaluator graph.
+apps/demo-web/src/scenarios/index.ts,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I7,Migrate UI metadata and consumers to compiled evaluator graph.
+apps/demo-web/src/store/index.ts,authorizedBy;derivedFrom;supportedBy,I7,Migrate UI metadata and consumers to compiled evaluator graph.
+contexts/v1/qi-calibration.jsonld,authorizationBasis;scopeRef,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+contexts/v1/qi-core.jsonld,authorizationBasis;authorizedBy;derivedFrom;scopeRef;supportedBy,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+contexts/v1/qi-evidence-context.jsonld,authorizationBasis;authorizedBy;derivedFrom;scopeRef;supportedBy,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+contexts/v1/qi-rm.jsonld,authorizationBasis;scopeRef,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+examples/calibration/digital-calibration-certificate.json,authorizationBasis;authorizedBy;scopeRef,I5,Legacy artifact: reissue through generator; never edit existing proof in place.
+examples/calibration/digital-calibration-certificate.sd-derived.json,authorizationBasis;authorizedBy;scopeRef,I5,Legacy artifact: reissue through generator; never edit existing proof in place.
+examples/calibration/digital-calibration-certificate.sd.json,authorizationBasis;authorizedBy;scopeRef,I5,Legacy artifact: reissue through generator; never edit existing proof in place.
+examples/gs/hair-dryer-gs-product-mark-external-test-lab.json,authorizationBasis;authorizedBy,I5,Legacy artifact: reissue through generator; never edit existing proof in place.
+examples/gs/hair-dryer-gs-product-mark.json,authorizationBasis;authorizedBy,I5,Legacy artifact: reissue through generator; never edit existing proof in place.
+examples/rm/reference-material-certificate.json,authorizationBasis;authorizedBy;scopeRef;supportedBy,I5,Legacy artifact: reissue through generator; never edit existing proof in place.
+examples/rm/reference-material-certificate.sd-derived.json,authorizationBasis;authorizedBy;scopeRef,I5,Legacy artifact: reissue through generator; never edit existing proof in place.
+examples/rm/reference-material-certificate.sd.json,authorizationBasis;authorizedBy;scopeRef,I5,Legacy artifact: reissue through generator; never edit existing proof in place.
+packages/core-py/qi_vc_core/edge/authorized_by.py,authorizationBasis;authorizedBy,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-py/qi_vc_core/edge/derived_from.py,derivedFrom,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-py/qi_vc_core/edge/evaluate.py,authorizedBy;derivedFrom;supportedBy,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-py/qi_vc_core/edge/supported_by.py,supportedBy,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-py/qi_vc_core/evidence/graph.py,authorizationBasis,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-py/qi_vc_core/evidence/normalize.py,authorizationBasis;authorizedBy;derivedFrom,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-py/qi_vc_core/evidence/types.py,AuthorizationBasisKind;EvidenceRelation;authorizationBasis;authorizedBy;derivedFrom;scopeRef;supportedBy,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-py/qi_vc_core/policy/evaluate.py,authorizationBasis,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-py/qi_vc_core/policy/types.py,EvidenceRelation;authorizationBasis,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-py/tests/fixtures/sd_dcc_derived_credential.json,authorizationBasis;authorizedBy;scopeRef,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+packages/core-py/tests/fixtures/sd_derived_credential.json,authorizationBasis;authorizedBy;scopeRef,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+packages/core-py/tests/test_evidence_graph.py,authorizationBasis;derivedFrom,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+packages/core-py/tests/test_sd_dcc_parity.py,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+packages/core-py/tests/test_sd_parity.py,authorizationBasis;authorizedBy;scopeRef,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+packages/core-py/tests/test_verifier.py,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+packages/core-ts/scripts/gen-sd-dcc-fixtures.ts,authorizationBasis;authorizedBy;scopeRef,I5,Migrate generators; regenerate protected artifacts and integrity metadata.
+packages/core-ts/scripts/gen-sd-fixtures.ts,authorizationBasis;authorizedBy;scopeRef,I5,Migrate generators; regenerate protected artifacts and integrity metadata.
+packages/core-ts/src/edge/evaluateAuthorizedBy.ts,authorizationBasis;authorizedBy,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-ts/src/edge/evaluateDerivedFrom.ts,derivedFrom,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-ts/src/edge/evaluateEdge.ts,authorizedBy;derivedFrom;supportedBy,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-ts/src/edge/evaluateSupportedBy.ts,supportedBy,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-ts/src/evidence/buildEvidenceGraph.ts,authorizationBasis,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-ts/src/evidence/normalizeEvidence.ts,AuthorizationBasisKind;EvidenceRelation;authorizationBasis;authorizedBy;derivedFrom;scopeRef;supportedBy,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-ts/src/evidence/types.ts,AuthorizationBasisKind;EvidenceRelation;authorizationBasis;authorizedBy;derivedFrom;scopeRef;supportedBy,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-ts/src/policy/evaluatePolicy.ts,authorizationBasis,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-ts/src/policy/types.ts,EvidenceRelation;authorizationBasis,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-ts/src/presentation-query/policyToDcql.ts,authorizationBasis,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-ts/src/presentation-query/policyToPresentationDefinition.ts,authorizationBasis,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-ts/src/presentation-query/validatePresentationSubmission.ts,authorizationBasis,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-ts/src/trust-registry/index.ts,AuthorizationBasisKind,I1/I2/I3/I5,Replace legacy API/dispatch assumptions; retain explicit compatibility boundary.
+packages/core-ts/tests/evidence-graph.test.ts,authorizationBasis;derivedFrom,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+packages/core-ts/tests/policy.test.ts,derivedFrom,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+packages/core-ts/tests/presentation-query.test.ts,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+packages/core-ts/tests/schemas.test.ts,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+packages/core-ts/tests/sd-dcc.test.ts,authorizedBy;scopeRef,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+packages/core-ts/tests/sd.test.ts,scopeRef,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+packages/core-ts/tests/verifier.test.ts,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+policies/profiles/calibration-capability.json,authorizationBasis;authorizedBy;derivedFrom,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+policies/profiles/calibration-direct-accreditation.json,authorizationBasis;authorizedBy,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+policies/profiles/gs-hair-dryer-external-test-lab-hitl.json,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+policies/profiles/gs-hair-dryer-hitl.json,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+policies/profiles/gs-scheme-authorization.json,authorizationBasis;authorizedBy,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+policies/profiles/nmi-legal-mandate.json,authorizationBasis;authorizedBy,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+policies/profiles/reference-material-recursive.json,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+policies/profiles/test-report-supported-dcc.json,supportedBy,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+schemas/v1/_shared/common.json,AuthorizationBasisKind;EvidenceRelation;authorizationBasis;authorizedBy;derivedFrom;scopeRef;supportedBy,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+schemas/v1/policy-profile.schema.json,EvidenceRelation;authorizationBasis,I1/I5,Retain explicit legacy versions; add versioned new binding resources.
+scripts/generate-v02-fixtures.js,authorizationBasis;authorizedBy;derivedFrom;scopeRef;supportedBy,I5,Migrate generators; regenerate protected artifacts and integrity metadata.
+testdata/contexts/qi-evidence-context.jsonld,authorizationBasis;authorizedBy;derivedFrom;scopeRef;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/calibration-capability/evidence/capability-001.json,authorizationBasis;derivedFrom,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/calibration-capability/evidence/capability-exceeds-001.json,authorizationBasis;derivedFrom,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/calibration-capability/failing-target-credential.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/calibration-capability/policy.json,authorizationBasis;authorizedBy;derivedFrom,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/calibration-capability/target-credential.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/calibration-direct-accreditation/failing-target-credential.json,authorizationBasis;authorizedBy;scopeRef,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/calibration-direct-accreditation/policy.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/calibration-direct-accreditation/target-credential.json,authorizationBasis;authorizedBy;scopeRef,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-external-test-lab-hitl/evidence/gs-hair-dryer-external-test-lab-certificate-001.json,authorizationBasis;authorizedBy;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-external-test-lab-hitl/evidence/gs-hair-dryer-external-test-lab-factory-inspection-001.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-external-test-lab-hitl/evidence/gs-hair-dryer-external-test-lab-issuing-scope-001.json,authorizationBasis;authorizedBy;derivedFrom,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-external-test-lab-hitl/evidence/gs-hair-dryer-external-test-lab-test-lab-scope-001.json,authorizationBasis;derivedFrom,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-external-test-lab-hitl/evidence/gs-hair-dryer-external-test-lab-type-examination-001.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-external-test-lab-hitl/failing-target-credential.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-external-test-lab-hitl/policy.json,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-external-test-lab-hitl/target-credential.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-hitl/evidence/gs-hair-dryer-certificate-001.json,authorizationBasis;authorizedBy;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-hitl/evidence/gs-hair-dryer-factory-inspection-001.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-hitl/evidence/gs-hair-dryer-issuing-scope-001.json,authorizationBasis;authorizedBy;derivedFrom,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-hitl/evidence/gs-hair-dryer-type-examination-001.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-hitl/failing-target-credential.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-hitl/policy.json,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-hair-dryer-hitl/target-credential.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-scheme-authorization/failing-target-credential.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-scheme-authorization/policy.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/gs-scheme-authorization/target-credential.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/nmi-legal-mandate/failing-target-credential.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/nmi-legal-mandate/policy.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/nmi-legal-mandate/target-credential.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/reference-material-recursive/evidence/operational-scope-001.json,authorizationBasis;derivedFrom,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/reference-material-recursive/evidence/rm-study-001.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/reference-material-recursive/policy.json,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/reference-material-recursive/reject-credential.json,authorizationBasis;authorizedBy;scopeRef;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/reference-material-recursive/target-credential.json,authorizationBasis;authorizedBy;scopeRef;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/test-report-supported-dcc/evidence/supporting-dcc-001.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/test-report-supported-dcc/policy.json,supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/examples/test-report-supported-dcc/target-credential.json,supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/policies/calibration-capability.json,authorizationBasis;authorizedBy;derivedFrom,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/policies/calibration-direct-accreditation.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/policies/gs-hair-dryer-external-test-lab-hitl.json,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/policies/gs-hair-dryer-hitl.json,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/policies/gs-scheme-authorization.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/policies/nmi-legal-mandate.json,authorizationBasis;authorizedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/policies/reference-material-recursive.json,authorizationBasis;authorizedBy;derivedFrom;supportedBy,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.
+testdata/schemas/policy-profile.schema.json,EvidenceRelation;authorizationBasis,I5/I8,Preserve legacy coverage; add separately signed new-profile equivalents.

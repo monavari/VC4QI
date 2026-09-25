@@ -29,7 +29,10 @@ What actually happened. Include error messages and stack traces.
 - OS:
 - Node version (`node --version`):
 - Python version (`python --version`):
-- Package version:
+- Package version / commit:
+- Accepted profile/binding and purpose:
+- Proof checks real or simulated:
+- Relevant acceptance case ID and state/reason/witness:
 
 ## Additional context
 

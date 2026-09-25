@@ -1,0 +1,82 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld"
+  ],
+  "type": [
+    "VerifiableCredential",
+    "TrustRegistryCredential"
+  ],
+  "id": "urn:uuid:trust-registry",
+  "issuer": "did:web:root.example",
+  "validFrom": "2024-01-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "urn:uuid:trust-registry#entries",
+    "registryEntries": [
+      {
+        "status": "active",
+        "id": "did:web:zls.example",
+        "issuerRole": "schemeAuthority",
+        "authorizationBasisKinds": [
+          "schemeAuthorization"
+        ],
+        "credentialTypes": [
+          "SchemeAuthorizationEvidence"
+        ]
+      },
+      {
+        "status": "active",
+        "id": "did:web:nab.example",
+        "issuerRole": "nationalAccreditationBody",
+        "authorizationBasisKinds": [
+          "accreditation"
+        ],
+        "credentialTypes": [
+          "AccreditationCertificate"
+        ]
+      },
+      {
+        "status": "active",
+        "id": "did:web:gs-body.example",
+        "issuerRole": "gsBody",
+        "authorizationBasisKinds": [
+          "operationalScope"
+        ],
+        "credentialTypes": [
+          "IssuingScopeCredential"
+        ]
+      },
+      {
+        "status": "active",
+        "id": "did:web:gs-body.example",
+        "issuerRole": "gsBody",
+        "authorizationBasisKinds": [
+          "schemeAuthorization"
+        ],
+        "credentialTypes": [
+          "GSCertificate"
+        ]
+      },
+      {
+        "status": "active",
+        "id": "did:web:hanseatic-product-testing.example",
+        "issuerRole": "testingLaboratory",
+        "authorizationBasisKinds": [
+          "operationalScope"
+        ],
+        "credentialTypes": [
+          "IssuingScopeCredential"
+        ]
+      }
+    ]
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:web:test.example.com#key-1",
+    "created": "2026-01-01T00:00:00Z",
+    "proofValue": "z5Q7TSCKs7wbT5PhyKrvbDBL6yJkWLHfQ56Ka5rra2UqnQpNdKZJeXJapnNB2CWtHguaXSGLmGmbLf7BHRaYjGKqB"
+  }
+}

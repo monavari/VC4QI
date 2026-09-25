@@ -1,0 +1,26 @@
+{
+  "id": "gs-hair-dryer-hitl-presentation-definition",
+  "input_descriptors": [
+    {
+      "id": "target-credential"
+    },
+    {
+      "id": "manufacturer-gs-certificate"
+    },
+    {
+      "id": "gs-issuing-authority"
+    },
+    {
+      "id": "gs-accredited-scope"
+    },
+    {
+      "id": "gs-scheme-authority"
+    },
+    {
+      "id": "product-type-examination"
+    },
+    {
+      "id": "initial-factory-inspection"
+    }
+  ]
+}

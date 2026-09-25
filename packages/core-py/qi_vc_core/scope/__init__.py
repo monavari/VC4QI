@@ -1,10 +1,17 @@
 # SPDX-License-Identifier: Apache-2.0
 # Scope-inclusion algorithm for DCC and DRMD credentials.
 # Python port of packages/core-ts/src/scope/index.ts — implements Section 6.2 (Listing 4).
+#
+# SCO-1/SCO-2: categorical dimensions compare as exact equality over governed
+# identifiers. Human-readable labels are display only and are never comparison
+# operands. This module previously matched lowercased free text with substring
+# containment, which admitted "As" for "Ash" and a "CuZn" scope entry for a
+# CuZn39Pb3 claim. See docs/SCOPE_TERMS.md.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from math import isfinite
+from typing import Any, Literal, TypeGuard
 
 JsonObject = dict[str, Any]
 
@@ -19,6 +26,7 @@ ScopeReasonCode = Literal[
     "DERIVATION_VIOLATION",
     "SUBJECT_BINDING_MISMATCH",
     "VALIDITY_WINDOW_VIOLATION",
+    "UNRESOLVED_SCOPE_TERM",
     "UNKNOWN_SCOPE_CHECK",
 ]
 
@@ -33,6 +41,37 @@ class ScopeViolation:
 class ScopeCheckResult:
     passed: bool
     violations: list[ScopeViolation] = field(default_factory=list)
+
+
+# ── Governed-term comparison (SCO-1, SCO-2) ──────────────────────────────────
+
+
+def _governed_iri(source: JsonObject | None, key: str) -> str | None:
+    """Read a governed identifier. None means the caller must raise
+    UNRESOLVED_SCOPE_TERM rather than fall back to a label (FC-6)."""
+    if not source:
+        return None
+    value = source.get(key)
+    return value if isinstance(value, str) and value else None
+
+
+def _same_term(a: str, b: str) -> bool:
+    """Exact equality over governed identifiers. No normalization, no case
+    folding, no substring containment. Identity is decidable here; subsumption
+    is not, and is not attempted (SCO-6)."""
+    return a == b
+
+
+def _unresolved(dimension: str, label: Any = None) -> ScopeViolation:
+    suffix = f" '{label}'" if label else ""
+    return ScopeViolation(
+        code="UNRESOLVED_SCOPE_TERM",
+        detail=(
+            f"No governed identifier for {dimension}{suffix}. Labels are display "
+            "only and are never compared (SCO-2); supply a governed term. "
+            "See docs/SCOPE_TERMS.md."
+        ),
+    )
 
 
 # ── Unit normalization ────────────────────────────────────────────────────────
@@ -77,6 +116,7 @@ class DccScopeEntry:
     measurand: str | None = None
     quantity_kind_iri: str | None = None
     allowed_methods: list[str] = field(default_factory=list)
+    allowed_method_iris: list[str] = field(default_factory=list)
     range_from: float | None = None
     range_to: float | None = None
     range_unit: JsonObject = field(default_factory=dict)
@@ -93,52 +133,97 @@ def check_dcc_scope_inclusion(
     subject = dcc.get("credentialSubject") or {}
     measurement_results: list[JsonObject] = subject.get("measurementResults") or []
 
+    # An authorizing credential conveying no scope entries confers no scope.
     if not scope_entries:
-        return ScopeCheckResult(passed=True)
+        return ScopeCheckResult(
+            passed=False,
+            violations=[ScopeViolation(
+                code="NO_SCOPE_ENTRY",
+                detail=(
+                    "Authorizing evidence carries no scope entries, "
+                    "so it confers no scope."
+                ),
+            )],
+        )
 
     for result_group in measurement_results:
-        measurand = str(result_group.get("measurand", "")).lower()
+        claim_quantity_kind = _governed_iri(result_group, "quantityKindIri")
+        if claim_quantity_kind is None:
+            violations.append(_unresolved("measurand", result_group.get("measurand")))
+            continue
+
         used_methods: list[JsonObject] = result_group.get("usedMethods") or []
-        method_refs = [
-            str(m.get("reference") or m.get("name") or "").lower()
-            for m in used_methods
-        ]
 
         matching = [
             e for e in scope_entries
-            if not e.measurand or
-               e.measurand.lower() == measurand or
-               measurand in e.measurand.lower() or
-               e.measurand.lower() in measurand
+            if e.quantity_kind_iri
+            and _same_term(e.quantity_kind_iri, claim_quantity_kind)
         ]
+
+        if not matching and any(not e.quantity_kind_iri for e in scope_entries):
+            violations.append(_unresolved("scope entry measurand"))
+            continue
 
         if not matching:
             violations.append(ScopeViolation(
                 code="NO_SCOPE_ENTRY",
-                detail=f"No scope entry for measurand '{result_group.get('measurand')}'",
+                detail=(
+                    f"No scope entry for measurand {claim_quantity_kind} "
+                    f"(labelled '{result_group.get('measurand', '')}')"
+                ),
             ))
             continue
 
         results: list[JsonObject] = result_group.get("results") or []
         entry_matched = False
+        group_violations: list[ScopeViolation] = []
 
         for entry in matching:
             entry_ok = True
             entry_violations: list[ScopeViolation] = []
 
-            # Method check
-            if entry.allowed_methods:
-                allowed_lower = [m.lower() for m in entry.allowed_methods]
-                method_ok = not method_refs or any(
-                    any(ref in a or a in ref for a in allowed_lower)
-                    for ref in method_refs
-                )
-                if not method_ok:
-                    entry_violations.append(ScopeViolation(
-                        code="METHOD_OUT_OF_SCOPE",
-                        detail=f"Method(s) [{', '.join(method_refs)}] not in allowedMethods [{', '.join(entry.allowed_methods)}]",
-                    ))
+            # Method check, over governed identifiers only (SCO-1).
+            if entry.allowed_method_iris:
+                claim_method_iris = [
+                    _governed_iri(m, "methodIri") for m in used_methods
+                ]
+                if not claim_method_iris or any(
+                    iri is None for iri in claim_method_iris
+                ):
+                    labels = ", ".join(
+                        str(m.get("reference") or m.get("name") or "")
+                        for m in used_methods
+                    )
+                    entry_violations.append(_unresolved("method", labels))
                     entry_ok = False
+                elif claim_method_iris:
+                    method_ok = any(
+                        any(_same_term(a, ref) for a in entry.allowed_method_iris)
+                        for ref in claim_method_iris
+                        if ref is not None
+                    )
+                    if not method_ok:
+                        entry_violations.append(ScopeViolation(
+                            code="METHOD_OUT_OF_SCOPE",
+                            detail=(
+                                "Method(s) ["
+                                + ", ".join(str(r) for r in claim_method_iris)
+                                + "] not in allowedMethodIris ["
+                                + ", ".join(entry.allowed_method_iris)
+                                + "]"
+                            ),
+                        ))
+                        entry_ok = False
+            elif entry.allowed_methods:
+                # The entry restricts methods but names them only by label,
+                # which is not a comparison operand.
+                entry_violations.append(
+                    _unresolved(
+                        "scope entry allowedMethods",
+                        ", ".join(entry.allowed_methods),
+                    )
+                )
+                entry_ok = False
 
             # Range + uncertainty check
             if entry.range_to is not None:
@@ -186,10 +271,10 @@ def check_dcc_scope_inclusion(
             if entry_ok:
                 entry_matched = True
                 break
-            violations.extend(entry_violations)
+            group_violations.extend(entry_violations)
 
-        if entry_matched:
-            violations.clear()
+        if not entry_matched:
+            violations.extend(group_violations)
 
     return ScopeCheckResult(passed=len(violations) == 0, violations=violations)
 
@@ -199,13 +284,49 @@ def check_dcc_scope_inclusion(
 @dataclass
 class DrmdScopeEntry:
     matrix: list[str] = field(default_factory=list)
+    matrix_iris: list[str] = field(default_factory=list)
     allowed_properties: list[str] = field(default_factory=list)
+    allowed_property_iris: list[str] = field(default_factory=list)
     allowed_forms: list[str] = field(default_factory=list)
+    allowed_form_iris: list[str] = field(default_factory=list)
     uncertainty_max_absolute_mg_kg: float | None = None
     uncertainty_max_relative_u_k2: float | None = None
 
 
 def check_drmd_scope_inclusion(
+    drmd: JsonObject,
+    scope_entries: list[DrmdScopeEntry],
+    matrix: str | None = None,
+    form: str | None = None,
+) -> ScopeCheckResult:
+    """Each certified claim needs one complete record, including legacy U rules."""
+    subject = drmd.get("credentialSubject") or {}
+    violations: list[ScopeViolation] = []
+    checked = False
+    for group in subject.get("materialPropertiesList") or []:
+        if group.get("isCertified") is False:
+            continue
+        for result in group.get("results") or []:
+            checked = True
+            claim = {**drmd, "credentialSubject": {
+                **subject, "materialPropertiesList": [{**group, "results": [result]}],
+            }}
+            alternatives = [
+                _check_drmd_record(claim, [entry], matrix, form)
+                for entry in scope_entries
+            ]
+            if not any(candidate.passed for candidate in alternatives):
+                if not alternatives:
+                    return _check_drmd_record(claim, [], matrix, form)
+                for candidate in alternatives:
+                    violations.extend(candidate.violations)
+    # Empty requested-claim semantics belong to the new profile (S24).
+    if not checked:
+        return _check_drmd_record(drmd, scope_entries, matrix, form)
+    return ScopeCheckResult(passed=not violations, violations=violations)
+
+
+def _check_drmd_record(
     drmd: JsonObject,
     scope_entries: list[DrmdScopeEntry],
     matrix: str | None = None,
@@ -221,39 +342,73 @@ def check_drmd_scope_inclusion(
     properties_list: list[JsonObject] = subject.get("materialPropertiesList") or []
 
     first_material = materials[0] if materials else {}
-    derived_matrix = matrix or str(first_material.get("matrix") or "").lower()
-    derived_form = form or str(first_material.get("form") or "").lower()
+    derived_matrix = matrix or _governed_iri(first_material, "matrixIri")
+    derived_form = form or _governed_iri(first_material, "formIri")
 
+    # An authorizing credential conveying no scope entries confers no scope.
     if not scope_entries:
-        return ScopeCheckResult(passed=True)
+        return ScopeCheckResult(
+            passed=False,
+            violations=[ScopeViolation(
+                code="NO_SCOPE_ENTRY",
+                detail=(
+                    "Authorizing evidence carries no scope entries, "
+                    "so it confers no scope."
+                ),
+            )],
+        )
+
+    if derived_matrix is None:
+        return ScopeCheckResult(
+            passed=False,
+            violations=[_unresolved("matrix", first_material.get("matrix"))],
+        )
+
+    entries_restricting_matrix = [e for e in scope_entries if e.matrix_iris or e.matrix]
+    if any(not e.matrix_iris for e in entries_restricting_matrix):
+        labels = ", ".join(m for e in entries_restricting_matrix for m in e.matrix)
+        return ScopeCheckResult(
+            passed=False,
+            violations=[_unresolved("scope entry matrix", labels)],
+        )
 
     matching = [
         e for e in scope_entries
-        if not e.matrix or any(
-            derived_matrix.lower() in m.lower() or m.lower() in derived_matrix.lower()
-            for m in e.matrix
-        )
+        if not e.matrix_iris or any(_same_term(m, derived_matrix) for m in e.matrix_iris)
     ]
 
     if not matching:
         return ScopeCheckResult(
             passed=False,
-            violations=[ScopeViolation(code="MATRIX_PROPERTY_MISMATCH", detail=f"Matrix '{derived_matrix}' not in scope")],
-        )
-
-    if derived_form:
-        form_ok = any(
-            not e.allowed_forms or derived_form.lower() in [f.lower() for f in e.allowed_forms]
-            for e in matching
-        )
-        if not form_ok:
-            all_forms = [f for e in matching for f in e.allowed_forms]
-            violations.append(ScopeViolation(
+            violations=[ScopeViolation(
                 code="MATRIX_PROPERTY_MISMATCH",
-                detail=f"Form '{derived_form}' not in allowedForms [{', '.join(all_forms)}]",
-            ))
+                detail=(
+                    f"Matrix {derived_matrix} "
+                    f"(labelled '{first_material.get('matrix', '')}') not in scope"
+                ),
+            )],
+        )
 
-    import re
+    # Form check, over governed identifiers only.
+    entries_restricting_form = [e for e in matching if e.allowed_form_iris or e.allowed_forms]
+    if entries_restricting_form:
+        if any(not e.allowed_form_iris for e in entries_restricting_form):
+            labels = ", ".join(f for e in entries_restricting_form for f in e.allowed_forms)
+            violations.append(_unresolved("scope entry allowedForms", labels))
+        elif derived_form is None:
+            violations.append(_unresolved("form", first_material.get("form")))
+        else:
+            form_ok = any(
+                any(_same_term(f, derived_form) for f in e.allowed_form_iris)
+                for e in entries_restricting_form
+            )
+            if not form_ok:
+                all_forms = [f for e in entries_restricting_form for f in e.allowed_form_iris]
+                violations.append(ScopeViolation(
+                    code="MATRIX_PROPERTY_MISMATCH",
+                    detail=f"Form {derived_form} not in allowedFormIris [{', '.join(all_forms)}]",
+                ))
+
     for group in properties_list:
         if group.get("isCertified") is False:
             continue  # informative values skip per paper §6.2
@@ -261,12 +416,30 @@ def check_drmd_scope_inclusion(
         results: list[JsonObject] = group.get("results") or []
         for result in results:
             name = str(result.get("name") or "")
-            m = re.search(r"\(([A-Z][a-z]?)\)", name)
-            element = m.group(1) if m else (name.split()[0] if name.split() else name)
+            # SCO-2: the property is identified by its governed IRI. Parsing an
+            # element symbol out of a display name ("Arsenic (As)") made the
+            # label a comparison operand by the back door.
+            property_iri = _governed_iri(result, "propertyIri")
+            element = property_iri or name
+
+            entries_restricting_property = [
+                e for e in matching if e.allowed_property_iris or e.allowed_properties
+            ]
+            if any(not e.allowed_property_iris for e in entries_restricting_property):
+                labels = ", ".join(
+                    pr for e in entries_restricting_property for pr in e.allowed_properties
+                )
+                violations.append(_unresolved("scope entry allowedProperties", labels))
+                continue
+            if entries_restricting_property and property_iri is None:
+                violations.append(_unresolved("property", name))
+                continue
 
             prop_entry = next(
                 (e for e in matching
-                 if not e.allowed_properties or element in e.allowed_properties),
+                 if not e.allowed_property_iris
+                 or (property_iri is not None
+                     and any(_same_term(pr, property_iri) for pr in e.allowed_property_iris))),
                 None,
             )
 
@@ -307,7 +480,11 @@ def check_derivation(
     child_credential: JsonObject,
     parent_credential: JsonObject,
 ) -> ScopeCheckResult:
-    """Compatibility wrapper for checking child evidence constraints against parent scope."""
+    """Deprecated legacy helper: label-based constraints, not governed containment.
+
+    New callers must use check_derived_edge. Retained for old callers only;
+    its historical behavior is NOT evidence for the I0 safety vectors.
+    """
     violations: list[ScopeViolation] = []
     cap_subject = child_credential.get("credentialSubject") or {}
     constraints: JsonObject = cap_subject.get("constraints") or {}
@@ -408,6 +585,86 @@ def _validity_violations(child: JsonObject, parent: JsonObject) -> list[ScopeVio
     return violations
 
 
+def _finite_number(value: Any) -> TypeGuard[int | float]:
+    if not isinstance(value, int | float) or isinstance(value, bool):
+        return False
+    try:
+        return isfinite(value)
+    except OverflowError:
+        return False
+
+
+def _pressure_interval(entry: JsonObject) -> tuple[float, float] | None:
+    bounds = entry.get("range")
+    if not isinstance(bounds, dict):
+        return None
+    unit = bounds.get("unit")
+    if not isinstance(unit, dict):
+        return None
+    keys = [unit[k] for k in ("unitIri", "ucumCode") if k in unit]
+    if not keys or any(
+        not isinstance(k, str) or k not in _PRESSURE_TO_PA for k in keys
+    ):
+        return None
+    factors = [_PRESSURE_TO_PA[k] for k in keys]
+    if any(factor != factors[0] for factor in factors):
+        return None
+    lo, hi = bounds.get("from"), bounds.get("to")
+    if not _finite_number(lo) or not _finite_number(hi) or lo > hi:
+        return None
+    low, high = lo * factors[0], hi * factors[0]
+    return (low, high) if isfinite(low) and isfinite(high) else None
+
+
+def _covers_record(child: JsonObject, parent: JsonObject) -> bool:
+    compared = False
+    for key, label in (
+        ("matrixIris", "matrix"), ("allowedPropertyIris", "allowedProperties"),
+        ("allowedFormIris", "allowedForms"), ("allowedMethodIris", "allowedMethods"),
+    ):
+        if not any(k in e for e in (child, parent) for k in (key, label)):
+            continue
+        cs, ps = child.get(key), parent.get(key)
+        if (not isinstance(cs, list) or not isinstance(ps, list) or not cs or not ps
+                or any(not isinstance(v, str) or not v for v in cs + ps)
+                or not all(v in ps for v in cs)):
+            return False
+        compared = True
+    if "range" in child or "range" in parent:
+        kind = _governed_iri(child, "quantityKindIri")
+        if (kind != "http://qudt.org/vocab/quantitykind/Pressure"
+                or kind != _governed_iri(parent, "quantityKindIri")):
+            return False
+        a, b = _pressure_interval(child), _pressure_interval(parent)
+        if a is None or b is None or a[0] < b[0] or a[1] > b[1]:
+            return False
+        compared = True
+    elif "quantityKindIri" in child or "quantityKindIri" in parent:
+        kind = _governed_iri(child, "quantityKindIri")
+        if not kind or kind != _governed_iri(parent, "quantityKindIri"):
+            return False
+        compared = True
+    # Explicit legacy maxima only; never invent an RM accreditation ceiling.
+    cu, pu = child.get("uncertainty") or {}, parent.get("uncertainty") or {}
+    for key in (
+        "maxAbsolute", "maxRelativePercent", "maxAbsoluteMgKg", "maxRelativeU_k2",
+    ):
+        if key not in pu:
+            continue
+        c, p = cu.get(key), pu[key]
+        if not _finite_number(c) or not _finite_number(p) or c < 0 or p < 0:
+            return False
+        if key == "maxAbsolute":
+            normalized_c = _to_pa(c, (child.get("range") or {}).get("unit") or {})
+            normalized_p = _to_pa(p, (parent.get("range") or {}).get("unit") or {})
+            if not _finite_number(normalized_c) or not _finite_number(normalized_p):
+                return False
+            c, p = normalized_c, normalized_p
+        if not _finite_number(c) or not _finite_number(p) or c > p:
+            return False
+    return compared
+
+
 def check_derived_edge(
     child_credential: JsonObject,
     parent_credential: JsonObject,
@@ -426,41 +683,21 @@ def check_derived_edge(
 
     child_entries = _scope_entries(child_credential)
     parent_entries = _scope_entries(parent_credential)
-    if child_entries and parent_entries:
-        for child_entry in child_entries:
-            child_range = child_entry.get("range") or {}
-            if child_range:
-                child_to = child_range.get("to")
-                child_unit = child_range.get("unit") or {}
-                covered = False
-                for parent_entry in parent_entries:
-                    child_measurand = str(child_entry.get("measurand", "")).lower()
-                    parent_measurand = str(parent_entry.get("measurand", "")).lower()
-                    if child_measurand and parent_measurand and child_measurand != parent_measurand:
-                        continue
-                    parent_range = parent_entry.get("range") or {}
-                    parent_to = parent_range.get("to")
-                    parent_unit = parent_range.get("unit") or {}
-                    if child_to is None or parent_to is None:
-                        covered = True
-                        continue
-                    child_pa = _to_pa(float(child_to), child_unit)
-                    parent_pa = _to_pa(float(parent_to), parent_unit)
-                    if child_pa is None or parent_pa is None or child_pa <= parent_pa:
-                        covered = True
-                if not covered:
-                    violations.append(ScopeViolation(
-                        code="DERIVATION_VIOLATION",
-                        detail=f"Child range.to {child_to} exceeds parent scope.",
-                    ))
-
-            child_props = child_entry.get("allowedProperties") or []
-            parent_props = [p for entry in parent_entries for p in (entry.get("allowedProperties") or [])]
-            extra_props = [p for p in child_props if parent_props and p not in parent_props]
-            if extra_props:
+    # Existing GS scopes explicitly restrict a finite set of credential types.
+    type_only = (not child_entries and not parent_entries
+                 and bool(child_types) and bool(parent_types))
+    if not type_only and (not child_entries or not parent_entries):
+        violations.append(ScopeViolation(
+            code="DERIVATION_VIOLATION",
+            detail="Both endpoints require nonempty scope records.",
+        ))
+    else:
+        for index, child_entry in enumerate(child_entries):
+            if not any(_covers_record(child_entry, p) for p in parent_entries):
                 violations.append(ScopeViolation(
                     code="DERIVATION_VIOLATION",
-                    detail=f"Child allowedProperties [{', '.join(extra_props)}] not present in parent scope.",
+                    detail=(f"Child scope record {index} is not covered by one "
+                            "complete supported parent record."),
                 ))
     return ScopeCheckResult(passed=len(violations) == 0, violations=violations)
 
@@ -473,18 +710,29 @@ def check_scope_inclusion(
     types = _credential_types(target_credential)
     entries = _scope_entries(authorizing_evidence)
     mode = getattr(getattr(policy, "checks", None), "scopeInclusion", "optional")
+    # An authorizing credential conveying no scope entries confers no scope, so
+    # it cannot satisfy scope inclusion. Previously this passed under the default
+    # 'optional' mode, which let a scope check succeed against nothing at all.
     if not entries:
-        if mode in ("ignored", "optional", None):
+        if mode == "ignored":
             return ScopeCheckResult(passed=True)
         return ScopeCheckResult(passed=False, violations=[
-            ScopeViolation(code="NO_SCOPE_ENTRY", detail="Authorizing evidence has no scope entries.")
+            ScopeViolation(
+                code="NO_SCOPE_ENTRY",
+                detail=(
+                    "Authorizing evidence carries no scope entries, "
+                    "so it confers no scope."
+                ),
+            )
         ])
 
     if "DigitalCalibrationCertificate" in types:
         dcc_entries = [
             DccScopeEntry(
                 measurand=e.get("measurand"),
+                quantity_kind_iri=e.get("quantityKindIri"),
                 allowed_methods=e.get("allowedMethods") or [],
+                allowed_method_iris=e.get("allowedMethodIris") or [],
                 range_from=(e.get("range") or {}).get("from"),
                 range_to=(e.get("range") or {}).get("to"),
                 range_unit=(e.get("range") or {}).get("unit") or {},
@@ -498,8 +746,11 @@ def check_scope_inclusion(
         drmd_entries = [
             DrmdScopeEntry(
                 matrix=e.get("matrix") or [],
+                matrix_iris=e.get("matrixIris") or [],
                 allowed_properties=e.get("allowedProperties") or [],
+                allowed_property_iris=e.get("allowedPropertyIris") or [],
                 allowed_forms=e.get("allowedForms") or [],
+                allowed_form_iris=e.get("allowedFormIris") or [],
                 uncertainty_max_absolute_mg_kg=(e.get("uncertainty") or {}).get("maxAbsoluteMgKg"),
                 uncertainty_max_relative_u_k2=(e.get("uncertainty") or {}).get("maxRelativeU_k2"),
             )

@@ -1,0 +1,71 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld",
+    "https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld",
+    {
+      "Product": "https://schema.org/Product",
+      "GSCertificate": "https://w3id.org/qi-vc/vocab/v1#GSCertificate",
+      "IssuingScopeCredential": "https://w3id.org/qi-vc/vocab/v1#IssuingScopeCredential",
+      "SchemeAuthorizationEvidence": "https://w3id.org/qi-vc/vocab/v1#SchemeAuthorizationEvidence",
+      "AccreditationCertificate": "https://w3id.org/qi-vc/vocab/v1#AccreditationCertificate",
+      "TestReport": "https://w3id.org/qi-vc/vocab/v1#TestReport",
+      "InspectionReport": "https://w3id.org/qi-vc/vocab/v1#InspectionReport",
+      "authorizationBasisKind": {
+        "@id": "https://w3id.org/qi-vc/vocab/v1#authorizationBasisKind",
+        "@type": "@vocab"
+      },
+      "constraints": "https://w3id.org/qi-vc/vocab/v1#constraints",
+      "authorizedCredentialTypes": {
+        "@id": "https://w3id.org/qi-vc/vocab/v1#authorizedCredentialTypes",
+        "@container": "@set"
+      }
+    }
+  ],
+  "type": [
+    "VerifiableCredential",
+    "TestReport"
+  ],
+  "id": "urn:uuid:gs-hair-dryer-external-test-lab-type-examination-001",
+  "issuer": "did:web:hanseatic-product-testing.example",
+  "validFrom": "2026-05-10T00:00:00Z",
+  "credentialSubject": {
+    "id": "urn:example:product-type:hair-dryer-hd-01#type-examination",
+    "https://schema.org/identifier": "TR-HD-01",
+    "https://schema.org/itemReviewed": {
+      "id": "urn:example:product-type:hair-dryer-hd-01",
+      "type": "Product",
+      "https://schema.org/manufacturer": {
+        "id": "did:web:nordlicht-appliances.example"
+      }
+    },
+    "https://schema.org/customer": {
+      "id": "did:web:gs-body.example"
+    },
+    "https://schema.org/reviewBody": "Representative type examined for electrical safety, overheating, foreseeable water-related hazards, materials, ergonomics, marking, and instructions.",
+    "https://schema.org/reviewRating": {
+      "https://schema.org/ratingValue": "pass",
+      "https://schema.org/bestRating": "pass"
+    }
+  },
+  "evidence": [
+    {
+      "type": "CredentialEvidenceReference",
+      "id": "urn:uuid:gs-hair-dryer-external-test-lab-test-lab-scope-001",
+      "relation": "authorizedBy",
+      "authorizationBasis": {
+        "kind": "operationalScope",
+        "issuerRole": "testingLaboratory"
+      },
+      "digestSRI": "sha384-+Hy8dAQuIxHOBah6gGO/rTTRjp7eXHyB1Wm7cV+N6QLKxgHfhLnMpkdGzwt8zicI"
+    }
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:web:hanseatic-product-testing.example#key-1",
+    "created": "2026-01-01T00:00:00Z",
+    "proofValue": "z5v7kzSpQukbK7rBW1BxuSj4dyPtLF2zgf18qYnN4Yj7C5hXJDwnapwLzDXq65e8yFGVjxqb2im9wbMpaT1a3yS9n"
+  }
+}

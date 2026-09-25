@@ -1,0 +1,37 @@
+{
+  "id": "gs-hair-dryer-external-test-lab-hitl-presentation-submission",
+  "descriptor_map": [
+    {
+      "id": "target-credential",
+      "path": "$.verifiableCredential[0]"
+    },
+    {
+      "id": "manufacturer-gs-certificate",
+      "path": "$.verifiableCredential[1]"
+    },
+    {
+      "id": "gs-issuing-authority",
+      "path": "$.verifiableCredential[2]"
+    },
+    {
+      "id": "gs-accredited-scope",
+      "path": "$.verifiableCredential[3]"
+    },
+    {
+      "id": "gs-scheme-authority",
+      "path": "$.verifiableCredential[4]"
+    },
+    {
+      "id": "product-type-examination",
+      "path": "$.verifiableCredential[5]"
+    },
+    {
+      "id": "initial-factory-inspection",
+      "path": "$.verifiableCredential[6]"
+    },
+    {
+      "id": "external-testing-laboratory-scope",
+      "path": "$.verifiableCredential[7]"
+    }
+  ]
+}

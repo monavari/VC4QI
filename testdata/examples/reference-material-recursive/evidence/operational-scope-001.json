@@ -22,11 +22,20 @@
           "matrix": [
             "CuZn39Pb3 (leaded brass)"
           ],
+          "matrixIris": [
+            "https://w3id.org/qi-vc/terms/v1/matrix/CuZn39Pb3"
+          ],
           "allowedProperties": [
             "As"
           ],
+          "allowedPropertyIris": [
+            "https://w3id.org/qi-vc/terms/v1/element/As"
+          ],
           "allowedForms": [
             "disc"
+          ],
+          "allowedFormIris": [
+            "https://w3id.org/qi-vc/terms/v1/form/disc"
           ],
           "uncertainty": {
             "maxAbsoluteMgKg": 5
@@ -43,7 +52,7 @@
       "authorizationBasis": {
         "kind": "accreditation"
       },
-      "digestSRI": "sha384-XpNotmcIbcP6dMpWwKuN82IO2tUhrbcmgbZ4t8S1Bpy0R5HKQHGNIn6oNu9oXfhS"
+      "digestSRI": "sha384-oG5QUEiYhpUGy6ZgEE7HpmS3BZjLp2vpfyBPH2uvkW3R+eQKqqwHlrWvQqk33WUu"
     }
   ],
   "proof": {

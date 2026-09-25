@@ -20,8 +20,12 @@
       "scopeEntries": [
         {
           "measurand": "Pressure",
+          "quantityKindIri": "http://qudt.org/vocab/quantitykind/Pressure",
           "allowedMethods": [
             "EURAMET cg-17"
+          ],
+          "allowedMethodIris": [
+            "https://w3id.org/qi-vc/terms/v1/method/EURAMET-cg-17"
           ],
           "range": {
             "from": 0,
@@ -46,7 +50,7 @@
       "authorizationBasis": {
         "kind": "accreditation"
       },
-      "digestSRI": "sha384-FBKjYTTKh1Mmgj4Fh7e9Qwv2P5pRcPmycIbitR+lUkHllBBVjMnWWt1bi1eW0gGl"
+      "digestSRI": "sha384-SiF+NdS0Qmzdrc5sO0ldx3S6jam5c8WAIW2q66wliCNJGHUHVEzSwepztsp4r/ML"
     }
   ],
   "proof": {

@@ -1,5 +1,7 @@
 # ADR-009 — Selective disclosure via `ecdsa-sd-2023`
 
+> **2026-09-22 applicability:** Amended by [ADR-010](adr-010-standards-first-reliance.md). TS ECDSA-SD and Python semantic-only SD remain; mandatory custom scopeRef/edge pointers and the old blanket dependency restriction are superseded. Library-availability, standards-status and legal-compatibility explanations below are historical, not current verified claims. See [current SD requirements](../SELECTIVE_DISCLOSURE.md).
+
 Status: Accepted (Phase 6, v0.3.x)
 
 ## Context

@@ -1,8 +1,9 @@
-# Architecture Overview
+# Architecture overview
 
-VC4QI v0.2 implements a policy-resolved evidence graph for Quality
-Infrastructure credentials. Domain credentials link to authorizing, supporting,
-recognition, notification, and status-provider evidence through standard VC
-`evidence` entries.
+The standards-first target compiles verifier-owned obligations from protected native
+facts under accepted bindings and profiles. Document verification and reliance are
+separate results. The runtime remains on the legacy wire model during migration.
 
-See [../ARCHITECTURE.md](../ARCHITECTURE.md) for the current architecture.
+[Architecture](../ARCHITECTURE.md) is the current architecture source;
+[MODEL_SPEC](../MODEL_SPEC.md) defines semantics and
+[implementation status](../IMPLEMENTATION_STATUS.md) records actual capabilities.

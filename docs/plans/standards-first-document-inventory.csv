@@ -1,0 +1,81 @@
+path,reviewed_on,disposition,note
+.github/ISSUE_TEMPLATE/bug_report.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+.github/ISSUE_TEMPLATE/feature_request.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+.github/PULL_REQUEST_TEMPLATE.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+.github/workflows/ci.yml,2026-09-24,updated_I0,Workspace/pins/commands repaired; final coverage and release metadata remain I8.
+.github/workflows/release.yml,2026-09-24,updated_I0,Workspace/pins/commands repaired; final coverage and release metadata remain I8.
+AGENTS.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+CHANGELOG.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+CITATION.cff,2026-09-22,retained_historical,No new version/date/DOI; verify archive before associating it with new implementation.
+CLAUDE.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+CODE_OF_CONDUCT.md,2026-09-22,reviewed_retained,Compatible conduct/ADR process remains unchanged.
+CONTRIBUTING.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+Makefile,2026-09-24,updated_I0,Workspace/pins/commands repaired; final coverage and release metadata remain I8.
+README.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+RECONCILIATION_REPORT.md,2026-09-22,append_only,Preserve historical entries; append documentation evidence.
+RECONCILIATION_TASK.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+SECURITY.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+apps/demo-web/package.json,2026-09-22,reviewed_deferred_to_I0_I8,Executable configuration unchanged in documentation pass; pin/CI/workspace discrepancies recorded.
+docs/API_MIGRATION.md,2026-09-22,added,Documentation/provenance/design/traceability artifact.
+docs/ARCHITECTURE.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/ASSESSMENT.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/BINDING_MANIFEST.md,2026-09-22,added,Documentation/provenance/design/traceability artifact.
+docs/IMPLEMENTATION_STATUS.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/MODEL_SPEC.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/NON_GOALS.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/PAPER_FEEDBACK.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/POLICY_PROFILES.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/PRESENTATION_QUERY.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/PYTHON_PARITY.md,2026-09-25,updated_I1_contract,"Record target parity, contract/catalog tests and unchanged Python typing-debt boundary."
+docs/SCOPE_TERMS.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/SELECTIVE_DISCLOSURE.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/VOCABULARY.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/adr/ADR-006-evidence-graph-architecture.md,2026-09-22,historical_scope_clarified,Preserve decision text; add current applicability or supersession.
+docs/adrs/adr-000-adr-process.md,2026-09-22,reviewed_retained,Compatible conduct/ADR process remains unchanged.
+docs/adrs/adr-001-polyglot-architecture.md,2026-09-22,historical_scope_clarified,Preserve decision text; add current applicability or supersession.
+docs/adrs/adr-002-urdna2015-canonicalization.md,2026-09-22,historical_scope_clarified,Preserve decision text; add current applicability or supersession.
+docs/adrs/adr-003-bitstring-status-list.md,2026-09-22,historical_scope_clarified,Preserve decision text; add current applicability or supersession.
+docs/adrs/adr-004-trust-registry-as-vc.md,2026-09-22,historical_scope_clarified,Preserve decision text; add current applicability or supersession.
+docs/adrs/adr-005-vc-chain-design.md,2026-09-22,historical_scope_clarified,Preserve decision text; add current applicability or supersession.
+docs/adrs/adr-006-no-dlt.md,2026-09-22,historical_scope_clarified,Preserve decision text; add current applicability or supersession.
+docs/adrs/adr-007-m375a-worked-example.md,2026-09-22,historical_scope_clarified,Preserve decision text; add current applicability or supersession.
+docs/adrs/adr-008-three-relations-no-role.md,2026-09-22,historical_scope_clarified,Preserve decision text; add current applicability or supersession.
+docs/adrs/adr-009-selective-disclosure-ecdsa-sd-2023.md,2026-09-22,historical_scope_clarified,Preserve decision text; add current applicability or supersession.
+docs/adrs/adr-010-standards-first-reliance.md,2026-09-22,added,New accepted migration decision; runtime implementation pending.
+docs/architecture/01-overview.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/history/README.md,2026-09-22,added,Documentation/provenance/design/traceability artifact.
+docs/plans/standards-first-reconciliation.md,2026-09-22,added,Documentation/provenance/design/traceability artifact.
+docs/plans/standards-first-traceability.md,2026-09-22,added,Documentation/provenance/design/traceability artifact.
+docs/scenarios/scenario-catalogue.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/schemas/digital-calibration-certificate.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/schemas/reference-material-certificate.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/tutorials/01-issue-and-verify-dcc.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/tutorials/02-issue-and-verify-drmd.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+examples/gs/README.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+examples/rm/source/README.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+package.json,2026-09-22,reviewed_deferred_to_I0_I8,Executable configuration unchanged in documentation pass; pin/CI/workspace discrepancies recorded.
+packages/core-py/pyproject.toml,2026-09-22,reviewed_deferred_to_I0_I8,Executable configuration unchanged in documentation pass; pin/CI/workspace discrepancies recorded.
+packages/core-ts/package.json,2026-09-22,reviewed_deferred_to_I0_I8,Executable configuration unchanged in documentation pass; pin/CI/workspace discrepancies recorded.
+pnpm-workspace.yaml,2026-09-22,reviewed_deferred_to_I0_I8,Executable configuration unchanged in documentation pass; pin/CI/workspace discrepancies recorded.
+pyproject.toml,2026-09-24,updated_I0,Workspace/pins/commands repaired; final coverage and release metadata remain I8.
+testdata/examples/calibration-capability/README.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+testdata/examples/calibration-direct-accreditation/README.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+testdata/examples/gs-hair-dryer-external-test-lab-hitl/README.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+testdata/examples/gs-hair-dryer-hitl/README.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+testdata/examples/gs-scheme-authorization/README.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+testdata/examples/nmi-legal-mandate/README.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+testdata/examples/reference-material-recursive/README.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+testdata/examples/test-report-supported-dcc/README.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+tests/fixtures/keys/README.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+tests/scenarios/README.md,2026-09-22,updated,Reconcile target versus current legacy behavior.
+docs/plans/standards-first-i0-evidence.md,2026-09-24,added_I0,Observed implementation evidence and reproducibility; see I0 report for boundaries.
+docs/plans/standards-first-wire-consumers.csv,2026-09-24,added_I0,Observed implementation evidence and reproducibility; see I0 report for boundaries.
+docs/plans/standards-first-static-resources.csv,2026-09-24,added_I0,Observed implementation evidence and reproducibility; see I0 report for boundaries.
+uv.lock,2026-09-24,added_I0,Observed implementation evidence and reproducibility; see I0 report for boundaries.
+docs/plans/standards-first-i1-protection-audit.md,2026-09-24,added_I1_prerequisite,"Protection findings, bounded metadata fix and remaining signed-slice sequence."
+docs/plans/standards-first-i1-contract-evidence.md,2026-09-25,added_I1_contract,"Request/result, manifest and immutable catalog evidence with explicit remaining signed-slice work."
+docs/plans/standards-first-i1-safe-protection-evidence.md,2026-09-25,added_I1_protection,"Safe JSON-LD and isolated-loader prerequisite with published signature control and explicit authorization limits."
+bindings/experimental/rm-v1/README.md,2026-09-25,added_I1_contract,"Experimental binding status, ownership and installation boundary."
+bindings/experimental/rm-v1/test-vectors/README.md,2026-09-25,added_I1_contract,"Explicit empty signed-vector state and planned generated evidence."
+bindings/experimental/rm-v1/manifest.json,2026-09-25,added_I1_contract,"Twelve-category data-only manifest; explicitly incomplete and non-installable."
+bindings/experimental/rm-v1/manifest.schema.json,2026-09-25,added_I1_contract,"Closed top-level JSON Schema for the experimental manifest."

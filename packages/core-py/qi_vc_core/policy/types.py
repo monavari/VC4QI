@@ -8,6 +8,15 @@ from pydantic import BaseModel, ConfigDict, Field
 from ..evidence.types import AuthorizationBasis, EvidenceRelation
 
 CheckMode = Literal["required", "optional", "ignored", "unsupported"]
+AssessmentMethod = Literal["agent", "human", "hybrid"]
+
+
+class AssessmentPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    mode: Literal["required", "optional", "ignored"]
+    target_credential_types: list[str] = Field(alias="targetCredentialTypes")
+    allowed_methods: list[AssessmentMethod] = Field(alias="allowedMethods")
 
 
 class RequiredEvidence(BaseModel):
@@ -54,5 +63,6 @@ class PolicyProfile(BaseModel):
     targetCredentialTypes: list[str]
     requiredEvidence: list[RequiredEvidence]
     checks: PolicyChecks
+    assessment: AssessmentPolicy | None = None
     statusPolicy: StatusPolicy | None = None
     limits: PolicyLimits | None = None

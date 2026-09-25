@@ -3,6 +3,25 @@
 
 export type JsonObject = Record<string, unknown>;
 
+export interface EvidenceNode {
+  id: string;
+  credential: JsonObject;
+  issuer: string;
+  types: string[];
+}
+
+export interface EvidenceEdge {
+  from: string;
+  to: string;
+  relation: string;
+}
+
+export interface EvidenceGraph {
+  targetId: string;
+  nodes: Record<string, EvidenceNode>;
+  edges: EvidenceEdge[];
+}
+
 export type DocumentLoader = (url: string) => Promise<{
   contextUrl: string | null;
   document: JsonObject;
@@ -13,6 +32,7 @@ export type TraceStatus = 'PASS' | 'FAIL' | 'SKIP' | 'WARN';
 
 export type TraceLevel =
   | 'credential'
+  | 'assessment'
   | 'edge'
   | 'graph'
   | 'policy'
@@ -25,6 +45,9 @@ export interface TraceEntry {
   from?: string;
   to?: string;
   relation?: string;
+  assessmentMethod?: 'agent' | 'human' | 'hybrid';
+  assessorId?: string;
+  assessmentId?: string;
   status: TraceStatus;
   code: string;
   detail: string;
@@ -61,8 +84,32 @@ export declare const verifier: {
       skipProof?: boolean;
       fetchDocument?: (uri: string) => Promise<JsonObject>;
       resolveTrustRegistry?: () => Promise<JsonObject>;
+      /** Resolves the key that verifies the TrustRegistryCredential's proof (SEC-1). */
+      resolveKey?: (verificationMethod: string) => Promise<Uint8Array>;
+      /** Resolves @context URLs while canonicalizing for proof verification. */
+      documentLoader?: DocumentLoader;
       maxDepth?: number;
       maxEvidenceNodes?: number;
+      assessCredential?: (request: {
+        credential: JsonObject;
+        credentialId: string;
+        credentialTypes: string[];
+        policyId: string;
+        targetCredential?: JsonObject;
+        evidenceGraph?: EvidenceGraph;
+      }) => {
+        outcome: 'pass' | 'fail' | 'indeterminate';
+        method: 'agent' | 'human' | 'hybrid';
+        assessorId: string;
+        assessmentId?: string;
+        detail: string;
+      } | Promise<{
+        outcome: 'pass' | 'fail' | 'indeterminate';
+        method: 'agent' | 'human' | 'hybrid';
+        assessorId: string;
+        assessmentId?: string;
+        detail: string;
+      }>;
     },
   ) => Promise<VerificationTrace>;
 };

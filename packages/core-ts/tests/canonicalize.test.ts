@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 import { describe, it, expect } from 'vitest';
-import { canonicalize, computeHashBinding, verifyHashBinding } from '../src/canonicalize/index.js';
+import {
+  canonicalize, canonicalizeSafe, computeHashBinding, verifyHashBinding,
+} from '../src/canonicalize/index.js';
+import { buildDocumentLoader } from '../src/utils/document-loader.js';
 
 const simpleDoc = {
   '@context': { '@vocab': 'https://schema.org/' },
@@ -36,6 +39,18 @@ describe('canonicalize', () => {
     const emptyDoc = { '@context': 'https://www.w3.org/ns/credentials/v2' };
     const result = await canonicalize(emptyDoc);
     expect(result.trim()).toBe('');
+  });
+
+  it('safe mode rejects an undefined property that legacy mode drops', async () => {
+    const documentLoader = buildDocumentLoader({ strict: true });
+    const doc = {
+      '@context': ['https://www.w3.org/ns/credentials/v2'],
+      type: ['VerifiableCredential'],
+      issuer: 'https://vc4qi.example/issuer',
+      credentialSubject: { id: 'https://vc4qi.example/subject', undefinedDecisionFact: true },
+    };
+    await expect(canonicalizeSafe(doc, documentLoader)).rejects.toThrow();
+    await expect(canonicalize(doc, documentLoader)).resolves.toBeTypeOf('string');
   });
 });
 

@@ -19,9 +19,20 @@ def evaluate_edge(
     policy: PolicyProfile,
     *,
     resolve_trust_registry: Callable[[str, Any | None], JsonObject] | None = None,
+    # The trust registry is a signed credential; verifying its proof before
+    # reading it needs key resolution and context resolution (SEC-1).
+    resolve_key: Callable[[str], bytes] | None = None,
+    document_loader: Callable[[str], dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     if edge.relation == "authorizedBy":
-        return evaluate_authorized_by(edge, graph, policy, resolve_trust_registry=resolve_trust_registry)
+        return evaluate_authorized_by(
+            edge,
+            graph,
+            policy,
+            resolve_trust_registry=resolve_trust_registry,
+            resolve_key=resolve_key,
+            document_loader=document_loader,
+        )
     if edge.relation == "derivedFrom":
         return evaluate_derived_from(edge, graph, policy)
     if edge.relation == "supportedBy":

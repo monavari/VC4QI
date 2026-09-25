@@ -34,7 +34,9 @@ const STATIC_DOCS: Record<string, JsonObject> = {
 
 // Offline loader: serves bundled contexts + the lab key/controller; refuses
 // anything else (mirrors core's strict loader, but browser-safe).
-async function sdLoader(url: string) {
+// Exported because trust-registry proof verification needs the same contexts
+// (notably qi-core, which defines the registry entry terms).
+export async function sdLoader(url: string) {
   const doc = STATIC_DOCS[url];
   if (doc) return { contextUrl: null, document: doc, documentUrl: url };
   throw new Error(`SD loader: refusing to fetch unknown URL: ${url}`);

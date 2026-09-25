@@ -11,7 +11,7 @@ license: Apache-2.0
 repository-code: "https://github.com/monavari/VC4QI"
 version: 0.3.0
 date-released: 2026-06-08
-doi: "TODO(human): Zenodo DOI assigned at release time"
+doi: "10.5281/zenodo.20612364"
 preferred-citation:
   type: article
   title: >-

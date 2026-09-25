@@ -3,7 +3,33 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadPolicyProfile } from '../src/policy/index.js';
 import { verifyCredentialGraph, type VerifyGraphOptions } from '../src/verifier/index.js';
+import { buildDocumentLoader } from '../src/utils/document-loader.js';
 import type { JsonObject, VerificationTrace } from '../src/types.js';
+
+/**
+ * Public half of the TEST ONLY key that signs the trust-registry fixtures
+ * (tests/fixtures/keys/test-ed25519-key.json; see
+ * packages/core-ts/scripts/sign-trust-registries.ts).
+ *
+ * The registry is a signed credential and its proof is verified before any
+ * entry is read (SEC-1), so fixtures must resolve a key even when `skipProof`
+ * suppresses proof checks on the graph's own credentials.
+ */
+export const TEST_REGISTRY_PUBLIC_KEY = Uint8Array.from(
+  Buffer.from('2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12', 'hex'),
+);
+
+export const testDocumentLoader = buildDocumentLoader({});
+
+/**
+ * The trust-registry options every fixture-driven graph verification needs.
+ * Spread these into a direct `verifyCredentialGraph` call so it exercises the
+ * same registry verification path as `verifyFixture`.
+ */
+export const registryVerificationOptions = {
+  resolveKey: async () => TEST_REGISTRY_PUBLIC_KEY,
+  documentLoader: testDocumentLoader,
+};
 
 const ROOT = join(process.cwd(), '..', '..');
 const EXAMPLES = join(ROOT, 'testdata', 'examples');
@@ -45,6 +71,8 @@ export async function verifyFixture(
       return document;
     },
     resolveTrustRegistry: async () => fixture.trustRegistry,
+    resolveKey: async () => TEST_REGISTRY_PUBLIC_KEY,
+    documentLoader: testDocumentLoader,
     ...options,
   });
 }
