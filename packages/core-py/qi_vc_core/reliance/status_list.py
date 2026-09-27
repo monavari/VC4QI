@@ -136,6 +136,7 @@ def evaluate_status(
     list_protected: SemanticState,
     policy: StatusPolicy,
     evaluation_time: str,
+    activity_time: str | None = None,
 ) -> StatusOutcome:
     """Unavailable, unauthorized or stale status is not_established.
 
@@ -199,6 +200,14 @@ def evaluate_status(
         return no(
             f"Status list is older than the profile's {policy.max_age_seconds} s "
             "freshness limit."
+        )
+    # A list observed at T says nothing about an earlier activity (handover 7.3, P13).
+    activity = _time(activity_time or evaluation_time)
+    if activity is None or activity < issued:
+        return no(
+            f"Status list observed at {status_list.get('validFrom')} cannot establish "
+            f"status at the earlier activity time {activity_time}; historical status "
+            "is unavailable."
         )
     index = entry["statusListIndex"]
     if not re.fullmatch(r"0|[1-9][0-9]*", index):

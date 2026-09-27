@@ -204,6 +204,42 @@ def _anchor(
     )
 
 
+def _in_force_at_activity(d: Doc, grants: list[tuple[str, Doc]]) -> BasisResult:
+    """The grant must have been in force when D's own activity happened (P14)."""
+    basis_id = "scope-in-force-at-activity"
+    at = _subject(d).get("activityTime")
+    activity = _time(at)
+    if activity is None:
+        return _unknown(
+            basis_id,
+            "The certificate states no activity time.",
+            ("/credentialSubject/activityTime",),
+        )
+    for name, grant in grants:
+        start, end = _time(grant.get("validFrom")), _time(grant.get("validUntil"))
+        if start is None or activity < start:
+            return _unknown(
+                basis_id,
+                f"{name} is valid only from {grant.get('validFrom')}, after the "
+                f"activity at {at}; a later scope cannot authorize it.",
+                ("/credentialSubject/activityTime", "/validFrom"),
+            )
+        if end is not None and activity > end:
+            return _unknown(
+                basis_id,
+                f"{name} expired at {grant.get('validUntil')}, before the activity at "
+                f"{at}.",
+                ("/credentialSubject/activityTime", "/validUntil"),
+            )
+    names = " and ".join(g[0] for g in grants)
+    verb = "were" if len(grants) > 1 else "was"
+    return _ok(
+        basis_id,
+        f"{names} {verb} in force at the activity time {at}.",
+        ("/credentialSubject/activityTime",),
+    )
+
+
 def _route(
     route_id: str,
     bases: list[BasisResult],
@@ -306,6 +342,7 @@ def _operational_scope_route(
         )
     )
     bases.append(_anchor("trust-anchor", a, "accredit-rm-producers", profile))
+    bases.append(_in_force_at_activity(d, [("O", o), ("A", a)]))
     return _route("operational-scope", bases, chain, o_node.uri)
 
 
@@ -338,6 +375,7 @@ def _direct_accreditation_route(
         )
     )
     bases.append(_anchor("trust-anchor", a, "accredit-rm-producers", profile))
+    bases.append(_in_force_at_activity(d, [("A", a)]))
     return _route("direct-accreditation", bases, chain, a_node.uri)
 
 
