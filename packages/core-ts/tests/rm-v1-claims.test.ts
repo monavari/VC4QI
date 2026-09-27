@@ -262,3 +262,31 @@ describe('I4 complete records, identifiers and units (S09-S17, S22-S24)', () => 
     expect(result.decision).toBe('not_established');
   });
 });
+
+describe('I4 time: historical questions and scope in force at the activity (P13, P14)', () => {
+  it('P13: a historical question cannot be answered with only current status', async () => {
+    const historical = await run({}, request({ activityTime: '2026-03-01T00:00:00Z' }));
+    const status = historical.trace.find(t => t.nodeUse.startsWith(`${URI.D} |`) && t.predicate === 'credential-status');
+    expect(status).toMatchObject({ state: 'not_established', reason: expect.stringMatching(/historical status is unavailable/) });
+    expect(historical.decision).toBe('not_established');
+    // The current question over the same bytes is still answered.
+    expect((await run()).decision).toBe('accept');
+  });
+
+  it('P14: a scope issued after the certification activity cannot authorize it, though it covers it today', async () => {
+    const O = json(URI.O);
+    O.validFrom = '2026-01-25T00:00:00Z'; // D's activity is 2026-01-20
+    const result = await run(await reissue({ [URI.O]: O }));
+    expect(trace(result, 'route:operational-scope:bounded-projection')).toMatchObject({ state: 'established' });
+    expect(trace(result, 'route:operational-scope:scope-in-force-at-activity'))
+      .toMatchObject({ state: 'not_established', reason: expect.stringMatching(/a later scope cannot authorize it/) });
+    expect(result.authorization[0]?.state).toBe('not_established');
+    expect(result.decision).toBe('not_established');
+  });
+
+  it('P14: the baseline grants were in force when the certificate was made', async () => {
+    const result = await run();
+    expect(trace(result, 'route:operational-scope:scope-in-force-at-activity'))
+      .toMatchObject({ state: 'established', reason: expect.stringMatching(/O and A were in force at the activity time 2026-01-20/) });
+  });
+});

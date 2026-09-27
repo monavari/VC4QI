@@ -1356,3 +1356,21 @@ implemented); P13 and P14 remain for I4. Ledger command 103 TS and 107 Python te
 exit 0. Full results: TS 394 passed plus the 9 network-only legacy failures; Python 353
 passed, 1 skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios, schemas,
 generator checks and poster build pass. See `docs/plans/standards-first-i4-evidence.md`.
+
+## Standards-first I4 step 2: time rules and cross-language parity — 27 September 2026
+
+Status evaluation now takes the request's activity time: a list observed after the
+activity cannot establish status at it, so a historical question is `not_established`
+rather than answered with current status (P13). Each authority route gains
+`scope-in-force-at-activity`: the certificate's own activity time must fall within
+every grant's validity, so scope evidence issued later cannot authorize an earlier
+activity even when it covers the claim today (P14). A generated, committed parity vector
+(eight scenarios over the signed fixtures, with decisions, witnesses, conformity
+arithmetic and every gate 4–6 trace reason) must be reproduced exactly by both the
+TypeScript and Python evaluators; a tampered expectation is detected. Both languages.
+
+Ledger: P13 and P14 `passing`; I4 exit met (61 passing, 2 excluded, 20 not implemented).
+Ledger command 107 TS and 118 Python tests, exit 0. Full results: TS 398 passed plus
+the 9 network-only legacy failures; Python 364 passed, 1 skip; Ruff 204 and mypy 198
+unchanged; build, lint, scenarios, schemas, resource/fixture/parity `--check` modes and
+the poster build pass. See `docs/plans/standards-first-i4-evidence.md`.

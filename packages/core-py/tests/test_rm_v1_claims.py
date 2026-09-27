@@ -422,3 +422,40 @@ def test_unconfigured_requirement_is_not_established() -> None:
         "executed",
     )
     assert result.decision == "not_established"
+
+
+# --- time: historical questions and scope in force at the activity (P13, P14) -----
+
+
+def test_p13_historical_question_needs_historical_status() -> None:
+    historical = run(req=request(activity_time="2026-03-01T00:00:00Z"))
+    status = next(
+        t
+        for t in historical.trace
+        if t.node_use.startswith(URI["D"] + " |") and t.predicate == "credential-status"
+    )
+    assert status.state == "not_established"
+    assert "historical status is unavailable" in status.reason
+    assert historical.decision == "not_established"
+    assert run().decision == "accept"
+
+
+def test_p14_later_scope_cannot_authorize_an_earlier_activity() -> None:
+    o = doc(URI["O"])
+    o["validFrom"] = "2026-01-25T00:00:00Z"
+    result = run(reissue({URI["O"]: o}))
+    assert (
+        entry(result, "route:operational-scope:bounded-projection").state
+        == "established"
+    )
+    in_force = entry(result, "route:operational-scope:scope-in-force-at-activity")
+    assert in_force.state == "not_established"
+    assert "a later scope cannot authorize it" in in_force.reason
+    assert result.authorization[0].state == "not_established"
+    assert result.decision == "not_established"
+
+
+def test_p14_baseline_grants_were_in_force() -> None:
+    in_force = entry(run(), "route:operational-scope:scope-in-force-at-activity")
+    assert in_force.state == "established"
+    assert "O and A were in force at the activity time 2026-01-20" in in_force.reason

@@ -796,7 +796,12 @@ def evaluate_rm_slice(
                 status_list = {}
                 list_state = checked.protection.state
         return evaluate_status(
-            document, status_list, list_state, policy, request.evaluation_time
+            document,
+            status_list,
+            list_state,
+            policy,
+            request.evaluation_time,
+            request.activity_time,
         )
 
     # Suspension entries are not a gate-3 property of the credential: they are read

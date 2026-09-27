@@ -339,7 +339,8 @@ run with real protection and no stubs for mechanisms claimed as implemented.
 Progress 2026-09-27: step 1 (claim mapping, per-route coverage, profile-governed
 succession, conformity, first acceptance) passes V01, P01, S01–S17, S20 and S22–S24,
 plus the 197 authorization-only, 195, 500 and 50 boundary controls; see
-[I4 evidence](standards-first-i4-evidence.md). Open: P13, P14.
+[I4 evidence](standards-first-i4-evidence.md). Step 2 adds the current-reliance time rules
+(P13, P14) and a committed cross-language parity vector. I4 exit met.
 
 ### I5 — migrate artifacts and switch the default API
 

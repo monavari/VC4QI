@@ -5,6 +5,9 @@
 - Add claim mapping, per-route claim scope coverage (one complete record, no splicing,
   no fallback to a parent grant), profile-governed method succession and a separate
   conformity step with exact arithmetic (I4). The signed chain for x = 178 is accepted.
+  Historical questions are refused rather than answered with current status, scope
+  issued after an activity cannot authorize it, and a committed parity vector checks
+  that TypeScript and Python agree exactly.
 
 - Add signed RM v1 fixtures, verification-method authorization, Bitstring status lists
   and a gate-numbered reliance trace (I1/I2), plus the operational-scope authority route,
