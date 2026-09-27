@@ -125,7 +125,7 @@ export async function evaluateRmSlice(
         listState = listResult.protection.state;
       }
     }
-    return evaluateStatus(document, list, listState, policy, request.evaluationTime);
+    return evaluateStatus(document, list, listState, policy, request.evaluationTime, request.activityTime);
   };
   // Suspension entries are not a gate-3 property of the credential: they are read
   // only by the profile's global restriction (gate 5), which applies to every route.

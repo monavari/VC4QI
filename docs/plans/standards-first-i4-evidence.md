@@ -1,10 +1,11 @@
 # I4 evidence: claim scope coverage, conformity and first acceptance
 
-**27 September 2026. I4 step 1 done in both languages: the new evaluator maps the
+**27 September 2026. I4 complete in both languages: the new evaluator maps the
 selected result (gate 4), covers it with one complete scope record on each route
-(gate 5) and checks conformity separately (gate 6). The signed chain for x = 178 is
-accepted.** The legacy evaluator is still the default API (switched in I5). Historical
-time rules (P13, P14) are still open.
+(gate 5), checks conformity separately (gate 6) and applies the current-reliance time
+rules. The signed chain for x = 178 is accepted, and a committed parity vector shows
+that TypeScript and Python agree exactly.** The legacy evaluator is still the default
+API (switched in I5).
 
 ## What was added
 
@@ -48,7 +49,27 @@ time rules (P13, P14) are still open.
 Earlier tests that asserted "never accept" were updated to the new behaviour: P01
 accept, C03 and C07 accept, P15 accept/reject/accept, and the clean status chain accept.
 
-## Commands and results
+## Step 2: time rules and cross-language parity
+
+| Part | Location | Behaviour |
+| --- | --- | --- |
+| Historical question (P13) | `status-list.ts`, `status_list.py` | A status list observed at T says nothing about an earlier activity. When the request's `activityTime` precedes the list's `validFrom`, status is `not_established` ("historical status is unavailable"); current status is never substituted (handover §7.3) |
+| Scope in force at the activity (P14) | `rm-v1-authority.ts`, `rm_v1_authority.py` | Each route adds `scope-in-force-at-activity`: the certificate's own `activityTime` must fall within the validity of every grant on the route (O and A; A for direct accreditation). Scope evidence issued after the activity cannot authorize it, even if it covers the claim today |
+| Parity vector | `scripts/generate-rm-v1-parity.ts`, `tests/rm-v1-parity.ts`, `test-vectors/parity/i4-outcomes.json`, `test_rm_v1_parity.py` | Eight scenarios over the signed fixtures (178, 197, 520 with the guarded rule; 197 authorization-only and under simple acceptance; an unknown requirement; a historical question; the two-route profile). Each records the decision, claim states and witnesses, support, conformity reasons with arithmetic, and every gate 4–6 trace entry with its reason. Both languages must reproduce the file exactly; a tampered expectation is detected |
+
+| Case | Input | Result |
+| --- | --- | --- |
+| P13 | `activityTime` 2026-03-01, lists observed 2026-09-01 | Status `not_established`; decision `not_established`. The current question is accepted |
+| P14 | O valid only from 2026-01-25; D's activity 2026-01-20 | Projection still established; `scope-in-force-at-activity` `not_established`; claim and decision `not_established` |
+| Baseline | D178 | "O and A were in force at the activity time 2026-01-20" |
+
+Step 2 results: ledger command 107 TS and 118 Python tests, exit 0; TS 398 passed plus
+the 9 network-only legacy failures; Python 364 passed, 1 skipped; Ruff 204 and mypy 198
+unchanged; build, lint, scenarios, schemas, the resource, fixture and parity `--check`
+modes, and the poster build pass. Ledger: P13 and P14 `passing`; 61 passing, 2
+excluded, 20 not implemented.
+
+## Commands and results (step 1)
 
 ```bash
 pnpm -C packages/core-ts exec vitest run tests/rm-v1-claims.test.ts tests/rm-v1-authority.test.ts tests/rm-v1-slice.test.ts   # 103 passed
@@ -66,8 +87,8 @@ I5). Totals: 59 passing, 2 excluded, 22 not implemented.
 
 ## Limits
 
-- **P13, P14 (time):** a historical reliance question and an activity that predates its
-  scope evidence are not yet distinguished from a current question. Step 2.
+- **Time:** the baseline answers current-reliance questions. A historical question is
+  refused rather than answered; authenticated historical status is not implemented.
 - **Poster page:** the page still runs the repository's artifact verifier plus a labelled
   preview of gates 4–6. The real evaluator uses Node zlib for status lists; moving it
   into the browser bundle is a separate task.

@@ -129,6 +129,29 @@ function anchor(id: string, doc: Doc, purpose: string, profile: RelianceProfile)
     : unknown(id, `${String(doc.issuer)} is an anchor, but not for ${purpose}.`, ['/issuer']);
 }
 
+/**
+ * The grant must have been in force when D's own activity happened (P14): scope
+ * evidence issued after the activity cannot authorize it, even if it covers it today.
+ */
+function inForceAtActivity(D: Doc, grants: readonly [string, Doc][]): BasisResult {
+  const id = 'scope-in-force-at-activity';
+  const at = subjectOf(D).activityTime;
+  const activity = Date.parse(String(at));
+  if (typeof at !== 'string' || !Number.isFinite(activity)) {
+    return unknown(id, 'The certificate states no activity time.', ['/credentialSubject/activityTime']);
+  }
+  for (const [name, grant] of grants) {
+    const from = Date.parse(String(grant.validFrom)), until = Date.parse(String(grant.validUntil));
+    if (!Number.isFinite(from) || activity < from) {
+      return unknown(id, `${name} is valid only from ${String(grant.validFrom)}, after the activity at ${at}; a later scope cannot authorize it.`, ['/credentialSubject/activityTime', '/validFrom']);
+    }
+    if (Number.isFinite(until) && activity > until) {
+      return unknown(id, `${name} expired at ${String(grant.validUntil)}, before the activity at ${at}.`, ['/credentialSubject/activityTime', '/validUntil']);
+    }
+  }
+  return ok(id, `${grants.map(g => g[0]).join(' and ')} ${grants.length > 1 ? 'were' : 'was'} in force at the activity time ${at}.`, ['/credentialSubject/activityTime']);
+}
+
 function route(id: string, bases: BasisResult[], chain: string[], scope?: string): RouteResult {
   return { id, state: semanticAnd(bases.map(b => b.state)), execution: 'executed', bases, chain, ...(scope ? { scope } : {}) };
 }
@@ -162,6 +185,7 @@ function operationalScopeRoute(target: NodeFacts & { document: Doc }, lookup: No
   const projection = containedIn(list(subjectOf(O).scope).filter(isObject), list(subjectOf(A).scope).filter(isObject));
   bases.push({ id: 'bounded-projection', state: projection.state, reason: projection.reason, sources: ['/credentialSubject/scope'] });
   bases.push(anchor('trust-anchor', A, 'accredit-rm-producers', profile));
+  bases.push(inForceAtActivity(D, [['O', O], ['A', A]]));
   return route('operational-scope', bases, chain, ref.node.uri);
 }
 
@@ -180,6 +204,7 @@ function directAccreditationRoute(target: NodeFacts & { document: Doc }, lookup:
     ? ok('activity-permission', 'A permits issuing RM certificates.', ['/credentialSubject/permittedActivity'])
     : no('activity-permission', 'A does not permit issuing RM certificates.', ['/credentialSubject/permittedActivity']));
   bases.push(anchor('trust-anchor', A, 'accredit-rm-producers', profile));
+  bases.push(inForceAtActivity(D, [['A', A]]));
   return route('direct-accreditation', bases, chain, ref.node.uri);
 }
 
