@@ -53,6 +53,8 @@ class RouteResult:
     execution: Literal["executed", "not_run"]
     bases: tuple[BasisResult, ...]
     chain: tuple[str, ...]
+    # The credential whose scope records govern claims on this route (O or A).
+    scope: str | None = None
 
 
 @dataclass(frozen=True)
@@ -202,13 +204,19 @@ def _anchor(
     )
 
 
-def _route(route_id: str, bases: list[BasisResult], chain: list[str]) -> RouteResult:
+def _route(
+    route_id: str,
+    bases: list[BasisResult],
+    chain: list[str],
+    scope: str | None = None,
+) -> RouteResult:
     return RouteResult(
         route_id,
         semantic_and(tuple(b.state for b in bases)),
         "executed",
         tuple(bases),
         tuple(chain),
+        scope,
     )
 
 
@@ -298,7 +306,7 @@ def _operational_scope_route(
         )
     )
     bases.append(_anchor("trust-anchor", a, "accredit-rm-producers", profile))
-    return _route("operational-scope", bases, chain)
+    return _route("operational-scope", bases, chain, o_node.uri)
 
 
 def _direct_accreditation_route(
@@ -330,7 +338,7 @@ def _direct_accreditation_route(
         )
     )
     bases.append(_anchor("trust-anchor", a, "accredit-rm-producers", profile))
-    return _route("direct-accreditation", bases, chain)
+    return _route("direct-accreditation", bases, chain, a_node.uri)
 
 
 CERTIFICATE_ROUTES: dict[
@@ -439,6 +447,33 @@ def compose_authority(
     else:
         reason = "No complete route is established."
     return AuthorityResult(state, reason, restrictions, routes)
+
+
+def claim_authority(
+    authority: AuthorityResult,
+    coverage: Callable[[RouteResult], BasisResult | None],
+) -> AuthorityResult:
+    """Per-claim authorization: each route also needs its scope to cover the claim."""
+    evaluated: list[RouteResult] = []
+    for r in authority.routes:
+        if r.execution != "executed":
+            continue
+        covered = coverage(r) if r.scope is not None else None
+        basis = covered or _unknown(
+            "claim-coverage", "The route did not reach a scope credential."
+        )
+        evaluated.append(
+            RouteResult(
+                r.id,
+                semantic_and((r.state, basis.state)),
+                r.execution,
+                (*r.bases, basis),
+                r.chain,
+                r.scope,
+            )
+        )
+    skipped = tuple(r.id for r in authority.routes if r.execution == "not_run")
+    return compose_authority(authority.restrictions, tuple(evaluated), skipped)
 
 
 def certificate_authority(
