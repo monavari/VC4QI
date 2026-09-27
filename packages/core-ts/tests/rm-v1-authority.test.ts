@@ -236,8 +236,9 @@ describe('I3 signed route composition under the two-route profile (C01-C07)', ()
     expect(trace(result, 'route:operational-scope')).toMatchObject({ state: 'contradicted' });
     expect(trace(result, 'route:direct-accreditation')).toMatchObject({ state: 'established' });
     expect(trace(result, 'authority')).toMatchObject({ state: 'established' });
-    expect(result.authorization[0]?.routeWitnessIds).toEqual(['route:direct-accreditation', URI.D, URI.A2]);
-    expect(result.decision).toBe('not_established'); // claim scope (I4) is still pending, never reject
+    expect(result.authorization[0]?.routeWitnessIds)
+      .toEqual(['route:direct-accreditation', URI.D, URI.A2, `record:${URI.A2}#scope-as`]);
+    expect(result.decision).toBe('accept'); // the contradicted alternative does not reject
   });
 
   it('C04: every permitted route contradicted rejects', async () => {
@@ -287,7 +288,7 @@ describe('I3 signed route composition under the two-route profile (C01-C07)', ()
     expect(trace(result, 'route:direct-accreditation')).toMatchObject({ state: 'contradicted' });
     expect(trace(result, 'restriction:accreditation-suspension')).toMatchObject({ state: 'established' });
     expect(trace(result, 'authority')).toMatchObject({ state: 'established' });
-    expect(result.decision).toBe('not_established'); // A2's revocation does not reject the request
+    expect(result.decision).toBe('accept'); // A2's revocation does not reject the request
   });
 
   it('a suspension status that cannot be read never lets the restriction hold', async () => {

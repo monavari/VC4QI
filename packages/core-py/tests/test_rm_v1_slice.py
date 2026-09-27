@@ -145,7 +145,9 @@ def request(**overrides: Any) -> RelianceRequest:
         "activity_time": NOW,
         "supplied_evidence": (URI["A"], URI["O"], URI["S"], URI["H"]),
         "resolver_limits": ResolverLimits(64, 4, 5_000_000),
-        "conformity": ConformityRequest("as-plus-u-le-200", "simple-acceptance"),
+        "conformity": ConformityRequest(
+            "as-mass-fraction-max-200-mg-per-kg", "guarded-acceptance-expanded-u"
+        ),
     }
     values.update(overrides)
     return create_reliance_request(RelianceRequest(**values))
@@ -194,12 +196,11 @@ def test_extracts_protected_facts_with_source_pointers() -> None:
     assert value["data"]["quantity"]["value"] == "178"
 
 
-def test_authentic_artifacts_alone_do_not_establish_reliance() -> None:
+def test_p01_signed_chain_for_178_is_relied_upon() -> None:
     result = evaluate_rm_slice(request(), catalog_with(), MANIFEST, PROFILE).result
     assert all(r.state == "established" for r in result.artifact_verification)
-    # I3: route and support are established; the claim waits for I4 scope coverage.
     assert (result.authorization[0].state, result.authorization[0].execution) == (
-        "not_established",
+        "established",
         "executed",
     )
     assert result.authorization[0].route_witness_ids == (
@@ -207,12 +208,14 @@ def test_authentic_artifacts_alone_do_not_establish_reliance() -> None:
         URI["D"],
         URI["O"],
         URI["A"],
+        f"record:{URI['O']}#scope-as-m1",
     )
     assert result.support[0].state == "established"
     assert result.support[0].witness_ids == (URI["D"], URI["S"], URI["H"])
-    assert result.support[0].execution == "executed"
-    assert result.conformity.execution == "not_run"
-    assert result.decision == "not_established"
+    assert result.conformity.execution == "executed"
+    assert result.conformity.state == "established"
+    assert "178 + 5 = 183 ≤ 200 mg/kg" in result.conformity.reasons[0]
+    assert result.decision == "accept"
 
 
 def test_changed_value_without_resigning_is_rejected() -> None:
@@ -411,7 +414,7 @@ def test_gate_numbered_trace_and_resources() -> None:
     assert (claim.gate, claim.execution) == (5, "executed")
     assert by["route:operational-scope:bounded-projection"].state == "established"
     assert by["support:same-batch"].state == "established"
-    assert by["conformity:as-plus-u-le-200"].gate == 6
+    assert by["conformity:as-mass-fraction-max-200-mg-per-kg"].gate == 6
     assert sorted(r.uri for r in result.resources if r.kind == "artifact") == sorted(
         URI[k] for k in ("A", "D", "H", "O", "S")
     )
@@ -628,7 +631,7 @@ def test_p15_evaluations_with_different_times_are_independent() -> None:
         ).result.decision
         for t in (NOW, "2029-01-01T00:00:00Z", NOW)
     ]
-    assert decisions == ["not_established", "reject", "not_established"]
+    assert decisions == ["accept", "reject", "accept"]
 
 
 def test_p07_placeholder_proof_never_verifies() -> None:

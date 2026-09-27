@@ -120,6 +120,19 @@ per-role checks, inert unused cycles and provenance-only credentials. I3 is comp
 conformity are I4, so no request is accepted yet. See the
 [I3 evidence](plans/standards-first-i3-evidence.md).
 
+## I4 progress, 27 September 2026
+
+The new evaluator now decides requests. Gate 4 maps the selected result into governed
+coordinates and exact kg/kg quantities. Gate 5 requires one complete record of each
+route's own scope credential to cover the claim, with no splicing and no fallback to a
+parent grant. Method succession (M1 → M2) is a verifier-profile choice, and without one
+the claim is not established. Gate 6 checks conformity separately, with exact
+arithmetic. The signed chain for x = 178 is accepted with witnesses; 197 is rejected
+for the decision rule and 520 for scope. Fifty-nine cases are `passing`, 2
+`excluded_unsupported` and 22 `not_implemented`; historical time rules (P13, P14) are
+the rest of I4. The legacy API is still the default until I5. See the
+[I4 evidence](plans/standards-first-i4-evidence.md).
+
 ## Migration and historical claims
 
 Work branch: `refactor/standards-first-reconciliation`, retaining merged registry,

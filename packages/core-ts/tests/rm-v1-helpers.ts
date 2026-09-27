@@ -124,7 +124,7 @@ export function request(overrides: Partial<RelianceRequestInput> = {}) {
     activityTime: NOW,
     suppliedEvidence: [URI.A, URI.O, URI.S, URI.H],
     resolverLimits: { maxResources: 64, maxDepth: 4, maxBytes: 5_000_000 },
-    conformity: { requirementId: 'as-plus-u-le-200', decisionRuleId: 'simple-acceptance' },
+    conformity: { requirementId: 'as-mass-fraction-max-200-mg-per-kg', decisionRuleId: 'guarded-acceptance-expanded-u' },
     ...overrides,
   });
 }

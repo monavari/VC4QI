@@ -336,6 +336,11 @@ no record splicing and no RM uncertainty ceiling. Compare states, selected
 records/routes and normalized arithmetic across languages. The paper witness must
 run with real protection and no stubs for mechanisms claimed as implemented.
 
+Progress 2026-09-27: step 1 (claim mapping, per-route coverage, profile-governed
+succession, conformity, first acceptance) passes V01, P01, S01–S17, S20 and S22–S24,
+plus the 197 authorization-only, 195, 500 and 50 boundary controls; see
+[I4 evidence](standards-first-i4-evidence.md). Open: P13, P14.
+
 ### I5 — migrate artifacts and switch the default API
 
 Regenerate contexts, schemas, policies and signed fixtures from generators. Move
