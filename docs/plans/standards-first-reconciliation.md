@@ -1,16 +1,20 @@
 # Standards-first reconciliation: documentation and implementation plan
 
-Prepared 21 September 2026; documentation validated 23 September; I0 completed 24 September.
-**Status: D0–D4 and I0 complete; I1 implemented in both languages (two
-network-dependent checks open); I2 next.** The 25 September milestone audit added the
-phase assignments and requirements marked "Audit" below.
+Prepared 21 September 2026. **Status, 28 September: D0–D4 and I0–I4 complete; I5 steps
+1–3 complete (legacy profile, shared pipeline, all base use cases migrated); the
+default-API switch (I5 step 4) is next, then I6–I8.** Current capabilities are in
+[status](../status.md); commands and results for each phase are in the
+[implementation evidence](evidence.md) and the append-only
+[report](../../RECONCILIATION_REPORT.md).
 
-[I0 evidence](standards-first-i0-evidence.md) records the repaired setup, regression
-results, remaining lint debt and inventories. The
-[I1 contract evidence](standards-first-i1-contract-evidence.md) records the immutable
-request/result API, incomplete manifest and exact-byte catalog; the
-[signed-slice evidence](standards-first-i1-signed-slice-evidence.md) records the signed
-RM slice, key authorization, Python parity and the I1 exit gate.
+This plan is the single entry point for the migration; it absorbed the former
+`RECONCILIATION_TASK.md`. The [requirements handover](standards-first-handover-2026-09-21.txt)
+resolves ambiguity, and later user instructions take precedence. The governing thesis:
+credentials represent institutional authority and evidence without creating it;
+verifier-selected profiles decide reliance; accepted semantics and supported procedures
+decide scope. The documentation was consolidated on 28 September into the pages listed
+in the [documentation index](../index.md); file names in the D0–D4 tables below refer to
+the earlier layout.
 
 ## Recommendation and scope
 
@@ -306,7 +310,7 @@ batch is contradicted; missing study is not established. Incomplete route search
 cannot claim every route was disproved. Keep GS independent laboratory authority.
 
 Progress 2026-09-25: step 1 (operational-scope route, required support, composition,
-V08 declared unsupported) is done; see [I3 evidence](standards-first-i3-evidence.md).
+V08 declared unsupported) is done; see [I3 evidence](evidence.md#i3-authority-routes-and-support).
 Step 2 (typed references, signed second route A2, `accreditation-suspension`
 restriction, diagnostic unused alternatives) passes C01–C07. Step 3 pins C12–C15 and
 V06 on signed data. I3 exit met (V08 declared unsupported by owner decision).
@@ -339,7 +343,7 @@ run with real protection and no stubs for mechanisms claimed as implemented.
 Progress 2026-09-27: step 1 (claim mapping, per-route coverage, profile-governed
 succession, conformity, first acceptance) passes V01, P01, S01–S17, S20 and S22–S24,
 plus the 197 authorization-only, 195, 500 and 50 boundary controls; see
-[I4 evidence](standards-first-i4-evidence.md). Step 2 adds the current-reliance time rules
+[I4 evidence](evidence.md#i4-claim-scope-conformity-and-first-acceptance). Step 2 adds the current-reliance time rules
 (P13, P14) and a committed cross-language parity vector. I4 exit met.
 
 ### I5 — migrate artifacts and switch the default API
@@ -356,7 +360,7 @@ restore green tests. Draft a coherent next pre-1.0 version such as 0.4.0 using
 repository conventions; final numbering/metadata follows the migration evidence.
 
 Progress 2026-09-28: step 1 (explicit, labelled legacy profile; no fallback) passes V02
-and V03; see [I5 evidence](standards-first-i5-evidence.md). Step 2 shares the gate 0–3
+and V03; see [I5 evidence](evidence.md#i5-legacy-isolation-and-migration). Step 2 shares the gate 0–3
 pipeline across bindings and migrates calibration-direct-accreditation to a signed
 calibration binding (S18, S19, S21 passing). Step 3a migrates calibration-capability
 (operational-scope route, bounded projection with no widening) and nmi-legal-mandate
@@ -438,15 +442,7 @@ within the handover's authorization. Actual real-world governance inputs that th
 handover does not supply require a localized `TODO(human)` and report entry; they
 do not block the fictional RM baseline or independent work.
 
-D0–D4 and I0 are complete, with validation and remaining baseline debt recorded in the
-report. I1's contract, catalog, pinned resources, key authorization and signed slice are
-implemented in both languages; the published-context comparison and an independent
-transformation vector remain open. I2, the protected graph compiler and seven-gate
-evaluator, is next.
-
-The user requested Astra for hard semantic/design review, Sol for implementation
-and Luna at max reasoning for bounded documentation/consistency tasks. These three
-delegated documentation runs were attempted on 22 September but all failed before
-work with a workspace-credit error. The main agent completed the documentation
-locally. During I0, Astra completed bounded semantic reviews; Sol/Luna remained
-unavailable. See the I0 evidence for the exact review boundary.
+The two I1 checks that need network access (comparing the vendored VCDM 2.0 context
+with W3C's published bytes, and an independent transformation vector) remain open; see
+[status](../status.md#open-issues). Earlier model-specific staffing arrangements are
+superseded; the I0 evidence records which reviews ran.

@@ -14,7 +14,7 @@
 // identifiers. Human-readable labels are display only and are never comparison
 // operands. This module previously matched lowercased free text with substring
 // containment, which admitted "As" for "Ash" and a "CuZn" scope entry for a
-// CuZn39Pb3 claim — `in` was decidable and wrong. See docs/SCOPE_TERMS.md.
+// CuZn39Pb3 claim — `in` was decidable and wrong. See docs/bindings.md.
 
 import type { JsonObject } from '../types.js';
 import type { EvidenceEdge } from '../evidence/types.js';
@@ -69,7 +69,7 @@ function unresolved(dimension: string, label: unknown): ScopeViolation {
       `No governed identifier for ${dimension}` +
       (label ? ` '${String(label)}'` : '') +
       '. Labels are display only and are never compared (SCO-2); supply a governed ' +
-      'term. See docs/SCOPE_TERMS.md.',
+      'term. See docs/bindings.md.',
   };
 }
 

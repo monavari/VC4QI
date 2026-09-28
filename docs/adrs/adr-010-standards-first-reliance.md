@@ -2,9 +2,10 @@
 
 ## Status
 
-Accepted as the migration target on 22 September 2026; runtime implementation pending.
+Accepted as the migration target on 22 September 2026. Implemented for the experimental
+RM, calibration and GS bindings (phases I1–I5); the default API switch is pending.
 Supersedes [ADR-008](adr-008-three-relations-no-role.md), the all-relations-in-evidence
-contract of [the historical graph ADR](../adr/ADR-006-evidence-graph-architecture.md),
+contract of [the historical graph ADR](adr-006-evidence-graph-architecture.md),
 the sole-canonicalizer requirement of [ADR-002](adr-002-urdna2015-canonicalization.md),
 the universal registry/root contract of [ADR-004](adr-004-trust-registry-as-vc.md), and
 [ADR-007's canonical fixture assumptions](adr-007-m375a-worked-example.md).
@@ -29,7 +30,7 @@ aggregation and wire dispatch cannot represent the new contract reliably.
 - Use recognized `termsOfUse` authorization interpretation, non-authorizing `evidence`,
   selected standard resource integrity and applicable schemas in the baseline binding.
   Publish versioned manifests and explicitly local experimental terms where necessary.
-- Separate artifacts and contextual node-uses; apply the seven gates in MODEL_SPEC.
+- Separate artifacts and contextual node-uses; apply the seven gates of the model.
   Authenticate keys, registries, status and original representations before business use.
 - Aggregate established/contradicted/not-established obligations independently from trace
   counts. Separate verification, authorization, support, conformity and overall reliance.
@@ -53,5 +54,5 @@ Required tests assert state, reason/gate, selected records/routes and arithmetic
 Documentation and release metadata must distinguish target, implemented, simulated and
 unsupported behavior. Existing historical citations are not identifiers for a future release.
 
-See [MODEL_SPEC](../MODEL_SPEC.md), [binding design](../BINDING_MANIFEST.md),
-[API migration](../API_MIGRATION.md) and [execution plan](../plans/standards-first-reconciliation.md).
+See the [model](../model.md), [bindings](../bindings.md),
+[API and migration](../api.md) and [execution plan](../plans/standards-first-reconciliation.md).
