@@ -1,0 +1,30 @@
+{
+  "id": "https://vc4qi.example/profiles/cal-verifier",
+  "version": "1",
+  "status": "experimental",
+  "description": "Verifier-owned reliance profile for the experimental calibration v1 binding. Fictional fixture configuration; not an external standard.",
+  "binding": {"id": "https://vc4qi.example/bindings/cal/1", "version": "1"},
+  "trustAnchors": [
+    {"id": "https://nab.vc4qi.example/controller", "purposes": ["accredit-calibration-laboratories"]}
+  ],
+  "authority": {
+    "certificateRoutes": ["direct-accreditation"],
+    "globalRestrictions": [],
+    "maxRoutes": 4
+  },
+  "credentialStatus": {
+    "required": true,
+    "purposes": ["revocation"],
+    "maxAgeSeconds": 2592000
+  },
+  "mapping": {
+    "methodSuccession": "none"
+  },
+  "conformity": {
+    "requirements": [],
+    "decisionRules": []
+  },
+  "bindingRules": {
+    "applyCmcFloor": true
+  }
+}

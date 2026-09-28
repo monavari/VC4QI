@@ -141,9 +141,11 @@ Legacy evaluation is now reachable only through an explicit, labelled legacy pro
 (`legacy.evaluateLegacyProfile`, Python `qi_vc_core.legacy`). It verifies the original
 signed bytes (no proof or status skipping) and returns a legacy-labelled result, not a
 reliance result. A legacy credential under the standards-first profile is unsupported,
-with no fallback (V02, V03 passing; 63 passing in total). The calibration binding, the
-remaining use-case migration and the default-API switch are the rest of I5. See the
-[I5 evidence](plans/standards-first-i5-evidence.md).
+with no fallback (V02, V03). The gate 0–3 pipeline is now shared by every binding, and
+the calibration-direct-accreditation use case is migrated to a signed calibration (DCC)
+binding with measurement-group coverage and CMC floors (S18, S19, S21; 66 passing in
+total). The remaining use-case migration and the default-API switch are the rest of I5.
+See the [I5 evidence](plans/standards-first-i5-evidence.md).
 
 ## Migration and historical claims
 

@@ -1,0 +1,124 @@
+{
+  "$schema": "./manifest.schema.json",
+  "id": "https://vc4qi.example/bindings/cal/1",
+  "version": "1",
+  "status": "experimental",
+  "owner": {
+    "name": "VC4QI repository fixture governance",
+    "source": "docs/BINDING_MANIFEST.md",
+    "authority": "local-research-fixture-only"
+  },
+  "installation": {
+    "status": "incomplete",
+    "reason": "Migrated calibration (DCC) binding for the calibration-direct-accreditation use case. The gate 0-6 evaluators for direct accreditation, measurement-group coverage and CMC floors are implemented; operational capability scopes, conformity rules and native DCC XML are not.",
+    "pendingResources": []
+  },
+  "carrierAndSchema": {
+    "model": "W3C Verifiable Credentials Data Model 2.0",
+    "modelContext": "https://www.w3.org/ns/credentials/v2",
+    "requiredContexts": ["https://www.w3.org/ns/credentials/v2", "https://vc4qi.example/contexts/cal/1"],
+    "credentialTypes": [
+      "https://www.w3.org/2018/credentials#VerifiableCredential",
+      "https://vc4qi.example/bindings/cal/1#CalAccreditation",
+      "https://vc4qi.example/bindings/cal/1#CalCertificate",
+      "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential"
+    ],
+    "schemaUris": [
+      "https://vc4qi.example/schemas/cal/1/accreditation.json",
+      "https://vc4qi.example/schemas/cal/1/certificate.json",
+      "https://vc4qi.example/schemas/cal/1/status-list.json"
+    ],
+    "statusListCarrier": "BitstringStatusListCredential with the VCDM 2.0 context only",
+    "composition": "exact-listed-context-and-schema-combinations-only",
+    "pinnedResourceIndex": "bindings/experimental/cal-v1/catalog.json",
+    "decimalEncoding": "JSON strings typed xsd:decimal for every value, bound, uncertainty and CMC floor",
+    "orderedCollections": ["measurementGroups", "results"],
+    "nativeRepresentation": "A JSON-LD simplification of a DCC's measurement results; native DCC XML is not carried in this experimental binding"
+  },
+  "factMappings": [
+    {"fact": "grantorOrActor", "nativePath": "/issuer", "expandedIri": "https://www.w3.org/2018/credentials#issuer"},
+    {"fact": "grantee", "nativePath": "/credentialSubject/id", "expandedIri": "@id"},
+    {"fact": "permittedActivity", "nativePath": "/credentialSubject/permittedActivity", "expandedIri": "https://vc4qi.example/bindings/cal/1#permittedActivity"},
+    {"fact": "scopeRecords", "nativePath": "/credentialSubject/scope", "expandedIri": "https://vc4qi.example/bindings/cal/1#scope"},
+    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/bindings/cal/1#authorizationCredential"},
+    {"fact": "activityTime", "nativePath": "/credentialSubject/activityTime", "expandedIri": "https://vc4qi.example/bindings/cal/1#activityTime"},
+    {"fact": "measurementGroup", "nativePath": "/credentialSubject/measurementGroups/*", "expandedIri": "https://vc4qi.example/bindings/cal/1#measurementGroups"}
+  ],
+  "cardinality": {
+    "credentialSubject": {"minimum": 1, "maximum": 1},
+    "scopeRecords": {"minimum": 1},
+    "measurementGroups": {"minimum": 1},
+    "selectedAuthorizingPoliciesPerUse": {"minimum": 1, "maximum": 1},
+    "authorizingReferenceSelection": "by-declared-reference-type-per-route; resolved credential type must match (else contradicted); several of one type not_established",
+    "selectedGroups": "every selected measurement group is a separate required claim; the request is a conjunction over them",
+    "ambiguousSelection": "not_established"
+  },
+  "discoveryAndIntegrity": {
+    "referenceCarriers": ["termsOfUse", "relatedResource", "credentialSchema"],
+    "discovery": "supplied-or-installed-static-catalog-only",
+    "unknownUri": "not_established",
+    "immutableRepresentation": "original-secured-bytes",
+    "digestAlgorithm": "sha384",
+    "digestEncoding": "SRI",
+    "digestInput": "exact-original-secured-bytes",
+    "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse authorizationCredential references on the credential chain"
+  },
+  "recognizedTypes": {
+    "authorizationPolicy": "https://vc4qi.example/bindings/cal/1#CalAuthorizationPolicy",
+    "authorizationPolicyEstablishes": ["authorizing-reference-candidate"],
+    "nonEstablishingByItself": ["authority", "scope", "conformity"]
+  },
+  "principalAndRights": {
+    "principalEqualityEvaluator": "https://vc4qi.example/evaluators/exact-identifier/1",
+    "identityAliases": "none",
+    "activities": {"issueCalibrationCertificate": "https://vc4qi.example/bindings/cal/1#issueCalibrationCertificate"},
+    "rules": [
+      "The accreditation's grantee equals the laboratory issuing the calibration certificate.",
+      "The accreditation permits issuing calibration certificates.",
+      "The accreditation was in force at the certificate's activity time."
+    ]
+  },
+  "scopeAndMapping": {
+    "mappingVersion": "cal-experimental-mapping-1",
+    "dimensions": ["quantityKindIri", "methodIris", "range", "cmcFloor"],
+    "units": {"Pa": "1", "kPa": "1e3", "MPa": "1e6"},
+    "boundaries": "inclusive",
+    "coverageFactor": "2",
+    "methodRule": "every method a group names must be allowed by the same record; a record restricting methods against a group naming none is not_established (no empty-array bypass)",
+    "groupRule": "one complete record must cover the group's quantity kind, methods and every result; groups never combine and a later group cannot erase an earlier failure",
+    "cmcFloor": "when the verifier profile applies it, an expanded uncertainty below the record's admitted CMC contradicts scope; independent of conformity",
+    "unsupported": ["asymmetric-uncertainty", "display-label-equality", "implicit-method-succession", "customer-uncertainty-limits"]
+  },
+  "routesAndRestrictions": {
+    "installedCertificateRoutes": {
+      "direct-accreditation": ["CA-authorizes-certificate", "CA-grantee-is-issuer", "CA-issuer-is-accreditation-anchor", "CA-in-force-at-activity"]
+    },
+    "globalRestrictions": [],
+    "routeComposition": "AND-within-route-OR-between-complete-routes"
+  },
+  "protectionTimeAndResolution": {
+    "proofSuites": ["eddsa-rdfc-2022"],
+    "proofPurpose": "assertionMethod",
+    "verificationMethodRule": "exact-installed-method-controlled-by-issuer-and-authorized-for-assertionMethod",
+    "safeJsonLd": true,
+    "status": "authenticated-current-revocation-status-required",
+    "statusMechanism": "W3C Bitstring Status List v1.0: multibase base64url GZIP encodedList, bounded decompression",
+    "statusAuthority": "status-list-issuer-equals-credential-issuer",
+    "validity": ["validFrom", "validUntil"],
+    "historicalReliance": "unsupported-without-authenticated-historical-evidence",
+    "resolver": {"network": false, "unknownUri": "refuse", "budgets": ["maxResources", "maxDepth", "maxBytes"]},
+    "installedEvaluatorsOnly": true,
+    "issuerProvidedExecutableCode": false
+  },
+  "supportAndDisclosure": {
+    "requiredSupport": "none in this binding",
+    "presentationProtection": "separate-from-reliance",
+    "holderBinding": "unsupported-in-initial-slice"
+  },
+  "evidenceAndExclusions": {
+    "acceptanceLedger": "docs/plans/standards-first-acceptance.csv",
+    "testVectorRoots": ["bindings/experimental/cal-v1/test-vectors"],
+    "implementationEvidence": "docs/plans/standards-first-i5-evidence.md",
+    "unsupported": ["production-accreditation", "legal-effect", "native-dcc-xml", "public-example-namespace-resolution", "wallet-interoperability", "timestamp-service"]
+  }
+}
