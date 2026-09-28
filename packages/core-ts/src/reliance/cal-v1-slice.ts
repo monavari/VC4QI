@@ -149,6 +149,7 @@ export async function evaluateCalSlice(
       'Each selected measurement group is a separate required claim; the decision is their conjunction.',
       'Verification failures of credentials outside the selected route are reported but do not decide the request.',
       'The calibration v1 binding carries a JSON-LD simplification of DCC results, not native DCC XML.',
+      'Fixture grants are fictional: an accreditation or statutory mandate here has no legal effect.',
     ],
   });
   return Object.freeze({ result, artifacts: Object.freeze([...artifacts]) });

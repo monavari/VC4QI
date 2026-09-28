@@ -144,7 +144,10 @@ reliance result. A legacy credential under the standards-first profile is unsupp
 with no fallback (V02, V03). The gate 0–3 pipeline is now shared by every binding, and
 the calibration-direct-accreditation use case is migrated to a signed calibration (DCC)
 binding with measurement-group coverage and CMC floors (S18, S19, S21; 66 passing in
-total). The remaining use-case migration and the default-API switch are the rest of I5.
+total). Calibration-capability (a bounded operational scope within the accreditation,
+with no widening) and nmi-legal-mandate (a statutory route with no accreditation root)
+are migrated to the same binding. Test-report-supported-dcc, gs-scheme-authorization
+and the default-API switch are the rest of I5.
 See the [I5 evidence](plans/standards-first-i5-evidence.md).
 
 ## Migration and historical claims

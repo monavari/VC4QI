@@ -1408,3 +1408,23 @@ Results: TS 410 passed plus the 9 network-only legacy failures; Python 378 passe
 skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios, schemas, all resource,
 fixture and parity checks and the poster build pass. See
 `docs/plans/standards-first-i5-evidence.md`.
+
+## Standards-first I5 step 3a: calibration-capability and nmi-legal-mandate — 28 September 2026
+
+Restarted `claude/keen-edison-2k3ilo` from `main` after PR #14 merged (5d51ca5). The
+calibration v1 binding gains two routes. `operational-scope` (DCC ← O ← CA ← anchor)
+covers calibration-capability: bounded projection with no widening (quantity kind,
+methods, range and, under the profile's floor rule, CMC), scope-maintenance permission
+and coverage by O only. `statutory-mandate` (DCC ← M ← designation anchor) covers
+nmi-legal-mandate with no accreditation root. The generators and signed fixtures were
+reissued (new: CAL-O, DCC-2, CAL-M, DCC-N, ministry and NMI controllers and status lists;
+CAL-A now permits scope maintenance, so DCC-1 was re-signed). Two new per-use-case
+profiles were added; `cal-verifier-1` is unchanged. Combining all three routes in one
+profile turns a contradicted route beside unreferenced routes into `not_established`
+(three-valued OR). Existing expectations were kept by using per-use-case profiles, and a
+test records the combined behaviour.
+
+Results: TS 422 passed plus the 9 network-only legacy failures; Python 392 passed, 1
+skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios (2 passed), schemas and
+all resource, fixture and parity `--check` modes pass. Ledger totals unchanged (66
+passing, 2 excluded, 15 not implemented). See `docs/plans/standards-first-i5-evidence.md`.

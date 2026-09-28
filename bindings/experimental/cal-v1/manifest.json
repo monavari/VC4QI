@@ -10,7 +10,7 @@
   },
   "installation": {
     "status": "incomplete",
-    "reason": "Migrated calibration (DCC) binding for the calibration-direct-accreditation use case. The gate 0-6 evaluators for direct accreditation, measurement-group coverage and CMC floors are implemented; operational capability scopes, conformity rules and native DCC XML are not.",
+    "reason": "Migrated calibration (DCC) binding for the calibration-direct-accreditation, calibration-capability and nmi-legal-mandate use cases. The gate 0-6 evaluators for direct accreditation, bounded operational scopes, statutory mandates, measurement-group coverage and CMC floors are implemented; conformity rules and native DCC XML are not.",
     "pendingResources": []
   },
   "carrierAndSchema": {
@@ -20,11 +20,15 @@
     "credentialTypes": [
       "https://www.w3.org/2018/credentials#VerifiableCredential",
       "https://vc4qi.example/bindings/cal/1#CalAccreditation",
+      "https://vc4qi.example/bindings/cal/1#CalOperationalScope",
+      "https://vc4qi.example/bindings/cal/1#CalLegalMandate",
       "https://vc4qi.example/bindings/cal/1#CalCertificate",
       "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential"
     ],
     "schemaUris": [
       "https://vc4qi.example/schemas/cal/1/accreditation.json",
+      "https://vc4qi.example/schemas/cal/1/operational-scope.json",
+      "https://vc4qi.example/schemas/cal/1/legal-mandate.json",
       "https://vc4qi.example/schemas/cal/1/certificate.json",
       "https://vc4qi.example/schemas/cal/1/status-list.json"
     ],
@@ -71,11 +75,15 @@
   "principalAndRights": {
     "principalEqualityEvaluator": "https://vc4qi.example/evaluators/exact-identifier/1",
     "identityAliases": "none",
-    "activities": {"issueCalibrationCertificate": "https://vc4qi.example/bindings/cal/1#issueCalibrationCertificate"},
+    "activities": {
+      "issueCalibrationCertificate": "https://vc4qi.example/bindings/cal/1#issueCalibrationCertificate",
+      "maintainCalibrationScope": "https://vc4qi.example/bindings/cal/1#maintainCalibrationScope"
+    },
     "rules": [
-      "The accreditation's grantee equals the laboratory issuing the calibration certificate.",
-      "The accreditation permits issuing calibration certificates.",
-      "The accreditation was in force at the certificate's activity time."
+      "The grant's grantee (accreditation, operational scope or mandate) equals the actor issuing the calibration certificate.",
+      "The grant permits issuing calibration certificates.",
+      "An operational scope is issued by its own grantee, and the accreditation it cites names that grantee and permits maintaining a calibration scope.",
+      "Every grant on the route was in force at the certificate's activity time."
     ]
   },
   "scopeAndMapping": {
@@ -87,11 +95,14 @@
     "methodRule": "every method a group names must be allowed by the same record; a record restricting methods against a group naming none is not_established (no empty-array bypass)",
     "groupRule": "one complete record must cover the group's quantity kind, methods and every result; groups never combine and a later group cannot erase an earlier failure",
     "cmcFloor": "when the verifier profile applies it, an expanded uncertainty below the record's admitted CMC contradicts scope; independent of conformity",
+    "boundedProjection": "every operational-scope record lies within one accreditation record: same quantity kind, a subset of its methods, a range inside its range and, when the profile applies the CMC floor, a stated floor not below the accreditation's; claims are covered by the operational scope only",
     "unsupported": ["asymmetric-uncertainty", "display-label-equality", "implicit-method-succession", "customer-uncertainty-limits"]
   },
   "routesAndRestrictions": {
     "installedCertificateRoutes": {
-      "direct-accreditation": ["CA-authorizes-certificate", "CA-grantee-is-issuer", "CA-issuer-is-accreditation-anchor", "CA-in-force-at-activity"]
+      "direct-accreditation": ["CA-authorizes-certificate", "CA-grantee-is-issuer", "CA-issuer-is-accreditation-anchor", "CA-in-force-at-activity"],
+      "operational-scope": ["O-authorizes-certificate", "O-grantee-is-issuer", "O-self-maintained", "O-cites-CA", "CA-grantee-is-O-issuer", "CA-permits-scope-maintenance", "O-within-CA", "CA-issuer-is-accreditation-anchor", "O-and-CA-in-force-at-activity"],
+      "statutory-mandate": ["M-authorizes-certificate", "M-grantee-is-issuer", "M-issuer-is-designation-anchor", "M-in-force-at-activity"]
     },
     "globalRestrictions": [],
     "routeComposition": "AND-within-route-OR-between-complete-routes"
@@ -119,6 +130,6 @@
     "acceptanceLedger": "docs/plans/standards-first-acceptance.csv",
     "testVectorRoots": ["bindings/experimental/cal-v1/test-vectors"],
     "implementationEvidence": "docs/plans/standards-first-i5-evidence.md",
-    "unsupported": ["production-accreditation", "legal-effect", "native-dcc-xml", "public-example-namespace-resolution", "wallet-interoperability", "timestamp-service"]
+    "unsupported": ["production-accreditation", "legal-effect", "real-statutory-designation", "native-dcc-xml", "public-example-namespace-resolution", "wallet-interoperability", "timestamp-service"]
   }
 }

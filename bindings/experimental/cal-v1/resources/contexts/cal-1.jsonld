@@ -6,6 +6,8 @@
     "xsd": "http://www.w3.org/2001/XMLSchema#",
 
     "CalAccreditation": "cal:CalAccreditation",
+    "CalOperationalScope": "cal:CalOperationalScope",
+    "CalLegalMandate": "cal:CalLegalMandate",
     "CalCertificate": "cal:CalCertificate",
     "CalAuthorizationPolicy": "cal:CalAuthorizationPolicy",
 
