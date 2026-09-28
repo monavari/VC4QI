@@ -5,7 +5,7 @@
   "status": "experimental",
   "owner": {
     "name": "VC4QI repository fixture governance",
-    "source": "docs/BINDING_MANIFEST.md",
+    "source": "docs/bindings.md",
     "authority": "local-research-fixture-only"
   },
   "installation": {
@@ -165,7 +165,7 @@
   "evidenceAndExclusions": {
     "acceptanceLedger": "docs/plans/standards-first-acceptance.csv",
     "testVectorRoots": ["testdata/regressions", "bindings/experimental/rm-v1/test-vectors"],
-    "implementationEvidence": "docs/plans/standards-first-i1-signed-slice-evidence.md",
+    "implementationEvidence": "docs/plans/evidence.md",
     "unsupported": [
       "production-accreditation", "legal-effect", "physical-sample-truth",
       "public-example-namespace-resolution", "general-ontology-reasoning",

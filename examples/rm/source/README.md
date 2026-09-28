@@ -36,4 +36,4 @@ Existing source-derived values and names do not make fictional fixture issuance 
 endorsement by BAM or another real institution. The new signed A/O/D/S/H baseline uses
 clearly fictional authorities and an explicitly experimental binding. Preserve native
 source attribution while keeping its assurance separate from test-only Data Integrity
-proofs. See [MODEL_SPEC](../../../docs/MODEL_SPEC.md) and [SD](../../../docs/SELECTIVE_DISCLOSURE.md).
+proofs. See the [model](../../../docs/model.md) and [selective disclosure](../../../docs/applications.md#selective-disclosure).

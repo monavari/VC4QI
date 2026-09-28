@@ -118,7 +118,7 @@ export async function evaluateAuthorizedBy(
     // FC-2: an authority-conveying edge with no trust registry resolver is a
     // failure, not a warning. Without registry resolution the issuer's
     // identifier never resolves through an admitted registry, so the graph is
-    // ill-formed and no verdict is available (MODEL_SPEC §4).
+    // ill-formed and no verdict is available (docs/model.md §4).
     results.push(traceEntry({
       id: `trust-registry-${evidenceIssuer}`,
       level: 'edge',

@@ -63,3 +63,6 @@ pnpm-debug.log*
 
 # Astro / Docusaurus build
 .astro/
+
+# Built documentation site (pnpm docs:build)
+_site/

@@ -64,7 +64,7 @@ footer p{ margin:.35rem 0; }
   <section class="demo" aria-labelledby="h-demo">
     <div>
       <h2 id="h-demo">Try it: BAM-M375a</h2>
-      <p>A certified reference material (CuZn39Pb3, arsenic mass fraction) as a signed credential. Your browser runs the repository's own verifier on the signed test credentials, then previews the authority, scope and decision rules still being implemented. Switch the value or tamper with it and watch the verdict change.</p>
+      <p>A certified reference material (CuZn39Pb3, arsenic mass fraction) as a signed credential. Your browser runs the repository's own verifier on the signed test credentials, then previews the authority, scope and decision steps. Switch the value or tamper with it and watch the verdict change.</p>
       <a class="btn" href="m375a/">Open the demonstrator</a>
     </div>
     <figure>
@@ -86,15 +86,16 @@ footer p{ margin:.35rem 0; }
 
   <h2>Project status</h2>
   <div class="status">
-    <p>VC4QI is research software from BAM. The repository contains a TypeScript reference library with a Python mirror, a browser demo and example credentials. It is migrating to a standards-first reliance model; the new evaluator is being implemented in stages, and the runtime still uses the earlier model.</p>
-    <p class="muted">The BAM-M375a page runs the repository's signature, schema, key and integrity checks on its experimental RM v1 test credentials. Its authority, scope, support and decision steps are a labelled preview of rules still being implemented. The accreditation body, laboratory, operational scope, methods and keys are fictional fixtures. No production service, accreditation infrastructure or external endorsement is claimed.</p>
+    <p>VC4QI is research software from BAM: a TypeScript reference library with a Python mirror, a browser demo and signed example credentials. Its standards-first evaluator now decides requests for reference materials, calibration certificates, statutory metrology, test reports and GS certification on signed test credentials. The library's default entry point still uses the earlier model until the planned API switch.</p>
+    <p class="muted">The BAM-M375a page runs the repository's signature, schema, key and integrity checks in your browser. Its authority, scope, support and decision steps are still a labelled preview; connecting them to the evaluator is the next step for the demonstrator. The accreditation body, laboratory, operational scope, methods and keys are fictional fixtures. No production service, accreditation infrastructure or external endorsement is claimed.</p>
   </div>
 
   <h2>Read more</h2>
   <ul class="links">
+    <li><a href="docs/index.html">Documentation</a><span>Overview, reliance model, use cases, API and architecture</span></li>
+    <li><a href="docs/model.html">Reliance model</a><span>The rules a verifier applies before relying on a credential</span></li>
+    <li><a href="docs/status.html">Status</a><span>What runs today, the acceptance ledger and open issues</span></li>
     <li><a href="https://github.com/monavari/VC4QI">Source code on GitHub</a><span>Code under Apache-2.0, documentation under CC BY 4.0</span></li>
-    <li><a href="https://github.com/monavari/VC4QI/blob/main/docs/MODEL_SPEC.md">Model specification</a><span>The standards-first reliance model</span></li>
-    <li><a href="https://github.com/monavari/VC4QI/blob/main/docs/IMPLEMENTATION_STATUS.md">Implementation status</a><span>What runs today, with dated test evidence and limitations</span></li>
     <li><a href="https://github.com/monavari/VC4QI/blob/main/CITATION.cff">How to cite</a><span>Citation metadata for the software</span></li>
   </ul>
 

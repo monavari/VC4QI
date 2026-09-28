@@ -5,7 +5,7 @@
   "status": "experimental",
   "owner": {
     "name": "VC4QI repository fixture governance",
-    "source": "docs/BINDING_MANIFEST.md",
+    "source": "docs/bindings.md",
     "authority": "local-research-fixture-only"
   },
   "installation": {
@@ -118,7 +118,7 @@
   "evidenceAndExclusions": {
     "acceptanceLedger": "docs/plans/standards-first-acceptance.csv",
     "testVectorRoots": ["bindings/experimental/gs-v1/test-vectors"],
-    "implementationEvidence": "docs/plans/standards-first-i5-evidence.md",
+    "implementationEvidence": "docs/plans/evidence.md",
     "unsupported": ["production-accreditation", "real-gs-scheme-rules", "legal-effect", "application-assessments", "public-example-namespace-resolution", "wallet-interoperability", "timestamp-service"]
   }
 }

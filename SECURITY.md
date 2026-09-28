@@ -44,16 +44,14 @@ project), demo UI cosmetic issues.
 
 ## Standards-first migration assurance
 
-The current runtime is a legacy research implementation with known migration gaps;
-see [implementation status](docs/IMPLEMENTATION_STATUS.md). A supported-version label
-above is not a security certification or evidence of the revised model's implementation.
-The target requires authorized proof keys, authenticated registry/status resources,
-independent trust bootstrap, safe expansion and protected source mappings, complete
-routes, contextual caches and well-founded required support.
+VC4QI is research software; a supported-version label is not a security certification.
+The new reliance evaluator requires authorized proof keys, safe JSON-LD processing,
+exact-byte integrity, authenticated status with freshness, complete authority routes
+and independently justified support, and resolves only from a pinned offline catalog.
+It runs for the experimental bindings; the default API is still the legacy verifier,
+which has known gaps (for example, legacy canonicalization with `safe: false`). See
+[status](docs/status.md).
 
-All resolution must be bounded, including redirects, destination addresses, response
-size/decompression and time. Static contexts/schemas need pinned offline resources;
-dynamic status needs authenticated observation time/freshness. Proof skipping is
-simulation. Missing required evidence cannot authorize reliance, and signed identifiers
-do not establish physical sample truth. Historical reliance and interactive presentation
-security need their own evidence. These are migration requirements, not completed fixes.
+Proof skipping is simulation. Missing required evidence cannot authorize reliance, and
+signed identifiers do not establish physical sample truth. Historical reliance and
+interactive presentation security need their own evidence and are not implemented.
