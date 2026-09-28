@@ -358,8 +358,13 @@ repository conventions; final numbering/metadata follows the migration evidence.
 Progress 2026-09-28: step 1 (explicit, labelled legacy profile; no fallback) passes V02
 and V03; see [I5 evidence](standards-first-i5-evidence.md). Step 2 shares the gate 0–3
 pipeline across bindings and migrates calibration-direct-accreditation to a signed
-calibration binding (S18, S19, S21 passing). Open: remaining use-case migration,
-default-API switch and version draft.
+calibration binding (S18, S19, S21 passing). Step 3a migrates calibration-capability
+(operational-scope route, bounded projection with no widening) and nmi-legal-mandate
+(statutory-mandate route, no accreditation root) to the same binding. Step 3b migrates
+test-report-supported-dcc with an instrument-calibration support obligation. Step 3c
+migrates gs-scheme-authorization to a new GS certification binding (competence AND
+scheme permission) and retains both GS application variants under the explicit legacy
+profile. Open: default-API switch and version draft.
 
 ### I6 — external scope answers and experimental recognition
 

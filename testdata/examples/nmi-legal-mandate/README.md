@@ -2,6 +2,10 @@
 
 **Generated legacy fixture; not a standards-first conformance claim.**
 
+Migrated standards-first form: [`bindings/experimental/cal-v1`](../../../bindings/experimental/cal-v1/README.md)
+(signed fixtures, evaluated by the calibration v1 binding's statutory-mandate route). This legacy copy
+is kept for the explicit legacy profile only.
+
 A metrology issuer uses a statutory authority route. Do not require an accreditation root or infer legal effect from the fixture.
 
 Existing policy and relation fields describe the old runtime. The fixture's assurance

@@ -1,0 +1,42 @@
+{
+  "id": "https://vc4qi.example/profiles/cal-verifier-nmi",
+  "version": "1",
+  "status": "experimental",
+  "description": "Verifier-owned reliance profile for nmi-legal-mandate under the experimental calibration v1 binding: certificates issued under a statutory mandate, with no accreditation anchor configured. Fictional fixture configuration; no legal effect; not an external standard.",
+  "binding": {
+    "id": "https://vc4qi.example/bindings/cal/1",
+    "version": "1"
+  },
+  "trustAnchors": [
+    {
+      "id": "https://ministry.vc4qi.example/controller",
+      "purposes": [
+        "designate-national-metrology-institutes"
+      ]
+    }
+  ],
+  "authority": {
+    "certificateRoutes": [
+      "statutory-mandate"
+    ],
+    "globalRestrictions": [],
+    "maxRoutes": 4
+  },
+  "credentialStatus": {
+    "required": true,
+    "purposes": [
+      "revocation"
+    ],
+    "maxAgeSeconds": 2592000
+  },
+  "mapping": {
+    "methodSuccession": "none"
+  },
+  "conformity": {
+    "requirements": [],
+    "decisionRules": []
+  },
+  "bindingRules": {
+    "applyCmcFloor": true
+  }
+}

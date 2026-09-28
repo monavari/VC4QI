@@ -1,0 +1,173 @@
+// SPDX-License-Identifier: Apache-2.0
+// I5: the migrated gs-scheme-authorization use case under the experimental GS
+// certification v1 binding. The GS mark is relied on only through the complete route
+// (competence AND scheme permission), with the certification covered by both scopes;
+// neither incomplete basis alone establishes it. Every variant is re-issued with the
+// fixture keys, so it is decided on its semantics, not a signature.
+import * as ed from '@noble/ed25519';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import { createProof } from '../src/proofs/index.js';
+import {
+  catalogDocumentLoader, createRelianceRequest, loadBindingManifest, loadRelianceProfile, sha384SRI,
+  StaticResourceCatalog, type RelianceRequestInput,
+} from '../src/reliance/index.js';
+import { evaluateGsSlice } from '../src/reliance/gs-v1-slice.js';
+import { readPinnedResources } from '../src/reliance/rm-v1-node.js';
+import type { JsonObject } from '../src/types.js';
+
+const dir = new URL('../../../bindings/experimental/gs-v1/', import.meta.url);
+const manifest = loadBindingManifest(JSON.parse(readFileSync(new URL('manifest.json', dir), 'utf8')));
+const profileJson = () => JSON.parse(readFileSync(new URL('profiles/gs-verifier-1.json', dir), 'utf8')) as JsonObject;
+const profile = loadRelianceProfile(profileJson());
+const pinned = readPinnedResources(new URL('catalog.json', dir).pathname);
+const signed = readPinnedResources(new URL('test-vectors/signed/catalog.json', dir).pathname);
+const GS = 'https://vc4qi.example/bindings/gs/1#';
+const URI = {
+  A: 'https://nab.vc4qi.example/credentials/GS-A',
+  S: 'https://scheme.vc4qi.example/credentials/GS-S',
+  C: 'https://gs-body.vc4qi.example/credentials/GSC-1',
+  NAB: 'https://nab.vc4qi.example/controller',
+  SCHEME: 'https://scheme.vc4qi.example/controller',
+  BODY: 'https://gs-body.vc4qi.example/controller',
+} as const;
+const KEY: Record<string, string> = { [URI.NAB]: 'nab', [URI.SCHEME]: 'scheme', [URI.BODY]: 'gs-body' };
+const CERTIFICATION = '/credentialSubject/certification';
+
+const json = (uri: string) => JSON.parse(new TextDecoder().decode(signed.find(r => r.uri === uri)!.bytes)) as JsonObject;
+const serialize = (d: JsonObject) => `${JSON.stringify(d, null, 2)}\n`;
+function catalogWith(overrides: Record<string, string | null> = {}) {
+  return new StaticResourceCatalog([...pinned, ...signed].filter(r => overrides[r.uri] !== null).map(r => {
+    const text = overrides[r.uri];
+    if (typeof text !== 'string') return r;
+    const bytes = new TextEncoder().encode(text);
+    return { ...r, bytes, digestSRI: sha384SRI(bytes) };
+  }));
+}
+async function resign(document: JsonObject): Promise<string> {
+  const { proof: _proof, ...unsigned } = document;
+  const issuer = String(document.issuer);
+  const seed = createHash('sha256').update(`vc4qi-rm-v1-insecure-fixture-key:${KEY[issuer]}`).digest();
+  const proof = await createProof(unsigned, { id: `${issuer}#key-1`, controller: issuer, privateKey: seed,
+    publicKey: await ed.getPublicKeyAsync(seed) }, { created: '2026-02-01T00:00:00Z', safe: true,
+    documentLoader: catalogDocumentLoader(catalogWith().openSession({ maxResources: 64, maxBytes: 5_000_000 })) });
+  return serialize({ ...unsigned, proof });
+}
+/** Re-issue bottom-up, updating relatedResource digests of already re-issued credentials. */
+async function reissueChain(steps: [string, ((d: JsonObject) => void)?][]) {
+  const overrides: Record<string, string> = {};
+  for (const [uri, edit] of steps) {
+    const doc = json(uri);
+    edit?.(doc);
+    doc.relatedResource = (doc.relatedResource as JsonObject[] | undefined)?.map(r => (overrides[String(r.id)]
+      ? { id: r.id, digestSRI: sha384SRI(new TextEncoder().encode(overrides[String(r.id)])) } : r));
+    if (doc.relatedResource === undefined) delete doc.relatedResource;
+    overrides[uri] = await resign(doc);
+  }
+  return overrides;
+}
+const subject = (d: JsonObject) => d.credentialSubject as JsonObject;
+const certification = (d: JsonObject) => subject(d).certification as JsonObject;
+const withoutReference = (type: string) => (d: JsonObject) => {
+  const removed = (d.termsOfUse as JsonObject[]).find(p => (p.authorizationCredential as JsonObject).type === type)!;
+  d.termsOfUse = (d.termsOfUse as JsonObject[]).filter(p => p !== removed);
+  d.relatedResource = (d.relatedResource as JsonObject[]).filter(r => r.id !== (removed.authorizationCredential as JsonObject).id);
+};
+function request(overrides: Partial<RelianceRequestInput> = {}) {
+  return createRelianceRequest({
+    requestId: 'urn:uuid:gs-v1-request', targetId: URI.C, selectedClaims: [{ id: 'gs', sourcePointer: CERTIFICATION }],
+    purpose: 'rely-on-gs-certification', binding: { id: manifest.id, version: manifest.version },
+    profile: { id: profile.id, version: profile.version }, trustConfigId: 'https://vc4qi.example/trust/fixture-gs-anchors',
+    evaluationTime: '2026-09-25T12:00:00Z', activityTime: '2026-09-25T12:00:00Z', suppliedEvidence: [URI.A, URI.S],
+    resolverLimits: { maxResources: 64, maxDepth: 4, maxBytes: 5_000_000 },
+    ...overrides,
+  });
+}
+const run = (overrides: Record<string, string | null> = {}, p = profile) =>
+  evaluateGsSlice(request(), catalogWith(overrides), manifest, p).then(e => e.result);
+const trace = (r: Awaited<ReturnType<typeof run>>, predicate: string) => r.trace.find(t => t.predicate === predicate);
+const ROUTE = 'route:competence-and-scheme-permission';
+
+describe('gs-scheme-authorization, migrated to the GS certification v1 binding', () => {
+  it('generated schemas, catalog and signed fixtures are up to date', () => {
+    const root = new URL('../../../', import.meta.url);
+    const tsx = new URL('node_modules/.bin/tsx', root).pathname;
+    expect(() => execFileSync('node', [new URL('scripts/gs-v1/build-resources.mjs', root).pathname, '--check'], { stdio: 'pipe' })).not.toThrow();
+    expect(() => execFileSync(tsx, [new URL('../scripts/generate-gs-v1-artifacts.ts', import.meta.url).pathname, '--check'], { stdio: 'pipe' })).not.toThrow();
+  });
+
+  it('accepts GSC-1 through competence AND scheme permission, covered by both scopes', async () => {
+    const result = await run();
+    expect(result.artifactVerification.every(v => v.state === 'established')).toBe(true);
+    expect(trace(result, ROUTE)).toMatchObject({ state: 'established' });
+    expect(result.authorization[0]?.routeWitnessIds).toEqual([ROUTE, URI.C, URI.A, URI.S,
+      `record:${URI.A}#scope-toys`, `record:${URI.S}#scope-toys`]);
+    expect(result.limitations.join(' ')).toMatch(/not a universal GS or legal rule/);
+    expect(result.decision).toBe('accept');
+  });
+
+  it('C02: competence alone (no scheme permission) does not establish the route', async () => {
+    const result = await run(await reissueChain([[URI.C, withoutReference('GsSchemeAuthorization')]]));
+    expect(trace(result, `${ROUTE}:competence-reference`)).toMatchObject({ state: 'established' });
+    expect(trace(result, `${ROUTE}:scheme-reference`)).toMatchObject({ state: 'not_established' });
+    expect(result.authorization[0]?.state).toBe('not_established');
+    expect(result.decision).toBe('not_established');
+  });
+
+  it('scheme permission alone (no competence) does not establish the route', async () => {
+    const result = await run(await reissueChain([[URI.C, withoutReference('GsAccreditation')]]));
+    expect(trace(result, `${ROUTE}:scheme-reference`)).toMatchObject({ state: 'established' });
+    expect(trace(result, `${ROUTE}:competence-reference`)).toMatchObject({ state: 'not_established' });
+    expect(result.decision).toBe('not_established');
+  });
+
+  it('a scheme authorization naming another body contradicts the route', async () => {
+    const result = await run(await reissueChain([
+      [URI.S, d => { subject(d).id = 'https://other-body.vc4qi.example/controller'; }], [URI.C],
+    ]));
+    expect(trace(result, `${ROUTE}:scheme-grantee`)).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
+  });
+
+  it('a category the competence covers but the scheme does not is not covered', async () => {
+    const result = await run(await reissueChain([[URI.C, d => {
+      certification(d).productCategoryIri = `${GS}HouseholdAppliance`;
+      certification(d).standardIris = [`${GS}EN-60335-1`];
+    }]]));
+    const covered = trace(result, 'claim-coverage:gs:competence-and-scheme-permission');
+    expect(covered).toMatchObject({ state: 'contradicted' });
+    expect(covered?.reason).toMatch(/scope-household covers HouseholdAppliance/);
+    expect(covered?.reason).toMatch(/No single scheme record covers it/);
+    expect(result.decision).toBe('reject');
+  });
+
+  it('a standard outside the accredited scope is not covered, and naming none is no bypass', async () => {
+    const outside = await run(await reissueChain([[URI.C, d => { certification(d).standardIris = [`${GS}EN-71-3`]; }]]));
+    expect(trace(outside, 'claim-coverage:gs:competence-and-scheme-permission')?.reason).toMatch(/EN-71-3 is not in the accredited scope/);
+    expect(outside.decision).toBe('reject');
+    const none = await run(await reissueChain([[URI.C, d => { certification(d).standardIris = []; }]]));
+    expect(trace(none, 'claim-coverage:gs:competence-and-scheme-permission'))
+      .toMatchObject({ state: 'not_established', reason: expect.stringMatching(/names none/) });
+    expect(none.decision).toBe('not_established');
+  });
+
+  it('each half needs its own anchor purpose', async () => {
+    const swapped = loadRelianceProfile({ ...profileJson(), trustAnchors: [
+      { id: URI.NAB, purposes: ['accredit-certification-bodies'] },
+      { id: URI.SCHEME, purposes: ['accredit-certification-bodies'] },
+    ] });
+    const result = await run({}, swapped);
+    expect(trace(result, `${ROUTE}:competence-anchor`)).toMatchObject({ state: 'established' });
+    expect(trace(result, `${ROUTE}:scheme-anchor`)).toMatchObject({ state: 'not_established' });
+    expect(result.decision).toBe('not_established');
+  });
+
+  it('a scheme authorization issued after the certification activity cannot authorize it', async () => {
+    const result = await run(await reissueChain([[URI.S, d => { d.validFrom = '2026-03-15T00:00:00Z'; }], [URI.C]]));
+    expect(trace(result, `${ROUTE}:scope-in-force-at-activity`))
+      .toMatchObject({ state: 'not_established', reason: expect.stringMatching(/GS-S is valid only from/) });
+    expect(result.decision).toBe('not_established');
+  });
+});

@@ -1,9 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // Generates the signed experimental calibration (DCC) v1 fixtures for the migrated
-// calibration-direct-accreditation use case: controller documents for the fictional
-// NAB and laboratory, a signed accreditation CA with a pressure calibration scope
-// (0-10 MPa, method PressureComparison, CMC 0.5 kPa), a signed calibration certificate
-// DCC-1 with two measurement groups, and one Bitstring Status List per issuer.
+// calibration use cases, with controller documents and one Bitstring Status List per
+// fictional issuer:
+//   - calibration-direct-accreditation: accreditation CA from the NAB (pressure 0-10 MPa,
+//     method PressureComparison, CMC 0.5 kPa) and certificate DCC-1 with two groups;
+//   - calibration-capability: the laboratory's own operational scope O (0-2 MPa, CMC
+//     0.8 kPa) projected within CA, and certificate DCC-2 issued under O;
+//   - nmi-legal-mandate: a statutory mandate M from a fictional ministry to a national
+//     metrology institute (0-100 MPa, method PressureBalance, CMC 0.2 kPa) and
+//     certificate DCC-N issued under M, with no accreditation root;
+//   - test-report-supported-dcc: a testing accreditation CAL-T from the NAB and test report
+//     REPORT-1 whose measuring instrument is supported by DCC-1.
 //
 //   pnpm -C packages/core-ts exec tsx scripts/generate-cal-v1-artifacts.ts          # write
 //   pnpm -C packages/core-ts exec tsx scripts/generate-cal-v1-artifacts.ts --check  # fail if stale
@@ -30,10 +37,26 @@ const cal = (term: string) => `${CAL_V1_VOCAB}${term}`;
 
 const NAB = 'https://nab.vc4qi.example/controller';
 const LAB = 'https://lab.vc4qi.example/controller';
+const MINISTRY = 'https://ministry.vc4qi.example/controller';
+const NMI = 'https://nmi.vc4qi.example/controller';
+const TLAB = 'https://testlab.vc4qi.example/controller';
 const CA_ID = 'https://nab.vc4qi.example/credentials/CAL-A';
 const DCC_ID = 'https://lab.vc4qi.example/credentials/DCC-1';
-const STATUS = { nab: 'https://nab.vc4qi.example/status/cal/1', lab: 'https://lab.vc4qi.example/status/cal/1' } as const;
-const STATUS_ENTRY: Record<string, [string, number]> = { [CA_ID]: [STATUS.nab, 0], [DCC_ID]: [STATUS.lab, 0] };
+const O_ID = 'https://lab.vc4qi.example/credentials/CAL-O';
+const DCC2_ID = 'https://lab.vc4qi.example/credentials/DCC-2';
+const M_ID = 'https://ministry.vc4qi.example/credentials/CAL-M';
+const DCCN_ID = 'https://nmi.vc4qi.example/credentials/DCC-N';
+const T_ID = 'https://nab.vc4qi.example/credentials/CAL-T';
+const REPORT_ID = 'https://testlab.vc4qi.example/credentials/REPORT-1';
+const STATUS = {
+  nab: 'https://nab.vc4qi.example/status/cal/1', lab: 'https://lab.vc4qi.example/status/cal/1',
+  ministry: 'https://ministry.vc4qi.example/status/cal/1', nmi: 'https://nmi.vc4qi.example/status/cal/1',
+  tlab: 'https://testlab.vc4qi.example/status/cal/1',
+} as const;
+const STATUS_ENTRY: Record<string, [string, number]> = {
+  [CA_ID]: [STATUS.nab, 0], [DCC_ID]: [STATUS.lab, 0], [O_ID]: [STATUS.lab, 1], [DCC2_ID]: [STATUS.lab, 2],
+  [M_ID]: [STATUS.ministry, 0], [DCCN_ID]: [STATUS.nmi, 0], [T_ID]: [STATUS.nab, 1], [REPORT_ID]: [STATUS.tlab, 0],
+};
 
 interface Party { name: string; controller: string; seed: Uint8Array; publicKey: Uint8Array }
 async function party(name: string, controller: string): Promise<Party> {
@@ -72,7 +95,10 @@ const envelope = (id: string, type: string, schemaFile: string, issuer: string, 
 async function main() {
   const nab = await party('nab', NAB);
   const lab = await party('lab', LAB);
-  for (const p of [nab, lab]) {
+  const ministry = await party('ministry', MINISTRY);
+  const nmi = await party('nmi', NMI);
+  const tlab = await party('tlab', TLAB);
+  for (const p of [nab, lab, ministry, nmi, tlab]) {
     const method = `${p.controller}#key-1`;
     record(p.controller, `controllers/${p.name}.json`, 'application/json', serialize({
       '@context': 'https://www.w3.org/ns/cid/v1', id: p.controller,
@@ -82,7 +108,7 @@ async function main() {
     }));
   }
   const clear = encodeStatusList(new Uint8Array(MIN_STATUS_BITS / 8));
-  for (const [p, listId] of [[nab, STATUS.nab], [lab, STATUS.lab]] as const) {
+  for (const [p, listId] of [[nab, STATUS.nab], [lab, STATUS.lab], [ministry, STATUS.ministry], [nmi, STATUS.nmi], [tlab, STATUS.tlab]] as const) {
     record(listId, `status/${p.name}.json`, 'application/vc', serialize(await sign({
       '@context': [VC_V2_CONTEXT], id: listId, type: ['VerifiableCredential', 'BitstringStatusListCredential'],
       issuer: p.controller, validFrom: '2026-09-01T00:00:00Z', validUntil: '2027-09-01T00:00:00Z',
@@ -95,7 +121,7 @@ async function main() {
     ...envelope(CA_ID, 'CalAccreditation', 'accreditation.json', NAB, '2025-01-01T00:00:00Z', '2030-01-01T00:00:00Z'),
     credentialSubject: {
       id: LAB,
-      permittedActivity: [cal('issueCalibrationCertificate')],
+      permittedActivity: [cal('issueCalibrationCertificate'), cal('maintainCalibrationScope')],
       scope: [{
         id: `${CA_ID}#scope-pressure`,
         quantityKindIri: cal('Pressure'),
@@ -106,7 +132,7 @@ async function main() {
     },
   }, nab, '2025-01-01T00:00:00Z')));
 
-  record(DCC_ID, 'credentials/DCC-1.json', 'application/vc', serialize(await sign({
+  const dccText = record(DCC_ID, 'credentials/DCC-1.json', 'application/vc', serialize(await sign({
     ...envelope(DCC_ID, 'CalCertificate', 'certificate.json', LAB, '2026-01-15T00:00:00Z', '2028-01-15T00:00:00Z'),
     credentialSubject: {
       id: 'urn:vc4qi-example:item:pressure-transmitter-1',
@@ -121,6 +147,100 @@ async function main() {
     termsOfUse: [{ type: 'CalAuthorizationPolicy', authorizationCredential: { id: CA_ID, type: 'CalAccreditation' } }],
     relatedResource: [{ id: CA_ID, digestSRI: sha384SRI(new TextEncoder().encode(caText)) }],
   }, lab, '2026-01-15T00:00:00Z')));
+
+  // calibration-capability: the laboratory maintains a bounded operational scope within CA.
+  const oText = record(O_ID, 'credentials/CAL-O.json', 'application/vc', serialize(await sign({
+    ...envelope(O_ID, 'CalOperationalScope', 'operational-scope.json', LAB, '2025-06-01T00:00:00Z', '2030-01-01T00:00:00Z'),
+    credentialSubject: {
+      id: LAB,
+      permittedActivity: [cal('issueCalibrationCertificate')],
+      scope: [{
+        id: `${O_ID}#scope-pressure-low`,
+        quantityKindIri: cal('Pressure'),
+        allowedMethodIris: [cal('PressureComparison')],
+        range: { from: '0', to: '2', unit: 'MPa' },
+        cmcFloor: { value: '0.8', unit: 'kPa' },
+      }],
+    },
+    termsOfUse: [{ type: 'CalAuthorizationPolicy', authorizationCredential: { id: CA_ID, type: 'CalAccreditation' } }],
+    relatedResource: [{ id: CA_ID, digestSRI: sha384SRI(new TextEncoder().encode(caText)) }],
+  }, lab, '2025-06-01T00:00:00Z')));
+  record(DCC2_ID, 'credentials/DCC-2.json', 'application/vc', serialize(await sign({
+    ...envelope(DCC2_ID, 'CalCertificate', 'certificate.json', LAB, '2026-03-02T00:00:00Z', '2028-03-02T00:00:00Z'),
+    credentialSubject: {
+      id: 'urn:vc4qi-example:item:pressure-gauge-7',
+      activityTime: '2026-03-01T12:00:00Z',
+      measurementGroups: [
+        { id: `${DCC2_ID}#g1`, quantityKindIri: cal('Pressure'), methodIris: [cal('PressureComparison')],
+          results: [{ value: '1000', unit: 'kPa', expandedUncertainty: '0.9', coverageFactor: '2' }] },
+      ],
+    },
+    termsOfUse: [{ type: 'CalAuthorizationPolicy', authorizationCredential: { id: O_ID, type: 'CalOperationalScope' } }],
+    relatedResource: [{ id: O_ID, digestSRI: sha384SRI(new TextEncoder().encode(oText)) }],
+  }, lab, '2026-03-02T00:00:00Z')));
+
+  // nmi-legal-mandate: a statutory route with no accreditation root. Fictional; no legal effect.
+  const mText = record(M_ID, 'credentials/CAL-M.json', 'application/vc', serialize(await sign({
+    ...envelope(M_ID, 'CalLegalMandate', 'legal-mandate.json', MINISTRY, '2024-01-01T00:00:00Z', '2034-01-01T00:00:00Z'),
+    credentialSubject: {
+      id: NMI,
+      permittedActivity: [cal('issueCalibrationCertificate')],
+      scope: [{
+        id: `${M_ID}#scope-pressure-primary`,
+        quantityKindIri: cal('Pressure'),
+        allowedMethodIris: [cal('PressureBalance')],
+        range: { from: '0', to: '100', unit: 'MPa' },
+        cmcFloor: { value: '0.2', unit: 'kPa' },
+      }],
+    },
+  }, ministry, '2024-01-01T00:00:00Z')));
+  record(DCCN_ID, 'credentials/DCC-N.json', 'application/vc', serialize(await sign({
+    ...envelope(DCCN_ID, 'CalCertificate', 'certificate.json', NMI, '2026-04-02T00:00:00Z', '2028-04-02T00:00:00Z'),
+    credentialSubject: {
+      id: 'urn:vc4qi-example:item:transfer-standard-3',
+      activityTime: '2026-04-01T12:00:00Z',
+      measurementGroups: [
+        { id: `${DCCN_ID}#g1`, quantityKindIri: cal('Pressure'), methodIris: [cal('PressureBalance')],
+          results: [{ value: '20', unit: 'MPa', expandedUncertainty: '0.4', coverageFactor: '2' }] },
+      ],
+    },
+    termsOfUse: [{ type: 'CalAuthorizationPolicy', authorizationCredential: { id: M_ID, type: 'CalLegalMandate' } }],
+    relatedResource: [{ id: M_ID, digestSRI: sha384SRI(new TextEncoder().encode(mText)) }],
+  }, nmi, '2026-04-02T00:00:00Z')));
+
+  // test-report-supported-dcc: a testing laboratory's report, supported by DCC-1 for the
+  // pressure transmitter it used.
+  const tText = record(T_ID, 'credentials/CAL-T.json', 'application/vc', serialize(await sign({
+    ...envelope(T_ID, 'CalAccreditation', 'accreditation.json', NAB, '2025-01-01T00:00:00Z', '2030-01-01T00:00:00Z'),
+    credentialSubject: {
+      id: TLAB,
+      permittedActivity: [cal('issueTestReport')],
+      scope: [{
+        id: `${T_ID}#scope-pressure-test`,
+        quantityKindIri: cal('Pressure'),
+        allowedMethodIris: [cal('HydrostaticPressureTest')],
+        range: { from: '0', to: '25', unit: 'MPa' },
+      }],
+    },
+  }, nab, '2025-01-01T00:00:00Z')));
+  record(REPORT_ID, 'credentials/REPORT-1.json', 'application/vc', serialize(await sign({
+    ...envelope(REPORT_ID, 'CalTestReport', 'test-report.json', TLAB, '2026-06-11T00:00:00Z', '2031-06-11T00:00:00Z'),
+    credentialSubject: {
+      id: 'urn:vc4qi-example:item:valve-12',
+      activityTime: '2026-06-10T09:00:00Z',
+      instrumentIri: 'urn:vc4qi-example:item:pressure-transmitter-1',
+      measurementGroups: [
+        { id: `${REPORT_ID}#g1`, quantityKindIri: cal('Pressure'), methodIris: [cal('HydrostaticPressureTest')],
+          results: [{ value: '2', unit: 'MPa', expandedUncertainty: '0.004', coverageFactor: '2' }] },
+      ],
+    },
+    termsOfUse: [{ type: 'CalAuthorizationPolicy', authorizationCredential: { id: T_ID, type: 'CalAccreditation' } }],
+    evidence: [{ id: DCC_ID, type: 'CalCalibrationReference' }],
+    relatedResource: [
+      { id: T_ID, digestSRI: sha384SRI(new TextEncoder().encode(tText)) },
+      { id: DCC_ID, digestSRI: sha384SRI(new TextEncoder().encode(dccText)) },
+    ],
+  }, tlab, '2026-06-11T00:00:00Z')));
 
   outputs.set('catalog.json', `${JSON.stringify({
     description: 'Signed calibration v1 fixtures. digestSRI is SHA-384 over the exact file bytes. '
