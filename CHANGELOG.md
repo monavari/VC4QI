@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Migrate test-report-supported-dcc to the calibration binding: test reports are
+  authorized by a testing accreditation and require their instrument's calibration as
+  support, including that calibration's own authority over every measurement group.
+
 - Migrate calibration-capability and nmi-legal-mandate to the calibration binding:
   an operational-scope route with bounded projection (no widening, no fallback to the
   accreditation's wider scope) and a statutory-mandate route with no accreditation root.

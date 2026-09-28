@@ -47,6 +47,7 @@ CAPABILITY_PROFILE = load_reliance_profile(
     profile_json("cal-verifier-capability-1.json")
 )
 NMI_PROFILE = load_reliance_profile(profile_json("cal-verifier-nmi-1.json"))
+REPORT_PROFILE = load_reliance_profile(profile_json("cal-verifier-test-report-1.json"))
 PINNED = read_pinned_resources(CAL_V1_DIRECTORY / "catalog.json")
 SIGNED = read_pinned_resources(CAL_V1_DIRECTORY / "test-vectors/signed/catalog.json")
 CAL = "https://vc4qi.example/bindings/cal/1#"
@@ -56,6 +57,8 @@ OPS = "https://lab.vc4qi.example/credentials/CAL-O"
 DCC2 = "https://lab.vc4qi.example/credentials/DCC-2"
 M = "https://ministry.vc4qi.example/credentials/CAL-M"
 DCCN = "https://nmi.vc4qi.example/credentials/DCC-N"
+CAL_T = "https://nab.vc4qi.example/credentials/CAL-T"
+REPORT = "https://testlab.vc4qi.example/credentials/REPORT-1"
 NAB = "https://nab.vc4qi.example/controller"
 MINISTRY = "https://ministry.vc4qi.example/controller"
 KEY = {
@@ -63,6 +66,7 @@ KEY = {
     "https://lab.vc4qi.example/controller": "lab",
     MINISTRY: "ministry",
     "https://nmi.vc4qi.example/controller": "nmi",
+    "https://testlab.vc4qi.example/controller": "tlab",
 }
 G1 = "/credentialSubject/measurementGroups/0"
 G2 = "/credentialSubject/measurementGroups/1"
@@ -170,8 +174,8 @@ def groups(d: dict[str, Any]) -> list[dict[str, Any]]:
     return d["credentialSubject"]["measurementGroups"]  # type: ignore[no-any-return]
 
 
-def result0(d: dict[str, Any]) -> dict[str, Any]:
-    return groups(d)[0]["results"][0]  # type: ignore[no-any-return]
+def result0(d: dict[str, Any], group: int = 0) -> dict[str, Any]:
+    return groups(d)[group]["results"][0]  # type: ignore[no-any-return]
 
 
 def request(**overrides: Any) -> RelianceRequest:
@@ -523,3 +527,114 @@ def test_contradicted_route_beside_unreferenced_routes_is_not_established() -> N
     assert entry(result, "route:direct-accreditation").state == "contradicted"
     assert entry(result, "route:statutory-mandate").state == "not_established"
     assert result.decision == "not_established"
+
+
+def run_report(
+    overrides: dict[str, str | None] | None = None, profile: Any = REPORT_PROFILE
+) -> Any:
+    req = request(
+        request_id="urn:uuid:cal-v1-report",
+        target_id=REPORT,
+        selected_claims=(SelectedClaim("g1", G1),),
+        supplied_evidence=(CAL_T,),
+        profile=selects(profile),
+    )
+    return run(overrides, req, profile)
+
+
+def test_report_accepted_with_supported_instrument_calibration() -> None:
+    result = run_report()
+    assert all(v.state == "established" for v in result.artifact_verification)
+    assert "permits issuing test reports" in (
+        entry(result, "route:direct-accreditation:activity-permission").reason
+    )
+    assert result.authorization[0].route_witness_ids == (
+        "route:direct-accreditation",
+        REPORT,
+        CAL_T,
+        f"record:{CAL_T}#scope-pressure-test",
+    )
+    (support,) = result.support
+    assert support.obligation_id == "cal-v1:instrument-calibration"
+    assert support.state == "established"
+    assert support.witness_ids == (REPORT, DCC, CA)
+    assert entry(result, "support:calibration-authority:group-1").state == (
+        "established"
+    )
+    assert result.decision == "accept"
+
+
+def test_testing_accreditation_is_not_a_calibration_accreditation() -> None:
+    only_calibration = load_reliance_profile(
+        {
+            **profile_json("cal-verifier-test-report-1.json"),
+            "trustAnchors": [
+                {"id": NAB, "purposes": ["accredit-calibration-laboratories"]}
+            ],
+        }
+    )
+    result = run_report(None, only_calibration)
+    assert entry(result, "route:direct-accreditation:trust-anchor").state == (
+        "not_established"
+    )
+    assert result.decision == "not_established"
+
+    def edit(d: dict[str, Any]) -> None:
+        subject(d)["permittedActivity"] = [CAL + "issueCalibrationCertificate"]
+
+    as_certificate = run_report(reissue_chain([(CAL_T, edit), (REPORT, None)]))
+    assert (
+        entry(as_certificate, "route:direct-accreditation:activity-permission").state
+        == "contradicted"
+    )
+    assert as_certificate.decision == "reject"
+
+
+def test_calibration_of_another_instrument_contradicts_support() -> None:
+    def edit(d: dict[str, Any]) -> None:
+        subject(d)["instrumentIri"] = "urn:vc4qi-example:item:other-gauge"
+
+    result = run_report(reissue_chain([(REPORT, edit)]))
+    assert entry(result, "support:same-instrument").state == "contradicted"
+    assert result.authorization[0].state == "established"
+    assert result.decision == "reject"
+
+
+def test_test_before_calibration_contradicts_support() -> None:
+    def edit(d: dict[str, Any]) -> None:
+        subject(d)["activityTime"] = "2026-01-10T09:00:00Z"
+
+    result = run_report(reissue_chain([(REPORT, edit)]))
+    assert entry(result, "support:calibration-precedes-use").state == "contradicted"
+    assert entry(result, "support:calibration-valid-at-use").state == "contradicted"
+    assert result.decision == "reject"
+
+
+def test_report_citing_no_calibration_is_not_established() -> None:
+    def edit(d: dict[str, Any]) -> None:
+        del d["evidence"]
+        d["relatedResource"] = [r for r in d["relatedResource"] if r["id"] != DCC]
+
+    result = run_report(reissue_chain([(REPORT, edit)]))
+    assert result.support[0].state == "not_established"
+    assert result.decision == "not_established"
+
+
+def test_support_requires_the_calibrations_own_authority() -> None:
+    def edit(d: dict[str, Any]) -> None:
+        result0(d, 1)["value"] = "15"
+
+    result = run_report(reissue_chain([(DCC, edit), (REPORT, None)]))
+    assert entry(result, "support:calibration-authority:group-0").state == (
+        "established"
+    )
+    assert entry(result, "support:calibration-authority:group-1").state == (
+        "contradicted"
+    )
+    assert result.support[0].state == "contradicted"
+    assert result.support[0].witness_ids == ()
+    assert result.decision == "reject"
+
+
+def test_certificates_carry_no_support_obligation() -> None:
+    assert run().support == ()
