@@ -9,6 +9,10 @@ import type { RelianceDecision } from '../reliance/types.js';
 import type { JsonObject, VerificationTrace } from '../types.js';
 import { verifyCredentialGraph, type VerifyGraphOptions } from '../verifier/index.js';
 
+/** The v0.3 graph verifier, no longer the default entry point (I5 step 4). Prefer `evaluateLegacyProfile`. */
+export { verifyCredentialGraph, type VerifyGraphOptions };
+export * as presentationQuery from '../presentation-query/index.js';
+
 /** The explicitly selected legacy profile: the v0.3 policy-resolved evidence-graph verifier. */
 export const LEGACY_PROFILE = Object.freeze({
   id: 'https://vc4qi.example/profiles/legacy-qi-vc-graph',

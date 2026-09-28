@@ -4,7 +4,8 @@
 
 VC4QI is migrating from the manuscript-v2.1 implementation to the standards-first
 reliance model. The new evaluator runs for the experimental RM, calibration and GS
-bindings; the default API remains the legacy verifier until the I5 switch.
+bindings and is the default API since the I5 switch (`evaluateReliance`); the legacy
+verifier is reachable only under the explicit `legacy` namespace.
 Documentation of the target is not execution evidence. Read, in order:
 
 1. The active user instructions.
