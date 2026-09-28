@@ -1374,3 +1374,18 @@ Ledger command 107 TS and 118 Python tests, exit 0. Full results: TS 398 passed 
 the 9 network-only legacy failures; Python 364 passed, 1 skip; Ruff 204 and mypy 198
 unchanged; build, lint, scenarios, schemas, resource/fixture/parity `--check` modes and
 the poster build pass. See `docs/plans/standards-first-i4-evidence.md`.
+
+## Standards-first I5 step 1: explicit legacy profile — 28 September 2026
+
+Added `packages/core-ts/src/legacy/index.ts` (exported as `legacy`) and
+`qi_vc_core/legacy`: `evaluateLegacyProfile` runs the v0.3 graph verifier on the
+original secured representation, refuses `skipProof`/`skipStatus`, and returns a
+`LegacyEvaluation` labelled with the legacy profile (`legacy-qi-vc-graph` 0.3), legacy
+decision semantics, the unmodified trace and explicit limitations; it is not a reliance
+result. The standards-first evaluator is unchanged and never falls back to it. The
+Python test catalog helper now adds unknown URIs like its TS counterpart.
+
+Ledger: V02 and V03 `passing` (63 passing, 2 excluded, 18 not implemented). Results: TS
+402 passed plus the 9 network-only legacy failures; Python 369 passed, 1 skip; Ruff 204
+and mypy 198 unchanged; build, lint, scenarios, schemas and poster build pass. See
+`docs/plans/standards-first-i5-evidence.md`.
