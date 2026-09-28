@@ -100,7 +100,7 @@ def _evaluate_proof(credential: JsonObject, policy: PolicyProfile, options: Veri
         # FC-1: absent key resolution fails closed regardless of policy mode. A
         # credential whose proof was never checked leaves the graph ill-formed,
         # and the model's guarantees do not range over an ill-formed graph
-        # (MODEL_SPEC section 4), so there is no weaker verdict to give.
+        # (docs/model.md section 4), so there is no weaker verdict to give.
         return [trace_entry(
             id=f"proof-{cid}",
             level="credential",

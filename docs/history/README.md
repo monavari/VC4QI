@@ -7,6 +7,6 @@ are preserved for provenance and are **not active instructions**:
 - [Manuscript-v2.1 developer model](model-spec-manuscript-v2.1.txt)
 
 The active source is the [standards-first handover](../plans/standards-first-handover-2026-09-21.txt),
-summarized by [the current model](../MODEL_SPEC.md) and
+summarized by [the current model](../model.md) and
 [ADR-010](../adrs/adr-010-standards-first-reliance.md). Historical tests and release
 statements describe their recorded revisions, not the new migration.

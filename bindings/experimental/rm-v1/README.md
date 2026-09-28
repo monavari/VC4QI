@@ -6,18 +6,18 @@ fictional RM binding. It is an experimental research fixture under the reserved
 legal authorization or production integration.
 
 The [manifest](manifest.json) covers the twelve categories required by the
-[binding design](../../../docs/BINDING_MANIFEST.md): identity/governance,
+[binding design](../../../docs/bindings.md): identity/governance,
 carrier/schema, fact mapping, cardinality, discovery/integrity, recognized types,
 principal/rights, scope/mapping, routes/restrictions, protection/time/resolution,
 support/disclosure and evidence/exclusions. Its [schema](manifest.schema.json)
 closes the top-level structure.
 
-`installation.status` is `incomplete`. The context and the seven schemas are now
-pinned in [`catalog.json`](catalog.json) (SHA-384 SRI over exact bytes) and load into
-the isolated static catalog in both languages. The manifest still cannot be selected:
-controller documents, the signed D/A slice with authorized key material, and status
-resources are pending, and the I1 tests must prove safe mapping from the original
-secured representations.
+The context and seven schemas are pinned in [`catalog.json`](catalog.json) (SHA-384 SRI
+over exact bytes). Signed controller documents, credentials and status lists are in
+[`test-vectors/`](test-vectors/README.md), and `evaluateRmSlice` (Python
+`evaluate_rm_slice`) evaluates them through gates 0–6. `installation.status` stays
+`incomplete` until an independent proof-suite transformation vector is in place; see
+[status](../../../docs/status.md#open-issues).
 
 - [`resources/contexts/rm-1.jsonld`](resources/contexts/rm-1.jsonld) is hand-authored,
   `@protected`, uses the `rm:` prefix (the VCDM 2.0 context already protects `exp`),
@@ -32,10 +32,6 @@ secured representations.
 `.example` URLs over the network. Installed evaluator identifiers name reviewed
 local procedures; they are data selectors and never issuer-supplied executable code.
 
-The existing v1 contexts, schemas and signed credentials implement the legacy model
-and are not silently treated as this binding. Signed I1 artifacts will be generated
-from source inputs; existing proofs will not be retained after content changes.
-
-Tests initially validate the manifest shape, exact identifier/version, explicit
-incomplete state and absence of legacy wire-field requirements. Vector evidence is
-added under `test-vectors/` as signed resources land.
+The repository-root v1 contexts, schemas and credentials implement the legacy model
+and are never treated as this binding. See [bindings](../../../docs/bindings.md) for how
+the RM, calibration and GS bindings relate.

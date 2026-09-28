@@ -1469,3 +1469,47 @@ Results: TS 439 passed plus the 9 network-only legacy failures; Python 409 passe
 skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios, schemas and all
 resource, fixture and parity `--check` modes pass. Ledger totals unchanged. All base use
 cases are migrated; the default-API switch (I5 step 4) remains.
+
+## Documentation consolidation and GitHub Pages documentation — 28 September 2026
+
+Restarted `claude/keen-edison-2k3ilo` from `main` after PR #15 merged (`c8c13d5`). At the
+user's request every project document was reviewed for correctness and clarity, and the
+set was reduced. New guide pages under `docs/`: `index` (documentation home), `model`
+(from MODEL_SPEC, VOCABULARY, POLICY_PROFILES, SCOPE_TERMS target rules, NON_GOALS),
+`status` (from IMPLEMENTATION_STATUS and the RECONCILIATION_TASK phase table),
+`use-cases` (scenario catalogue and both legacy tutorials, rewritten for the migrated
+bindings), `api` (API_MIGRATION, with an example that was executed and returns
+`accept`), `bindings` (BINDING_MANIFEST, the SCOPE_TERMS legacy inventory and both schema
+notes), `architecture` (ARCHITECTURE, the architecture overview and PYTHON_PARITY) and
+`applications` (ASSESSMENT, PRESENTATION_QUERY, SELECTIVE_DISCLOSURE). PAPER_FEEDBACK
+became `paper-feedback.md`, and the nine per-phase evidence files were merged verbatim
+(headings demoted) into `docs/plans/evidence.md`. `RECONCILIATION_TASK.md` was folded
+into the execution plan, the obsolete D-phase document inventory was removed,
+`docs/adr/ADR-006` moved into `docs/adrs/`, and an ADR index was added.
+
+Stale statements were corrected (for example "runtime migration not implemented", "RM
+manifest non-installable, slice pending", tutorials describing I4 witnesses as future
+work). The superseded model-allocation paragraph was removed from AGENTS.md and the plan,
+as CLAUDE.md already declared it superseded. Relative links in all Markdown files, the
+acceptance-ledger notes, the three binding manifests' `source`/`implementationEvidence`
+fields and code comments and legacy scope messages naming removed files were rewritten.
+The poster bundle was rebuilt because it embeds the RM manifest (one-line change).
+Historical texts (ADRs, the manuscript snapshots, this report, F-1 to F-5) keep their
+wording.
+
+GitHub Pages: `scripts/build-site.mjs` renders the published pages with GitHub-style
+heading anchors into `_site/` alongside `site/`. Links to other published pages become
+HTML links and other repository paths become GitHub links. `--check` validates every
+relative link and anchor in the repository's Markdown, except this report and
+`docs/history/`. New dependency: `marked` 18.0.14 (MIT, no dependencies, Node ≥ 20), a
+root dev dependency added to the lockfile by hand to avoid unrelated metadata churn;
+`pnpm install --frozen-lockfile --offline` passes. `pages.yml` now builds and uploads
+`_site`, and CI runs `pnpm docs:check`. Screenshots at desktop, phone (390 px) and dark
+mode showed no horizontal overflow; on phones the navigation collapses into a
+"Contents" menu.
+
+Results: build and lint exit 0; TS 439 passed plus the 9 network-only legacy failures;
+Python 409 passed, 1 skipped; Ruff 204 and mypy 198 unchanged; scenarios 2 passed;
+schemas exit 0; all six binding generator `--check` modes pass; `pnpm docs:check` valid
+(26 published pages); markdownlint over all 60 Markdown files, 0 issues. A planted
+broken link and a missing anchor both failed the check as intended.

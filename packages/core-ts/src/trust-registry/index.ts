@@ -115,7 +115,7 @@ function digestOf(document: JsonObject): string {
  * @throws {TrustRegistryVerificationError} on any condition that leaves the
  * registry untrusted. It never returns an unverified registry and never
  * degrades to a warning — an unverified registry makes the evidence graph
- * ill-formed (MODEL_SPEC §4), so there is no weaker verdict to return.
+ * ill-formed (docs/model.md §4), so there is no weaker verdict to return.
  */
 export async function verifyTrustRegistryCredential(
   credential: JsonObject,
