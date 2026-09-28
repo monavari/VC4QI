@@ -3,9 +3,11 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Any, Literal
 
+from .rm_v1_claims import ConformityRequirement, DecisionRule, MethodSuccession
 from .status_list import StatusPolicy
 from .types import VersionedIdentifier
 
@@ -32,6 +34,15 @@ class RelianceProfile:
     trust_anchors: tuple[TrustAnchor, ...]
     authority: AuthorityPolicy
     credential_status: StatusPolicy
+    # How a binding-declared method revision is interpreted; "none" leaves it unknown.
+    method_succession: MethodSuccession
+    requirements: tuple[ConformityRequirement, ...]
+    decision_rules: tuple[DecisionRule, ...]
+
+
+_SUCCESSION = ("accept-successor", "require-extension", "none")
+_ACCEPT_WHEN = ("value-at-most-limit", "value-plus-expanded-uncertainty-at-most-limit")
+_DECIMAL = re.compile(r"(0|[1-9][0-9]*)(\.[0-9]+)?")
 
 
 def _nonempty(value: Any) -> bool:
@@ -102,6 +113,53 @@ def load_reliance_profile(value: Any) -> RelianceProfile:
             "Reliance profile credentialStatus needs required, purposes and a positive "
             "maxAgeSeconds."
         )
+    mapping = value.get("mapping")
+    if (
+        not isinstance(mapping, dict)
+        or mapping.get("methodSuccession") not in _SUCCESSION
+    ):
+        raise TypeError(
+            "Reliance profile mapping.methodSuccession must be one of "
+            + ", ".join(_SUCCESSION)
+            + "."
+        )
+    conformity = value.get("conformity")
+    requirements = (
+        conformity.get("requirements") if isinstance(conformity, dict) else None
+    )
+    rules = conformity.get("decisionRules") if isinstance(conformity, dict) else None
+
+    def valid_requirement(r: Any) -> bool:
+        limit = r.get("upperLimit") if isinstance(r, dict) else None
+        return (
+            isinstance(r, dict)
+            and all(
+                _nonempty(r.get(k)) for k in ("id", "propertyIri", "quantityKindIri")
+            )
+            and isinstance(limit, dict)
+            and isinstance(limit.get("value"), str)
+            and _DECIMAL.fullmatch(limit["value"]) is not None
+            and _nonempty(limit.get("unit"))
+        )
+
+    if (
+        not isinstance(requirements, list)
+        or not isinstance(rules, list)
+        or not all(valid_requirement(r) for r in requirements)
+        or not all(
+            isinstance(r, dict)
+            and _nonempty(r.get("id"))
+            and r.get("acceptWhen") in _ACCEPT_WHEN
+            for r in rules
+        )
+    ):
+        raise TypeError(
+            "Reliance profile conformity needs requirements (id, propertyIri, "
+            "quantityKindIri, upperLimit) and decisionRules (id, acceptWhen)."
+        )
+    ids = [r["id"] for r in requirements] + [r["id"] for r in rules]
+    if len(set(ids)) != len(ids):
+        raise TypeError("Reliance profile conformity ids must be unique.")
     return RelianceProfile(
         id=value["id"],
         version=value["version"],
@@ -120,4 +178,16 @@ def load_reliance_profile(value: Any) -> RelianceProfile:
             purposes=tuple(status["purposes"]),
             max_age_seconds=max_age,
         ),
+        method_succession=mapping["methodSuccession"],
+        requirements=tuple(
+            ConformityRequirement(
+                r["id"],
+                r["propertyIri"],
+                r["quantityKindIri"],
+                r["upperLimit"]["value"],
+                r["upperLimit"]["unit"],
+            )
+            for r in requirements
+        ),
+        decision_rules=tuple(DecisionRule(r["id"], r["acceptWhen"]) for r in rules),
     )

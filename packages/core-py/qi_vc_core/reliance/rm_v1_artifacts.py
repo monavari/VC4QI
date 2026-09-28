@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import copy
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Literal
@@ -38,7 +39,22 @@ from .key_authorization import KeyAuthorization, authorize_assertion_method
 from .manifest import RM_V1_BINDING_ID, BindingManifest
 from .profile import RelianceProfile
 from .rm_v1 import RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, VC_V2_CONTEXT
-from .rm_v1_authority import NodeFacts, certificate_authority, certificate_support
+from .rm_v1_authority import (
+    BasisResult,
+    NodeFacts,
+    RouteResult,
+    certificate_authority,
+    certificate_support,
+    claim_authority,
+)
+from .rm_v1_claims import (
+    ClaimCoordinates,
+    MethodRevision,
+    Outcome,
+    claim_coverage,
+    evaluate_conformity,
+    map_claim,
+)
 from .status_list import (
     StatusOutcome,
     StatusPolicy,
@@ -637,7 +653,7 @@ def evaluate_rm_slice(
     manifest: BindingManifest,
     profile: RelianceProfile,
 ) -> RmSliceEvaluation:
-    """Evaluate a reliance request; the decision is never accept before I3/I4."""
+    """Evaluate a reliance request over gates 0-6; accept only if all is established."""
     if (
         manifest.id != RM_V1_BINDING_ID
         or profile.binding.id != manifest.id
@@ -780,7 +796,12 @@ def evaluate_rm_slice(
                 status_list = {}
                 list_state = checked.protection.state
         return evaluate_status(
-            document, status_list, list_state, policy, request.evaluation_time
+            document,
+            status_list,
+            list_state,
+            policy,
+            request.evaluation_time,
+            request.activity_time,
         )
 
     # Suspension entries are not a gate-3 property of the credential: they are read
@@ -902,6 +923,30 @@ def evaluate_rm_slice(
     winner = next((r for r in authority.routes if r.state == "established"), None)
 
     target_document = facts[request.target_id].document
+    mapping_section = manifest.data.get("scopeAndMapping")
+    revisions = tuple(
+        MethodRevision(r["method"], r["revises"])
+        for r in (
+            mapping_section.get("methodRevisions") or ()
+            if isinstance(mapping_section, Mapping)
+            else ()
+        )
+        if isinstance(r, Mapping)
+        and isinstance(r.get("method"), str)
+        and isinstance(r.get("revises"), str)
+    )
+
+    def scope_records(uri: str) -> list[dict[str, Any]]:
+        node = facts.get(uri)
+        subject = (node.document or {}).get("credentialSubject") if node else None
+        scope = subject.get("scope") if isinstance(subject, dict) else None
+        return (
+            [r for r in scope if isinstance(r, dict)] if isinstance(scope, list) else []
+        )
+
+    # Per claim: gate 4 maps the selected result into governed coordinates; gate 5
+    # requires ONE complete record of each route's own scope credential to cover it.
+    claims: list[tuple[Any, Outcome | None, dict[str, Outcome]]] = []
     authorization: list[ClaimAuthorizationResult] = []
     for claim in request.selected_claims:
         in_target = (
@@ -909,6 +954,7 @@ def evaluate_rm_slice(
             and _selected_result(claim.source_pointer)
             and resolve_pointer(target_document, claim.source_pointer) is not _MISSING
         )
+        coverage: dict[str, Outcome] = {}
         if not in_target:
             reason = (
                 "The target is not usable, so its claims are not read."
@@ -916,6 +962,7 @@ def evaluate_rm_slice(
                 else f"Selected claim {claim.source_pointer} is not a result "
                 "in the usable target."
             )
+            claims.append((claim, None, coverage))
             authorization.append(
                 ClaimAuthorizationResult(
                     state="not_established",
@@ -927,21 +974,65 @@ def evaluate_rm_slice(
                 )
             )
             continue
-        # Claim scope coverage is I4; until then a route never establishes the claim.
+        assert target_document is not None
+        claim_mapping = map_claim(
+            target_document,
+            claim.source_pointer,
+            resolve_pointer(target_document, claim.source_pointer),
+        )
+        claims.append((claim, claim_mapping, coverage))
+        coordinates = claim_mapping.coordinates
+        if coordinates is None:
+            authorization.append(
+                ClaimAuthorizationResult(
+                    state=claim_mapping.state,
+                    execution="executed",
+                    reasons=(f"Gate 4: {claim_mapping.reason}",),
+                    source_pointers=(claim.source_pointer,),
+                    claim_id=claim.id,
+                    route_witness_ids=(),
+                )
+            )
+            continue
+
+        def cover(
+            route: RouteResult,
+            coordinates: ClaimCoordinates | None = coordinates,
+            coverage: dict[str, Outcome] = coverage,
+        ) -> BasisResult:
+            assert route.scope is not None and coordinates is not None
+            covered = claim_coverage(
+                coordinates,
+                scope_records(route.scope),
+                revisions,
+                profile.method_succession,
+            )
+            sources = (route.scope, *covered.sources)
+            coverage[route.id] = Outcome(
+                covered.state, covered.reason, sources, record=covered.record
+            )
+            return BasisResult("claim-coverage", covered.state, covered.reason, sources)
+
+        composed = claim_authority(authority, cover)
+        chosen = next((r for r in composed.routes if r.state == "established"), None)
+        reasons = (composed.reason,) + (
+            (coverage[chosen.id].reason,)
+            if chosen
+            else tuple(f"{rid}: {c.reason}" for rid, c in coverage.items())
+        )
         authorization.append(
             ClaimAuthorizationResult(
-                state="contradicted"
-                if authority.state == "contradicted"
-                else "not_established",
+                state=composed.state,
                 execution="executed",
-                reasons=(
-                    authority.reason,
-                    "Claim scope coverage is implemented in I4.",
-                ),
+                reasons=reasons,
                 source_pointers=(claim.source_pointer,),
                 claim_id=claim.id,
-                route_witness_ids=(f"route:{winner.id}", *winner.chain)
-                if winner
+                route_witness_ids=(
+                    f"route:{chosen.id}",
+                    *chosen.chain,
+                    f"record:{coverage[chosen.id].record}",
+                )
+                if composed.state == "established" and chosen
                 else (),
             )
         )
@@ -955,19 +1046,73 @@ def evaluate_rm_slice(
             witness_ids=supported.chain if supported.state == "established" else (),
         ),
     )
+    # Gate 6: conformity is asked only of an authorized claim, under a verifier-owned
+    # requirement and decision rule selected by id.
     conformity: ConformityResult
-    if request.conformity is not None:
-        c = _not_run("Conformity is implemented in I4.")
-        conformity = ConformityRequestedResult(
-            state=c.state,
-            execution=c.execution,
-            reasons=c.reasons,
-            source_pointers=(),
-            requirement_id=request.conformity.requirement_id,
-            decision_rule_id=request.conformity.decision_rule_id,
-        )
-    else:
+    if request.conformity is None:
         conformity = ConformityNotRequested()
+    else:
+        wanted = request.conformity
+        requirement = next(
+            (r for r in profile.requirements if r.id == wanted.requirement_id), None
+        )
+        rule = next(
+            (r for r in profile.decision_rules if r.id == wanted.decision_rule_id), None
+        )
+        conformity_outcome: PredicateResult
+        if requirement is None or rule is None:
+            conformity_outcome = _predicate(
+                "not_established",
+                (
+                    f"Requirement {wanted.requirement_id} or decision rule "
+                    f"{wanted.decision_rule_id} is not configured in the verifier "
+                    "profile.",
+                ),
+            )
+        else:
+            applicable = [
+                (index, c)
+                for index, c in enumerate(claims)
+                if c[1] is not None
+                and c[1].coordinates is not None
+                and c[1].coordinates.property_iri == requirement.property_iri
+                and c[1].coordinates.quantity_kind_iri == requirement.quantity_kind_iri
+            ]
+            if len(applicable) != 1:
+                conformity_outcome = _predicate(
+                    "not_established",
+                    (
+                        f"Requirement {requirement.id} must apply to exactly one "
+                        f"selected claim; {len(applicable)} match.",
+                    ),
+                )
+            else:
+                index, (selected, selected_mapping, _) = applicable[0]
+                assert (
+                    selected_mapping is not None
+                    and selected_mapping.coordinates is not None
+                )
+                if authorization[index].state != "established":
+                    conformity_outcome = _not_run(
+                        f"Not evaluated: claim {selected.id} is not authorized."
+                    )
+                else:
+                    conformity_check = evaluate_conformity(
+                        selected_mapping.coordinates, requirement, rule
+                    )
+                    conformity_outcome = _predicate(
+                        conformity_check.state,
+                        (conformity_check.reason,),
+                        (selected.source_pointer,),
+                    )
+        conformity = ConformityRequestedResult(
+            state=conformity_outcome.state,
+            execution=conformity_outcome.execution,
+            reasons=conformity_outcome.reasons,
+            source_pointers=conformity_outcome.source_pointers,
+            requirement_id=wanted.requirement_id,
+            decision_rule_id=wanted.decision_rule_id,
+        )
 
     # Only the target and the credentials on the selected witness paths decide the
     # request; a failed credential on an unused alternative is diagnostic (C03, C07).
@@ -1075,6 +1220,31 @@ def evaluate_rm_slice(
                 )
             )
     target_use = node_use_key(target.artifact_id, target.digest_sri, "target", request)
+    for claim, traced_mapping, claim_coverage_by_route in claims:
+        if traced_mapping is not None:
+            trace.append(
+                TraceEntry(
+                    4,
+                    target_use,
+                    f"claim-mapping:{claim.id}",
+                    traced_mapping.state,
+                    "executed",
+                    traced_mapping.reason,
+                    traced_mapping.sources,
+                )
+            )
+        for route_id, traced_coverage in claim_coverage_by_route.items():
+            trace.append(
+                TraceEntry(
+                    5,
+                    target_use,
+                    f"claim-coverage:{claim.id}:{route_id}",
+                    traced_coverage.state,
+                    "executed",
+                    traced_coverage.reason,
+                    traced_coverage.sources,
+                )
+            )
     for claim_result in authorization:
         trace.append(
             TraceEntry(
@@ -1198,8 +1368,6 @@ def evaluate_rm_slice(
             trace=tuple(trace),
             resources=tuple(resources),
             limitations=(
-                "Claim scope coverage and conformity are implemented in I4; "
-                "until then no request is accepted.",
                 "Verification failures of credentials outside the selected route and "
                 "support chains are reported but do not decide the request.",
                 "Python rejects undefined terms/types via a sentinel @vocab, "

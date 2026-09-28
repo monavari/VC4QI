@@ -79,7 +79,10 @@ export function containedIn(
   const witnesses: ContainmentWitness[] = [];
   for (const child of children) {
     const childRange = recordInterval(child);
-    if (typeof childRange === 'string') return { state: 'not_established', reason: `${String(child.id)}: ${childRange}`, witnesses };
+    // A reversed interval is invalid data (contradicted); an unreadable one is unknown.
+    if (typeof childRange === 'string') {
+      return { state: /reversed/.test(childRange) ? 'contradicted' : 'not_established', reason: `${String(child.id)}: ${childRange}`, witnesses };
+    }
     const properties = list(child.allowedPropertyIris), methods = list(child.allowedMethodIris);
     if (properties.length === 0 || methods.length === 0 || typeof child.matrixIri !== 'string' ||
         typeof child.formIri !== 'string' || typeof child.quantityKindIri !== 'string') {

@@ -82,7 +82,7 @@ function request(overrides: Partial<Parameters<typeof createRelianceRequest>[0]>
     activityTime: NOW,
     suppliedEvidence: [URI.A, URI.O, URI.S, URI.H],
     resolverLimits: { maxResources: 64, maxDepth: 4, maxBytes: 5_000_000 },
-    conformity: { requirementId: 'as-plus-u-le-200', decisionRuleId: 'simple-acceptance' },
+    conformity: { requirementId: 'as-mass-fraction-max-200-mg-per-kg', decisionRuleId: 'guarded-acceptance-expanded-u' },
     ...overrides,
   });
 }
@@ -117,18 +117,18 @@ describe('RM v1 signed vertical slice (I1)', () => {
     expect((selected?.value as { data: { quantity: { value: string } } }).data.quantity.value).toBe('178');
   });
 
-  it('authentic D with A/O/S/H alone does not establish reliance', async () => {
+  it('P01: the signed chain for x = 178 is verified and relied upon, with witnesses', async () => {
     const { result } = await evaluateRmSlice(request(), catalogWith(), manifest, profile);
     expect(result.artifactVerification.every(r => r.state === 'established')).toBe(true);
     expect(result.authorization).toHaveLength(1);
-    // I3: the authority route and required support are established; the claim stays
-    // not established until claim scope coverage lands in I4.
-    expect(result.authorization[0]).toMatchObject({ state: 'not_established', execution: 'executed' });
-    expect(result.authorization[0]?.routeWitnessIds).toEqual(['route:operational-scope', URI.D, URI.O, URI.A]);
+    expect(result.authorization[0]).toMatchObject({ state: 'established', execution: 'executed' });
+    expect(result.authorization[0]?.routeWitnessIds)
+      .toEqual(['route:operational-scope', URI.D, URI.O, URI.A, `record:${URI.O}#scope-as-m1`]);
     expect(result.support[0]).toMatchObject({ state: 'established', execution: 'executed' });
     expect(result.support[0]?.witnessIds).toEqual([URI.D, URI.S, URI.H]);
-    expect(result.conformity).toMatchObject({ requested: true, state: 'not_established', execution: 'not_run' });
-    expect(result.decision).toBe('not_established');
+    expect(result.conformity).toMatchObject({ requested: true, state: 'established', execution: 'executed' });
+    expect(result.conformity.requested && result.conformity.reasons[0]).toMatch(/178 \+ 5 = 183 ≤ 200 mg\/kg/);
+    expect(result.decision).toBe('accept');
     expect(Object.isFrozen(result)).toBe(true);
   });
 
@@ -145,7 +145,9 @@ describe('RM v1 signed vertical slice (I1)', () => {
     expect(byPredicate('claim-authorization:as-mass-fraction')).toMatchObject({ gate: 5, execution: 'executed' });
     expect(byPredicate('route:operational-scope:bounded-projection')).toMatchObject({ gate: 5, state: 'established' });
     expect(byPredicate('support:same-batch')).toMatchObject({ gate: 6, state: 'established' });
-    expect(byPredicate('conformity:as-plus-u-le-200')).toMatchObject({ gate: 6, execution: 'not_run' });
+    expect(byPredicate('claim-mapping:as-mass-fraction')).toMatchObject({ gate: 4, state: 'established' });
+    expect(byPredicate('claim-coverage:as-mass-fraction:operational-scope')).toMatchObject({ gate: 5, state: 'established' });
+    expect(byPredicate('conformity:as-mass-fraction-max-200-mg-per-kg')).toMatchObject({ gate: 6, execution: 'executed', state: 'established' });
     expect(result.resources.filter(r => r.kind === 'artifact').map(r => r.uri).sort())
       .toEqual([URI.A, URI.D, URI.H, URI.O, URI.S].sort());
     expect(result.resources.every(r => r.digestSRI.startsWith('sha384-'))).toBe(true);
@@ -180,7 +182,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
       expect(result.resources.filter(r => r.kind === 'status').map(r => r.uri).sort()).toEqual([
         'https://lab.vc4qi.example/status/1', 'https://nab.vc4qi.example/status/1',
         'https://nab.vc4qi.example/status/suspension/1', URI.PRODUCER_STATUS]);
-      expect(result.decision).toBe('not_established');
+      expect(result.decision).toBe('accept');
     });
 
     it('P09: an authenticated revocation of the target contradicts it and rejects', async () => {
@@ -307,7 +309,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
       const later = await evaluateRmSlice(request({ evaluationTime: '2029-01-01T00:00:00Z' }), catalog, manifest, profile);
       const again = await evaluateRmSlice(request(), catalog, manifest, profile);
       expect([now.result.decision, later.result.decision, again.result.decision])
-        .toEqual(['not_established', 'reject', 'not_established']);
+        .toEqual(['accept', 'reject', 'accept']);
     });
 
     it('P07: a placeholder proof never verifies', async () => {

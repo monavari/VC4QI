@@ -432,8 +432,9 @@ def test_c03_contradicted_route_and_complete_alternative() -> None:
         "route:direct-accreditation",
         URI["D"],
         URI["A2"],
+        f"record:{URI['A2']}#scope-as",
     )
-    assert result.decision == "not_established"
+    assert result.decision == "accept"
 
 
 def test_c04_every_route_contradicted_rejects() -> None:
@@ -488,7 +489,7 @@ def test_c07_revoked_unused_alternative_is_diagnostic() -> None:
     assert entry(result, "route:direct-accreditation").state == "contradicted"
     assert entry(result, "restriction:accreditation-suspension").state == "established"
     assert entry(result, "authority").state == "established"
-    assert result.decision == "not_established"
+    assert result.decision == "accept"
 
 
 def test_unreadable_suspension_status_never_holds() -> None:
