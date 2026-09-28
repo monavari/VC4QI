@@ -1,0 +1,28 @@
+{
+  "id": "https://vc4qi.example/profiles/gs-verifier",
+  "version": "1",
+  "status": "experimental",
+  "description": "Verifier-owned reliance profile for gs-scheme-authorization under the experimental GS certification v1 binding: the GS mark is relied on only through competence AND scheme permission. A fictional profile example, not a universal GS or legal rule.",
+  "binding": {"id": "https://vc4qi.example/bindings/gs/1", "version": "1"},
+  "trustAnchors": [
+    {"id": "https://nab.vc4qi.example/controller", "purposes": ["accredit-certification-bodies"]},
+    {"id": "https://scheme.vc4qi.example/controller", "purposes": ["authorize-gs-certification"]}
+  ],
+  "authority": {
+    "certificateRoutes": ["competence-and-scheme-permission"],
+    "globalRestrictions": [],
+    "maxRoutes": 4
+  },
+  "credentialStatus": {
+    "required": true,
+    "purposes": ["revocation"],
+    "maxAgeSeconds": 2592000
+  },
+  "mapping": {
+    "methodSuccession": "none"
+  },
+  "conformity": {
+    "requirements": [],
+    "decisionRules": []
+  }
+}

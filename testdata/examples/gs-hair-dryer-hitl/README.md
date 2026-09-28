@@ -2,6 +2,10 @@
 
 **Generated legacy fixture; not a standards-first conformance claim.**
 
+Retained GS application variant: its signed fixtures are evaluated under the explicit
+legacy profile (`legacy.evaluateLegacyProfile`), which verifies their original
+signatures. Its application assessments are not migrated to a standards-first binding.
+
 The fictional GS body performs in-house testing and inspection; a manufacturer issues the serialized-product target under the type certificate. Preserve application assessments.
 
 Existing policy and relation fields describe the old runtime. The fixture's assurance

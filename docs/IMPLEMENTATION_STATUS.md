@@ -148,7 +148,9 @@ total). Calibration-capability (a bounded operational scope within the accredita
 with no widening) and nmi-legal-mandate (a statutory route with no accreditation root)
 are migrated to the same binding, as is test-report-supported-dcc, where a test report
 requires its instrument's independently authorized calibration as support.
-Gs-scheme-authorization and the default-API switch are the rest of I5.
+Gs-scheme-authorization is migrated to a new GS certification binding that needs
+competence AND scheme permission. Both GS application variants are retained under the
+explicit legacy profile. The default-API switch is the rest of I5.
 See the [I5 evidence](plans/standards-first-i5-evidence.md).
 
 ## Migration and historical claims

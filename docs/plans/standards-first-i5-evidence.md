@@ -1,6 +1,6 @@
 # I5 evidence: legacy isolation, migration and the default API
 
-**28 September 2026. I5 steps 1–2 and steps 3a–3b done in both languages.**
+**28 September 2026. I5 steps 1–3 done in both languages.**
 
 - Legacy evaluation is reachable only through an explicitly selected, labelled legacy
   profile, with no fallback (V02, V03).
@@ -13,8 +13,11 @@
 - The test-report-supported-dcc use case is migrated to the same binding, with an
   instrument-calibration support obligation (step 3b).
 
-Still open in I5: migration of gs-scheme-authorization, keeping both GS application
-variants, and switching the default API.
+- The gs-scheme-authorization use case is migrated to a new signed GS certification
+  binding (competence AND scheme permission), and both GS application variants are
+  retained under the explicit legacy profile (step 3c).
+
+Still open in I5: switching the default API (step 4).
 
 ## Step 1: explicit legacy profile (V02, V03)
 
@@ -154,3 +157,46 @@ Step 3b results:
 - Build, lint, scenarios, schemas and all resource, fixture and parity `--check` modes
   pass.
 - Ledger totals unchanged (66 passing, 2 excluded, 15 not implemented).
+
+## Step 3c: gs-scheme-authorization and the GS application variants
+
+A new experimental binding, `bindings/experimental/gs-v1`, has its own context,
+generated schemas and catalog, manifest, verifier profile and generated signed
+fixtures. The fixtures are `GS-A` (the NAB's accreditation of a GS body for toys and
+household appliances), `GS-S` (a fictional scheme owner's authorization to award the
+GS mark, for toys only) and `GSC-1` (a toy certificate citing both). The TS modules are
+`reliance/gs-v1.ts`, `gs-v1-node.ts`, `gs-v1-evaluator.ts` and `gs-v1-slice.ts`; the
+Python module is `qi_vc_core/reliance/gs_v1.py`.
+
+| Part | Behaviour |
+| --- | --- |
+| Route `competence-and-scheme-permission` | Two halves, both always evaluated. Competence needs a typed `GsAccreditation` reference, grantee, `certifyProducts` and anchor purpose `accredit-certification-bodies`. Scheme permission needs a typed `GsSchemeAuthorization` reference, grantee, `awardGsMark` and anchor purpose `authorize-gs-certification`. Both grants must be in force at the certification time. The route chain is [certificate, GS-A, GS-S] |
+| Gate 4 | The selected claim is the certification statement (`/credentialSubject/certification`): a product category and the standards certified against |
+| Gate 5 coverage | One competence record must cover the category and every standard, and one scheme record the category. A record listing standards against a certification naming none is `not_established`, not a bypass |
+| Retained variants | `gs-hair-dryer-hitl` and `gs-hair-dryer-external-test-lab-hitl` keep their signed legacy fixtures and pass under the explicit legacy profile. Their assessments are not migrated |
+
+| Case | Input | Result |
+| --- | --- | --- |
+| Use case | GSC-1 | Accepted; witnesses route, GSC-1, GS-A, GS-S, `record:GS-A#scope-toys`, `record:GS-S#scope-toys` |
+| C02 | No scheme reference | Scheme half not_established; not_established |
+| Competence missing | No competence reference | Competence half not_established; not_established |
+| Grantee | GS-S naming another body | `scheme-grantee` contradicted; reject |
+| Category | Household appliance (competence covers, scheme does not) | Coverage contradicted; reject |
+| Standard | EN 71-3, outside GS-A | Contradicted; reject |
+| No bypass | No standards named | `not_established` |
+| Anchor | Scheme owner anchored only for accreditation | `scheme-anchor` not_established |
+| Time | GS-S valid only from after the certification | `scope-in-force-at-activity` not_established |
+| Variants | Both GS hair-dryer variants under the legacy profile | Target proof valid, no invalid proof, accepted and labelled legacy |
+
+Step 3c results:
+
+- TS 439 passed plus the 9 network-only legacy failures; Python 409 passed, 1 skipped.
+- Ruff 204 and mypy 198 unchanged.
+- Build, lint, scenarios, schemas and all resource, fixture and parity `--check` modes
+  (RM, calibration, GS) pass.
+- Ledger totals unchanged (66 passing, 2 excluded, 15 not implemented).
+
+All base use cases are now migrated. Reference-material-recursive is the RM v1 slice
+(I1–I4). Calibration-direct-accreditation, calibration-capability, nmi-legal-mandate
+and test-report-supported-dcc are in calibration v1. Gs-scheme-authorization is in
+GS v1. Both GS application variants are retained under the legacy profile.
