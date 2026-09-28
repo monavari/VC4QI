@@ -43,6 +43,20 @@ function expectedContexts(type: unknown): readonly string[] {
   return type === 'BitstringStatusListCredential' ? [VC_V2_CONTEXT] : [VC_V2_CONTEXT, RM_V1_CONTEXT];
 }
 
+/**
+ * The binding-specific part of artifact verification: recognized types, the schema each
+ * must declare, and the exact context list each must use. RM v1 is the default.
+ */
+export interface ArtifactBinding {
+  readonly name: string;
+  readonly schemas: Readonly<Record<string, string>>;
+  readonly contexts: (type: unknown) => readonly string[];
+}
+
+export const RM_V1_ARTIFACT_BINDING: ArtifactBinding = Object.freeze({
+  name: 'RM v1', schemas: RM_V1_ARTIFACT_SCHEMAS, contexts: expectedContexts,
+});
+
 export type ProtectionCheck =
   | 'resolve' | 'parse' | 'carrier' | 'type' | 'schema' | 'proof' | 'key' | 'signature';
 
@@ -106,6 +120,8 @@ export interface VerifyRmArtifactOptions {
    * request budget counts retrieved evidence, not local pinned resources.
    */
   readonly staticResolver?: ResourceResolver;
+  /** Recognized types, schemas and contexts; defaults to the RM v1 binding. */
+  readonly binding?: ArtifactBinding;
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -194,6 +210,7 @@ export async function verifyRmArtifact(
 ): Promise<RmArtifactVerification> {
   const checks: CheckOutcome[] = [];
   const staticResolver = options.staticResolver ?? session;
+  const binding = options.binding ?? RM_V1_ARTIFACT_BINDING;
   const skipped = notRun('Not evaluated because protection is not established.');
   const finish = (
     extra: Partial<RmArtifactVerification> = {},
@@ -238,7 +255,7 @@ export async function verifyRmArtifact(
   checks.push({ check: 'parse', state: 'established', reason: 'Strict UTF-8 JSON object.' });
 
   const contexts = document['@context'];
-  const expected = expectedContexts(Array.isArray(document.type) ? document.type[1] : undefined);
+  const expected = binding.contexts(Array.isArray(document.type) ? document.type[1] : undefined);
   if (!Array.isArray(contexts) || contexts.length !== expected.length ||
       expected.some((uri, index) => contexts[index] !== uri)) {
     return fail('carrier', 'not_established',
@@ -248,9 +265,9 @@ export async function verifyRmArtifact(
 
   const types = Array.isArray(document.type) ? document.type : [];
   const artifactType = types.length === 2 && types[0] === 'VerifiableCredential' ? String(types[1]) : undefined;
-  const schemaId = artifactType === undefined ? undefined : RM_V1_ARTIFACT_SCHEMAS[artifactType];
+  const schemaId = artifactType === undefined ? undefined : binding.schemas[artifactType];
   if (schemaId === undefined) {
-    return fail('type', 'not_established', 'Credential type is not a recognized RM v1 artifact type.', { digestSRI });
+    return fail('type', 'not_established', `Credential type is not a recognized ${binding.name} artifact type.`, { digestSRI });
   }
   if (Array.isArray(document.credentialSchema)) {
     return fail('type', 'not_established',
