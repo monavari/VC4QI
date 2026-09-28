@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add an experimental signed GS certification binding and migrate
+  gs-scheme-authorization: the GS mark is relied on only through competence AND scheme
+  permission, with the certification covered by both scopes. Both GS application
+  variants are retained under the explicit legacy profile.
+
 - Migrate test-report-supported-dcc to the calibration binding: test reports are
   authorized by a testing accreditation and require their instrument's calibration as
   support, including that calibration's own authority over every measurement group.

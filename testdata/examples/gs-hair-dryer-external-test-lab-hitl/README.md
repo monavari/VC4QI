@@ -2,6 +2,10 @@
 
 **Generated legacy fixture; not a standards-first conformance claim.**
 
+Retained GS application variant: its signed fixtures are evaluated under the explicit
+legacy profile (`legacy.evaluateLegacyProfile`), which verifies their original
+signatures. Its application assessments are not migrated to a standards-first binding.
+
 The external laboratory has its own scope bounded by its accreditation and issues the report under that authority. The GS body is the customer, with separate certification/inspection authority; commissioning is not laboratory competence.
 
 Existing policy and relation fields describe the old runtime. The fixture's assurance

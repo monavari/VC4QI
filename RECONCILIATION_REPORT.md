@@ -1447,3 +1447,25 @@ Results: TS 429 passed plus the 9 network-only legacy failures; Python 399 passe
 skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios, schemas and all
 resource, fixture and parity `--check` modes pass. Ledger totals unchanged. See
 `docs/plans/standards-first-i5-evidence.md`.
+
+## Standards-first I5 step 3c: gs-scheme-authorization and the GS variants — 28 September 2026
+
+New experimental binding `bindings/experimental/gs-v1`: hand-authored context,
+generated schemas and catalog (`scripts/gs-v1/build-resources.mjs`), manifest, profile
+`gs-verifier-1` and generated signed fixtures
+(`packages/core-ts/scripts/generate-gs-v1-artifacts.ts`: GS-A, GS-S, GSC-1, three
+controllers and status lists). The route `competence-and-scheme-permission` evaluates
+both halves (typed reference, grantee, activity, anchor purpose) plus validity at the
+certification time. Coverage needs one competence record for the category and every
+standard AND one scheme record for the category, with no empty-standards bypass. TS
+modules `reliance/gs-v1*.ts` are exported as `reliance/gs-v1-node` and
+`reliance/gs-v1-slice`; the Python module is `qi_vc_core/reliance/gs_v1.py`. Both GS
+hair-dryer application variants are retained unchanged as signed legacy fixtures and are
+tested under the explicit legacy profile in both languages. Their assessments are not
+migrated. The step 3b commit was delayed by transient classifier errors on the commit
+command; it was pushed as 1fbfd4b before this step.
+
+Results: TS 439 passed plus the 9 network-only legacy failures; Python 409 passed, 1
+skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios, schemas and all
+resource, fixture and parity `--check` modes pass. Ledger totals unchanged. All base use
+cases are migrated; the default-API switch (I5 step 4) remains.

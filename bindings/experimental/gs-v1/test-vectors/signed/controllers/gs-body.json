@@ -1,0 +1,15 @@
+{
+  "@context": "https://www.w3.org/ns/cid/v1",
+  "id": "https://gs-body.vc4qi.example/controller",
+  "verificationMethod": [
+    {
+      "id": "https://gs-body.vc4qi.example/controller#key-1",
+      "type": "Multikey",
+      "controller": "https://gs-body.vc4qi.example/controller",
+      "publicKeyMultibase": "z6MkenuCyMmvdr61hxQceLcMMwy7YdtwaqF7qVD1S5aSESYN"
+    }
+  ],
+  "assertionMethod": [
+    "https://gs-body.vc4qi.example/controller#key-1"
+  ]
+}
