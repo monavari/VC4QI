@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
-// Builds the self-contained verifier used by the poster page:
+// Builds the self-contained evaluator used by the demonstrator page:
 //   pnpm -C apps/demo-web build:poster   ->  site/m375a/verifier.js
-// The pinned RM v1 resources and signed fixtures are embedded at build time from
-// bindings/experimental/rm-v1 (exact file text, with the index's SHA-384 digests),
-// so the page verifies the same bytes as the repository tests and fetches nothing.
+// The pinned RM v1 resources, signed fixtures and verifier profile are embedded at
+// build time from bindings/experimental/rm-v1 (exact file text, with the index's
+// SHA-384 digests), so the page evaluates the same bytes as the repository tests and
+// fetches nothing. node:zlib becomes a bounded gunzip shim for status lists.
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
@@ -26,6 +27,7 @@ const resourcesPlugin: Plugin = {
     if (id !== '\0rm-v1-resources') return undefined;
     const data = {
       manifest: JSON.parse(readFileSync(resolve(RM, 'manifest.json'), 'utf8')),
+      profile: JSON.parse(readFileSync(resolve(RM, 'profiles/rm-verifier-1.json'), 'utf8')),
       files: [
         ...pinnedFiles(resolve(RM, 'catalog.json')),
         ...pinnedFiles(resolve(RM, 'test-vectors/signed/catalog.json')),
@@ -40,7 +42,7 @@ export default defineConfig({
   resolve: {
     alias: {
       'node:crypto': r('src/stubs/crypto.ts'),
-      'node:zlib': r('src/stubs/zlib.ts'),
+      'node:zlib': r('poster/zlib-browser.ts'),
     },
   },
   build: {
