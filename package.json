@@ -14,17 +14,20 @@
     "test": "pnpm -r --if-present test",
     "test:scenarios": "vitest run --config vitest.config.ts",
     "build": "pnpm -r --if-present build",
-    "validate:schemas": "node scripts/validate-schemas.js"
+    "validate:schemas": "node scripts/validate-schemas.js",
+    "docs:build": "node scripts/build-site.mjs",
+    "docs:check": "node scripts/build-site.mjs --check"
   },
   "devDependencies": {
-    "typescript": "^5.4.5",
-    "tsx": "^4.11.0",
-    "vitest": "^1.6.0",
     "@typescript-eslint/eslint-plugin": "^7.10.0",
     "@typescript-eslint/parser": "^7.10.0",
-    "eslint": "^9.3.0",
     "ajv": "^8.16.0",
-    "ajv-formats": "^3.0.1"
+    "ajv-formats": "^3.0.1",
+    "eslint": "^9.3.0",
+    "marked": "18.0.14",
+    "tsx": "^4.11.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
   },
   "packageManager": "pnpm@10.15.1"
 }

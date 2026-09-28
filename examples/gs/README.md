@@ -11,6 +11,8 @@ under its own accreditation/scheme scope. Complete graphs and policy/assessments
 under `testdata/examples/`; the older `gs-scheme-authorization` example is also retained.
 Fictional test keys and actors do not establish legal GS compliance or endorsement.
 
-I5 migrates native bindings; I7 retains graph inspection and honest assurance displays.
-See [assessment](../../docs/ASSESSMENT.md) and [scenario catalogue](../../docs/scenarios/scenario-catalogue.md).
+Both variants are kept as signed legacy fixtures and verify under the explicit legacy
+profile; their assessments are not migrated. The gs-scheme-authorization case is
+migrated to the [GS v1 binding](../../bindings/experimental/gs-v1/README.md).
+See [assessment](../../docs/applications.md#verifier-assessments) and [scenario catalogue](../../docs/use-cases.md).
 Regenerate signed artifacts through generators; never retain a proof after changing JSON.

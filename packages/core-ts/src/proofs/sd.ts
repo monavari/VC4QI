@@ -6,7 +6,7 @@
 // This module is the ONLY place in the project that uses an external VC library
 // (the three Digital Bazaar SD packages + jsonld-signatures, its required driver).
 // It sits ALONGSIDE the hand-rolled eddsa-rdfc-2022 implementation in ./index.ts
-// and never replaces it. See RECONCILIATION_TASK.md §10 (Phase 6) and decisions
+// and never replaces it. See ADR-009 and decisions
 // D-SD-1..D-SD-5 in RECONCILIATION_REPORT.md.
 //
 // Three operations, matching the SD lifecycle:

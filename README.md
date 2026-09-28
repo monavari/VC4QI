@@ -1,66 +1,40 @@
 # VC4QI
 
-VC4QI is a research reference implementation for evaluating reliance on Quality
-Infrastructure credentials. Credentials represent institutional authority and evidence;
-verifier-selected profiles and accepted semantics determine what a verifier can rely on.
+**Verifiable Credentials for Quality Infrastructure.** A research reference
+implementation, from BAM, for deciding what a verifier may rely on when it receives
+accreditation, calibration, reference-material or certification credentials.
 
 [![CI](https://github.com/monavari/VC4QI/actions/workflows/ci.yml/badge.svg)](https://github.com/monavari/VC4QI/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-## Project website and poster demo
+- **Website and documentation:** <https://monavari.github.io/VC4QI/>
+- **BAM-M375a demonstrator:** <https://monavari.github.io/VC4QI/m375a/>
 
-The static site in [`site/`](site/) is published to GitHub Pages by
-[`pages.yml`](.github/workflows/pages.yml):
+## The idea
 
-- Project page: <https://monavari.github.io/VC4QI/>
-- BAM-M375a demonstrator: <https://monavari.github.io/VC4QI/m375a/>
-  (QR code: [`site/assets/qr-m375a.svg`](site/assets/qr-m375a.svg))
+Credentials represent institutional authority and evidence; they do not create it. The
+verifier selects a profile, and the evaluator answers each question separately: is the
+credential authentic and current, is the issuer authorized for this exact claim, is the
+required support in place, and does the value meet the verifier's own requirement? Each
+answer is *established*, *contradicted* or *not established*, and "cannot tell" never
+counts as yes.
 
-The demonstrator runs the repository's `verifyRmArtifact` (gates 0–3) in the browser on the
-signed RM v1 fixtures, bundled by `pnpm -C apps/demo-web build:poster` into
-`site/m375a/verifier.js` (CI checks the bundle is current). Gates 4–6 (meaning,
-authority and scope, support and decision) are a labelled preview in
-`apps/demo-web/poster/preview-rules.ts`, not the repository evaluator; status is not
-checked yet. Authorities and keys are fictional.
+In the fictional reference-material example, an arsenic value of 178 mg/kg is accepted,
+197 mg/kg is authorized but fails the verifier's limit, and 520 mg/kg is outside the
+producer's scope. These cases run on signed test credentials in both languages.
 
-## Current status
+## Status
 
-The documentation now specifies the **standards-first target**. Runtime code, v1 schemas,
-policies and fixtures still implement the legacy manuscript-v2.1 model. I0 restored scope safety and locked workspace setup; the evaluator migration is
-tracked; this branch is not a new release or proof that the revised paper's
-full witness executes. TypeScript is canonical; Python mirrors supported semantics.
+The standards-first evaluator decides requests for all base use cases (reference
+material, calibration, statutory metrology, test reports and GS certification) on signed
+fixtures, in TypeScript with a Python mirror. The default public API is still the legacy
+graph verifier until the planned API switch. Authorities, keys and grants are
+fictional; no release, real accreditation or external endorsement is claimed. See
+[status](docs/status.md).
 
-| Capability | Current status |
-| --- | --- |
-| Legacy graph/policy/scope checks and application assessments | Implemented, with known gaps documented in the migration plan |
-| TS ECDSA-SD issuance/derivation/verification | Implemented for existing fixtures; new binding/disclosure rules pending |
-| Python processing of TS-derived SD subsets | Semantic evaluation only; no Python SD crypto |
-| Demo | Seven legacy entries covering A–F, including two GS variants; assurance varies by scenario |
-| New reliance contract / RM binding | TS/Python request/result and three-state operators; RM v1 manifest is explicitly incomplete and non-installable |
-| Complete routes and signed RM witness | Runtime implementation pending |
-| Authority-issued scope answers / Recognized Entities | Planned experimental adapters, not implemented integrations |
-| Verifier HTTP service / LIMS adapter | Scaffold directories |
+## Run it
 
-See [implementation status](docs/IMPLEMENTATION_STATUS.md) for dated test evidence and
-limitations. Existing citation metadata describes historical v0.3.0; no new DOI, release
-or external endorsement is claimed. The v0.1 chain remains in the archive branch.
-
-## Target model
-
-Accepted bindings interpret protected native facts into internal obligations. The baseline
-uses recognized `termsOfUse` authorization policies, `evidence` for support, selected
-resource integrity and applicable schemas. The core requires no universal serialized edge
-vocabulary. Original signatures, authorized keys, time and mappings are checked before
-facts establish authority or support.
-
-Document verification, authorization, support, conformity and overall reliance are separate.
-Missing required evidence produces `not_established`; it cannot be hidden in a warning count.
-The fictional RM example separates 178 mg/kg accepted, 197 authorized but rejected for
-conformity, and 520 rejected for scope. These are target acceptance cases until I4 is proven.
-
-## Run the current implementation
-
-Install Node 20, pnpm 10.15.1, Python 3.12 and uv 0.12.17. From the repository root:
+Install Node 20, pnpm 10.15.1, Python 3.12 and uv 0.12.17, then:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -68,38 +42,30 @@ uv sync --locked --all-packages --extra dev
 pnpm -r build
 pnpm -C packages/core-ts test
 .venv/bin/python -m pytest packages/core-py/tests
-pnpm test:scenarios
-pnpm validate:schemas
 ```
 
-The last two commands cover legacy fixtures: root scenarios skip graph proofs and schema
-validation skips some examples lacking `$schema`. They do not establish the new signed RM
-baseline. Setup/check limitations are in [CONTRIBUTING](CONTRIBUTING.md).
-Run the browser demo with `pnpm -C apps/demo-web dev`. Its two GS variants enable graph
-proof checks with test keys; other entries currently skip them. Simulation is not verified
-reliance even if the current legacy UI presents a green result.
-
-## Structure and API
-
-`packages/core-ts` and `packages/core-py` contain the implemented libraries;
-`apps/demo-web` contains the demo. `contexts/v1`, `schemas/v1`, `policies` and `testdata`
-contain existing legacy artifacts. `docs` distinguishes the target model and actual status.
-
-The current entry points remain `verifier.verifyCredentialGraph` in TS and
-`verify_credential_graph` in Python. Their `verified` result is a legacy contract, not the
-new reliance result. See [API migration](docs/API_MIGRATION.md) and the explicitly legacy
-[DCC](docs/tutorials/01-issue-and-verify-dcc.md) / [RM](docs/tutorials/02-issue-and-verify-drmd.md)
-walkthroughs. No future API is presented as runnable code.
+Run the browser demo with `pnpm -C apps/demo-web dev`, and build the documentation site
+locally with `pnpm docs:build` (output in `_site/`). More checks are listed in
+[CONTRIBUTING](CONTRIBUTING.md).
 
 ## Documentation
 
-- [Active task](RECONCILIATION_TASK.md) and [execution plan](docs/plans/standards-first-reconciliation.md)
-- [Model](docs/MODEL_SPEC.md), [architecture](docs/ARCHITECTURE.md) and [binding design](docs/BINDING_MANIFEST.md)
-- [Vocabulary](docs/VOCABULARY.md), [profiles](docs/POLICY_PROFILES.md) and [scope terms](docs/SCOPE_TERMS.md)
-- [Assessment](docs/ASSESSMENT.md), [queries](docs/PRESENTATION_QUERY.md) and [selective disclosure](docs/SELECTIVE_DISCLOSURE.md)
-- [Parity](docs/PYTHON_PARITY.md), [scenario catalogue](docs/scenarios/scenario-catalogue.md) and [non-goals](docs/NON_GOALS.md)
-- [Requirements/evidence map](docs/plans/standards-first-traceability.md) and [running report](RECONCILIATION_REPORT.md)
+| Page | Contents |
+| --- | --- |
+| [Reliance model](docs/model.md) | The rules: carriers, states, gates, authority, scope, support |
+| [Status](docs/status.md) | What runs today, the acceptance ledger and open issues |
+| [Use cases](docs/use-cases.md) | The eight example scenarios and how to run them |
+| [API and migration](docs/api.md) | The reliance API, the legacy profile and the planned switch |
+| [Bindings](docs/bindings.md) | How each credential family is interpreted |
+| [Architecture](docs/architecture.md) | Code layout, gates and TypeScript–Python parity |
+| [Applications](docs/applications.md) | Assessments, presentation queries and selective disclosure |
+
+Project records: [execution plan](docs/plans/standards-first-reconciliation.md),
+[implementation evidence](docs/plans/evidence.md),
+[acceptance ledger](docs/plans/standards-first-acceptance.csv),
+[architecture decisions](docs/adrs/README.md), [changelog](CHANGELOG.md) and the running
+[report](RECONCILIATION_REPORT.md).
 
 ## License
 
-Code: [Apache-2.0](LICENSE). Documentation: [CC-BY-4.0](LICENSE-docs).
+Code: [Apache-2.0](LICENSE). Documentation: [CC BY 4.0](LICENSE-docs).
