@@ -8,7 +8,12 @@ from .types import (
     VerificationTrace,
 )
 from .issuer import issue, issue_dcc, issue_rmc
-from .verifier import VerifyGraphOptions, verify_credential_graph
+from .reliance.evaluate import SUPPORTED_BINDINGS, evaluate_reliance, install_binding
+
+# Explicit legacy compatibility (the v0.3 graph verifier), labelled legacy, not the
+# default. Imported before assessment: the legacy modules resolve their import cycle
+# from the verifier side.
+from . import legacy
 from .assessment import AssessmentRequest, AssessmentResult
 
 __all__ = [
@@ -21,8 +26,10 @@ __all__ = [
     "issue",
     "issue_dcc",
     "issue_rmc",
-    "verify_credential_graph",
-    "VerifyGraphOptions",
+    "evaluate_reliance",
+    "install_binding",
+    "SUPPORTED_BINDINGS",
+    "legacy",
     "AssessmentRequest",
     "AssessmentResult",
 ]

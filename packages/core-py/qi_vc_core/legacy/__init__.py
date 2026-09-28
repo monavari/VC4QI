@@ -15,6 +15,21 @@ from typing import Any, Literal
 
 from ..verifier.graph_verifier import VerifyGraphOptions, verify_credential_graph
 
+# The v0.3 graph verifier is no longer the default entry point (I5 step 4); it and
+# the presentation-query mappings stay reachable here, labelled legacy. The
+# presentation-query import must follow the verifier's (legacy import cycle).
+__all__ = [
+    "LEGACY_LIMITATIONS",
+    "LEGACY_PROFILE",
+    "LegacyEvaluation",
+    "VerifyGraphOptions",
+    "evaluate_legacy_profile",
+    "presentation_query",
+    "verify_credential_graph",
+]
+
+from .. import presentation_query  # noqa: E402
+
 LEGACY_PROFILE = {
     "id": "https://vc4qi.example/profiles/legacy-qi-vc-graph",
     "version": "0.3",

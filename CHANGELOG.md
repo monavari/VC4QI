@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Breaking (drafted as 0.4.0): the default API is standards-first reliance.** The
+  package root exports `evaluateReliance(request, catalog, manifest, profile)` and
+  `SUPPORTED_BINDINGS` (Python `evaluate_reliance`, `install_binding`), which run the
+  installed binding's gate 0–6 evaluator with no fallback. The v0.3 graph verifier and
+  presentation queries move under `legacy` (`legacy.verifyCredentialGraph`,
+  `legacy.presentationQuery`; subpaths `@qi-vc/core/legacy/verifier` and
+  `@qi-vc/core/legacy/presentation-query`; Python `qi_vc_core.legacy`). A Node helper,
+  `installBinding(directory, profileName)`, loads a binding's manifest, one profile and
+  its pinned resources. The default path imports no legacy module (checked by a test).
+
 - The demonstrator moves to `site/demo/` and covers four examples, chosen from a top bar:
   RM (BAM-M375a), DCC (direct accreditation, capability scope, NMI mandate, supported
   test report), GS (toy accepted, household appliance rejected because the scheme

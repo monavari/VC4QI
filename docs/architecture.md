@@ -46,9 +46,10 @@ Design rules:
 
 `verifier/`, `evidence/`, `edge/`, `policy/`, `scope/`, `assessment/` and
 `presentation-query/` implement the manuscript-v2.1 graph model with
-`CredentialEvidenceReference` and three serialized relations. They remain the default
-API until the I5 switch, and stay available afterwards through the explicit
-[legacy profile](api.md#legacy-profile).
+`CredentialEvidenceReference` and three serialized relations. Since the I5 switch they
+are no longer the default API: the package root exposes them only under `legacy`, with
+the explicit [legacy profile](api.md#legacy-profile). The default path
+(`reliance/evaluate.ts`) imports none of them.
 
 ## TypeScript and Python
 

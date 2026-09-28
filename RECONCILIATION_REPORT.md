@@ -1577,3 +1577,31 @@ appliance reject (authorized contradicted); every case rejects when tampered and
 never accepted when a credential is withheld. A local Chromium run (not a CI lane) found
 no console errors or horizontal overflow at 390 px and 1280 px. Deep links and the
 `/m375a/` redirect worked.
+
+## Standards-first I5 step 4: default API switch — 28 September 2026
+
+The package root's default entry point is now `evaluateReliance` (Python
+`evaluate_reliance`). It dispatches to the installed binding's gate 0–6 evaluator (RM,
+calibration or GS v1) and has no fallback: an unknown binding raises a configuration
+error, and a request naming another binding is refused at gate 0 without evaluating
+any artifact. `verifier` and `presentationQuery` are no longer root exports; they are
+reachable as `legacy.verifyCredentialGraph` and `legacy.presentationQuery` (subpaths
+`@qi-vc/core/legacy/verifier`, `…/legacy/presentation-query`; Python
+`qi_vc_core.legacy`). `installBinding` / `install_binding` load a binding directory
+with one profile. A test walks the imports reachable from `reliance/evaluate.ts` and
+finds no legacy module, which is the I5 exit condition "no dependency on legacy wire
+enums".
+
+Two mechanical issues found and fixed. The Python root used to import `verifier`
+first, which resolved a pre-existing import cycle (assessment → policy → evidence →
+verifier → assessment); the root now imports `legacy` before `assessment`, and the
+legacy module imports the verifier before presentation queries. The graph explorer
+build failed because the root now reaches the status-list decoder; its `node:zlib` stub
+re-exports the demonstrator's bounded gunzip shim.
+
+Results: `default-api.test.ts` 8 passed and `test_default_api.py` 7 passed (D178, DCC-1
+and GSC-1 accepted with results deep-equal to the per-binding evaluators). TS 459
+passed plus the 9 known network-only failures; Python 423 passed, 1 skipped. Ruff 204
+and mypy 198 unchanged. The `docs/api.md` example ran as written and printed `accept`.
+Package versions stay 0.3.0: the 0.4.0 number is a draft in the changelog, and final
+numbering follows the migration evidence. No release or tag.
