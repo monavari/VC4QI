@@ -109,6 +109,7 @@ export function evaluateStatus(
   listProtected: SemanticState,
   policy: StatusPolicy,
   evaluationTime: string,
+  activityTime: string = evaluationTime,
 ): StatusOutcome {
   const selected = selectStatusEntry(credential, policy.purposes);
   const entry = selected.entry;
@@ -143,6 +144,12 @@ export function evaluateStatus(
   const at = Date.parse(evaluationTime), issued = Date.parse(String(list.validFrom));
   if (!Number.isFinite(at) || !Number.isFinite(issued) || (at - issued) / 1000 > policy.maxAgeSeconds) {
     return { state: 'not_established', reason: `Status list is older than the profile's ${policy.maxAgeSeconds} s freshness limit.`, listUri, sources };
+  }
+  // A list observed at T says nothing about an earlier activity: historical status is
+  // not substituted by current status (handover §7.3, P13).
+  const activity = Date.parse(activityTime);
+  if (!Number.isFinite(activity) || activity < issued) {
+    return { state: 'not_established', reason: `Status list observed at ${String(list.validFrom)} cannot establish status at the earlier activity time ${activityTime}; historical status is unavailable.`, listUri, sources };
   }
   if (!/^(0|[1-9][0-9]*)$/.test(entry.statusListIndex)) {
     return { state: 'not_established', reason: 'statusListIndex is not a non-negative integer.', listUri, sources };

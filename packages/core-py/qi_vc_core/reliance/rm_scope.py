@@ -86,8 +86,11 @@ def contained_in(
     for child in children:
         child_range = record_interval(child)
         if isinstance(child_range, str):
+            # A reversed interval is invalid data; an unreadable one is unknown.
             return Containment(
-                "not_established", f"{child.get('id')}: {child_range}", tuple(witnesses)
+                "contradicted" if "reversed" in child_range else "not_established",
+                f"{child.get('id')}: {child_range}",
+                tuple(witnesses),
             )
         properties = _strings(child.get("allowedPropertyIris"))
         methods = _strings(child.get("allowedMethodIris"))

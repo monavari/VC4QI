@@ -1337,3 +1337,40 @@ Ledger: C12–C15 and V06 `passing`; I3 exit met (C01–C16, V04–V07, P06; V08
 Totals 36 passing, 2 excluded, 45 not implemented. Ledger command 79 TS and 77 Python
 tests, exit 0; TS 370 passed plus the 9 network-only failures; Python 323 passed, 1
 skip; Ruff 204 and mypy 198 unchanged. See `docs/plans/standards-first-i3-evidence.md`.
+
+## Standards-first I4 step 1: claim coverage, conformity and first acceptance — 27 September 2026
+
+Added `reliance/rm-v1-claims.ts` and `rm_v1_claims.py`: gate 4 maps the selected result
+into governed coordinates and exact kg/kg quantities (mg/kg and kg/kg only, k = 2);
+gate 5 covers the claim with one complete record of each route's own scope credential
+(O or A), composed as AND(restrictions) AND OR(route AND coverage), never spliced and
+never falling back to a parent grant; gate 6 checks a verifier-owned requirement under a
+decision rule, only for an authorized claim, with arithmetic in the requirement's unit.
+The manifest declares that M2 revises M1; the profile's `mapping.methodSuccession`
+decides it (none → not established). Profiles gained `mapping` and `conformity`
+sections. A reversed projected interval is now contradicted. Earlier "never accept"
+assertions were updated: P01, C03, C07, P15 and the clean status chain now accept.
+
+Ledger: V01, P01, S01–S17, S20, S22–S24 `passing` (59 passing, 2 excluded, 22 not
+implemented); P13 and P14 remain for I4. Ledger command 103 TS and 107 Python tests,
+exit 0. Full results: TS 394 passed plus the 9 network-only legacy failures; Python 353
+passed, 1 skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios, schemas,
+generator checks and poster build pass. See `docs/plans/standards-first-i4-evidence.md`.
+
+## Standards-first I4 step 2: time rules and cross-language parity — 27 September 2026
+
+Status evaluation now takes the request's activity time: a list observed after the
+activity cannot establish status at it, so a historical question is `not_established`
+rather than answered with current status (P13). Each authority route gains
+`scope-in-force-at-activity`: the certificate's own activity time must fall within
+every grant's validity, so scope evidence issued later cannot authorize an earlier
+activity even when it covers the claim today (P14). A generated, committed parity vector
+(eight scenarios over the signed fixtures, with decisions, witnesses, conformity
+arithmetic and every gate 4–6 trace reason) must be reproduced exactly by both the
+TypeScript and Python evaluators; a tampered expectation is detected. Both languages.
+
+Ledger: P13 and P14 `passing`; I4 exit met (61 passing, 2 excluded, 20 not implemented).
+Ledger command 107 TS and 118 Python tests, exit 0. Full results: TS 398 passed plus
+the 9 network-only legacy failures; Python 364 passed, 1 skip; Ruff 204 and mypy 198
+unchanged; build, lint, scenarios, schemas, resource/fixture/parity `--check` modes and
+the poster build pass. See `docs/plans/standards-first-i4-evidence.md`.

@@ -48,6 +48,8 @@ export interface RouteResult {
   readonly bases: readonly BasisResult[];
   /** Credential identities that discharged this route, target first. */
   readonly chain: readonly string[];
+  /** The credential whose scope records govern claims on this route (O or A), once reached. */
+  readonly scope?: string;
 }
 export interface AuthorityResult {
   readonly state: SemanticState;
@@ -127,8 +129,31 @@ function anchor(id: string, doc: Doc, purpose: string, profile: RelianceProfile)
     : unknown(id, `${String(doc.issuer)} is an anchor, but not for ${purpose}.`, ['/issuer']);
 }
 
-function route(id: string, bases: BasisResult[], chain: string[]): RouteResult {
-  return { id, state: semanticAnd(bases.map(b => b.state)), execution: 'executed', bases, chain };
+/**
+ * The grant must have been in force when D's own activity happened (P14): scope
+ * evidence issued after the activity cannot authorize it, even if it covers it today.
+ */
+function inForceAtActivity(D: Doc, grants: readonly [string, Doc][]): BasisResult {
+  const id = 'scope-in-force-at-activity';
+  const at = subjectOf(D).activityTime;
+  const activity = Date.parse(String(at));
+  if (typeof at !== 'string' || !Number.isFinite(activity)) {
+    return unknown(id, 'The certificate states no activity time.', ['/credentialSubject/activityTime']);
+  }
+  for (const [name, grant] of grants) {
+    const from = Date.parse(String(grant.validFrom)), until = Date.parse(String(grant.validUntil));
+    if (!Number.isFinite(from) || activity < from) {
+      return unknown(id, `${name} is valid only from ${String(grant.validFrom)}, after the activity at ${at}; a later scope cannot authorize it.`, ['/credentialSubject/activityTime', '/validFrom']);
+    }
+    if (Number.isFinite(until) && activity > until) {
+      return unknown(id, `${name} expired at ${String(grant.validUntil)}, before the activity at ${at}.`, ['/credentialSubject/activityTime', '/validUntil']);
+    }
+  }
+  return ok(id, `${grants.map(g => g[0]).join(' and ')} ${grants.length > 1 ? 'were' : 'was'} in force at the activity time ${at}.`, ['/credentialSubject/activityTime']);
+}
+
+function route(id: string, bases: BasisResult[], chain: string[], scope?: string): RouteResult {
+  return { id, state: semanticAnd(bases.map(b => b.state)), execution: 'executed', bases, chain, ...(scope ? { scope } : {}) };
 }
 
 /** Route "operational-scope": D ← O (producer's own scope) ← A (accreditation) ← anchor. */
@@ -160,7 +185,8 @@ function operationalScopeRoute(target: NodeFacts & { document: Doc }, lookup: No
   const projection = containedIn(list(subjectOf(O).scope).filter(isObject), list(subjectOf(A).scope).filter(isObject));
   bases.push({ id: 'bounded-projection', state: projection.state, reason: projection.reason, sources: ['/credentialSubject/scope'] });
   bases.push(anchor('trust-anchor', A, 'accredit-rm-producers', profile));
-  return route('operational-scope', bases, chain);
+  bases.push(inForceAtActivity(D, [['O', O], ['A', A]]));
+  return route('operational-scope', bases, chain, ref.node.uri);
 }
 
 /** Route "direct-accreditation": D ← A (accreditation naming D's issuer) ← anchor. */
@@ -178,7 +204,8 @@ function directAccreditationRoute(target: NodeFacts & { document: Doc }, lookup:
     ? ok('activity-permission', 'A permits issuing RM certificates.', ['/credentialSubject/permittedActivity'])
     : no('activity-permission', 'A does not permit issuing RM certificates.', ['/credentialSubject/permittedActivity']));
   bases.push(anchor('trust-anchor', A, 'accredit-rm-producers', profile));
-  return route('direct-accreditation', bases, chain);
+  bases.push(inForceAtActivity(D, [['A', A]]));
+  return route('direct-accreditation', bases, chain, ref.node.uri);
 }
 
 export const CERTIFICATE_ROUTES = Object.freeze({
@@ -260,6 +287,23 @@ export function composeAuthority(
         : skipped.length > 0 ? 'The route search stopped at its budget before every route was evaluated.'
           : 'No complete route is established.';
   return { state, reason, restrictions, routes };
+}
+
+/**
+ * Authorization of one claim: each route additionally needs the claim to be covered
+ * by its own scope credential (`coverage`), and the same restrictions apply outside
+ * the OR. A route whose scope was never reached cannot cover the claim.
+ */
+export function claimAuthority(
+  authority: AuthorityResult, coverage: (route: RouteResult) => BasisResult | undefined,
+): AuthorityResult {
+  const evaluated = authority.routes.filter(r => r.execution === 'executed').map(r => {
+    const covered = r.scope === undefined ? undefined : coverage(r);
+    const basis = covered ?? unknown('claim-coverage', 'The route did not reach a scope credential.');
+    return { ...r, bases: [...r.bases, basis], state: semanticAnd([r.state, basis.state]) };
+  });
+  const skipped = authority.routes.filter(r => r.execution === 'not_run').map(r => r.id);
+  return composeAuthority(authority.restrictions, evaluated, skipped);
 }
 
 /** Authority of D's issuer to issue D, over the profile's permitted routes. */
