@@ -19,5 +19,22 @@
     "required": true,
     "purposes": ["revocation"],
     "maxAgeSeconds": 2592000
+  },
+  "mapping": {
+    "methodSuccession": "none"
+  },
+  "conformity": {
+    "requirements": [
+      {
+        "id": "as-mass-fraction-max-200-mg-per-kg",
+        "propertyIri": "https://vc4qi.example/bindings/rm/1#As",
+        "quantityKindIri": "https://vc4qi.example/bindings/rm/1#MassFraction",
+        "upperLimit": {"value": "200", "unit": "mg/kg"}
+      }
+    ],
+    "decisionRules": [
+      {"id": "guarded-acceptance-expanded-u", "acceptWhen": "value-plus-expanded-uncertainty-at-most-limit"},
+      {"id": "simple-acceptance", "acceptWhen": "value-at-most-limit"}
+    ]
   }
 }
