@@ -1,12 +1,12 @@
-# Implementation feedback to the manuscript
+# Manuscript feedback
 
-> Historical findings below retain their original revision context. The standards-first
-> corrections at the end supersede F-4/F-5 as current implementation guidance.
+Findings from implementing the model that the manuscript should reflect: constraints,
+ambiguities or contradictions with the standards the paper relies on. They are recorded
+here so the paper can be reconciled with what the standards require; no manuscript file
+is edited from this repository.
 
-Items where implementing the model surfaced a constraint, ambiguity, or
-contradiction with a standard the paper relies on. Per research SOP, these are
-recorded here so the manuscript can be reconciled with what the standards
-actually require.
+> F-1 to F-5 keep their original revision context (the superseded manuscript-v2.1
+> model). The standards-first corrections further down supersede F-4 and F-5.
 
 ---
 
@@ -272,8 +272,8 @@ corrections to actual manuscript sections when those sources are available.
 12. Preserve historical citations and verify archive targets before associating them with a new
     version. A local commit or bibliography placeholder is not a published release or DOI.
 
-Current target: [MODEL_SPEC](MODEL_SPEC.md). Actual capability evidence:
-[IMPLEMENTATION_STATUS](IMPLEMENTATION_STATUS.md). Full requirements and acceptance:
+Current target: the [model](model.md). Actual capability evidence:
+[status](status.md). Full requirements and acceptance:
 [traceability](plans/standards-first-traceability.md). No new-model execution is claimed.
 
 ## F-6 — Proof metadata must be verified as received (2026-09-24)
@@ -287,7 +287,7 @@ This repairs a specific implementation defect, not complete suite conformance.
 The [EdDSA proof-verification algorithm](https://www.w3.org/TR/2025/REC-vc-di-eddsa-20250515/#verify-proof-eddsa-rdfc-2022)
 uses the received proof options. Manuscript protection claims must distinguish this
 metadata fix from the remaining safe-expansion, canonicalization, authorized-controller
-and isolated-catalog work. See the [I1 audit](plans/standards-first-i1-protection-audit.md)
+and isolated-catalog work. See the [I1 audit](plans/evidence.md#i1-protection-audit)
 for code boundaries, executed tests and the signed-slice prerequisites.
 
 ## F-7 — Signed facts, array order and cross-language safe processing (2026-09-25)
@@ -313,4 +313,4 @@ Implementing the I1 signed slice surfaced three manuscript-relevant constraints.
    declares one must be checked against W3C's bytes before relying on safe-mode
    rejection of undefined terms.
 
-See [signed-slice evidence](plans/standards-first-i1-signed-slice-evidence.md).
+See [signed-slice evidence](plans/evidence.md#i1-signed-rm-slice).

@@ -151,7 +151,7 @@ async function evaluateProof(
       // FC-1: absent proof-verification infrastructure fails closed regardless
       // of policy mode. A credential whose proof was never checked leaves the
       // graph ill-formed, and the model's guarantees do not range over an
-      // ill-formed graph (MODEL_SPEC §4), so there is no weaker verdict to give.
+      // ill-formed graph (docs/model.md §4), so there is no weaker verdict to give.
       return [traceEntry({
         id: `proof-${id}`,
         level: 'credential',

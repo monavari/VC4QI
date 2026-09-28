@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Consolidate the documentation into eight guide pages (`docs/index.md`, `model`,
+  `status`, `use-cases`, `api`, `bindings`, `architecture`, `applications`) plus the
+  manuscript feedback, one implementation-evidence page and an ADR index. Nineteen
+  overlapping or stale pages, nine per-phase evidence files, `RECONCILIATION_TASK.md` and
+  the obsolete document inventory are merged or removed. The GitHub Pages site now
+  renders the documentation (`pnpm docs:build`), and `pnpm docs:check` fails on any
+  broken relative link or anchor in the repository's Markdown (run in CI).
+
 - Add an experimental signed GS certification binding and migrate
   gs-scheme-authorization: the GS mark is relied on only through competence AND scheme
   permission, with the certification covered by both scopes. Both GS application

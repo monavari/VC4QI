@@ -19,7 +19,7 @@ _MG  = {"ucumCode": "mg/kg", "unitIri": "http://qudt.org/vocab/unit/MilliGM-PER-
 
 # Governed scope terms (SCO-1/SCO-2). Categorical dimensions compare as exact
 # equality over identifiers; the labels below are display only.
-# See docs/SCOPE_TERMS.md.
+# See docs/bindings.md.
 _T = "https://w3id.org/qi-vc/terms/v1"
 _PRESSURE = "http://qudt.org/vocab/quantitykind/Pressure"
 

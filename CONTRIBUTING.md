@@ -27,18 +27,32 @@ pnpm validate:schemas
 ```
 
 `make test` runs TS, scenarios and Python tests. `make lint` runs the existing TS
-check and Python Ruff/mypy checks. Python lint currently fails on baseline debt;
-[I0 evidence](docs/plans/standards-first-i0-evidence.md) records the comparison.
-Do not suppress rules or report lint as passing.
-The scenario command skips graph proofs; schema validation skips some examples without
-`$schema`. Add dedicated new-profile/offline/UI lanes during migration. For documentation
-changes, check Markdown, links and consistency; do not invent runtime execution evidence.
-See [current status](docs/IMPLEMENTATION_STATUS.md).
+check and Python Ruff/mypy checks. Python lint currently fails on recorded baseline debt
+(Ruff 204, mypy 198; see the
+[I0 evidence](docs/plans/evidence.md#i0-baseline-and-scope-safety)); a change must not
+increase it. Do not suppress rules or report lint as passing.
+
+Generated files have `--check` modes that CI-style reviews expect to pass, for example
+`node scripts/cal-v1/build-resources.mjs --check` and
+`pnpm -C packages/core-ts exec tsx scripts/generate-cal-v1-artifacts.ts --check` (the
+same for `rm-v1` and `gs-v1`). The scenario command skips graph proofs, and schema
+validation skips legacy examples without `$schema`; see [status](docs/status.md).
+
+For documentation changes, run markdownlint and the site build's link check:
+
+```bash
+npx markdownlint-cli2 --config .markdownlint.json "**/*.md"
+pnpm docs:check
+```
+
+Documentation lives in the few pages listed in [docs/index.md](docs/index.md). Update
+the page that owns a topic instead of adding a new file, and never invent execution
+evidence.
 
 ## Branch naming
 
-This reconciliation uses `refactor/standards-first-reconciliation`; follow
-[AGENTS.md](AGENTS.md) and the [active task](RECONCILIATION_TASK.md).
+The reconciliation follows [AGENTS.md](AGENTS.md) and the
+[execution plan](docs/plans/standards-first-reconciliation.md).
 
 | Purpose | Pattern |
 | --- | --- |

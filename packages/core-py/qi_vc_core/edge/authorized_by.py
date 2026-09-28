@@ -115,7 +115,7 @@ def evaluate_authorized_by(
         # FC-2: an authority-conveying edge with no trust registry resolver is a
         # failure, not a warning. Without registry resolution the issuer's
         # identifier never resolves through an admitted registry, so the graph is
-        # ill-formed and no verdict is available (MODEL_SPEC section 4).
+        # ill-formed and no verdict is available (docs/model.md section 4).
         results.append(trace_entry(
             id=f"trust-registry-{evidence_issuer}",
             level="edge",

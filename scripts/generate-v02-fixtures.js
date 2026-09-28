@@ -36,7 +36,7 @@ const GS_SCENARIO_CONTEXT = {
 // equality over these identifiers; the sibling label fields are display only.
 // QUDT is used where a real governed vocabulary exists; the qi-vc/terms IRIs are
 // placeholders standing in for a QI Term-Service (B5/MOD-8), not authoritative
-// identifiers. See docs/SCOPE_TERMS.md.
+// identifiers. See docs/bindings.md.
 const QK = 'http://qudt.org/vocab/quantitykind';
 const T = 'https://w3id.org/qi-vc/terms/v1';
 const TERMS = {

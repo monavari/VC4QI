@@ -103,7 +103,7 @@ def verify_trust_registry_credential(
     Raises TrustRegistryVerificationError on any condition that leaves the
     registry untrusted. It never returns an unverified registry and never
     degrades to a warning -- an unverified registry makes the evidence graph
-    ill-formed (MODEL_SPEC section 4), so there is no weaker verdict to return.
+    ill-formed (docs/model.md section 4), so there is no weaker verdict to return.
     """
     proof = credential.get("proof")
     if not proof:
