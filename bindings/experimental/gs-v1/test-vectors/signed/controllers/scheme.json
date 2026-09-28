@@ -1,0 +1,15 @@
+{
+  "@context": "https://www.w3.org/ns/cid/v1",
+  "id": "https://scheme.vc4qi.example/controller",
+  "verificationMethod": [
+    {
+      "id": "https://scheme.vc4qi.example/controller#key-1",
+      "type": "Multikey",
+      "controller": "https://scheme.vc4qi.example/controller",
+      "publicKeyMultibase": "z6MkhBzP9XULargvAs8LfZXA3PWaL6Q4eHka1pQWSB9T2yUW"
+    }
+  ],
+  "assertionMethod": [
+    "https://scheme.vc4qi.example/controller#key-1"
+  ]
+}

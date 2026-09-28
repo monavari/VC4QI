@@ -83,6 +83,21 @@ def test_v03_legacy_profile_verifies_originals_and_is_labelled() -> None:
     assert "not by standards-first reliance" in " ".join(evaluation.limitations)
 
 
+@pytest.mark.parametrize(
+    "name", ["gs-hair-dryer-hitl", "gs-hair-dryer-external-test-lab-hitl"]
+)
+def test_both_gs_application_variants_are_retained(name: str) -> None:
+    target, policy, options = legacy_options(
+        name, assessment_evaluator=pass_assessments
+    )
+    evaluation = evaluate_legacy_profile(target, policy, options)
+    assert evaluation.profile["label"] == "legacy"
+    codes = [(r["code"], r.get("target")) for r in evaluation.legacy_trace["results"]]
+    assert ("PROOF_VALID", target["id"]) in codes
+    assert not any(code == "PROOF_INVALID" for code, _ in codes)
+    assert evaluation.decision == "accept"
+
+
 def test_v03_placeholder_signature_is_never_valid() -> None:
     target, policy, options = legacy_options("calibration-direct-accreditation")
     evaluation = evaluate_legacy_profile(target, policy, options)

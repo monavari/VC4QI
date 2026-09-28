@@ -26,6 +26,8 @@
     "./reliance/binding-chain": "./src/reliance/binding-chain.ts",
     "./reliance/cal-v1-node": "./src/reliance/cal-v1-node.ts",
     "./reliance/cal-v1-slice": "./src/reliance/cal-v1-slice.ts",
+    "./reliance/gs-v1-node": "./src/reliance/gs-v1-node.ts",
+    "./reliance/gs-v1-slice": "./src/reliance/gs-v1-slice.ts",
     "./legacy": "./src/legacy/index.ts"
   },
   "scripts": {
