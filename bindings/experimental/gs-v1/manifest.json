@@ -10,7 +10,7 @@
   },
   "installation": {
     "status": "incomplete",
-    "reason": "Migrated GS certification binding for the gs-scheme-authorization use case. The gate 0-6 evaluators for the competence-and-scheme-permission route and certification coverage are implemented; statutory GS routes, test-report support, application assessments and conformity rules are not.",
+    "reason": "Migrated GS certification binding for the gs-scheme-authorization use case, plus an experimental product passport (not EU DPP conformance). The gate 0-6 evaluators for the competence-and-scheme-permission and gs-certified-product routes and their coverage are implemented; statutory GS routes, test-report support, application assessments and conformity rules are not.",
     "pendingResources": []
   },
   "carrierAndSchema": {
@@ -22,12 +22,14 @@
       "https://vc4qi.example/bindings/gs/1#GsAccreditation",
       "https://vc4qi.example/bindings/gs/1#GsSchemeAuthorization",
       "https://vc4qi.example/bindings/gs/1#GsCertificate",
+      "https://vc4qi.example/bindings/gs/1#GsProductPassport",
       "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential"
     ],
     "schemaUris": [
       "https://vc4qi.example/schemas/gs/1/accreditation.json",
       "https://vc4qi.example/schemas/gs/1/scheme-authorization.json",
       "https://vc4qi.example/schemas/gs/1/certificate.json",
+      "https://vc4qi.example/schemas/gs/1/product-passport.json",
       "https://vc4qi.example/schemas/gs/1/status-list.json"
     ],
     "statusListCarrier": "BitstringStatusListCredential with the VCDM 2.0 context only",
@@ -79,7 +81,8 @@
       "The accreditation (competence) and the scheme authorization each name the certification body issuing the certificate.",
       "The accreditation permits certifying products; the scheme authorization permits awarding the GS mark.",
       "The accreditation issuer is anchored for accrediting certification bodies; the scheme authorization issuer for authorizing GS certification.",
-      "Both grants were in force at the certificate's activity time."
+      "Both grants were in force at the certificate's activity time.",
+      "A product passport's GS-mark claim needs a GS certificate that names the passport issuer as manufacturer, certifies the passport's model, was in force when the unit was placed on the market and itself holds the complete route."
     ]
   },
   "scopeAndMapping": {
@@ -91,7 +94,8 @@
   },
   "routesAndRestrictions": {
     "installedCertificateRoutes": {
-      "competence-and-scheme-permission": ["A-referenced", "A-grantee-is-issuer", "A-permits-certification", "A-issuer-is-accreditation-anchor", "S-referenced", "S-grantee-is-issuer", "S-permits-GS-mark", "S-issuer-is-scheme-anchor", "A-and-S-in-force-at-activity", "claim-covered-by-A-and-S"]
+      "competence-and-scheme-permission": ["A-referenced", "A-grantee-is-issuer", "A-permits-certification", "A-issuer-is-accreditation-anchor", "S-referenced", "S-grantee-is-issuer", "S-permits-GS-mark", "S-issuer-is-scheme-anchor", "A-and-S-in-force-at-activity", "claim-covered-by-A-and-S"],
+      "gs-certified-product": ["C-referenced", "C-names-passport-issuer-as-manufacturer", "C-in-force-at-passport-activity", "C-holds-competence-and-scheme-permission", "C-certification-covered", "C-certifies-the-passport-model"]
     },
     "globalRestrictions": [],
     "routeComposition": "AND-within-route-OR-between-complete-routes"

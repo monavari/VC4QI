@@ -1547,3 +1547,33 @@ display bug found in that run (node-use keys are separated by ` | `, so artifact
 identities kept a trailing space) was fixed before commit. The bundle is 604 kB (139 kB
 gzip). E12–E14 remain `not_implemented` in the ledger: E12 needs a simulation mode, and
 E13/E14 ask for UI interaction tests in the acceptance lane.
+
+## Demonstrator: RM, DCC, GS and DPP examples — 28 September 2026
+
+The browser demonstrator now covers all three bindings. `apps/demo-web/poster/entry.ts`
+is generic: each example declares its binding, verifier profile, target artifact,
+claims, supplied artifacts, a tamper edit and a withholdable credential, and the page
+(`site/demo/index.html`) renders the same six questions, chain rows, credential view and
+trace for every example. The Vite build embeds the manifests, all profiles and all
+signed files of rm-v1, cal-v1 and gs-v1 into `site/demo/verifier.js` (820 kB, 171 kB
+gzip). The CI bundle check points to the new path. `site/m375a/index.html` is a redirect
+to `../demo/#rm`, so the poster QR code stays valid.
+
+DPP is added to the GS binding as an experimental product passport
+(`GsProductPassport`, schema `product-passport.json`, profile `gs-verifier-dpp-1`, route
+`gs-certified-product`), not as a new binding. The route's bases are
+certificate-reference, manufacturer-binding, certificate-in-force, the nested
+certificate competence and scheme bases, and certificate claim coverage of the marking.
+The generator adds a fictional manufacturer (controller and status list),
+`manufacturerIri` on GSC-1 and GSC-2, GSC-2 (household appliance, covered by GS-A but
+not GS-S), and DPP-1/DPP-2 for one serialized unit each. It is a research illustration,
+not EU DPP (ESPR) conformance.
+
+Results: `gs-v1.test.ts` 16 passed (7 new DPP tests); `test_gs_v1.py` 15 passed (7 new);
+`demonstrator.test.ts` 5 passed. The bundle-level results were: rm 178 accept, 197 reject
+(fit), 520 reject (authorized); dcc every case accepted under its own profile,
+capability and nmi not_established under `cal-verifier-1`; gs and dpp toy accept,
+appliance reject (authorized contradicted); every case rejects when tampered and is
+never accepted when a credential is withheld. A local Chromium run (not a CI lane) found
+no console errors or horizontal overflow at 390 px and 1280 px. Deep links and the
+`/m375a/` redirect worked.
