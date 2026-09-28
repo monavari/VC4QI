@@ -2,6 +2,7 @@
 declare module 'virtual:rm-v1-resources' {
   const resources: {
     manifest: unknown;
+    profile: unknown;
     files: {
       uri: string;
       mediaType: string;

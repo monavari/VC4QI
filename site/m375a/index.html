@@ -5,7 +5,7 @@
 <link rel="icon" href="data:,">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>BAM-M375a as a Verifiable Credential</title>
-<meta name="description" content="A certified reference material as a W3C Verifiable Credential. The VC4QI repository's own verifier checks its signatures and integrity in your browser; authority, scope and conformity follow the planned rules. VC4QI demonstrator, BAM.">
+<meta name="description" content="A certified reference material as a W3C Verifiable Credential. The VC4QI repository's own reliance evaluator checks it in your browser: authentic, current, understood, authorized, supported and fit for use. VC4QI demonstrator, BAM.">
 <style>
 :root{
   --petrol:#00556E; --dark:#002832; --cyan:#00AFF0; --red:#D2001E; --gray:#BEC3C8;
@@ -23,7 +23,7 @@
 *,*::before,*::after{ box-sizing:inherit; }
 html{ scroll-padding-top:env(safe-area-inset-top,0px); -webkit-text-size-adjust:100%; }
 body{ margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 var(--sans); }
-main{ max-width:34rem; margin:0 auto; padding:1.25rem 1.1rem 3rem; }
+main{ max-width:40rem; margin:0 auto; padding:1.25rem 16px 3rem; }
 a{ color:inherit; text-underline-offset:3px; }
 button{ font:inherit; color:inherit; }
 :focus-visible{ outline:3px solid var(--cyan); outline-offset:2px; border-radius:4px; }
@@ -38,28 +38,46 @@ button{ font:inherit; color:inherit; }
 .disc b{ display:block; font-size:1rem; } .disc span{ display:block; font-size:.72rem; opacity:.85; }
 .hero h1{ font-size:1.4rem; line-height:1.2; margin:0 0 .35rem; }
 .hero p{ margin:0; color:var(--muted); font-size:.92rem; }
+@media (max-width:26rem){ .hero{ grid-template-columns:1fr; } .disc{ width:5.6rem; } }
 
+/* controls */
+.controls{ display:grid; gap:.55rem; margin:0 0 1rem; }
+.seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+.seg button{ border:0; background:transparent; padding:.55rem .4rem; font-size:.9rem; cursor:pointer; line-height:1.2; }
+.seg button small{ display:block; font-size:.72rem; color:var(--muted); }
+.seg button[aria-pressed="true"]{ background:var(--wash); font-weight:650; box-shadow: inset 0 -3px 0 var(--cyan); }
+.seg button + button{ border-left:1px solid var(--line); }
+.label{ font-size:.78rem; color:var(--muted); margin:.2rem 0 -.2rem; }
+.toggles{ display:flex; flex-wrap:wrap; gap:.3rem 1.2rem; font-size:.86rem; color:var(--muted); }
+.toggles label{ display:flex; align-items:center; gap:.45rem; cursor:pointer; }
+.toggles input{ width:1.05rem; height:1.05rem; accent-color:var(--petrol); }
+
+/* verdict */
 .verdict{ display:flex; gap:.8rem; align-items:center; border-radius:10px; padding:.85rem 1rem; color:#fff; background:var(--petrol); }
 .verdict.reject{ background:var(--red); } .verdict.unknown{ background:#6B5A1E; } .verdict.busy{ background:var(--muted); }
 .verdict .mark{ flex:none; width:2.1rem; height:2.1rem; border-radius:50%; background:#fff; display:grid; place-items:center; font-weight:800; }
 .verdict b{ display:block; font-size:1.05rem; } .verdict small{ display:block; opacity:.92; font-size:.84rem; }
-.scenario{ display:grid; grid-template-columns:repeat(3,1fr); margin:.8rem 0 0; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
-.scenario button{ border:0; background:transparent; padding:.6rem .4rem; font-size:.92rem; cursor:pointer; line-height:1.2; }
-.scenario button small{ display:block; font-size:.72rem; color:var(--muted); }
-.scenario button[aria-pressed="true"]{ background:var(--wash); font-weight:650; box-shadow: inset 0 -3px 0 var(--cyan); }
-.scenario button + button{ border-left:1px solid var(--line); }
-.tamper{ display:flex; align-items:center; gap:.55rem; margin:.6rem 0 0; font-size:.86rem; color:var(--muted); }
-.tamper input{ width:1.1rem; height:1.1rem; accent-color:var(--red); }
 
 section{ margin-top:2rem; }
 h2{ font-size:1.12rem; margin:0 0 .25rem; }
 .lede{ margin:0 0 .9rem; color:var(--muted); font-size:.92rem; }
 
-.witness{ display:grid; gap:.4rem; }
-.wrow{ display:grid; grid-template-columns:6.2rem 1fr auto; gap:.6rem; align-items:baseline; padding:.55rem .7rem; background:var(--wash); border-radius:8px; }
-.wrow b{ font-size:.88rem; } .wrow code{ font:600 .95rem var(--mono); }
+/* six questions */
+.questions{ display:grid; grid-template-columns:repeat(auto-fit, minmax(11.5rem, 1fr)); gap:.55rem; margin-top:1rem; }
+.q{ border-radius:10px; background:var(--wash); border-left:5px solid var(--unk); }
+.q.s-established{ border-left-color:var(--ok); } .q.s-contradicted{ border-left-color:var(--bad); } .q.s-not_asked{ border-left-color:var(--gray); }
+.q summary{ list-style:none; cursor:pointer; padding:.6rem .75rem; display:grid; gap:.15rem; }
+.q summary::-webkit-details-marker{ display:none; }
+.q .qt{ display:flex; justify-content:space-between; gap:.5rem; align-items:baseline; }
+.q .qt b{ font-size:.95rem; }
+.q .qs{ font-size:.8rem; color:var(--muted); overflow-wrap:anywhere; }
+.q[open]{ grid-column:1 / -1; }
 .state{ font-size:.76rem; font-weight:700; white-space:nowrap; }
-.s-established{ color:var(--ok); } .s-contradicted{ color:var(--bad); } .s-not_established,.s-not_run{ color:var(--unk); }
+.st-established{ color:var(--ok); } .st-contradicted{ color:var(--bad); } .st-not_established{ color:var(--unk); } .st-not_asked{ color:var(--muted); }
+.trace{ margin:0 .75rem .7rem; padding:0; list-style:none; border-top:1px solid var(--line); }
+.trace li{ font-size:.78rem; padding:.3rem 0; display:grid; grid-template-columns:5.8rem 1fr; gap:.5rem; border-bottom:1px dashed var(--line); }
+.trace li:last-child{ border-bottom:0; }
+.trace code{ font:.72rem var(--mono); color:var(--muted); display:block; overflow-wrap:anywhere; }
 
 /* VC card */
 .vc{ border:2px solid var(--cyan); border-radius:12px; overflow:hidden; }
@@ -74,10 +92,13 @@ h2{ font-size:1.12rem; margin:0 0 .25rem; }
 
 /* chain */
 .tier{ display:grid; grid-template-columns:1fr 1fr; gap:.6rem; } .tier.single{ grid-template-columns:1fr; }
-.node{ text-align:left; border:0; border-radius:9px; padding:.55rem .7rem; cursor:pointer; width:100%; min-height:3.3rem; }
-.node b{ display:block; font-size:.9rem; } .node small{ display:block; font-size:.76rem; opacity:.88; }
+.node{ text-align:left; border:0; border-radius:9px; padding:.55rem .7rem; cursor:pointer; width:100%; min-height:3.3rem; position:relative; }
+.node b{ display:block; font-size:.9rem; padding-right:4.5rem; } .node small{ display:block; font-size:.76rem; opacity:.88; }
+.node .badge{ position:absolute; top:.45rem; right:.5rem; font-size:.66rem; font-weight:700; padding:.05rem .4rem; border-radius:999px; background:#fff; color:var(--ok); }
+.node .badge.b-contradicted{ color:var(--bad); } .node .badge.b-not_established{ color:#6B5A1E; }
+.node.missing{ opacity:.55; outline:2px dashed var(--unk); }
 .node.acc{ background:var(--dark); color:#fff; } .node.ops{ background:var(--tpet); color:var(--ink); box-shadow: inset 0 0 0 1.5px var(--petrol); }
-.node.sup{ background:var(--wash); color:var(--ink); } .node.dom{ background:var(--cyan); color:#fff; }
+.node.sup{ background:var(--wash); color:var(--ink); box-shadow: inset 0 0 0 1px var(--line); } .node.dom{ background:var(--cyan); color:#fff; }
 .edges{ display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
 .edge{ display:flex; gap:.55rem; padding:.25rem 0 .25rem .9rem; min-height:3.1rem; }
 .edge .stem{ flex:none; border-left:2.5px solid var(--ink); position:relative; margin:.15rem 0 .1rem; }
@@ -85,91 +106,74 @@ h2{ font-size:1.12rem; margin:0 0 .25rem; }
 .edge.dash .stem{ border-left-style:dashed; } .edge.dot .stem{ border-left-style:dotted; border-left-width:3px; }
 .edge b{ font-size:.8rem; display:block; } .edge code{ font:.72rem var(--mono); color:var(--muted); display:block; }
 .edge.bad .stem{ border-color:var(--bad); } .edge.bad .stem::before{ border-bottom-color:var(--bad); } .edge.bad b{ color:var(--bad); }
-
-/* gates */
-ol.gates{ list-style:none; margin:0; padding:0; }
-ol.gates > li{ border-bottom:1px solid var(--line); }
-ol.gates summary{ list-style:none; display:grid; grid-template-columns:1.7rem 1fr auto; gap:.6rem; align-items:center; padding:.65rem 0; cursor:pointer; }
-ol.gates summary::-webkit-details-marker{ display:none; }
-.n{ width:1.7rem; height:1.7rem; border-radius:50%; background:var(--petrol); color:#fff; display:grid; place-items:center; font-size:.85rem; font-weight:700; }
-li.g-contradicted .n{ background:var(--bad); } li.g-not_established .n, li.g-not_run .n{ background:var(--unk); }
-.checks{ margin:0 0 .8rem 2.3rem; padding:0; list-style:none; }
-.checks li{ font-size:.8rem; padding:.2rem 0; display:grid; grid-template-columns:auto 1fr; gap:.5rem; }
-.checks .state{ min-width:6.5rem; }
-.checks span.d{ color:var(--muted); }
+.edge.unk .stem{ border-color:var(--unk); } .edge.unk .stem::before{ border-bottom-color:var(--unk); } .edge.unk b{ color:var(--unk); }
 
 details.raw summary{ cursor:pointer; font-weight:600; padding:.4rem 0; }
 pre{ font:.72rem/1.45 var(--mono); background:var(--wash); padding:.8rem; border-radius:8px; overflow-x:auto; max-height:26rem; }
-dialog{ border:0; border-radius:14px 14px 0 0; width:100%; max-width:34rem; margin:auto auto 0; padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom,0px)); background:var(--paper); color:var(--ink); max-height:82vh; }
+dialog{ border:0; border-radius:14px 14px 0 0; width:100%; max-width:40rem; margin:auto auto 0; padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom,0px)); background:var(--paper); color:var(--ink); max-height:82vh; }
 dialog::backdrop{ background:rgba(0,20,26,.45); }
 dialog h3{ margin:0 0 .2rem; font-size:1.05rem; }
 dialog .close{ float:right; border:1px solid var(--line); background:var(--paper); border-radius:8px; padding:.3rem .7rem; cursor:pointer; }
 footer{ margin-top:2.4rem; border-top:1px solid var(--line); padding-top:1rem; font-size:.82rem; color:var(--muted); }
 footer p{ margin:.35rem 0; }
-
-.src{ font-size:.66rem; font-weight:700; letter-spacing:.02em; padding:.08rem .4rem; border-radius:999px; white-space:nowrap; }
-.src.repository{ background:var(--tpet); color:var(--petrol); }
-.src.preview{ background:var(--wash); color:var(--unk); box-shadow: inset 0 0 0 1px var(--unk); }
-ol.gates summary .t small{ display:block; color:var(--muted); font-size:.78rem; font-weight:400; }
-.legend{ display:flex; flex-wrap:wrap; gap:.4rem .8rem; margin:.2rem 0 .8rem; font-size:.8rem; color:var(--muted); align-items:center; }
-.note{ font-size:.82rem; color:var(--muted); margin:.5rem 0 0; }
+.note{ font-size:.82rem; color:var(--muted); margin:.6rem 0 0; }
 </style>
 </head>
 <body>
 <main>
-  <div class="masthead"><span><strong>BAM</strong> VC4QI demonstrator</span><span>MSE 2026 poster</span></div>
+  <div class="masthead"><span><strong>BAM</strong> VC4QI demonstrator</span><span><a href="../docs/use-cases.html">How it works</a></span></div>
   <div class="hero">
     <div class="disc" aria-hidden="true"><div><b>BAM-M375a</b><span>CuZn39Pb3</span></div></div>
     <div>
       <h1>A reference material you can verify</h1>
-      <p>Your browser runs the VC4QI repository's own verifier on the signed credentials, then applies the planned authority, scope and decision rules. Nothing is sent anywhere.</p>
+      <p>Your browser runs the VC4QI repository's own reliance evaluator on the signed credentials. Nothing is sent anywhere, and nothing is simulated.</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <p class="label">Certified arsenic mass fraction</p>
+    <div class="seg" role="group" aria-label="Certified value" id="xs">
+      <button type="button" data-x="178" aria-pressed="true">178 mg/kg<small>certificate</small></button>
+      <button type="button" data-x="197" aria-pressed="false">197 mg/kg<small>hypothetical reissue</small></button>
+      <button type="button" data-x="520" aria-pressed="false">520 mg/kg<small>hypothetical reissue</small></button>
+    </div>
+    <p class="label">What the verifier asks</p>
+    <div class="seg" role="group" aria-label="Verifier's question" id="asks">
+      <button type="button" data-fit="false" aria-pressed="false">Is it authorized?<small>no limit applied</small></button>
+      <button type="button" data-fit="true" aria-pressed="true">Is it fit for my use?<small>As + U ≤ 200 mg/kg</small></button>
+    </div>
+    <div class="toggles">
+      <label><input type="checkbox" id="tamper"> Tamper: change the value to 150 without re-signing</label>
+      <label><input type="checkbox" id="withhold"> Withhold the homogeneity study</label>
     </div>
   </div>
 
   <div class="verdict busy" id="verdict" role="status" aria-live="polite">
     <div class="mark" id="mark">…</div>
-    <div><b id="vTitle">Verifying</b><small id="vSub">Loading the verifier…</small></div>
+    <div><b id="vTitle">Evaluating</b><small id="vSub">Loading the evaluator…</small></div>
   </div>
-  <div class="scenario" role="group" aria-label="Certified value">
-    <button type="button" data-x="178" aria-pressed="true">x = 178<small>certificate</small></button>
-    <button type="button" data-x="197" aria-pressed="false">x = 197<small>hypothetical reissue</small></button>
-    <button type="button" data-x="520" aria-pressed="false">x = 520<small>hypothetical reissue</small></button>
-  </div>
-  <label class="tamper"><input type="checkbox" id="tamper"> Tamper test: change the value to 150 without re-signing</label>
 
-  <section aria-labelledby="h-w">
-    <h2 id="h-w">The decision</h2>
-    <p class="lede">"Authorized" and "fit for use" are separate questions. The verifier's own requirement, illustrative: As + U ≤ 200 mg/kg.</p>
-    <div class="witness" id="witness"></div>
+  <div class="questions" id="questions"></div>
+  <p class="note">Each answer is yes, no or cannot tell, and "cannot tell" never counts as yes. Tap a question to see the evaluator's checks behind it.</p>
+
+  <section aria-labelledby="h-g">
+    <h2 id="h-g">Who stands behind the value</h2>
+    <p class="lede">Arrows point to referenced credentials: authority through <code>termsOfUse</code>, support through <code>evidence</code>, each bound to exact bytes by <code>relatedResource</code>. Badges show whether each signature verified. Tap a box to read that credential.</p>
+    <div id="graph"></div>
   </section>
 
   <section aria-labelledby="h-vc">
     <h2 id="h-vc">The credential</h2>
-    <p class="lede">A W3C Verifiable Credential, grouped by what each part does. Tap "Full JSON" for the exact signed bytes.</p>
+    <p class="lede">The certificate D as a W3C Verifiable Credential, grouped by what each part does.</p>
     <div class="vc" id="vc"></div>
-    <details class="raw"><summary>Full JSON</summary><pre id="raw"></pre></details>
-  </section>
-
-  <section aria-labelledby="h-g">
-    <h2 id="h-g">Who stands behind the value</h2>
-    <p class="lede">Arrows point to referenced credentials. Authority is referenced in <code>termsOfUse</code>, support in <code>evidence</code>, and each reference is bound to the exact bytes by <code>relatedResource</code>. Tap a box to read that credential.</p>
-    <div id="graph"></div>
-  </section>
-
-  <section aria-labelledby="h-t">
-    <h2 id="h-t">The seven gates a verifier checks</h2>
-    <p class="lede">The verifier picks the profile; the credential cannot pick a weaker one. Each answer is yes, no or cannot tell, and cannot tell never counts as yes. A gate only reads facts from credentials that passed the gates before it.</p>
-    <div class="legend"><span class="src repository">repository code</span> runs the repository's verifier today <span class="src preview">preview</span> planned rules, not yet in the repository evaluator</div>
-    <ol class="gates" id="gates"></ol>
-    <p class="note">Credential status (revocation) is not checked yet; it is planned for the next phase of the evaluator.</p>
+    <details class="raw"><summary>Exact signed bytes</summary><pre id="raw"></pre></details>
   </section>
 
   <footer>
     <p>Credentials represent authority. They do not create it.</p>
-    <p>The signed credentials are the repository's RM v1 test fixtures (<code>bindings/experimental/rm-v1</code>), signed with <code>eddsa-rdfc-2022</code>. Gates 0 to 3 run the repository's <code>verifyRmArtifact</code>, bundled for the browser: pinned contexts and schemas, the issuer's own key from its controller document, the Ed25519 signature over the JSON-LD safe-mode canonical form, exact-byte digests and validity. Gates 4 to 6 preview the authority, scope, support and decision rules that the repository is still implementing.</p>
+    <p>All seven gates run the repository's <code>evaluateRmSlice</code>, bundled for the browser: pinned contexts and schemas, issuer keys from controller documents, Ed25519 signatures over the JSON-LD safe-mode canonical form, exact-byte digests, validity and Bitstring status lists, then claim mapping, authority routes and scope, the required study and the verifier's decision rule. The question is evaluated as of <span id="evalTime">25 September 2026</span>, the fixtures' reference time, because status lists expire; a real verifier would use the current time and fresh status.</p>
     <p>Certified value and material from BAM-M375a. The accreditation body, producer, laboratory, operational scope, methods M1 and M2 and all keys are fictional fixtures under the experimental binding <code>vc4qi.example/bindings/rm/1</code>; BAM does not issue these credentials. The 197 and 520 certificates are hypothetical reissues with their own valid signatures.</p>
-    <p>Project: <a href="../">monavari.github.io/VC4QI</a> · Code: <a href="https://github.com/monavari/VC4QI">github.com/monavari/VC4QI</a></p>
-    <p>Mehran Monavari, BAM Berlin · <a href="mailto:mehran.monavari@bam.de">mehran.monavari@bam.de</a></p>
+    <p><a href="../">Project</a> · <a href="../docs/index.html">Documentation</a> · <a href="https://github.com/monavari/VC4QI">Code</a> · Mehran Monavari, BAM Berlin · <a href="mailto:mehran.monavari@bam.de">mehran.monavari@bam.de</a></p>
   </footer>
 </main>
 
@@ -182,16 +186,19 @@ ol.gates summary .t small{ display:block; color:var(--muted); font-size:.78rem; 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const short = iri => String(iri).split(/[#/]/).pop();
-const LABEL = { established: 'yes', contradicted: 'no', not_established: 'cannot tell', not_run: 'not asked' };
-const GATES = [
-  ['Understood?', 'supported credential type, context and schema'],
-  ['Complete and unchanged?', 'referenced credentials match their digests'],
-  ['Authentic?', "signed with the issuer's own key"],
-  ['Valid now?', 'within the validity period'],
-  ['Meaningful?', 'quantity, unit and numbers per the binding'],
-  ['Authorized?', 'accreditation chain and scope'],
-  ['Supported and fit for use?', "required study; the verifier's limit"],
-];
+const LABEL = { established: 'yes', contradicted: 'no', not_established: 'cannot tell', not_asked: 'not asked' };
+const QUESTIONS = {
+  authentic: 'Authentic?', current: 'Current?', understood: 'Understood?',
+  authorized: 'Authorized?', supported: 'Supported?', fit: 'Fit for use?',
+};
+const WHY = {
+  authentic: 'signed by the issuer, unchanged since',
+  current: 'within validity, not revoked',
+  understood: 'types, schemas and units per the binding',
+  authorized: 'the accreditation chain covers this exact claim',
+  supported: 'the required study, with its own authority',
+  fit: "the verifier's own requirement",
+};
 
 function fail(message) {
   $('verdict').className = 'verdict unknown'; $('mark').textContent = '?';
@@ -200,97 +207,111 @@ function fail(message) {
 
 let api;
 try { api = await import('./verifier.js'); }
-catch (error) { fail('This browser could not run the verifier (' + error.message + ').'); throw error; }
+catch (error) { fail('This browser could not run the evaluator (' + error.message + ').'); throw error; }
+$('evalTime').textContent = new Date(api.EVALUATION_TIME).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
-let cur = '178', tampered = false, seq = 0, last;
+const opts = { x: '178', tamper: false, askFitForUse: true, withholdStudy: false };
+let seq = 0;
 
 function renderVerdict(R) {
-  const v = $('verdict'); let t, s, m;
-  if (R.verdict === 'accept') { v.className = 'verdict'; m = '✓'; t = 'Accepted'; s = 'All seven gates answered yes. ' + R.conformity.text; }
-  else if (R.verdict === 'reject') {
+  const v = $('verdict'), d = R.result.decision, q = Object.fromEntries(R.questions.map(x => [x.id, x]));
+  const order = ['authentic', 'current', 'understood', 'authorized', 'supported', 'fit'];
+  let t, s, m;
+  if (d === 'accept') {
+    v.className = 'verdict'; m = '✓'; t = 'Accepted';
+    s = R.options.askFitForUse ? 'Authorized, supported and fit for use: ' + q.fit.summary.replace(/^Conforms under [^:]+: /, '')
+      : 'Authorized and supported. No limit was asked, so fitness for use was not assessed.';
+  } else if (d === 'reject') {
     v.className = 'verdict reject'; m = '✕';
-    if (R.failedGate === 2) { t = 'Rejected: not authentic'; s = 'The signature no longer matches. Changed values are never used for scope or conformity.'; }
-    else if (R.failedGate === 5) { t = 'Rejected: not authorized'; s = R.scope.text + ' Fit for use not asked.'; }
-    else if (R.failedGate === 6 && R.conformity && R.conformity.run && R.conformity.state === 'contradicted') {
-      t = 'Rejected: not fit for use'; s = 'Authorized, but ' + R.conformity.text + " The verifier's requirement is As + U ≤ 200 mg/kg."; }
-    else { t = 'Rejected at gate ' + R.failedGate; s = 'See the gates below.'; }
-  } else { v.className = 'verdict unknown'; m = '?'; t = 'Not established'; s = 'Some required evidence could not be established. See the gates below.'; }
+    const failed = order.find(k => q[k].state === 'contradicted');
+    t = { authentic: 'Rejected: not authentic', current: 'Rejected: not current', understood: 'Rejected: not understood',
+      authorized: 'Rejected: not authorized', supported: 'Rejected: not supported', fit: 'Rejected: not fit for use' }[failed] ?? 'Rejected';
+    const coverage = q.authorized.details.find(e => e.predicate.startsWith('claim-coverage:') && e.state === 'contradicted');
+    s = failed === 'authentic' ? 'The signature no longer matches the bytes, so no fact in it is used.'
+      : failed === 'fit' ? 'Authorized, but ' + q.fit.summary.replace(/^Does not conform under [^:]+: /, '')
+      : failed === 'authorized' && coverage ? "Outside the producer's scope: " + coverage.reason + ' Fitness for use is not asked.'
+      : q[failed]?.summary ?? '';
+  } else {
+    v.className = 'verdict unknown'; m = '?'; t = 'Not established';
+    const open = order.filter(k => q[k].state === 'not_established').map(k => QUESTIONS[k].replace('?', '').toLowerCase());
+    s = open.length ? 'The evaluator cannot tell whether it is ' + (open.length > 1 ? open.slice(0, -1).join(', ') + ' or ' + open.at(-1) : open[0]) + '. Nothing is contradicted, but required evidence is missing; tap a question for the reason.'
+      : 'Some required evidence could not be established.';
+  }
   $('mark').textContent = m;
-  $('mark').style.color = R.verdict === 'accept' ? '#00556E' : (R.verdict === 'reject' ? '#D2001E' : '#6B5A1E');
+  $('mark').style.color = d === 'accept' ? '#00556E' : (d === 'reject' ? '#D2001E' : '#6B5A1E');
   $('vTitle').textContent = t; $('vSub').textContent = s;
 }
 
-function renderWitness(R) {
-  const g = n => R.gates[n].state;
-  const x = R.values.x, U = R.values.U, sum = (Number(x) + Number(U));
-  const rows = [
-    ['Authentic', g(2) === 'established' ? 'signatures valid' : (g(2) === 'contradicted' ? 'signature broken' : 'not checked'), g(2)],
-    ['Authorized', R.scope ? R.scope.text.split(' mg/kg')[0] : 'not asked', R.scope ? R.scope.state : 'not_run'],
-    ['Fit for use', R.conformity && R.conformity.run ? x + ' + ' + U + ' = ' + sum + (R.conformity.state === 'established' ? ' ≤ 200' : ' > 200') : 'not run',
-      R.conformity && R.conformity.run ? R.conformity.state : 'not_run'],
-  ];
-  $('witness').innerHTML = rows.map(r => "<div class='wrow'><b>" + r[0] + '</b><code>' + esc(r[1]) + "</code><span class='state s-" + r[2] + "'>" + LABEL[r[2]] + '</span></div>').join('');
+function renderQuestions(R) {
+  const box = $('questions'); const opened = new Set([...box.querySelectorAll('details[open]')].map(d => d.dataset.id));
+  box.innerHTML = R.questions.map(q => {
+    const rows = q.details.map(e => "<li><span class='state st-" + e.state + "'>" + LABEL[e.state] + '</span><span>' + esc(e.reason)
+      + '<code>gate ' + e.gate + ' · ' + esc(e.predicate) + ' · ' + esc(short(e.nodeUse.split('|')[0].trim())) + '</code></span></li>').join('');
+    return "<details class='q s-" + q.state + "' data-id='" + q.id + "'" + (opened.has(q.id) ? ' open' : '') + '><summary>'
+      + "<span class='qt'><b>" + QUESTIONS[q.id] + "</b><span class='state st-" + q.state + "'>" + LABEL[q.state] + '</span></span>'
+      + "<span class='qs'>" + esc(WHY[q.id]) + '</span></summary>'
+      + "<ul class='trace'><li><span class='state st-" + q.state + "'>" + LABEL[q.state] + '</span><span><b>' + esc(q.summary) + '</b></span></li>' + rows + '</ul></details>';
+  }).join('');
 }
 
 function blk(cls, k, role, v) { return "<div class='blk " + cls + "'><div class='k'>" + k + '<small>' + role + "</small></div><div class='v'>" + v + '</div></div>'; }
 function renderVC(R) {
   const D = R.documents.D, s = D.credentialSubject, m = s.materials[0], r = s.materialPropertiesList[0].results[0], q = r.data.quantity;
-  const value = R.tampered ? "<span class='tampered'>" + esc(q.value) + '</span>' : esc(q.value);
+  const value = R.options.tamper ? "<span class='tampered'>" + esc(q.value) + '</span>' : esc(q.value);
   let h = '<header><b>D  Verifiable Credential</b><span>RmCertificate</span></header>';
   h += blk('', 'metadata', 'who, what, when', 'type: ' + esc(D.type.join(', ')) + '<br>issuer: ' + esc(D.issuer) + '<br>validFrom: ' + D.validFrom.slice(0, 10) + '<br>validUntil: ' + D.validUntil.slice(0, 10) + '<br>credentialSchema: ' + esc(short(D.credentialSchema.id)));
   h += blk('subj', 'credentialSubject', 'the claim', 'id: ' + esc(s.id) + '<br>material: ' + esc(m.name) + ', ' + esc(short(m.matrixIri)) + ', ' + esc(short(m.formIri)) + "<br><span class='big'>As = " + value + ' mg/kg</span><br>U = ' + esc(q.uncertainty.expandedUncertainty) + ' mg/kg (k = ' + esc(q.uncertainty.coverageFactor) + '), method ' + esc(short(r.methodIri)));
   h += blk('tou', 'termsOfUse', 'authority', D.termsOfUse.map(t => esc(t.type) + '<br>→ ' + esc(short(t.authorizationCredential.id))).join('<br>'));
   h += blk('', 'evidence', 'support', D.evidence.map(e => esc(e.type) + ' → ' + esc(short(e.id))).join('<br>'));
   h += blk('', 'relatedResource', 'integrity', D.relatedResource.map(x => esc(short(x.id)) + ': ' + esc(x.digestSRI.slice(0, 26)) + '…').join('<br>'));
+  h += blk('', 'credentialStatus', 'revocation', esc(D.credentialStatus.statusListCredential) + ' #' + esc(D.credentialStatus.statusListIndex));
   h += blk('', 'proof', 'protection', esc(D.proof.cryptosuite) + '<br>' + esc(D.proof.verificationMethod) + '<br>' + esc(D.proof.proofValue.slice(0, 30)) + '…');
   $('vc').innerHTML = h;
   $('raw').textContent = R.texts.D;
 }
 
 const NODES = {
-  A: { cls: 'acc', t: 'A  Accreditation', s: 'M1, M2 · 50–500 mg/kg' },
-  H: { cls: 'acc', t: 'H  Lab authority', s: 'homogeneity studies' },
-  O: { cls: 'ops', t: 'O  Operational scope', s: 'producer-issued · M1 · 50–500 mg/kg' },
-  S: { cls: 'sup', t: 'S  Homogeneity study', s: 'same batch' },
+  A: { cls: 'acc', t: 'A  Accreditation', s: 'NAB → producer · M1, M2 · 50–500 mg/kg' },
+  H: { cls: 'acc', t: 'H  Lab authority', s: 'NAB → laboratory · homogeneity studies' },
+  O: { cls: 'ops', t: 'O  Operational scope', s: 'producer-issued · M1 only · 50–500 mg/kg' },
+  S: { cls: 'sup', t: 'S  Homogeneity study', s: 'same batch · homogeneous' },
   D: { cls: 'dom', t: 'D  RM certificate', s: '' },
 };
 function nodeBtn(k, R) {
-  const n = NODES[k], b = document.createElement('button');
-  b.type = 'button'; b.className = 'node ' + n.cls;
-  const sub = k === 'D' ? 'As = ' + R.values.x + ' ± ' + R.values.U + ' mg/kg · M1' : n.s;
-  b.innerHTML = '<b>' + esc(n.t) + '</b><small>' + esc(sub) + '</small>';
-  b.addEventListener('click', () => openSheet(k, R)); return b;
+  const n = NODES[k], b = document.createElement('button'), present = Boolean(R.documents[k]);
+  b.type = 'button'; b.className = 'node ' + n.cls + (present ? '' : ' missing');
+  const sub = k === 'D' ? 'As = ' + R.values.x + ' ± ' + R.values.U + ' mg/kg · M1' : (present ? n.s : 'not supplied');
+  const st = R.protection[k];
+  const badge = present ? "<span class='badge b-" + st + "'>" + (st === 'established' ? 'signed ✓' : st === 'contradicted' ? 'signature ✕' : 'unchecked') + '</span>' : '';
+  b.innerHTML = badge + '<b>' + esc(n.t) + '</b><small>' + esc(sub) + '</small>';
+  if (present) b.addEventListener('click', () => openSheet(k, R)); else b.disabled = true;
+  return b;
 }
-function edge(cls, role, carrier, bad) { const e = document.createElement('div'); e.className = 'edge ' + cls + (bad ? ' bad' : ''); e.innerHTML = "<div class='stem'></div><div><b>" + esc(role) + '</b><code>' + esc(carrier) + '</code></div>'; return e; }
+function edge(cls, role, carrier, state) {
+  const e = document.createElement('div');
+  e.className = 'edge ' + cls + (state === 'contradicted' ? ' bad' : state === 'not_established' ? ' unk' : '');
+  e.innerHTML = "<div class='stem'></div><div><b>" + esc(role) + '</b><code>' + esc(carrier) + '</code></div>';
+  return e;
+}
 function renderGraph(R) {
   const g = $('graph'); g.innerHTML = '';
+  const q = Object.fromEntries(R.questions.map(x => [x.id, x.state]));
   const tier = (...ks) => { const t = document.createElement('div'); t.className = 'tier' + (ks.length === 1 ? ' single' : ''); ks.forEach(k => t.appendChild(nodeBtn(k, R))); return t; };
   const edges = (...es) => { const d = document.createElement('div'); d.className = 'edges'; es.forEach(e => d.appendChild(e)); return d; };
-  const scopeBad = R.scope && R.scope.state === 'contradicted';
   g.appendChild(tier('A', 'H'));
-  g.appendChild(edges(edge('', 'bounded projection', 'termsOfUse · O within A'), edge('dash', 'authority use', 'termsOfUse')));
+  g.appendChild(edges(edge('', 'bounded projection', 'termsOfUse · O within A', R.documents.O ? 'established' : 'not_established'),
+    edge('dash', 'laboratory authority', 'termsOfUse', R.documents.S ? 'established' : 'not_established')));
   g.appendChild(tier('O', 'S'));
-  g.appendChild(edges(edge('dash', 'authority use', scopeBad ? "value outside O's range" : 'termsOfUse · claim in scope', scopeBad), edge('dot', 'support', 'evidence')));
+  g.appendChild(edges(
+    edge('dash', 'authority use', q.authorized === 'contradicted' ? "value outside O's range" : 'termsOfUse · claim in scope', q.authorized),
+    edge('dot', 'support', R.documents.S ? 'evidence · same batch' : 'evidence · study missing', q.supported)));
   g.appendChild(tier('D'));
-}
-
-function renderGates(R) {
-  const ol = $('gates'); ol.innerHTML = '';
-  R.gates.forEach(gate => {
-    const q = GATES[gate.gate], s = gate.state;
-    const li = document.createElement('li'); li.className = 'g-' + s;
-    const d = document.createElement('details'); if (s !== 'established') d.open = true;
-    d.innerHTML = "<summary><span class='n'>" + gate.gate + "</span><span class='t'>" + esc(q[0]) + ' <span class="src ' + gate.source + '">' + (gate.source === 'repository' ? 'repository code' : 'preview') + '</span><small>' + esc(gate.name) + ' · ' + esc(q[1]) + "</small></span><span class='state s-" + s + "'>" + LABEL[s] + '</span></summary>'
-      + "<ul class='checks'>" + gate.checks.map(c => "<li><span class='state s-" + c.state + "'>" + LABEL[c.state] + "</span><span class='d'>" + esc(c.text) + '</span></li>').join('') + '</ul>';
-    li.appendChild(d); ol.appendChild(li);
-  });
 }
 
 function openSheet(k, R) {
   const doc = R.documents[k];
   $('sheetTitle').textContent = NODES[k].t;
-  const a = R.artifacts[k];
-  $('sheetSub').textContent = 'Issuer: ' + doc.issuer + ' · protection: ' + LABEL[a.protection.state];
+  $('sheetSub').textContent = 'Issuer: ' + doc.issuer + ' · signature: ' + LABEL[R.protection[k]];
   $('sheetBody').textContent = R.texts[k];
   const s = $('sheet'); if (s.showModal) s.showModal(); else s.setAttribute('open', '');
 }
@@ -299,19 +320,25 @@ $('sheet').addEventListener('click', function (e) { if (e.target === this && thi
 
 async function run() {
   const my = ++seq;
-  $('verdict').className = 'verdict busy'; $('mark').textContent = '…'; $('vTitle').textContent = 'Verifying'; $('vSub').textContent = '';
-  const R = await api.evaluateScenario(cur, tampered, new Date().toISOString());
+  $('verdict').className = 'verdict busy'; $('mark').textContent = '…'; $('vTitle').textContent = 'Evaluating'; $('vSub').textContent = '';
+  const R = await api.evaluateScenario({ ...opts });
   if (my !== seq) return;
-  last = R;
-  renderVerdict(R); renderWitness(R); renderVC(R); renderGraph(R); renderGates(R);
+  renderVerdict(R); renderQuestions(R); renderGraph(R); renderVC(R);
+  document.body.dataset.decision = R.result.decision;
 }
-document.querySelectorAll('.scenario button').forEach(b => b.addEventListener('click', () => {
-  cur = b.dataset.x;
-  document.querySelectorAll('.scenario button').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
-  run().catch(e => fail('Verification could not run: ' + e.message));
-}));
-$('tamper').addEventListener('change', function () { tampered = this.checked; run().catch(e => fail('Verification could not run: ' + e.message)); });
-run().catch(e => fail('Verification could not run: ' + e.message));
+const go = () => run().catch(e => fail('The evaluator could not run: ' + e.message));
+function segment(id, attr, apply) {
+  $(id).querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    apply(b.dataset[attr]);
+    $(id).querySelectorAll('button').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+    go();
+  }));
+}
+segment('xs', 'x', v => { opts.x = v; });
+segment('asks', 'fit', v => { opts.askFitForUse = v === 'true'; });
+$('tamper').addEventListener('change', function () { opts.tamper = this.checked; go(); });
+$('withhold').addEventListener('change', function () { opts.withholdStudy = this.checked; go(); });
+go();
 </script>
 </body>
 </html>

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- The BAM-M375a demonstrator now runs the complete reliance evaluator (`evaluateRmSlice`,
+  gates 0–6) in the browser, with no server and no preview rules. The page answers six
+  questions (authentic, current, understood, authorized, supported, fit for use) with
+  controls for the certified value, the verifier's question, a tamper test and a
+  withheld study. Status lists are verified in the browser through a bounded gunzip shim
+  (`fflate`), and the status-list decoder no longer needs Node's `Buffer`.
+
 - Consolidate the documentation into eight guide pages (`docs/index.md`, `model`,
   `status`, `use-cases`, `api`, `bindings`, `architecture`, `applications`) plus the
   manuscript feedback, one implementation-evidence page and an ADR index. Nineteen
