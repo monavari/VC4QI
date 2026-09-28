@@ -22,7 +22,11 @@
     "./assessment": "./src/assessment/index.ts",
     "./reliance/rm-v1-node": "./src/reliance/rm-v1-node.ts",
     "./reliance/rm-v1-artifacts": "./src/reliance/rm-v1-artifacts.ts",
-    "./reliance/rm-v1-slice": "./src/reliance/rm-v1-slice.ts"
+    "./reliance/rm-v1-slice": "./src/reliance/rm-v1-slice.ts",
+    "./reliance/binding-chain": "./src/reliance/binding-chain.ts",
+    "./reliance/cal-v1-node": "./src/reliance/cal-v1-node.ts",
+    "./reliance/cal-v1-slice": "./src/reliance/cal-v1-slice.ts",
+    "./legacy": "./src/legacy/index.ts"
   },
   "scripts": {
     "test": "vitest run",

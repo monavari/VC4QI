@@ -1,0 +1,31 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+    "cal": "https://vc4qi.example/bindings/cal/1#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+
+    "CalAccreditation": "cal:CalAccreditation",
+    "CalCertificate": "cal:CalCertificate",
+    "CalAuthorizationPolicy": "cal:CalAuthorizationPolicy",
+
+    "authorizationCredential": "cal:authorizationCredential",
+    "permittedActivity": {"@id": "cal:permittedActivity", "@type": "@id", "@container": "@set"},
+    "scope": {"@id": "cal:scope", "@container": "@set"},
+    "quantityKindIri": {"@id": "cal:quantityKind", "@type": "@id"},
+    "allowedMethodIris": {"@id": "cal:allowedMethodIris", "@type": "@id", "@container": "@set"},
+    "range": "cal:range",
+    "from": {"@id": "cal:from", "@type": "xsd:decimal"},
+    "to": {"@id": "cal:to", "@type": "xsd:decimal"},
+    "unit": "cal:unit",
+    "cmcFloor": "cal:cmcFloor",
+
+    "activityTime": {"@id": "cal:activityTime", "@type": "xsd:dateTime"},
+    "measurementGroups": {"@id": "cal:measurementGroups", "@container": "@list"},
+    "methodIris": {"@id": "cal:methodIris", "@type": "@id", "@container": "@set"},
+    "results": {"@id": "cal:results", "@container": "@list"},
+    "value": {"@id": "cal:value", "@type": "xsd:decimal"},
+    "expandedUncertainty": {"@id": "cal:expandedUncertainty", "@type": "xsd:decimal"},
+    "coverageFactor": {"@id": "cal:coverageFactor", "@type": "xsd:decimal"}
+  }
+}
