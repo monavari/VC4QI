@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Python mirror of tests/gs-v1.test.ts (I5: gs-scheme-authorization)."""
+"""Python mirror of tests/gs-v1.test.ts (GS scheme authorization, product passports)."""
 
 from __future__ import annotations
 
@@ -40,12 +40,15 @@ GS = "https://vc4qi.example/bindings/gs/1#"
 GS_A = "https://nab.vc4qi.example/credentials/GS-A"
 GS_S = "https://scheme.vc4qi.example/credentials/GS-S"
 GSC = "https://gs-body.vc4qi.example/credentials/GSC-1"
+DPP1 = "https://maker.vc4qi.example/credentials/DPP-1"
+DPP2 = "https://maker.vc4qi.example/credentials/DPP-2"
 NAB = "https://nab.vc4qi.example/controller"
 SCHEME = "https://scheme.vc4qi.example/controller"
 KEY = {
     NAB: "nab",
     SCHEME: "scheme",
     "https://gs-body.vc4qi.example/controller": "gs-body",
+    "https://maker.vc4qi.example/controller": "maker",
 }
 CERTIFICATION = "/credentialSubject/certification"
 ROUTE = "route:competence-and-scheme-permission"
@@ -262,4 +265,109 @@ def test_scheme_authorization_after_the_activity_cannot_authorize() -> None:
     in_force = entry(result, f"{ROUTE}:scope-in-force-at-activity")
     assert in_force.state == "not_established"
     assert "GS-S is valid only from" in in_force.reason
+    assert result.decision == "not_established"
+
+
+DPP_PROFILE = load_reliance_profile(
+    json.loads((GS_V1_DIRECTORY / "profiles/gs-verifier-dpp-1.json").read_text())
+)
+DPP_ROUTE = "route:gs-certified-product"
+
+
+def run_passport(
+    overrides: dict[str, str | None] | None = None, target: str = DPP1
+) -> Any:
+    base = request()
+    req = create_reliance_request(
+        RelianceRequest(
+            **{
+                **base.__dict__,
+                "request_id": "urn:uuid:gs-v1-dpp",
+                "target_id": target,
+                "selected_claims": (
+                    SelectedClaim("mark", "/credentialSubject/marking"),
+                ),
+                "supplied_evidence": (),
+                "profile": VersionedIdentifier(DPP_PROFILE.id, DPP_PROFILE.version),
+            }
+        )
+    )
+    return evaluate_gs_slice(req, catalog_with(overrides), MANIFEST, DPP_PROFILE).result
+
+
+def test_passport_accepted_through_a_certificate_for_its_model() -> None:
+    result = run_passport()
+    assert all(v.state == "established" for v in result.artifact_verification)
+    assert entry(result, f"{DPP_ROUTE}:manufacturer-binding").state == "established"
+    assert entry(result, f"{DPP_ROUTE}:certificate:claim-coverage").state == (
+        "established"
+    )
+    assert result.authorization[0].route_witness_ids == (
+        DPP_ROUTE,
+        DPP1,
+        GSC,
+        GS_A,
+        GS_S,
+        f"record:{GSC}",
+    )
+    assert "not EU Digital Product Passport conformance" in " ".join(result.limitations)
+    assert result.decision == "accept"
+
+
+def test_passport_with_uncovered_certificate_rejects() -> None:
+    result = run_passport(None, DPP2)
+    assert entry(result, f"{DPP_ROUTE}:certificate:claim-coverage").state == (
+        "contradicted"
+    )
+    assert result.decision == "reject"
+
+
+def test_certificate_for_another_manufacturer_rejects() -> None:
+    def edit(d: dict[str, Any]) -> None:
+        d["credentialSubject"]["manufacturerIri"] = (
+            "https://other-maker.vc4qi.example/controller"
+        )
+
+    result = run_passport(reissue_chain([(GSC, edit), (DPP1, None)]))
+    assert entry(result, f"{DPP_ROUTE}:manufacturer-binding").state == ("contradicted")
+    assert result.decision == "reject"
+
+
+def test_passport_for_another_model_is_not_covered() -> None:
+    def edit(d: dict[str, Any]) -> None:
+        d["credentialSubject"]["productModelIri"] = "urn:vc4qi-example:product:toy-999"
+        d["credentialSubject"]["marking"]["productModelIri"] = (
+            "urn:vc4qi-example:product:toy-999"
+        )
+
+    result = run_passport(reissue_chain([(DPP1, edit)]))
+    assert entry(result, "claim-coverage:mark:gs-certified-product").state == (
+        "contradicted"
+    )
+    assert result.decision == "reject"
+
+
+def test_certificate_after_placing_on_market_cannot_authorize() -> None:
+    def edit(d: dict[str, Any]) -> None:
+        d["validFrom"] = "2026-06-01T00:00:00Z"
+
+    result = run_passport(reissue_chain([(GSC, edit), (DPP1, None)]))
+    assert entry(result, f"{DPP_ROUTE}:certificate-in-force").state == (
+        "not_established"
+    )
+    assert result.decision == "not_established"
+
+
+def test_certificate_route_must_be_complete() -> None:
+    edit = without_reference("GsSchemeAuthorization")
+    result = run_passport(reissue_chain([(GSC, edit), (DPP1, None)]))
+    assert entry(result, f"{DPP_ROUTE}:certificate:scheme-reference").state == (
+        "not_established"
+    )
+    assert result.decision == "not_established"
+
+
+def test_withheld_certificate_is_not_established() -> None:
+    result = run_passport({GSC: None})
+    assert result.authorization[0].state == "not_established"
     assert result.decision == "not_established"

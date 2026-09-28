@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VC4QI demonstrator</title>
+<meta name="description" content="Quality Infrastructure credentials you can verify in your browser: a reference material, calibration certificates, a GS certificate and a product passport, checked by the VC4QI repository's own reliance evaluator. VC4QI demonstrator, BAM.">
+<style>
+:root{
+  --petrol:#00556E; --dark:#002832; --cyan:#00AFF0; --red:#D2001E; --gray:#BEC3C8;
+  --paper:#FFFFFF; --wash:#F1F3F4; --tcyan:#E1F4FC; --tpet:#DCEAEF; --line:#DADEE1; --ink:#14232A; --muted:#56656D;
+  --brass-1:#E9D08F; --brass-2:#B8914B; --brass-3:#7A5B26;
+  --ok:#00556E; --bad:#D2001E; --unk:#8A6D00;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --paper:#0E1A1F; --wash:#15252C; --tcyan:#0F2F3C; --tpet:#12313B; --line:#26363E; --ink:#E6ECEE; --muted:#9AAAB1; --ok:#3FB6D6; --petrol:#0A6A86; --unk:#E0B84A; }
+}
+:root[data-theme="dark"]{ --paper:#0E1A1F; --wash:#15252C; --tcyan:#0F2F3C; --tpet:#12313B; --line:#26363E; --ink:#E6ECEE; --muted:#9AAAB1; --ok:#3FB6D6; --petrol:#0A6A86; --unk:#E0B84A; }
+:root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+*,*::before,*::after{ box-sizing:inherit; }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); -webkit-text-size-adjust:100%; }
+body{ margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 var(--sans); }
+main{ max-width:42rem; margin:0 auto; padding:0 16px 3rem; }
+a{ color:inherit; text-underline-offset:3px; }
+button{ font:inherit; color:inherit; }
+:focus-visible{ outline:3px solid var(--cyan); outline-offset:2px; border-radius:4px; }
+
+/* top bar */
+.topbar{ position:sticky; top:0; z-index:5; background:var(--paper); border-bottom:1px solid var(--line); }
+.topbar .in{ max-width:42rem; margin:0 auto; padding:.55rem 16px .5rem; display:flex; align-items:center; gap:.9rem; }
+.brand{ font-size:.85rem; text-decoration:none; white-space:nowrap; } .brand strong{ color:var(--red); }
+.tabs{ display:flex; gap:.25rem; margin-left:auto; }
+.tabs a{ text-decoration:none; font-weight:650; font-size:.9rem; padding:.35rem .75rem; border-radius:999px; color:var(--muted); }
+.tabs a:hover{ background:var(--wash); color:var(--ink); }
+.tabs a[aria-current="page"]{ background:var(--petrol); color:#fff; }
+
+.hero{ display:grid; grid-template-columns:auto 1fr; gap:1.1rem; align-items:center; margin:1.3rem 0 1rem; }
+.disc{ width:6.8rem; aspect-ratio:1; border-radius:50%; display:grid; place-items:center; text-align:center; color:#fff;
+  background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.35), rgba(255,255,255,0) 40%), radial-gradient(circle, var(--petrol), var(--dark));
+  box-shadow: inset 0 0 0 3px rgba(255,255,255,.25), 0 6px 18px rgba(0,40,50,.25); }
+.disc.rm{ color:#3A2A0E; background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.55), rgba(255,255,255,0) 38%),
+    repeating-radial-gradient(circle at 50% 50%, rgba(0,0,0,.035) 0 2px, rgba(0,0,0,0) 2px 5px),
+    radial-gradient(circle at 50% 50%, var(--brass-1), var(--brass-2) 70%, var(--brass-3));
+  box-shadow: inset 0 0 0 3px rgba(122,91,38,.55), inset 0 -8px 16px rgba(60,40,10,.25), 0 6px 18px rgba(60,40,10,.25); }
+.disc.dcc{ background: repeating-conic-gradient(from -135deg, rgba(255,255,255,.55) 0 1deg, transparent 1deg 27deg), radial-gradient(circle, #0A6A86, var(--dark)); }
+.disc.dpp{ background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.35), rgba(255,255,255,0) 40%), radial-gradient(circle, #5B3E8C, #2A1B45); }
+.disc.gs{ background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.35), rgba(255,255,255,0) 40%), radial-gradient(circle, #1F7A3D, #0E3B1D); }
+.disc b{ display:block; font-size:.95rem; } .disc span{ display:block; font-size:.7rem; opacity:.85; }
+.hero h1{ font-size:1.35rem; line-height:1.2; margin:0 0 .35rem; }
+.hero p{ margin:0; color:var(--muted); font-size:.9rem; }
+@media (max-width:26rem){ .hero{ grid-template-columns:1fr; } .disc{ width:5.2rem; } }
+
+/* controls */
+.controls{ display:grid; gap:.55rem; margin:0 0 1rem; }
+.seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+.seg button{ border:0; background:transparent; padding:.55rem .35rem; font-size:.88rem; cursor:pointer; line-height:1.2; }
+.seg button small{ display:block; font-size:.7rem; color:var(--muted); }
+.seg button[aria-pressed="true"]{ background:var(--wash); font-weight:650; box-shadow: inset 0 -3px 0 var(--cyan); }
+.seg button + button{ border-left:1px solid var(--line); }
+@media (max-width:30rem){ .seg.many{ grid-auto-flow:row; grid-template-columns:1fr 1fr; } .seg.many button:nth-child(3){ border-left:0; } .seg.many button:nth-child(n+3){ border-top:1px solid var(--line); } }
+.label{ font-size:.78rem; color:var(--muted); margin:.2rem 0 -.2rem; }
+.toggles{ display:flex; flex-wrap:wrap; gap:.3rem 1.2rem; font-size:.86rem; color:var(--muted); }
+.toggles label{ display:flex; align-items:center; gap:.45rem; cursor:pointer; }
+.toggles input{ width:1.05rem; height:1.05rem; accent-color:var(--petrol); }
+
+/* verdict */
+.verdict{ display:flex; gap:.8rem; align-items:center; border-radius:10px; padding:.85rem 1rem; color:#fff; background:var(--petrol); }
+.verdict.reject{ background:var(--red); } .verdict.unknown{ background:#6B5A1E; } .verdict.busy{ background:var(--muted); }
+.verdict .mark{ flex:none; width:2.1rem; height:2.1rem; border-radius:50%; background:#fff; display:grid; place-items:center; font-weight:800; }
+.verdict b{ display:block; font-size:1.05rem; } .verdict small{ display:block; opacity:.92; font-size:.84rem; overflow-wrap:anywhere; }
+
+section{ margin-top:2rem; }
+h2{ font-size:1.12rem; margin:0 0 .25rem; }
+.lede{ margin:0 0 .9rem; color:var(--muted); font-size:.9rem; }
+
+/* six questions */
+.questions{ display:grid; grid-template-columns:repeat(auto-fit, minmax(11.5rem, 1fr)); gap:.55rem; margin-top:1rem; }
+.q{ border-radius:10px; background:var(--wash); border-left:5px solid var(--unk); }
+.q.s-established{ border-left-color:var(--ok); } .q.s-contradicted{ border-left-color:var(--bad); }
+.q.s-not_asked, .q.s-not_required{ border-left-color:var(--gray); }
+.q summary{ list-style:none; cursor:pointer; padding:.6rem .75rem; display:grid; gap:.15rem; }
+.q summary::-webkit-details-marker{ display:none; }
+.q .qt{ display:flex; justify-content:space-between; gap:.5rem; align-items:baseline; }
+.q .qt b{ font-size:.95rem; }
+.q .qs{ font-size:.8rem; color:var(--muted); overflow-wrap:anywhere; }
+.q[open]{ grid-column:1 / -1; }
+.state{ font-size:.76rem; font-weight:700; white-space:nowrap; }
+.st-established{ color:var(--ok); } .st-contradicted{ color:var(--bad); } .st-not_established{ color:var(--unk); }
+.st-not_asked, .st-not_required{ color:var(--muted); }
+.trace{ margin:0 .75rem .7rem; padding:0; list-style:none; border-top:1px solid var(--line); }
+.trace li{ font-size:.78rem; padding:.3rem 0; display:grid; grid-template-columns:5.8rem 1fr; gap:.5rem; border-bottom:1px dashed var(--line); overflow-wrap:anywhere; }
+.trace li:last-child{ border-bottom:0; }
+.trace code{ font:.72rem var(--mono); color:var(--muted); display:block; overflow-wrap:anywhere; }
+
+/* VC card */
+.vc{ border:2px solid var(--cyan); border-radius:12px; overflow:hidden; }
+.vc header{ background:var(--cyan); color:#fff; padding:.55rem .8rem; display:flex; justify-content:space-between; gap:.5rem; align-items:baseline; }
+.vc header b{ font-size:1rem; } .vc header span{ font-size:.75rem; opacity:.9; }
+.vc header .tampered{ background:var(--red); color:#fff; padding:.05rem .45rem; border-radius:999px; font-weight:700; opacity:1; }
+.blk{ display:grid; grid-template-columns:1fr; gap:.2rem; padding:.5rem .7rem; margin:.3rem; border-radius:6px; background:var(--wash); }
+.blk.subj{ background:var(--tcyan); } .blk.tou{ background:var(--tpet); }
+.blk .k{ font:700 .76rem var(--mono); overflow-wrap:anywhere; } .blk .k small{ display:inline; margin-left:.5rem; font:italic 400 .72rem var(--sans); color:var(--muted); }
+.blk .v{ font:.76rem/1.45 var(--mono); overflow-wrap:anywhere; white-space:pre-wrap; }
+.blk .v .big{ font-size:.98rem; font-weight:700; color:var(--cyan); white-space:normal; display:block; }
+
+/* chain */
+.row{ display:grid; gap:.6rem; }
+.node{ text-align:left; border:0; border-radius:9px; padding:.55rem .7rem; cursor:pointer; width:100%; min-height:3.3rem; position:relative; }
+.node b{ display:block; font-size:.88rem; } .node small{ display:block; font-size:.75rem; opacity:.88; }
+.node .badge{ display:inline-block; margin-top:.35rem; font-size:.66rem; font-weight:700; padding:.05rem .4rem; border-radius:999px; background:#fff; color:var(--ok); }
+.node .badge.b-contradicted{ color:var(--bad); } .node .badge.b-not_established{ color:#6B5A1E; }
+.node.missing{ opacity:.55; outline:2px dashed var(--unk); }
+.node.acc{ background:var(--dark); color:#fff; } .node.ops{ background:var(--tpet); color:var(--ink); box-shadow: inset 0 0 0 1.5px var(--petrol); }
+.node.sup{ background:var(--wash); color:var(--ink); box-shadow: inset 0 0 0 1px var(--line); } .node.dom{ background:var(--cyan); color:#fff; }
+.edge{ display:flex; gap:.55rem; padding:.25rem 0 .25rem .9rem; min-height:3.1rem; }
+.edge .stem{ flex:none; border-left:2.5px solid var(--ink); position:relative; margin:.15rem 0 .1rem; }
+.edge .stem::before{ content:""; position:absolute; top:-.2rem; left:-.42rem; border:.35rem solid transparent; border-bottom:.5rem solid var(--ink); border-top:0; }
+.edge.dash .stem{ border-left-style:dashed; } .edge.dot .stem{ border-left-style:dotted; border-left-width:3px; }
+.edge b{ font-size:.8rem; display:block; } .edge code{ font:.72rem var(--mono); color:var(--muted); display:block; }
+.edge.bad .stem{ border-color:var(--bad); } .edge.bad .stem::before{ border-bottom-color:var(--bad); } .edge.bad b{ color:var(--bad); }
+.edge.unk .stem{ border-color:var(--unk); } .edge.unk .stem::before{ border-bottom-color:var(--unk); } .edge.unk b{ color:var(--unk); }
+
+details.raw summary{ cursor:pointer; font-weight:600; padding:.4rem 0; }
+pre{ font:.72rem/1.45 var(--mono); background:var(--wash); padding:.8rem; border-radius:8px; overflow-x:auto; max-height:26rem; }
+dialog{ border:0; border-radius:14px 14px 0 0; width:100%; max-width:42rem; margin:auto auto 0; padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom,0px)); background:var(--paper); color:var(--ink); max-height:82vh; }
+dialog::backdrop{ background:rgba(0,20,26,.45); }
+dialog h3{ margin:0 0 .2rem; font-size:1.05rem; }
+dialog .close{ float:right; border:1px solid var(--line); background:var(--paper); border-radius:8px; padding:.3rem .7rem; cursor:pointer; }
+footer{ margin-top:2.4rem; border-top:1px solid var(--line); padding-top:1rem; font-size:.82rem; color:var(--muted); }
+footer p{ margin:.35rem 0; }
+.note{ font-size:.82rem; color:var(--muted); margin:.6rem 0 0; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="in">
+  <a class="brand" href="../"><strong>BAM</strong> VC4QI</a>
+  <nav class="tabs" id="tabs" aria-label="Examples"></nav>
+</div></header>
+<main>
+  <div class="hero">
+    <div class="disc" id="disc" aria-hidden="true"><div><b id="discTitle"></b><span id="discSub"></span></div></div>
+    <div><h1 id="title">VC4QI demonstrator</h1><p id="intro"></p></div>
+  </div>
+
+  <div class="controls" id="controls"></div>
+
+  <div class="verdict busy" id="verdict" role="status" aria-live="polite">
+    <div class="mark" id="mark">…</div>
+    <div><b id="vTitle">Evaluating</b><small id="vSub">Loading the evaluator…</small></div>
+  </div>
+
+  <div class="questions" id="questions"></div>
+  <p class="note">Each answer is yes, no or cannot tell, and "cannot tell" never counts as yes. Tap a question to see the evaluator's checks behind it.</p>
+
+  <section aria-labelledby="h-g">
+    <h2 id="h-g">Who stands behind the claim</h2>
+    <p class="lede">Arrows point to referenced credentials: authority through <code>termsOfUse</code>, support through <code>evidence</code>, each bound to exact bytes by <code>relatedResource</code>. Badges show whether each signature verified. Tap a box to read that credential.</p>
+    <div id="graph"></div>
+  </section>
+
+  <section aria-labelledby="h-vc">
+    <h2 id="h-vc">The credential</h2>
+    <p class="lede">The credential being relied on, grouped by what each part does.</p>
+    <div class="vc" id="vc"></div>
+    <details class="raw"><summary>Exact signed bytes</summary><pre id="raw"></pre></details>
+  </section>
+
+  <footer>
+    <p>Credentials represent authority. They do not create it.</p>
+    <p>Every answer comes from the repository's own evaluators (<code>evaluateRmSlice</code>, <code>evaluateCalSlice</code>, <code>evaluateGsSlice</code> for GS certificates and product passports), bundled for the browser: pinned contexts and schemas, issuer keys from controller documents, Ed25519 signatures over the JSON-LD safe-mode canonical form, exact-byte digests, validity and Bitstring status lists, then claim mapping, authority routes and scope, required support and any decision rule. Nothing is fetched. The question is evaluated as of <span id="evalTime">25 September 2026</span>, the fixtures' reference time, because status lists expire; a real verifier would use the current time and fresh status.</p>
+    <p id="exampleNote"></p>
+    <p><a href="../">Project</a> · <a href="../docs/use-cases.html">How it works</a> · <a href="https://github.com/monavari/VC4QI">Code</a> · Mehran Monavari, BAM Berlin · <a href="mailto:mehran.monavari@bam.de">mehran.monavari@bam.de</a></p>
+  </footer>
+</main>
+
+<dialog id="sheet" aria-labelledby="sheetTitle">
+  <button class="close" type="button" id="sheetClose">Close</button>
+  <h3 id="sheetTitle"></h3><p class="lede" id="sheetSub"></p><pre id="sheetBody"></pre>
+</dialog>
+
+<script type="module">
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const short = iri => String(iri).split(/[#/]/).pop();
+const LABEL = { established: 'yes', contradicted: 'no', not_established: 'cannot tell', not_asked: 'not asked', not_required: 'not required' };
+const QUESTIONS = { authentic: 'Authentic?', current: 'Current?', understood: 'Understood?', authorized: 'Authorized?', supported: 'Supported?', fit: 'Fit for use?' };
+const WHY = {
+  authentic: 'signed by the issuer, unchanged since', current: 'within validity, not revoked',
+  understood: 'types, schemas and units per the binding', authorized: 'the grants cover this exact claim',
+  supported: 'required supporting evidence, with its own authority', fit: "the verifier's own requirement",
+};
+const ORDER = ['authentic', 'current', 'understood', 'authorized', 'supported', 'fit'];
+
+function fail(message) {
+  $('verdict').className = 'verdict unknown'; $('mark').textContent = '?';
+  $('vTitle').textContent = 'Not established'; $('vSub').textContent = message;
+}
+let api;
+try { api = await import('./verifier.js'); }
+catch (error) { fail('This browser could not run the evaluator (' + error.message + ').'); throw error; }
+$('evalTime').textContent = new Date(api.EVALUATION_TIME).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+const DEFAULT_CHOICE = { rm: 'fit', dcc: 'own' };
+const state = { example: 'rm', caseId: undefined, choice: undefined, tamper: false, withhold: false };
+let seq = 0;
+const exampleOf = id => api.EXAMPLES.find(e => e.id === id) ?? api.EXAMPLES[0];
+
+function readHash() {
+  const [ex, c] = location.hash.replace(/^#/, '').split('/');
+  const example = exampleOf(ex);
+  state.example = example.id;
+  state.caseId = example.cases.some(x => x.id === c) ? c : example.cases[0].id;
+  state.choice = DEFAULT_CHOICE[example.id];
+  state.tamper = false; state.withhold = false;
+}
+function writeHash() { history.replaceState(null, '', '#' + state.example + '/' + state.caseId); }
+
+function renderTabs() {
+  $('tabs').innerHTML = api.EXAMPLES.map(e => "<a href='#" + e.id + "'" + (e.id === state.example ? " aria-current='page'" : '') + '>' + esc(e.tab) + '</a>').join('');
+}
+function segment(label, options, current, key, many) {
+  return "<p class='label'>" + esc(label) + "</p><div class='seg" + (many ? ' many' : '') + "' role='group' aria-label='" + esc(label) + "' data-key='" + key + "'>"
+    + options.map(o => "<button type='button' data-value='" + esc(o.id) + "' aria-pressed='" + (o.id === current) + "'>" + esc(o.label) + '<small>' + esc(o.sublabel) + '</small></button>').join('') + '</div>';
+}
+function renderControls() {
+  const ex = exampleOf(state.example), spec = ex.cases.find(c => c.id === state.caseId);
+  $('disc').className = 'disc ' + ex.id; $('discTitle').textContent = ex.badge[0]; $('discSub').textContent = ex.badge[1];
+  $('title').textContent = ex.title; $('intro').textContent = ex.intro; $('exampleNote').textContent = ex.note;
+  document.title = ex.title + ' · VC4QI demonstrator';
+  let h = segment(ex.caseLabel, ex.cases, state.caseId, 'caseId', ex.cases.length > 3);
+  if (ex.choice) h += segment(ex.choice.label, ex.choice.options, state.choice, 'choice', false);
+  h += "<div class='toggles'><label><input type='checkbox' id='tamper'" + (state.tamper ? ' checked' : '') + '> Tamper: change the claim without re-signing</label>'
+    + "<label><input type='checkbox' id='withhold'" + (state.withhold ? ' checked' : '') + '> ' + esc(spec.withhold.label) + '</label></div>';
+  $('controls').innerHTML = h;
+  $('controls').querySelectorAll('.seg').forEach(seg => seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    state[seg.dataset.key] = b.dataset.value;
+    if (seg.dataset.key === 'caseId') { state.tamper = false; state.withhold = false; }
+    writeHash(); renderControls(); go();
+  })));
+  $('tamper').addEventListener('change', function () { state.tamper = this.checked; go(); });
+  $('withhold').addEventListener('change', function () { state.withhold = this.checked; go(); });
+}
+
+function renderVerdict(R) {
+  const v = $('verdict'), d = R.result.decision, q = Object.fromEntries(R.questions.map(x => [x.id, x]));
+  let t, s, m;
+  if (d === 'accept') {
+    v.className = 'verdict'; m = '✓'; t = 'Accepted';
+    s = q.fit.state === 'established' ? 'Authorized and fit for use: ' + q.fit.summary.replace(/^Conforms under [^:]+: /, '')
+      : R.headline + '. Authentic, current and authorized' + (q.supported.state === 'established' ? ', with its required support.' : '.');
+  } else if (d === 'reject') {
+    v.className = 'verdict reject'; m = '✕';
+    const failed = ORDER.find(k => q[k].state === 'contradicted');
+    t = { authentic: 'Rejected: not authentic', current: 'Rejected: not current', understood: 'Rejected: not understood',
+      authorized: 'Rejected: not authorized', supported: 'Rejected: not supported', fit: 'Rejected: not fit for use' }[failed] ?? 'Rejected';
+    const coverage = q.authorized.details.find(e => e.predicate.startsWith('claim-coverage:') && e.state === 'contradicted');
+    const basis = q.authorized.details.find(e => /^route:[^:]+:/.test(e.predicate) && e.state === 'contradicted');
+    s = failed === 'authentic' ? 'The signature no longer matches the bytes, so no fact in it is used.'
+      : failed === 'fit' ? 'Authorized, but ' + q.fit.summary.replace(/^Does not conform under [^:]+: /, '')
+      : failed === 'authorized' && coverage ? 'Outside the granted scope: ' + coverage.reason
+      : failed === 'authorized' && basis ? 'The authority chain fails at ' + basis.predicate.split(':').slice(2).join(' ') + ': ' + basis.reason
+      : q[failed]?.summary ?? '';
+  } else {
+    v.className = 'verdict unknown'; m = '?'; t = 'Not established';
+    const open = ORDER.filter(k => q[k].state === 'not_established').map(k => QUESTIONS[k].replace('?', '').toLowerCase());
+    s = open.length ? 'The evaluator cannot tell whether it is ' + (open.length > 1 ? open.slice(0, -1).join(', ') + ' or ' + open.at(-1) : open[0])
+      + '. Nothing is contradicted, but required evidence is missing or not accepted by this verifier; tap a question for the reason.'
+      : 'Some required evidence could not be established.';
+  }
+  $('mark').textContent = m;
+  $('mark').style.color = d === 'accept' ? '#00556E' : (d === 'reject' ? '#D2001E' : '#6B5A1E');
+  $('vTitle').textContent = t; $('vSub').textContent = s;
+}
+
+function renderQuestions(R) {
+  const box = $('questions'); const opened = new Set([...box.querySelectorAll('details[open]')].map(d => d.dataset.id));
+  box.innerHTML = R.questions.map(q => {
+    const rows = q.details.map(e => "<li><span class='state st-" + e.state + "'>" + LABEL[e.state] + '</span><span>' + esc(e.reason)
+      + '<code>gate ' + e.gate + ' · ' + esc(e.predicate) + ' · ' + esc(short(e.nodeUse.split('|')[0].trim())) + '</code></span></li>').join('');
+    return "<details class='q s-" + q.state + "' data-id='" + q.id + "'" + (opened.has(q.id) ? ' open' : '') + '><summary>'
+      + "<span class='qt'><b>" + QUESTIONS[q.id] + "</b><span class='state st-" + q.state + "'>" + LABEL[q.state] + '</span></span>'
+      + "<span class='qs'>" + esc(WHY[q.id]) + '</span></summary>'
+      + "<ul class='trace'><li><span class='state st-" + q.state + "'>" + LABEL[q.state] + '</span><span><b>' + esc(q.summary) + '</b></span></li>' + rows + '</ul></details>';
+  }).join('');
+}
+
+function blk(cls, k, role, v) { return "<div class='blk " + cls + "'><div class='k'>" + k + '<small>' + role + "</small></div><div class='v'>" + v + '</div></div>'; }
+function renderVC(R) {
+  const D = R.target, s = D.credentialSubject;
+  let h = '<header><b>' + esc(short(D.id)) + '  ' + esc(D.type[1]) + '</b>' + (R.options.tamper ? "<span class='tampered'>tampered</span>" : '<span>Verifiable Credential</span>') + '</header>';
+  h += blk('', 'metadata', 'who, what, when', 'issuer: ' + esc(D.issuer) + '\nvalidFrom: ' + D.validFrom.slice(0, 10) + '\nvalidUntil: ' + D.validUntil.slice(0, 10) + '\ncredentialSchema: ' + esc(short(D.credentialSchema.id)));
+  h += blk('subj', 'credentialSubject', 'the claim', "<span class='big'>" + esc(R.headline) + '</span>' + esc(JSON.stringify(s, null, 1).replace(/https:\/\/vc4qi\.example\/bindings\/\w+\/1#/g, '')));
+  if (D.termsOfUse) h += blk('tou', 'termsOfUse', 'authority', D.termsOfUse.map(t => esc(t.type) + ' → ' + esc(short(t.authorizationCredential.id))).join('\n'));
+  if (D.evidence) h += blk('', 'evidence', 'support', D.evidence.map(e => esc(e.type) + ' → ' + esc(short(e.id))).join('\n'));
+  if (D.relatedResource) h += blk('', 'relatedResource', 'integrity', D.relatedResource.map(x => esc(short(x.id)) + ': ' + esc(x.digestSRI.slice(0, 26)) + '…').join('\n'));
+  h += blk('', 'credentialStatus', 'revocation', esc(D.credentialStatus.statusListCredential) + ' #' + esc(D.credentialStatus.statusListIndex));
+  h += blk('', 'proof', 'protection', esc(D.proof.cryptosuite) + '\n' + esc(D.proof.verificationMethod) + '\n' + esc(D.proof.proofValue.slice(0, 30)) + '…');
+  $('vc').innerHTML = h;
+  $('raw').textContent = R.texts[R.spec.target];
+}
+
+function nodeBtn(key, R) {
+  const n = R.spec.nodes[key], b = document.createElement('button'), present = R.present[n.uri];
+  b.type = 'button'; b.className = 'node ' + n.kind + (present ? '' : ' missing');
+  const st = R.protection[n.uri];
+  const badge = present ? "<span class='badge b-" + st + "'>" + (st === 'established' ? 'signed ✓' : st === 'contradicted' ? 'signature ✕' : 'unchecked') + '</span>' : '';
+  b.innerHTML = '<b>' + esc(n.title) + '</b><small>' + esc(present ? n.subtitle : 'withheld: not supplied') + '</small>' + badge;
+  if (present) b.addEventListener('click', () => openSheet(n, R)); else b.disabled = true;
+  return b;
+}
+function edgeEl(spec, R, q) {
+  const e = document.createElement('div');
+  const st = spec.state === 'present' ? 'established' : (q[spec.state] === 'not_required' ? 'established' : q[spec.state]);
+  e.className = 'edge ' + spec.style + (st === 'contradicted' ? ' bad' : st === 'not_established' ? ' unk' : '');
+  e.innerHTML = "<div class='stem'></div><div><b>" + esc(spec.label) + '</b><code>' + esc(spec.carrier) + '</code></div>';
+  return e;
+}
+function renderGraph(R) {
+  const g = $('graph'); g.innerHTML = '';
+  const q = Object.fromEntries(R.questions.map(x => [x.id, x.state]));
+  const cols = Math.max(...R.spec.graph.map(r => (r.nodes ?? r.edges).length));
+  for (const row of R.spec.graph) {
+    const el = document.createElement('div'); el.className = 'row'; el.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+    for (const cell of row.nodes ?? row.edges) {
+      el.appendChild(cell === null ? document.createElement('div') : row.nodes ? nodeBtn(cell, R) : edgeEl(cell, R, q));
+    }
+    g.appendChild(el);
+  }
+}
+
+function openSheet(n, R) {
+  const doc = JSON.parse(R.texts[n.uri]);
+  $('sheetTitle').textContent = n.title;
+  $('sheetSub').textContent = 'Issuer: ' + doc.issuer + ' · signature: ' + LABEL[R.protection[n.uri]];
+  $('sheetBody').textContent = R.texts[n.uri];
+  const s = $('sheet'); if (s.showModal) s.showModal(); else s.setAttribute('open', '');
+}
+$('sheetClose').addEventListener('click', () => { const s = $('sheet'); if (s.close) s.close(); else s.removeAttribute('open'); });
+$('sheet').addEventListener('click', function (e) { if (e.target === this && this.close) this.close(); });
+
+async function run() {
+  const my = ++seq;
+  $('verdict').className = 'verdict busy'; $('mark').textContent = '…'; $('vTitle').textContent = 'Evaluating'; $('vSub').textContent = '';
+  delete document.body.dataset.decision;
+  const R = await api.evaluateScenario({ ...state });
+  if (my !== seq) return;
+  renderVerdict(R); renderQuestions(R); renderGraph(R); renderVC(R);
+  document.body.dataset.decision = R.result.decision;
+}
+const go = () => run().catch(e => fail('The evaluator could not run: ' + e.message));
+function route() { readHash(); renderTabs(); renderControls(); go(); }
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>

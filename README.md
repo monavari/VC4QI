@@ -8,7 +8,7 @@ accreditation, calibration, reference-material or certification credentials.
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 - **Website and documentation:** <https://monavari.github.io/VC4QI/>
-- **BAM-M375a demonstrator:** <https://monavari.github.io/VC4QI/m375a/>
+- **Demonstrator (RM · DCC · GS · DPP):** <https://monavari.github.io/VC4QI/demo/>
 
 ## The idea
 

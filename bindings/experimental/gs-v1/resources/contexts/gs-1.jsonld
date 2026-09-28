@@ -8,6 +8,7 @@
     "GsAccreditation": "gs:GsAccreditation",
     "GsSchemeAuthorization": "gs:GsSchemeAuthorization",
     "GsCertificate": "gs:GsCertificate",
+    "GsProductPassport": "gs:GsProductPassport",
     "GsAuthorizationPolicy": "gs:GsAuthorizationPolicy",
 
     "authorizationCredential": "gs:authorizationCredential",
@@ -17,6 +18,10 @@
     "standardIris": {"@id": "gs:standards", "@type": "@id", "@container": "@set"},
 
     "activityTime": {"@id": "gs:activityTime", "@type": "xsd:dateTime"},
-    "certification": "gs:certification"
+    "certification": "gs:certification",
+    "manufacturerIri": {"@id": "gs:manufacturer", "@type": "@id"},
+    "productModelIri": {"@id": "gs:productModel", "@type": "@id"},
+    "marking": "gs:marking",
+    "markIri": {"@id": "gs:mark", "@type": "@id"}
   }
 }

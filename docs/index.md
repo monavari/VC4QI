@@ -36,8 +36,10 @@ contradicted or not established. "Cannot tell" never counts as yes.
 
 ## Try it
 
-The [BAM-M375a demonstrator](https://monavari.github.io/VC4QI/m375a/) runs the repository's verifier in your browser on
-signed test credentials for a certified reference material. The source is on
+The [demonstrator](https://monavari.github.io/VC4QI/demo/) runs the repository's evaluators in your browser on
+signed test credentials. A top bar switches between four examples: a reference material
+(RM), calibration certificates (DCC), a GS certificate and an experimental product
+passport (DPP). The source is on
 [GitHub](https://github.com/monavari/VC4QI); contribution rules are in
 [CONTRIBUTING](../CONTRIBUTING.md).
 

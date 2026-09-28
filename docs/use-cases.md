@@ -12,7 +12,8 @@ keys and grants are fictional.
 | calibration-capability | B | The laboratory's own bounded capability scope within its accreditation, with no widening | Calibration v1, `cal-verifier-capability-1` | same |
 | nmi-legal-mandate | C | A national metrology institute authorized by a statutory mandate, with no accreditation root | Calibration v1, `cal-verifier-nmi-1` | same |
 | test-report-supported-dcc | F | A test report supported by its instrument's own authorized calibration | Calibration v1, `cal-verifier-test-report-1` | same |
-| gs-scheme-authorization | none | A GS mark needing competence AND scheme permission | GS v1, `gs-verifier-1` | `gs-v1.test.ts` / `test_gs_v1.py` |
+| gs-scheme-authorization | GS | A GS mark needing competence AND scheme permission | GS v1, `gs-verifier-1` | `gs-v1.test.ts` / `test_gs_v1.py` |
+| gs-product-passport (experimental) | DPP | A manufacturer's product passport claiming the GS mark through a cited GS certificate; not EU DPP (ESPR) conformance | GS v1, `gs-verifier-dpp-1` | same |
 | gs-hair-dryer-hitl | D | GS certificate, serialized product, in-house reports and assessments | Legacy profile only | `legacy-profile.test.ts` / `test_legacy_profile.py` |
 | gs-hair-dryer-external-test-lab-hitl | D | As above, with an independently accredited external laboratory | Legacy profile only | same |
 
@@ -44,9 +45,9 @@ The verifier asks for `x + U <= 200 mg/kg` (`guarded-acceptance-expanded-u`).
 | `D197.json` | established | 202 > 200 | reject (authorization established) |
 | `D520.json` | contradicted | not run | reject |
 
-The [BAM-M375a demonstrator](https://monavari.github.io/VC4QI/m375a/) runs exactly these
-cases in the browser with the same evaluator, and adds a tamper test and a withheld
-study.
+The [demonstrator](https://monavari.github.io/VC4QI/demo/#rm) runs exactly these cases
+in the browser with the same evaluator, and adds a tamper test and a withheld study. Its
+DCC, GS and DPP tabs do the same for the calibration and GS bindings.
 
 For the accepted case the claim witnesses are the route `operational-scope`, D, O, A
 and the record `O#scope-as-m1`; support names D, S and H. An authorization-only request

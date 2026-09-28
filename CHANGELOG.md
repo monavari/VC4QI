@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- The demonstrator moves to `site/demo/` and covers four examples, chosen from a top bar:
+  RM (BAM-M375a), DCC (direct accreditation, capability scope, NMI mandate, supported
+  test report), GS (toy accepted, household appliance rejected because the scheme
+  permission does not cover it) and an experimental product passport (DPP). Every tab
+  runs the repository's own evaluator in the browser, with tamper and withhold controls
+  and deep links (`#example/case`). `site/m375a/` redirects to the RM tab.
+
+- Add an experimental product passport to the GS binding: `GsProductPassport`, profile
+  `gs-verifier-dpp-1` and route `gs-certified-product`. A passport's GS-mark claim is
+  authorized only through a typed reference to a GS certificate that names the passport
+  issuer as manufacturer, certifies the passport's model, was in force when the unit was
+  placed on the market and itself holds competence AND scheme permission. New fixtures:
+  manufacturer controller and status list, `GSC-2` (household appliance) and `DPP-1`/`DPP-2`.
+  This is a research illustration, not EU DPP (ESPR) conformance. TypeScript and Python
+  mirror it.
+
 - The BAM-M375a demonstrator now runs the complete reliance evaluator (`evaluateRmSlice`,
   gates 0–6) in the browser, with no server and no preview rules. The page answers six
   questions (authentic, current, understood, authorized, supported, fit for use) with
