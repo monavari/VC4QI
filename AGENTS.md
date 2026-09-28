@@ -3,17 +3,17 @@
 ## Mandate and source order
 
 VC4QI is migrating from the manuscript-v2.1 implementation to the standards-first
-reliance model. The runtime is still legacy; documentation of the target is not
-execution evidence. Read, in order:
+reliance model. The new evaluator runs for the experimental RM, calibration and GS
+bindings; the default API remains the legacy verifier until the I5 switch.
+Documentation of the target is not execution evidence. Read, in order:
 
 1. The active user instructions.
 2. [The supplied reconciliation requirements](docs/plans/standards-first-handover-2026-09-21.txt),
    including explicit supersessions in §0.1.
-3. [The active task](RECONCILIATION_TASK.md), [model](docs/MODEL_SPEC.md),
-   [execution plan](docs/plans/standards-first-reconciliation.md) and
-   [ADR-010](docs/adrs/adr-010-standards-first-reliance.md).
-4. [Implementation status](docs/IMPLEMENTATION_STATUS.md) and the append-only
-   [report](RECONCILIATION_REPORT.md).
+3. The [execution plan](docs/plans/standards-first-reconciliation.md),
+   [model](docs/model.md) and [ADR-010](docs/adrs/adr-010-standards-first-reliance.md).
+4. [Status](docs/status.md), the [implementation evidence](docs/plans/evidence.md)
+   and the append-only [report](RECONCILIATION_REPORT.md).
 
 The handover resolves conflicts with older instructions. Historical documents and
 accepted-but-superseded ADRs do not restore obsolete requirements. Actual manuscript
@@ -47,7 +47,8 @@ without active session authorization. Preserve unrelated working changes.
   they are production standards or invent plausible external ontology terms.
 - Keep original secured representations intact before protection verification.
   Never redefine W3C/schema.org protected terms or drop decision-relevant data
-  through unsafe JSON-LD expansion. The legacy `safe: false` path is a known gap.
+  through unsafe JSON-LD expansion. The legacy `safe: false` path is a known gap;
+  the new evaluator always uses safe mode.
 - Required obligations use `established`, `contradicted`, `not_established`;
   `not_run` is execution metadata. Absence of FAIL does not establish reliance.
 - Complete routes, global restrictions, principal/grant permission, well-founded
@@ -74,7 +75,8 @@ Use Node 20 and pnpm 10.15.1 (the current package-manager pin), Python 3.12, and
 an isolated Python environment. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup.
 I0 repaired the uv workspace and Make targets; use `uv sync --locked --all-packages
 --extra dev` with uv 0.12.17. CI reads pnpm 10.15.1 from `packageManager`. Python lint
-has recorded pre-existing debt; see the I0 evidence before claiming all checks green.
+has recorded pre-existing debt (Ruff 204, mypy 198); see the I0 evidence before
+claiming all checks green.
 
 For each implementation phase, record actual commands, exit codes and limitations:
 
@@ -88,9 +90,10 @@ pnpm validate:schemas
 ```
 
 Run Python lint when its environment is configured, and report unavailable/failed
-checks explicitly. For a documentation-only phase, run Markdown/link/consistency
-checks; do not present earlier runtime results as new evidence. Add dedicated signed
-RM, semantic parity, offline-resource and actual UI interaction lanes during migration.
+checks explicitly. For documentation changes, run markdownlint and `pnpm docs:check`
+(the site build's link check); do not present earlier runtime results as new evidence.
+Every binding generator has a `--check` mode that must pass. Offline-resource and
+actual UI interaction lanes are still to be added (I7/I8).
 Current schema validation skips some examples without `$schema`; exit 0 is not full
 fixture coverage. Never hand-edit output to make an acceptance test pass.
 
@@ -107,13 +110,10 @@ may remain as internal display conventions; they do not define credential vocabu
 
 ## Collaboration and completion
 
-Per the user's model allocation: Astra for difficult semantic/design review, Sol
-for implementation/integration, Luna at max reasoning for bounded documentation and
-consistency work. Delegate only independent tasks with narrow context and distinct
-file ownership. Avoid repeated whole-repository audits. If delegated runs cannot
-start, report the limitation and continue locally where possible.
-
-Append evidence to `RECONCILIATION_REPORT.md`; keep historical claims intact.
-Track requirements and the 83 cases in `docs/plans/`. Use
+Delegate only independent tasks with narrow context and distinct file ownership, and
+avoid repeated whole-repository audits. Append evidence to `RECONCILIATION_REPORT.md`
+and a phase section to `docs/plans/evidence.md`; keep historical claims intact. Track
+requirements and the 83 cases in `docs/plans/`. Keep the documentation set small: update
+the existing page that owns a topic (see `docs/index.md`) rather than adding a new one. Use
 `refactor(phase-N): short description` for coherent phase commits or meaningful units.
 No unexecuted test, external endorsement or future release may be reported as complete.

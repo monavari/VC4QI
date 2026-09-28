@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
-# Publishes the static project website in site/ to GitHub Pages.
+# Publishes the project website to GitHub Pages: the static pages in site/ plus the
+# documentation in docs/, rendered by scripts/build-site.mjs into _site/.
 # One-time setup: Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
 name: Pages
 
 on:
   push:
     branches: [main]
-    paths: ['site/**', '.github/workflows/pages.yml']
+    paths: ['site/**', 'docs/**', 'scripts/build-site.mjs', 'package.json', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:
@@ -27,9 +28,17 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build site and documentation
+        run: pnpm docs:build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

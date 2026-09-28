@@ -6,7 +6,7 @@
 # identifiers. Human-readable labels are display only and are never comparison
 # operands. This module previously matched lowercased free text with substring
 # containment, which admitted "As" for "Ash" and a "CuZn" scope entry for a
-# CuZn39Pb3 claim. See docs/SCOPE_TERMS.md.
+# CuZn39Pb3 claim. See docs/bindings.md.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -69,7 +69,7 @@ def _unresolved(dimension: str, label: Any = None) -> ScopeViolation:
         detail=(
             f"No governed identifier for {dimension}{suffix}. Labels are display "
             "only and are never compared (SCO-2); supply a governed term. "
-            "See docs/SCOPE_TERMS.md."
+            "See docs/bindings.md."
         ),
     )
 
