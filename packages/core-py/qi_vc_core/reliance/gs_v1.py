@@ -66,6 +66,8 @@ GS_V1_VOCAB = "https://vc4qi.example/bindings/gs/1#"
 GS_V1_SCHEMA_BASE = "https://vc4qi.example/schemas/gs/1/"
 GS_V1_DIRECTORY = REPO_ROOT / "bindings" / "experimental" / "gs-v1"
 SELECTED_CERTIFICATION = "/credentialSubject/certification"
+SELECTED_MARKING = "/credentialSubject/marking"
+GS_MARK = "https://vc4qi.example/bindings/gs/1#GsMark"
 ROUTE_ID = "competence-and-scheme-permission"
 
 GS_V1_ARTIFACT_BINDING = ArtifactBinding(
@@ -74,6 +76,7 @@ GS_V1_ARTIFACT_BINDING = ArtifactBinding(
         "GsAccreditation": f"{GS_V1_SCHEMA_BASE}accreditation.json",
         "GsSchemeAuthorization": f"{GS_V1_SCHEMA_BASE}scheme-authorization.json",
         "GsCertificate": f"{GS_V1_SCHEMA_BASE}certificate.json",
+        "GsProductPassport": f"{GS_V1_SCHEMA_BASE}product-passport.json",
         "BitstringStatusListCredential": f"{GS_V1_SCHEMA_BASE}status-list.json",
     },
     lambda kind: [VC_V2_CONTEXT]
@@ -110,11 +113,18 @@ class MappedCertification:
 
 
 @dataclass(frozen=True)
+class MappedMarking:
+    mark_iri: str
+    product_model_iri: str
+
+
+@dataclass(frozen=True)
 class GsOutcome:
     state: SemanticState
     reason: str
     sources: tuple[str, ...] = ()
     certification: MappedCertification | None = None
+    marking: MappedMarking | None = None
     records: tuple[str, ...] = ()
 
 
@@ -297,9 +307,6 @@ def gs_competence_and_scheme(
     return _route(ROUTE_ID, bases, chain, a.uri)
 
 
-GS_CERTIFICATE_ROUTES = {ROUTE_ID: gs_competence_and_scheme}
-
-
 def route_scopes(
     route: RouteResult, lookup: NodeLookup
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -314,6 +321,148 @@ def route_scopes(
 
     scheme_uri = route.chain[2] if len(route.chain) == 3 else None
     return records(route.scope), records(scheme_uri)
+
+
+def map_marking(value: Any, pointer: str) -> GsOutcome:
+    """Gate 4 for a product passport: the claimed marking, for which model."""
+    sources = (pointer,)
+    if (
+        not isinstance(value, dict)
+        or not isinstance(value.get("markIri"), str)
+        or not isinstance(value.get("productModelIri"), str)
+    ):
+        return GsOutcome(
+            "not_established",
+            "The selected marking names no mark or product model.",
+            sources,
+        )
+    if value["markIri"] != GS_MARK:
+        return GsOutcome(
+            "not_established",
+            f"Mark {_short(value['markIri'])} has no interpretation in this binding.",
+            sources,
+        )
+    return GsOutcome(
+        "established",
+        f"Mapped a GS-mark claim for model {_short(value['productModelIri'])}.",
+        sources,
+        marking=MappedMarking(value["markIri"], value["productModelIri"]),
+    )
+
+
+def marking_coverage(
+    marking: MappedMarking, certificate: dict[str, Any] | None
+) -> GsOutcome:
+    """Claim coverage for a passport: the certificate certifies exactly this model."""
+    sources = ("/credentialSubject/id",)
+    if certificate is None:
+        return GsOutcome("not_established", "No certificate was reached.", sources)
+    model = _subject(certificate).get("id")
+    name = _short(certificate.get("id"))
+    if model == marking.product_model_iri:
+        return GsOutcome(
+            "established",
+            f"{name} certifies model {_short(model)}.",
+            sources,
+            records=(str(certificate.get("id")),),
+        )
+    return GsOutcome(
+        "contradicted",
+        f"{name} certifies {_short(model)}, not model "
+        f"{_short(marking.product_model_iri)}.",
+        sources,
+    )
+
+
+def gs_certified_product(
+    target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
+) -> RouteResult:
+    """Route for an experimental product passport (not EU DPP conformance).
+
+    The manufacturer may claim the GS mark for a unit only under a GS certificate that
+    names it, is in force at the passport's activity time and itself holds the complete
+    GS route with its certification covered ("certificate:" bases).
+    """
+    assert target.document is not None
+    p = target.document
+    bases: list[BasisResult] = []
+    chain = [target.uri]
+    basis, c_node = _authorizing_reference(
+        "certificate-reference",
+        p,
+        "GsCertificate",
+        lookup,
+        (target.uri,),
+        "GsAuthorizationPolicy",
+    )
+    bases.append(basis)
+    if c_node is None or c_node.document is None:
+        return _route("gs-certified-product", bases, chain)
+    c = c_node.document
+    chain.append(c_node.uri)
+    maker = _subject(c).get("manufacturerIri")
+    maker_sources = ("/credentialSubject/manufacturerIri", "/issuer")
+    if not isinstance(maker, str):
+        bases.append(
+            _unknown(
+                "manufacturer-binding",
+                "The certificate names no manufacturer.",
+                ("/credentialSubject/manufacturerIri",),
+            )
+        )
+    elif maker == p.get("issuer"):
+        bases.append(
+            _ok(
+                "manufacturer-binding",
+                f"The certificate names the passport issuer {maker} as manufacturer.",
+                maker_sources,
+            )
+        )
+    else:
+        bases.append(
+            _no(
+                "manufacturer-binding",
+                f"The certificate names {maker}, not the passport issuer "
+                f"{p.get('issuer')}.",
+                maker_sources,
+            )
+        )
+    in_force = _in_force_at_activity(p, [("The certificate", c)])
+    bases.append(
+        BasisResult(
+            "certificate-in-force", in_force.state, in_force.reason, in_force.sources
+        )
+    )
+    own = gs_competence_and_scheme(c_node, lookup, profile)
+    bases.extend(
+        BasisResult(f"certificate:{b.id}", b.state, b.reason, b.sources)
+        for b in own.bases
+    )
+    mapped = map_certification(
+        _subject(c).get("certification"), "/credentialSubject/certification"
+    )
+    if mapped.certification is None:
+        covered_state, covered_reason = mapped.state, mapped.reason
+    else:
+        competence, scheme = route_scopes(own, lookup)
+        covered = certification_coverage(mapped.certification, competence, scheme)
+        covered_state, covered_reason = covered.state, covered.reason
+    bases.append(
+        BasisResult(
+            "certificate:claim-coverage",
+            covered_state,
+            covered_reason,
+            ("/credentialSubject/certification",),
+        )
+    )
+    chain.extend(own.chain[1:])
+    return _route("gs-certified-product", bases, chain, c_node.uri)
+
+
+GS_CERTIFICATE_ROUTES = {
+    ROUTE_ID: gs_competence_and_scheme,
+    "gs-certified-product": gs_certified_product,
+}
 
 
 def evaluate_gs_slice(
@@ -371,22 +520,25 @@ def evaluate_gs_slice(
         authority = compose_authority((), tuple(evaluated), tuple(ids[budget:]))
     winner = next((r for r in authority.routes if r.state == "established"), None)
 
+    kinds = (target_document or {}).get("type")
+    is_passport = isinstance(kinds, list) and kinds[1:2] == ["GsProductPassport"]
+    selectable = SELECTED_MARKING if is_passport else SELECTED_CERTIFICATION
     claims: list[tuple[Any, GsOutcome | None, dict[str, GsOutcome]]] = []
     authorization: list[ClaimAuthorizationResult] = []
     for claim in request.selected_claims:
         coverage: dict[str, GsOutcome] = {}
         selected = (
             resolve_pointer(target_document, claim.source_pointer)
-            if target_document is not None
-            and claim.source_pointer == SELECTED_CERTIFICATION
+            if target_document is not None and claim.source_pointer == selectable
             else _MISSING
         )
         if selected is _MISSING:
             reason = (
                 "The target is not usable, so its claims are not read."
                 if target_document is None
-                else f"Selected claim {claim.source_pointer} is not the certification "
-                "statement of the usable target."
+                else f"Selected claim {claim.source_pointer} is not the "
+                f"{'marking' if is_passport else 'certification statement'} of the "
+                "usable target."
             )
             claims.append((claim, None, coverage))
             authorization.append(
@@ -400,9 +552,13 @@ def evaluate_gs_slice(
                 )
             )
             continue
-        mapped = map_certification(selected, claim.source_pointer)
+        mapped = (
+            map_marking(selected, claim.source_pointer)
+            if is_passport
+            else map_certification(selected, claim.source_pointer)
+        )
         claims.append((claim, mapped, coverage))
-        if mapped.certification is None:
+        if mapped.certification is None and mapped.marking is None:
             authorization.append(
                 ClaimAuthorizationResult(
                     state=mapped.state,
@@ -414,15 +570,23 @@ def evaluate_gs_slice(
                 )
             )
             continue
-        certification: MappedCertification = mapped.certification
 
         def cover(
             route: RouteResult,
-            certification: MappedCertification = certification,
+            mapped: GsOutcome = mapped,
             coverage: dict[str, GsOutcome] = coverage,
         ) -> BasisResult:
-            competence, scheme = route_scopes(route, facts.get)
-            covered = certification_coverage(certification, competence, scheme)
+            if mapped.marking is not None:
+                node = facts.get(route.scope) if route.scope else None
+                covered = marking_coverage(
+                    mapped.marking, node.document if node else None
+                )
+            else:
+                assert mapped.certification is not None
+                competence, scheme = route_scopes(route, facts.get)
+                covered = certification_coverage(
+                    mapped.certification, competence, scheme
+                )
             sources = (*route.chain[1:], *covered.sources)
             coverage[route.id] = GsOutcome(
                 covered.state, covered.reason, sources, records=covered.records
@@ -601,6 +765,14 @@ def evaluate_gs_slice(
             limitations=(
                 "The GS route is a fictional profile example (competence AND scheme "
                 "permission), not a universal GS or legal rule.",
+                *(
+                    (
+                        "The product passport is an experimental credential in this "
+                        "binding, not EU Digital Product Passport conformance.",
+                    )
+                    if is_passport
+                    else ()
+                ),
                 "Verification failures of credentials outside the selected route are "
                 "reported but do not decide the request.",
                 "Fixture grants are fictional: an accreditation or scheme "

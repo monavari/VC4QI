@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-declare module 'virtual:rm-v1-resources' {
-  const resources: {
+declare module 'virtual:demo-resources' {
+  interface BindingResources {
     manifest: unknown;
-    profile: unknown;
+    profiles: Record<string, unknown>;
     files: {
       uri: string;
       mediaType: string;
@@ -11,6 +11,7 @@ declare module 'virtual:rm-v1-resources' {
       digestSRI: `sha384-${string}`;
       text: string;
     }[];
-  };
+  }
+  const resources: { rm: BindingResources; cal: BindingResources; gs: BindingResources };
   export default resources;
 }
