@@ -41,7 +41,7 @@ const statusEntry = closed({
 });
 const authorizationPolicy = closed({
   type: { const: 'GsAuthorizationPolicy' },
-  authorizationCredential: closed({ id: iri, type: { enum: ['GsAccreditation', 'GsSchemeAuthorization'] } }),
+  authorizationCredential: closed({ id: iri, type: { enum: ['GsAccreditation', 'GsSchemeAuthorization', 'GsCertificate'] } }),
 });
 const relatedResource = nonemptySet(closed({
   id: iri,
@@ -99,9 +99,22 @@ const schemas = {
     closed({
       id: iri,
       activityTime: dateTime,
+      // The manufacturer the certificate is issued for; a product passport must name it.
+      manufacturerIri: iri,
       certification: closed({ productCategoryIri: iri, standardIris: { type: 'array', uniqueItems: true, items: iri } }, ['productCategoryIri']),
-    }),
+    }, ['id', 'activityTime', 'certification']),
     { termsOfUse: { type: 'array', minItems: 1, maxItems: 3, items: authorizationPolicy }, relatedResource },
+    ['termsOfUse', 'relatedResource']),
+  // An experimental product passport for one serialized item; its GS-mark claim is
+  // authorized only through a GS certificate for the item's model (not EU DPP conformance).
+  'product-passport.json': credentialSchema('product-passport.json', 'GsProductPassport', 'Product passport (experimental)',
+    closed({
+      id: iri,
+      activityTime: dateTime,
+      productModelIri: iri,
+      marking: closed({ markIri: iri, productModelIri: iri }),
+    }),
+    { termsOfUse: { type: 'array', minItems: 1, maxItems: 1, items: authorizationPolicy }, relatedResource },
     ['termsOfUse', 'relatedResource']),
   'status-list.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
