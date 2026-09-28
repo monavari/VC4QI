@@ -1,7 +1,7 @@
 # Standards-first requirements and documentation traceability
 
 **Updated 25 September 2026: D0–D4 and I0 complete; I1 implemented (two network-dependent
-checks open); I2 in progress; I3 and I4 complete with 61 cases passing and P05 and V08 excluded; I5–I8 pending.** Ledger phase labels were refined by the 25 September
+checks open); I2 in progress; I3 and I4 complete; I5 step 1 done with 63 cases passing and P05 and V08 excluded; rest of I5 and I6–I8 pending.** Ledger phase labels were refined by the 25 September
 milestone audit (one owning phase per case where possible).
 Source: [unaltered supplied handover](standards-first-handover-2026-09-21.txt).
 The [83-case CSV](standards-first-acceptance.csv) retains exact case IDs, inputs and

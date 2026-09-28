@@ -135,6 +135,16 @@ is complete: 61 cases are `passing`, 2 `excluded_unsupported` and 20
 `not_implemented` (I5–I8). The legacy API is still the default until I5. See the
 [I4 evidence](plans/standards-first-i4-evidence.md).
 
+## I5 progress, 28 September 2026
+
+Legacy evaluation is now reachable only through an explicit, labelled legacy profile
+(`legacy.evaluateLegacyProfile`, Python `qi_vc_core.legacy`). It verifies the original
+signed bytes (no proof or status skipping) and returns a legacy-labelled result, not a
+reliance result. A legacy credential under the standards-first profile is unsupported,
+with no fallback (V02, V03 passing; 63 passing in total). The calibration binding, the
+remaining use-case migration and the default-API switch are the rest of I5. See the
+[I5 evidence](plans/standards-first-i5-evidence.md).
+
 ## Migration and historical claims
 
 Work branch: `refactor/standards-first-reconciliation`, retaining merged registry,

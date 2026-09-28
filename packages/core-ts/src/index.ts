@@ -16,3 +16,5 @@ export * as terms from './terms/index.js';
 export * as assessment from './assessment/index.js';
 export * as presentationQuery from './presentation-query/index.js';
 export * as reliance from './reliance/index.js';
+/** Explicit legacy compatibility: the v0.3 graph verifier, selected by profile, labelled legacy. */
+export * as legacy from './legacy/index.js';

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add an explicit legacy profile adapter (`legacy.evaluateLegacyProfile`, Python
+  `qi_vc_core.legacy`): the v0.3 verifier on original secured bytes, no proof or status
+  skipping, results labelled legacy. Standards-first requests never fall back to it.
+
 - Add claim mapping, per-route claim scope coverage (one complete record, no splicing,
   no fallback to a parent grant), profile-governed method succession and a separate
   conformity step with exact arithmetic (I4). The signed chain for x = 178 is accepted.
