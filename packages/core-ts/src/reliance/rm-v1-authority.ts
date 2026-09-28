@@ -65,13 +65,13 @@ const isObject = (value: unknown): value is Doc => value !== null && typeof valu
 const list = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
 const subjectOf = (doc: Doc): Doc => (isObject(doc.credentialSubject) ? doc.credentialSubject : {});
 const typeOf = (doc: Doc): string | undefined => (Array.isArray(doc.type) ? String(doc.type[1]) : undefined);
-const permits = (doc: Doc, activity: string) => list(subjectOf(doc).permittedActivity).includes(activity);
+export const permits = (doc: Doc, activity: string) => list(subjectOf(doc).permittedActivity).includes(activity);
 
 /** Credentials referenced by recognized authorization policies in `doc.termsOfUse`, with their declared types. */
-function policyReferences(doc: Doc): { id: string; type: unknown }[] {
+function policyReferences(doc: Doc, policyType = 'RmAuthorizationPolicy'): { id: string; type: unknown }[] {
   return list(doc.termsOfUse)
     .filter(isObject)
-    .filter(policy => policy.type === 'RmAuthorizationPolicy' && isObject(policy.authorizationCredential))
+    .filter(policy => policy.type === policyType && isObject(policy.authorizationCredential))
     .map(policy => policy.authorizationCredential as Doc)
     .filter(ref => typeof ref.id === 'string')
     .map(ref => ({ id: ref.id as string, type: ref.type }));
@@ -84,10 +84,11 @@ function policyReferences(doc: Doc): { id: string; type: unknown }[] {
  * must have that type. Unrecognized policy types establish nothing (V04); several
  * references of the same type are ambiguous, never "take the first".
  */
-function authorizingReference(
+export function authorizingReference(
   id: string, doc: Doc, wantedType: string, lookup: NodeLookup, stack: readonly string[],
+  policyType = 'RmAuthorizationPolicy',
 ): { basis: BasisResult; node?: NodeFacts & { document: Doc } } {
-  const candidates = policyReferences(doc).filter(ref => ref.type === wantedType).map(ref => ref.id);
+  const candidates = policyReferences(doc, policyType).filter(ref => ref.type === wantedType).map(ref => ref.id);
   if (candidates.length === 0) {
     return { basis: unknown(id, `No recognized authorization policy references a ${wantedType}.`, ['/termsOfUse']) };
   }
@@ -111,7 +112,7 @@ function authorizingReference(
 }
 
 /** Principal binding: the grantee of `grant` must be `actor`; a missing grantee never passes. */
-function grantee(id: string, grant: Doc, actor: unknown, what: string): BasisResult {
+export function grantee(id: string, grant: Doc, actor: unknown, what: string): BasisResult {
   const holder = subjectOf(grant).id;
   if (typeof holder !== 'string' || typeof actor !== 'string') {
     return unknown(id, `${what}: grantee or exercising actor is missing.`, ['/credentialSubject/id', '/issuer']);
@@ -121,7 +122,7 @@ function grantee(id: string, grant: Doc, actor: unknown, what: string): BasisRes
     : no(id, `${what}: grantee ${holder} is not the exercising actor ${actor}.`, ['/credentialSubject/id', '/issuer']);
 }
 
-function anchor(id: string, doc: Doc, purpose: string, profile: RelianceProfile): BasisResult {
+export function anchor(id: string, doc: Doc, purpose: string, profile: RelianceProfile): BasisResult {
   const configured = profile.trustAnchors.find(a => a.id === doc.issuer);
   if (configured === undefined) return unknown(id, `${String(doc.issuer)} is not a configured trust anchor.`, ['/issuer']);
   return configured.purposes.includes(purpose)
@@ -133,7 +134,7 @@ function anchor(id: string, doc: Doc, purpose: string, profile: RelianceProfile)
  * The grant must have been in force when D's own activity happened (P14): scope
  * evidence issued after the activity cannot authorize it, even if it covers it today.
  */
-function inForceAtActivity(D: Doc, grants: readonly [string, Doc][]): BasisResult {
+export function inForceAtActivity(D: Doc, grants: readonly [string, Doc][]): BasisResult {
   const id = 'scope-in-force-at-activity';
   const at = subjectOf(D).activityTime;
   const activity = Date.parse(String(at));
@@ -152,7 +153,7 @@ function inForceAtActivity(D: Doc, grants: readonly [string, Doc][]): BasisResul
   return ok(id, `${grants.map(g => g[0]).join(' and ')} ${grants.length > 1 ? 'were' : 'was'} in force at the activity time ${at}.`, ['/credentialSubject/activityTime']);
 }
 
-function route(id: string, bases: BasisResult[], chain: string[], scope?: string): RouteResult {
+export function route(id: string, bases: BasisResult[], chain: string[], scope?: string): RouteResult {
   return { id, state: semanticAnd(bases.map(b => b.state)), execution: 'executed', bases, chain, ...(scope ? { scope } : {}) };
 }
 

@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import Any, Literal
 
 from .rm_v1_claims import ConformityRequirement, DecisionRule, MethodSuccession
@@ -38,6 +40,8 @@ class RelianceProfile:
     method_succession: MethodSuccession
     requirements: tuple[ConformityRequirement, ...]
     decision_rules: tuple[DecisionRule, ...]
+    # Binding-specific verifier rules (e.g. calibration's applyCmcFloor).
+    binding_rules: Mapping[str, Any] = field(default_factory=dict)
 
 
 _SUCCESSION = ("accept-successor", "require-extension", "none")
@@ -157,6 +161,9 @@ def load_reliance_profile(value: Any) -> RelianceProfile:
             "Reliance profile conformity needs requirements (id, propertyIri, "
             "quantityKindIri, upperLimit) and decisionRules (id, acceptWhen)."
         )
+    binding_rules = value.get("bindingRules", {})
+    if not isinstance(binding_rules, dict):
+        raise TypeError("Reliance profile bindingRules must be an object when present.")
     ids = [r["id"] for r in requirements] + [r["id"] for r in rules]
     if len(set(ids)) != len(ids):
         raise TypeError("Reliance profile conformity ids must be unique.")
@@ -190,4 +197,5 @@ def load_reliance_profile(value: Any) -> RelianceProfile:
             for r in requirements
         ),
         decision_rules=tuple(DecisionRule(r["id"], r["acceptWhen"]) for r in rules),
+        binding_rules=MappingProxyType(dict(binding_rules)),
     )

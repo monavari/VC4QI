@@ -103,13 +103,15 @@ def _permits(doc: Doc, activity: str) -> bool:
     return activity in _list(_subject(doc).get("permittedActivity"))
 
 
-def _policy_references(doc: Doc) -> list[tuple[str, Any]]:
+def _policy_references(
+    doc: Doc, policy_type: str = "RmAuthorizationPolicy"
+) -> list[tuple[str, Any]]:
     """(id, declared type) of credentials referenced by recognized policies."""
     references: list[tuple[str, Any]] = []
     for policy in _list(doc.get("termsOfUse")):
         if (
             isinstance(policy, dict)
-            and policy.get("type") == "RmAuthorizationPolicy"
+            and policy.get("type") == policy_type
             and isinstance(policy.get("authorizationCredential"), dict)
             and isinstance(policy["authorizationCredential"].get("id"), str)
         ):
@@ -119,10 +121,17 @@ def _policy_references(doc: Doc) -> list[tuple[str, Any]]:
 
 
 def _authorizing_reference(
-    basis_id: str, doc: Doc, wanted: str, lookup: NodeLookup, stack: tuple[str, ...]
+    basis_id: str,
+    doc: Doc,
+    wanted: str,
+    lookup: NodeLookup,
+    stack: tuple[str, ...],
+    policy_type: str = "RmAuthorizationPolicy",
 ) -> tuple[BasisResult, NodeFacts | None]:
     """Select the reference by its declared type; the credential must match it."""
-    candidates = [uri for uri, kind in _policy_references(doc) if kind == wanted]
+    candidates = [
+        uri for uri, kind in _policy_references(doc, policy_type) if kind == wanted
+    ]
     if not candidates:
         return _unknown(
             basis_id,
