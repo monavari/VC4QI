@@ -2,6 +2,10 @@
 
 **Generated legacy fixture; not a standards-first conformance claim.**
 
+Migrated standards-first form: [`bindings/experimental/cal-v1`](../../../bindings/experimental/cal-v1/README.md)
+(signed fixtures, evaluated by the calibration v1 binding). This legacy copy is kept
+for the explicit legacy profile only.
+
 A calibration issuer relies on its direct accreditation. Preserve principal and activity/scope binding.
 
 Existing policy and relation fields describe the old runtime. The fixture's assurance

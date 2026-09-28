@@ -29,6 +29,8 @@ export interface RelianceProfile {
   readonly mapping: { readonly methodSuccession: MethodSuccession };
   /** Verifier-owned requirements and decision rules a request may select by id. */
   readonly conformity: { readonly requirements: readonly ConformityRequirement[]; readonly decisionRules: readonly DecisionRule[] };
+  /** Binding-specific verifier rules (for example calibration's applyCmcFloor); each binding validates its own. */
+  readonly bindingRules: Readonly<Record<string, unknown>>;
 }
 
 const SUCCESSION = ['accept-successor', 'require-extension', 'none'];
@@ -78,6 +80,9 @@ export function loadRelianceProfile(input: unknown): RelianceProfile {
       conformity.decisionRules.some(r => !isObject(r) || !nonempty(r.id) || !ACCEPT_WHEN.includes(r.acceptWhen as string))) {
     throw new TypeError('Reliance profile conformity needs requirements (id, propertyIri, quantityKindIri, upperLimit) and decisionRules (id, acceptWhen).');
   }
+  if (input.bindingRules !== undefined && !isObject(input.bindingRules)) {
+    throw new TypeError('Reliance profile bindingRules must be an object when present.');
+  }
   const requirements = conformity.requirements as ConformityRequirement[];
   const decisionRules = conformity.decisionRules as DecisionRule[];
   const ids = [...requirements.map(r => r.id), ...decisionRules.map(r => r.id)];
@@ -106,5 +111,6 @@ export function loadRelianceProfile(input: unknown): RelianceProfile {
       }))),
       decisionRules: Object.freeze(decisionRules.map(r => Object.freeze({ id: r.id, acceptWhen: r.acceptWhen }))),
     }),
+    bindingRules: Object.freeze({ ...(input.bindingRules as Record<string, unknown> | undefined) }),
   });
 }

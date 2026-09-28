@@ -1389,3 +1389,22 @@ Ledger: V02 and V03 `passing` (63 passing, 2 excluded, 18 not implemented). Resu
 402 passed plus the 9 network-only legacy failures; Python 369 passed, 1 skip; Ruff 204
 and mypy 198 unchanged; build, lint, scenarios, schemas and poster build pass. See
 `docs/plans/standards-first-i5-evidence.md`.
+
+## Standards-first I5 step 2: shared pipeline and the calibration binding — 28 September 2026
+
+2a (no behaviour change): the gate 0–3 chain moved into `reliance/binding-chain.ts`
+(`verifyChain`, `planRefusal`, `refusePlan`) and the Python `verify_chain`; the artifact
+verifier takes an optional `ArtifactBinding`. RM tests and the parity vector are
+unchanged. 2b: new experimental `bindings/experimental/cal-v1` (context, generated
+schemas and catalog, manifest, verifier profile, generated signed fixtures CAL-A and
+DCC-1) migrating calibration-direct-accreditation. Measurement groups are separate
+required claims; one complete record covers a group's quantity kind, methods and every
+result; CMC floors apply per `bindingRules.applyCmcFloor` (new optional profile
+section, both languages). Route helpers in the RM authority module are exported with a
+policy-type parameter and reused.
+
+Ledger: S18, S19 and S21 `passing` (66 passing, 2 excluded, 15 not implemented).
+Results: TS 410 passed plus the 9 network-only legacy failures; Python 378 passed, 1
+skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios, schemas, all resource,
+fixture and parity checks and the poster build pass. See
+`docs/plans/standards-first-i5-evidence.md`.
