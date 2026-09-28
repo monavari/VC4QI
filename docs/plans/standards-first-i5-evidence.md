@@ -1,6 +1,6 @@
 # I5 evidence: legacy isolation, migration and the default API
 
-**28 September 2026. I5 steps 1–2 and step 3a done in both languages.**
+**28 September 2026. I5 steps 1–2 and steps 3a–3b done in both languages.**
 
 - Legacy evaluation is reachable only through an explicitly selected, labelled legacy
   profile, with no fallback (V02, V03).
@@ -10,8 +10,11 @@
 - The calibration-capability and nmi-legal-mandate use cases are migrated to the same
   binding, with an operational-scope route and a statutory-mandate route (step 3a).
 
-Still open in I5: migration of test-report-supported-dcc and gs-scheme-authorization,
-keeping both GS application variants, and switching the default API.
+- The test-report-supported-dcc use case is migrated to the same binding, with an
+  instrument-calibration support obligation (step 3b).
+
+Still open in I5: migration of gs-scheme-authorization, keeping both GS application
+variants, and switching the default API.
 
 ## Step 1: explicit legacy profile (V02, V03)
 
@@ -117,3 +120,37 @@ Step 3a results:
   modes and the RM parity check pass.
 - Ledger totals unchanged (66 passing, 2 excluded, 15 not implemented); the migrated use
   cases are recorded here rather than as new ledger rows.
+
+## Step 3b: test-report-supported-dcc
+
+The test report is a new target type of the calibration v1 binding. The generators add
+`CAL-T`, a NAB testing accreditation for a fictional testing laboratory (pressure tests
+by HydrostaticPressureTest, 0–25 MPa), and `REPORT-1`, its signed test report. The
+report cites `DCC-1` as the calibration of the pressure transmitter used.
+
+| Part | Behaviour |
+| --- | --- |
+| Direct route by target type | The activity and anchor purpose follow the target type. A certificate needs `issueCalibrationCertificate` and `accredit-calibration-laboratories`; a test report needs `issueTestReport` and `accredit-testing-laboratories`. A testing accreditation never authorizes a calibration, and the reverse also holds |
+| Support obligation `cal-v1:instrument-calibration` | `instrumentCalibrationSupport` / `instrument_calibration_support`. The report must cite exactly one usable `CalCertificate` (`evidence` of type `CalCalibrationReference`) for the same instrument and the report's quantity kinds, calibrated before the test and valid at it. The certificate's own authority must hold over the profile's routes, with every one of its measurement groups covered by the winning route's scope |
+| Decision | Support is required and its chain is decisive when established; certificates carry no support obligation |
+| Schema | `evidence` is optional in `test-report.json`, so the evaluator, not the schema, decides a missing calibration |
+| Profile | `cal-verifier-test-report-1` (NAB anchored for testing and calibration accreditation, direct accreditation) |
+
+| Case | Input | Result |
+| --- | --- | --- |
+| Use case | REPORT-1 | Accepted; claim witnesses route, REPORT-1, CAL-T, `record:CAL-T#scope-pressure-test`; support witnesses REPORT-1, DCC-1, CA |
+| Anchor purpose | NAB anchored for calibration only | `trust-anchor` not_established; not_established |
+| Activity | CAL-T permits only calibration certificates | `activity-permission` contradicted; reject |
+| Instrument | Report names another instrument | `same-instrument` contradicted; claim still authorized; reject |
+| Time | Test before the calibration and its validity | `calibration-precedes-use` and `calibration-valid-at-use` contradicted; reject |
+| Missing | Report cites no calibration | Support not_established; not_established |
+| Support authority | DCC-1 group 2 at 15 MPa, outside CA | `calibration-authority:group-1` contradicted; support contradicted with no witnesses; reject |
+| No obligation | DCC-1 as target | `support` is empty |
+
+Step 3b results:
+
+- TS 429 passed plus the 9 network-only legacy failures; Python 399 passed, 1 skipped.
+- Ruff 204 and mypy 198 unchanged.
+- Build, lint, scenarios, schemas and all resource, fixture and parity `--check` modes
+  pass.
+- Ledger totals unchanged (66 passing, 2 excluded, 15 not implemented).

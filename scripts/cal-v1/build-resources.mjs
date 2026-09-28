@@ -111,8 +111,8 @@ const grantSubject = activities => closed({
 const authorizedBy = { termsOfUse: { type: 'array', minItems: 1, maxItems: 2, items: authorizationPolicy }, relatedResource };
 
 const schemas = {
-  'accreditation.json': credentialSchema('accreditation.json', 'CalAccreditation', 'Calibration laboratory accreditation',
-    grantSubject(['issueCalibrationCertificate', 'maintainCalibrationScope'])),
+  'accreditation.json': credentialSchema('accreditation.json', 'CalAccreditation', 'Calibration or testing laboratory accreditation',
+    grantSubject(['issueCalibrationCertificate', 'maintainCalibrationScope', 'issueTestReport'])),
   // A laboratory's own bounded operational (capability) scope, projected within its accreditation.
   'operational-scope.json': credentialSchema('operational-scope.json', 'CalOperationalScope', 'Calibration operational scope',
     grantSubject(['issueCalibrationCertificate']), authorizedBy, ['termsOfUse', 'relatedResource']),
@@ -122,6 +122,18 @@ const schemas = {
   'certificate.json': credentialSchema('certificate.json', 'CalCertificate', 'Calibration certificate (DCC)',
     closed({ id: iri, activityTime: dateTime, measurementGroups: { type: 'array', minItems: 1, items: measurementGroup } }),
     authorizedBy, ['relatedResource']),
+  // A test report whose measuring instrument must be supported by its own calibration.
+  'test-report.json': credentialSchema('test-report.json', 'CalTestReport', 'Test report supported by a calibration',
+    closed({
+      id: iri, activityTime: dateTime, instrumentIri: iri,
+      measurementGroups: { type: 'array', minItems: 1, items: measurementGroup },
+    }),
+    {
+      ...authorizedBy,
+      evidence: { type: 'array', minItems: 1, items: closed({ id: iri, type: { const: 'CalCalibrationReference' } }) },
+    },
+    // Evidence is optional here so that the evaluator, not the schema, decides missing support.
+    ['termsOfUse', 'relatedResource']),
   'status-list.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     $id: `${SCHEMA_BASE}status-list.json`,

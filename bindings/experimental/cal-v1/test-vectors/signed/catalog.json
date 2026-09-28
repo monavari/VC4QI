@@ -34,6 +34,14 @@
       "digestSRI": "sha384-SlccAqbyyKWmDt3v25wSHz2lB8VOkynnfaLgGCQhmqA32F6VcKugwkdODFcBuTYv"
     },
     {
+      "uri": "https://testlab.vc4qi.example/controller",
+      "path": "bindings/experimental/cal-v1/test-vectors/signed/controllers/tlab.json",
+      "mediaType": "application/json",
+      "origin": "VC4QI experimental calibration v1 signed fixture (fictional parties, insecure keys)",
+      "version": "1",
+      "digestSRI": "sha384-y+foYixAo2DwNI/7MEdbELDUq0v0GHH4rgnIJJcQIdKAbSrOvUKtEwPT7g7fLI/y"
+    },
+    {
       "uri": "https://nab.vc4qi.example/status/cal/1",
       "path": "bindings/experimental/cal-v1/test-vectors/signed/status/nab.json",
       "mediaType": "application/vc",
@@ -64,6 +72,14 @@
       "origin": "VC4QI experimental calibration v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
       "digestSRI": "sha384-mhrb4BI9J/r93PqDtxmxdjb79ROqOYTVrVK1PWBU+YJ4x4BdXDRKmPIB/sbioBus"
+    },
+    {
+      "uri": "https://testlab.vc4qi.example/status/cal/1",
+      "path": "bindings/experimental/cal-v1/test-vectors/signed/status/tlab.json",
+      "mediaType": "application/vc",
+      "origin": "VC4QI experimental calibration v1 signed fixture (fictional parties, insecure keys)",
+      "version": "1",
+      "digestSRI": "sha384-y9uxEJ9izNpsDfSV8p1A4cmz6kFEcbUbHMnrody+ShPJfLbb/jr19zIiUyFyMbhV"
     },
     {
       "uri": "https://nab.vc4qi.example/credentials/CAL-A",
@@ -112,6 +128,22 @@
       "origin": "VC4QI experimental calibration v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
       "digestSRI": "sha384-nUy3s8+GbSZdKKUv241rM39QC8O287h8DYWAWcQs7UI6gTt6UIgyMQ54xC36kKMX"
+    },
+    {
+      "uri": "https://nab.vc4qi.example/credentials/CAL-T",
+      "path": "bindings/experimental/cal-v1/test-vectors/signed/credentials/CAL-T.json",
+      "mediaType": "application/vc",
+      "origin": "VC4QI experimental calibration v1 signed fixture (fictional parties, insecure keys)",
+      "version": "1",
+      "digestSRI": "sha384-SgsM4TLAr/RkDqMqwpMFqoV5RasTPuJ0of+5ZU8Z0A1hGtEh10HlQn9Q3Jxbh57/"
+    },
+    {
+      "uri": "https://testlab.vc4qi.example/credentials/REPORT-1",
+      "path": "bindings/experimental/cal-v1/test-vectors/signed/credentials/REPORT-1.json",
+      "mediaType": "application/vc",
+      "origin": "VC4QI experimental calibration v1 signed fixture (fictional parties, insecure keys)",
+      "version": "1",
+      "digestSRI": "sha384-MUbxnoHnWljB8rtfVBZCBEiVkzEtHBps+jUhrZrKhl/jCHe5bEo5kO2QgQPwnjjv"
     }
   ]
 }
