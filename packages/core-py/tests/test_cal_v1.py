@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Python mirror of tests/cal-v1.test.ts (I5: migrated calibration binding, S18-S21)."""
+"""Python mirror of tests/cal-v1.test.ts (I5: calibration use cases, S18-S21)."""
 
 from __future__ import annotations
 
@@ -37,14 +37,32 @@ PROFILE_JSON = json.loads(
     (CAL_V1_DIRECTORY / "profiles/cal-verifier-1.json").read_text()
 )
 PROFILE = load_reliance_profile(PROFILE_JSON)
+
+
+def profile_json(file: str) -> dict[str, Any]:
+    return dict(json.loads((CAL_V1_DIRECTORY / "profiles" / file).read_text()))
+
+
+CAPABILITY_PROFILE = load_reliance_profile(
+    profile_json("cal-verifier-capability-1.json")
+)
+NMI_PROFILE = load_reliance_profile(profile_json("cal-verifier-nmi-1.json"))
 PINNED = read_pinned_resources(CAL_V1_DIRECTORY / "catalog.json")
 SIGNED = read_pinned_resources(CAL_V1_DIRECTORY / "test-vectors/signed/catalog.json")
 CAL = "https://vc4qi.example/bindings/cal/1#"
 CA = "https://nab.vc4qi.example/credentials/CAL-A"
 DCC = "https://lab.vc4qi.example/credentials/DCC-1"
+OPS = "https://lab.vc4qi.example/credentials/CAL-O"
+DCC2 = "https://lab.vc4qi.example/credentials/DCC-2"
+M = "https://ministry.vc4qi.example/credentials/CAL-M"
+DCCN = "https://nmi.vc4qi.example/credentials/DCC-N"
+NAB = "https://nab.vc4qi.example/controller"
+MINISTRY = "https://ministry.vc4qi.example/controller"
 KEY = {
-    "https://nab.vc4qi.example/controller": "nab",
+    NAB: "nab",
     "https://lab.vc4qi.example/controller": "lab",
+    MINISTRY: "ministry",
+    "https://nmi.vc4qi.example/controller": "nmi",
 }
 G1 = "/credentialSubject/measurementGroups/0"
 G2 = "/credentialSubject/measurementGroups/1"
@@ -115,6 +133,37 @@ def reissue(
         ]
     overrides[DCC] = sign(dcc)
     return overrides
+
+
+def reissue_chain(
+    steps: list[tuple[str, Callable[[dict[str, Any]], None] | None]],
+) -> dict[str, str | None]:
+    """Re-issue bottom-up, updating relatedResource digests of re-issued credentials."""
+    overrides: dict[str, str | None] = {}
+    for uri, edit in steps:
+        d = doc(uri)
+        if edit is not None:
+            edit(d)
+        if isinstance(d.get("relatedResource"), list):
+            related = []
+            for r in d["relatedResource"]:
+                text = overrides.get(r["id"])
+                related.append(
+                    {"id": r["id"], "digestSRI": sha384_sri(text.encode("utf-8"))}
+                    if isinstance(text, str)
+                    else r
+                )
+            d["relatedResource"] = related
+        overrides[uri] = sign(d)
+    return overrides
+
+
+def subject(d: dict[str, Any]) -> dict[str, Any]:
+    return d["credentialSubject"]  # type: ignore[no-any-return]
+
+
+def scope0(d: dict[str, Any]) -> dict[str, Any]:
+    return subject(d)["scope"][0]  # type: ignore[no-any-return]
 
 
 def groups(d: dict[str, Any]) -> list[dict[str, Any]]:
@@ -256,3 +305,221 @@ def test_s21_uncertainty_below_cmc_contradicts_scope() -> None:
         {**PROFILE_JSON, "bindingRules": {"applyCmcFloor": False}}
     )
     assert run(overrides, request(), not_applied).decision == "accept"
+
+
+def selects(profile: Any) -> VersionedIdentifier:
+    return VersionedIdentifier(profile.id, profile.version)
+
+
+def run_capability(
+    overrides: dict[str, str | None] | None = None, profile: Any = CAPABILITY_PROFILE
+) -> Any:
+    req = request(
+        request_id="urn:uuid:cal-v1-capability",
+        target_id=DCC2,
+        selected_claims=(SelectedClaim("g1", G1),),
+        supplied_evidence=(OPS, CA),
+        profile=selects(profile),
+    )
+    return run(overrides, req, profile)
+
+
+def test_capability_accepted_through_operational_scope() -> None:
+    result = run_capability()
+    assert entry(result, "route:operational-scope").state == "established"
+    assert (
+        "scope-pressure-low lies within scope-pressure"
+        in entry(result, "route:operational-scope:bounded-projection").reason
+    )
+    assert result.authorization[0].route_witness_ids == (
+        "route:operational-scope",
+        DCC2,
+        OPS,
+        CA,
+        f"record:{OPS}#scope-pressure-low",
+    )
+    assert result.decision == "accept"
+
+
+def test_capability_wider_than_accreditation_is_no_projection() -> None:
+    def edit(d: dict[str, Any]) -> None:
+        scope0(d)["range"]["to"] = "20"
+
+    result = run_capability(reissue_chain([(OPS, edit), (DCC2, None)]))
+    projection = entry(result, "route:operational-scope:bounded-projection")
+    assert projection.state == "contradicted"
+    assert "0–20000 kPa is not within 0–10000 kPa" in projection.reason
+    assert result.decision == "reject"
+
+
+def test_capability_better_than_admitted_widens_when_floor_applies() -> None:
+    def edit_o(d: dict[str, Any]) -> None:
+        scope0(d)["cmcFloor"]["value"] = "0.3"
+
+    def edit_dcc(d: dict[str, Any]) -> None:
+        result0(d)["expandedUncertainty"] = "0.4"
+
+    overrides = reissue_chain([(OPS, edit_o), (DCC2, edit_dcc)])
+    applied = run_capability(overrides)
+    assert (
+        "CMC 0.3 kPa is below the admitted 0.5 kPa"
+        in entry(applied, "route:operational-scope:bounded-projection").reason
+    )
+    assert applied.decision == "reject"
+    not_applied = load_reliance_profile(
+        {
+            **profile_json("cal-verifier-capability-1.json"),
+            "bindingRules": {"applyCmcFloor": False},
+        }
+    )
+    assert run_capability(overrides, not_applied).decision == "accept"
+
+
+def test_c08_analogue_no_scope_maintenance_permission() -> None:
+    def edit(d: dict[str, Any]) -> None:
+        subject(d)["permittedActivity"] = [CAL + "issueCalibrationCertificate"]
+
+    result = run_capability(reissue_chain([(CA, edit), (OPS, None), (DCC2, None)]))
+    assert (
+        entry(result, "route:operational-scope:projection-permission").state
+        == "contradicted"
+    )
+    assert result.decision == "reject"
+
+
+def test_group_outside_operational_scope_is_not_rescued_by_parent() -> None:
+    def edit(d: dict[str, Any]) -> None:
+        result0(d)["value"] = "5000"
+
+    result = run_capability(reissue_chain([(DCC2, edit)]))
+    covered = entry(result, "claim-coverage:g1:operational-scope")
+    assert covered.state == "contradicted"
+    assert "5000 kPa is outside 0–2000 kPa" in covered.reason
+    assert result.authorization[0].state == "contradicted"
+    assert result.decision == "reject"
+
+
+def run_mandate(
+    overrides: dict[str, str | None] | None = None, profile: Any = NMI_PROFILE
+) -> Any:
+    req = request(
+        request_id="urn:uuid:cal-v1-mandate",
+        target_id=DCCN,
+        selected_claims=(SelectedClaim("g1", G1),),
+        supplied_evidence=(M,),
+        profile=selects(profile),
+    )
+    return run(overrides, req, profile)
+
+
+def test_mandate_accepted_without_accreditation_root() -> None:
+    result = run_mandate()
+    assert entry(result, "route:statutory-mandate").state == "established"
+    witnesses = result.authorization[0].route_witness_ids
+    assert witnesses == (
+        "route:statutory-mandate",
+        DCCN,
+        M,
+        f"record:{M}#scope-pressure-primary",
+    )
+    assert not any("nab." in w for w in witnesses)
+    assert "no legal effect" in " ".join(result.limitations)
+    assert result.decision == "accept"
+
+
+@pytest.mark.parametrize(
+    "anchors",
+    [
+        [{"id": NAB, "purposes": ["accredit-calibration-laboratories"]}],
+        [{"id": MINISTRY, "purposes": ["accredit-calibration-laboratories"]}],
+    ],
+)
+def test_mandate_issuer_must_be_a_designation_anchor(
+    anchors: list[dict[str, Any]],
+) -> None:
+    profile = load_reliance_profile(
+        {**profile_json("cal-verifier-nmi-1.json"), "trustAnchors": anchors}
+    )
+    result = run_mandate(None, profile)
+    assert entry(result, "route:statutory-mandate:trust-anchor").state == (
+        "not_established"
+    )
+    assert result.decision == "not_established"
+
+
+def test_mandate_for_another_institute_rejects() -> None:
+    def edit(d: dict[str, Any]) -> None:
+        subject(d)["id"] = "https://other-nmi.vc4qi.example/controller"
+
+    result = run_mandate(reissue_chain([(M, edit), (DCCN, None)]))
+    assert (
+        entry(result, "route:statutory-mandate:principal-binding").state
+        == "contradicted"
+    )
+    assert result.decision == "reject"
+
+
+def test_mandate_method_outside_scope_is_not_covered() -> None:
+    def edit(d: dict[str, Any]) -> None:
+        groups(d)[0]["methodIris"] = [CAL + "PressureComparison"]
+
+    result = run_mandate(reissue_chain([(DCCN, edit)]))
+    assert entry(result, "claim-coverage:g1:statutory-mandate").state == (
+        "contradicted"
+    )
+    assert result.decision == "reject"
+
+
+ALL_ROUTES = load_reliance_profile(
+    {
+        **PROFILE_JSON,
+        "id": "https://vc4qi.example/profiles/cal-verifier-all-routes",
+        "trustAnchors": [
+            {"id": NAB, "purposes": ["accredit-calibration-laboratories"]},
+            {"id": MINISTRY, "purposes": ["designate-national-metrology-institutes"]},
+        ],
+        "authority": {
+            "certificateRoutes": [
+                "direct-accreditation",
+                "operational-scope",
+                "statutory-mandate",
+            ],
+            "globalRestrictions": [],
+            "maxRoutes": 4,
+        },
+    }
+)
+
+
+def all_routes_request(target: str, evidence: tuple[str, ...]) -> RelianceRequest:
+    return request(
+        target_id=target,
+        supplied_evidence=evidence,
+        selected_claims=(SelectedClaim("g1", G1),),
+        profile=selects(ALL_ROUTES),
+    )
+
+
+@pytest.mark.parametrize(
+    ("target", "evidence", "winner"),
+    [
+        (DCC, (CA,), "direct-accreditation"),
+        (DCC2, (OPS, CA), "operational-scope"),
+        (DCCN, (M,), "statutory-mandate"),
+    ],
+)
+def test_each_certificate_uses_the_route_its_references_reach(
+    target: str, evidence: tuple[str, ...], winner: str
+) -> None:
+    result = run(None, all_routes_request(target, evidence), ALL_ROUTES)
+    assert result.authorization[0].route_witness_ids[0] == f"route:{winner}"
+    assert result.decision == "accept"
+
+
+def test_contradicted_route_beside_unreferenced_routes_is_not_established() -> None:
+    ca = doc(CA)
+    ca["credentialSubject"]["id"] = "https://other-lab.vc4qi.example/controller"
+    result = run(reissue(ca), all_routes_request(DCC, (CA,)), ALL_ROUTES)
+    assert entry(result, "route:direct-accreditation").state == "contradicted"
+    assert entry(result, "route:statutory-mandate").state == "not_established"
+    assert result.decision == "not_established"

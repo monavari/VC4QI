@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Migrate calibration-capability and nmi-legal-mandate to the calibration binding:
+  an operational-scope route with bounded projection (no widening, no fallback to the
+  accreditation's wider scope) and a statutory-mandate route with no accreditation root.
+
 - Share the gate 0–3 reliance pipeline across bindings and add an experimental signed
   calibration (DCC) binding: measurement groups as required claims, one complete scope
   record per group, no empty-method bypass, and CMC floors as a profile rule.

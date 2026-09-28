@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://vc4qi.example/schemas/cal/1/certificate.json",
-  "title": "Calibration certificate (DCC)",
+  "$id": "https://vc4qi.example/schemas/cal/1/operational-scope.json",
+  "title": "Calibration operational scope",
   "description": "Experimental VC4QI calibration binding v1 fixture schema. Not an external standard.",
   "type": "object",
   "required": [
@@ -14,6 +14,7 @@
     "credentialSchema",
     "credentialSubject",
     "credentialStatus",
+    "termsOfUse",
     "relatedResource"
   ],
   "properties": {
@@ -30,7 +31,7 @@
     "type": {
       "const": [
         "VerifiableCredential",
-        "CalCertificate"
+        "CalOperationalScope"
       ]
     },
     "issuer": {
@@ -53,7 +54,7 @@
       ],
       "properties": {
         "id": {
-          "const": "https://vc4qi.example/schemas/cal/1/certificate.json"
+          "const": "https://vc4qi.example/schemas/cal/1/operational-scope.json"
         },
         "type": {
           "const": "JsonSchema"
@@ -65,27 +66,35 @@
       "type": "object",
       "required": [
         "id",
-        "activityTime",
-        "measurementGroups"
+        "permittedActivity",
+        "scope"
       ],
       "properties": {
         "id": {
           "type": "string",
           "format": "uri"
         },
-        "activityTime": {
-          "type": "string",
-          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$"
-        },
-        "measurementGroups": {
+        "permittedActivity": {
           "type": "array",
           "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "https://vc4qi.example/bindings/cal/1#issueCalibrationCertificate"
+            ]
+          }
+        },
+        "scope": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
           "items": {
             "type": "object",
             "required": [
               "id",
               "quantityKindIri",
-              "results"
+              "allowedMethodIris",
+              "range"
             ],
             "properties": {
               "id": {
@@ -96,48 +105,61 @@
                 "type": "string",
                 "format": "uri"
               },
-              "methodIris": {
+              "allowedMethodIris": {
                 "type": "array",
+                "minItems": 1,
                 "uniqueItems": true,
                 "items": {
                   "type": "string",
                   "format": "uri"
                 }
               },
-              "results": {
-                "type": "array",
-                "minItems": 1,
-                "items": {
-                  "type": "object",
-                  "required": [
-                    "value",
-                    "unit",
-                    "expandedUncertainty",
-                    "coverageFactor"
-                  ],
-                  "properties": {
-                    "value": {
-                      "type": "string",
-                      "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
-                    },
-                    "unit": {
-                      "enum": [
-                        "Pa",
-                        "kPa",
-                        "MPa"
-                      ]
-                    },
-                    "expandedUncertainty": {
-                      "type": "string",
-                      "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
-                    },
-                    "coverageFactor": {
-                      "type": "string",
-                      "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
-                    }
+              "range": {
+                "type": "object",
+                "required": [
+                  "from",
+                  "to",
+                  "unit"
+                ],
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
                   },
-                  "additionalProperties": false
-                }
+                  "to": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                  },
+                  "unit": {
+                    "enum": [
+                      "Pa",
+                      "kPa",
+                      "MPa"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "cmcFloor": {
+                "type": "object",
+                "required": [
+                  "value",
+                  "unit"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                  },
+                  "unit": {
+                    "enum": [
+                      "Pa",
+                      "kPa",
+                      "MPa"
+                    ]
+                  }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
