@@ -4,7 +4,8 @@
 // encoding of the GZIP-compressed bitstring; bit 0 is the most significant bit of
 // the first byte. Decompression is bounded. The status list is itself a protected
 // artifact and counts only when signed by the target credential's own issuer.
-// Node-only (zlib); not exported from the browser-reachable barrel.
+// Uses node:zlib; the browser demonstrator aliases it to a bounded gunzip shim
+// (apps/demo-web/poster/zlib-browser.ts). Decoding avoids Node's Buffer.
 import { gunzipSync, gzipSync } from 'node:zlib';
 import type { SemanticState } from './types.js';
 
@@ -34,9 +35,9 @@ export function decodeStatusList(encoded: unknown, maxBytes = MAX_STATUS_BYTES):
   if (typeof encoded !== 'string' || !/^u[A-Za-z0-9_-]+$/.test(encoded)) {
     throw new StatusListError('MALFORMED', 'encodedList must be multibase base64url (prefix "u").');
   }
-  let bits: Buffer;
+  let bits: Uint8Array;
   try {
-    bits = gunzipSync(Buffer.from(encoded.slice(1), 'base64url'), { maxOutputLength: maxBytes });
+    bits = gunzipSync(fromBase64Url(encoded.slice(1)), { maxOutputLength: maxBytes });
   } catch (error) {
     const code = (error as { code?: string }).code;
     if (code === 'ERR_BUFFER_TOO_LARGE' || /maxOutputLength|buffer/i.test(String(error))) {
@@ -48,6 +49,22 @@ export function decodeStatusList(encoded: unknown, maxBytes = MAX_STATUS_BYTES):
     throw new StatusListError('TOO_SHORT', `Status list has fewer than ${MIN_STATUS_BITS} bits.`);
   }
   return new Uint8Array(bits);
+}
+
+/** Decode unpadded base64url without Node's Buffer (the input is already pattern-checked). */
+function fromBase64Url(text: string): Uint8Array {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  const out = new Uint8Array(Math.floor((text.length * 6) / 8));
+  let buffer = 0, bitCount = 0, index = 0;
+  for (const char of text) {
+    buffer = (buffer << 6) | alphabet.indexOf(char);
+    bitCount += 6;
+    if (bitCount >= 8) {
+      bitCount -= 8;
+      out[index++] = (buffer >> bitCount) & 0xff;
+    }
+  }
+  return out;
 }
 
 /** Read bit `index` (most significant bit first). */

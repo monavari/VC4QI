@@ -15,7 +15,7 @@ no real accreditation or external endorsement is claimed.
 | Legacy compatibility | Explicit, labelled legacy profile with no fallback; both GS application variants verify under it |
 | Default API | Still the legacy `verifyCredentialGraph`; the switch is I5 step 4 |
 | Selective disclosure | TypeScript `ecdsa-sd-2023` on legacy fixtures; Python evaluates disclosed subsets semantically only |
-| Demo | Legacy graph explorer; the M375a poster page runs gates 0–3 for real and previews gates 4–6 |
+| Demo | The M375a demonstrator runs the full evaluator (gates 0–6) in the browser; the older graph explorer still shows the legacy model |
 | Not implemented | Authority-issued answers and Recognized Entities (I6), compiled-graph demo (I7), final reproducibility package (I8), wallet, verifier service and LIMS adapter |
 
 ## Acceptance ledger
@@ -60,6 +60,8 @@ recorded baseline debt (Ruff 204, mypy 198) that no phase has increased.
 - The legacy canonicalization path runs JSON-LD with `safe: false`, so legacy
   signatures cover only terms their contexts define; the new evaluator always uses safe
   mode.
-- The poster page still previews gates 4–6 instead of running the evaluator.
+- The demonstrator covers the RM use case only; the calibration and GS use cases and the
+  legacy graph explorer are not yet on the new result (I7). UI interaction is checked by a
+  local browser run and a bundle-level test, not by a browser lane in CI.
 - Root scenario tests skip graph proofs, and schema validation skips legacy examples
   without `$schema`.
