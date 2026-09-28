@@ -44,6 +44,10 @@ The verifier asks for `x + U <= 200 mg/kg` (`guarded-acceptance-expanded-u`).
 | `D197.json` | established | 202 > 200 | reject (authorization established) |
 | `D520.json` | contradicted | not run | reject |
 
+The [BAM-M375a demonstrator](https://monavari.github.io/VC4QI/m375a/) runs exactly these
+cases in the browser with the same evaluator, and adds a tamper test and a withheld
+study.
+
 For the accepted case the claim witnesses are the route `operational-scope`, D, O, A
 and the record `O#scope-as-m1`; support names D, S and H. An authorization-only request
 for 197 does not run conformity and is accepted. Other controls cover the 195 boundary

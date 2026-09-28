@@ -1513,3 +1513,37 @@ Python 409 passed, 1 skipped; Ruff 204 and mypy 198 unchanged; scenarios 2 passe
 schemas exit 0; all six binding generator `--check` modes pass; `pnpm docs:check` valid
 (26 published pages); markdownlint over all 60 Markdown files, 0 issues. A planted
 broken link and a missing anchor both failed the check as intended.
+
+## Demonstrator: the full evaluator in the browser — 28 September 2026
+
+At the user's request (demonstrator first; "run just on web"), the BAM-M375a page
+(`site/m375a`) now bundles `evaluateRmSlice` instead of `verifyRmArtifact` plus the
+hand-written gate 4–6 preview (`apps/demo-web/poster/preview-rules.ts`, removed). The
+only Node dependency on the evaluator path was status-list decoding. `decodeStatusList`
+now decodes base64url without `Buffer` (Node behaviour unchanged), and the poster build
+aliases `node:zlib` to `apps/demo-web/poster/zlib-browser.ts`: `fflate` 0.8.2 (MIT, no
+dependencies; demo-web dev dependency, lockfile edited by hand to avoid unrelated churn)
+with Node's bounded-output behaviour kept (declared gzip size checked before inflating,
+actual size after). The build embeds the verifier profile `rm-verifier-1`. The page
+evaluates as of the fixed instant 2026-09-25T12:00:00Z and says why: the status lists
+carry a freshness window, so a static page evaluated at "now" would correctly report
+stale status after it.
+
+The page is organised around six questions (authentic, current, understood, authorized,
+supported, fit for use), each derived from the evaluator's result and expandable to the
+trace entries behind it. Controls: certified value 178/197/520, the verifier's question
+(authorization only, or `x + U <= 200 mg/kg`), a tamper test (value changed to 150
+without re-signing) and a withheld study. The chain diagram shows each credential's
+signature state.
+
+Results: `packages/core-ts/tests/demonstrator.test.ts` imports the shipped bundle and
+checks all scenarios (5 passed): 178 accept; 197 reject (fit contradicted), and accept
+when only authorization is asked (fit not asked); 520 reject (authorized contradicted,
+fit not asked); tampered 178 reject (authentic contradicted, nothing read); withheld
+study not_established. A local Chromium run (Playwright with the preinstalled browser,
+not a CI lane) clicked through the same scenarios with no console errors. The first
+evaluation took about 0.4–1 s, and the page showed no horizontal overflow at 420 px. A
+display bug found in that run (node-use keys are separated by ` | `, so artifact
+identities kept a trailing space) was fixed before commit. The bundle is 604 kB (139 kB
+gzip). E12–E14 remain `not_implemented` in the ledger: E12 needs a simulation mode, and
+E13/E14 ask for UI interaction tests in the acceptance lane.

@@ -71,7 +71,10 @@ variants), actor grouping, credential inspection, trace replay and selective
 disclosure. Only the two GS variants run graph proof checks; the others skip them.
 Replay delay is presentation, not verification time.
 
-The BAM-M375a poster page (`site/m375a`) bundles the repository's `verifyRmArtifact`
-(gates 0–3) with `pnpm -C apps/demo-web build:poster`; CI checks the bundle is current.
-Its gates 4–6 are still a labelled preview (`apps/demo-web/poster/preview-rules.ts`),
-not the evaluator. Rendering the real evaluator is phase I7.
+The BAM-M375a demonstrator (`site/m375a`) runs entirely in the browser: `pnpm -C
+apps/demo-web build:poster` bundles the repository's `evaluateRmSlice` (all seven gates)
+with the pinned RM v1 resources, signed fixtures and verifier profile into
+`site/m375a/verifier.js`, and CI checks the bundle is current. Node's `zlib` is replaced
+by a bounded gunzip shim (`apps/demo-web/poster/zlib-browser.ts`, using `fflate`), so
+status lists are verified in the browser too. Nothing is fetched and no server is
+needed; `tests/demonstrator.test.ts` runs the shipped bundle through its scenarios.
