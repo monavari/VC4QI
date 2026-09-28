@@ -98,6 +98,21 @@ def catalog_with(overrides: Mapping[str, str | None] | None = None) -> Any:
                 version=resource.version,
             )
         resources.append(resource)
+    # Like catalogWith in TS: URIs not in the pinned sets are added as extra resources.
+    known = {resource.uri for resource in PINNED + SIGNED}
+    for uri, text in overrides.items():
+        if isinstance(text, str) and uri not in known:
+            content = text.encode("utf-8")
+            resources.append(
+                StaticResource(
+                    uri=uri,
+                    media_type="application/vc",
+                    content=content,
+                    digest_sri=sha384_sri(content),
+                    origin="test",
+                    version="1",
+                )
+            )
     return StaticResourceCatalog(resources)
 
 

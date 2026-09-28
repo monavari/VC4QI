@@ -355,6 +355,12 @@ explicit legacy compatibility, and S18/S19/S21 pass under the migrated calibrati
 restore green tests. Draft a coherent next pre-1.0 version such as 0.4.0 using
 repository conventions; final numbering/metadata follows the migration evidence.
 
+Progress 2026-09-28: step 1 (explicit, labelled legacy profile; no fallback) passes V02
+and V03; see [I5 evidence](standards-first-i5-evidence.md). Step 2 shares the gate 0–3
+pipeline across bindings and migrates calibration-direct-accreditation to a signed
+calibration binding (S18, S19, S21 passing). Open: remaining use-case migration,
+default-API switch and version draft.
+
 ### I6 — external scope answers and experimental recognition
 
 Implement authenticated answers bound to the exact predicate, claim, grantee,

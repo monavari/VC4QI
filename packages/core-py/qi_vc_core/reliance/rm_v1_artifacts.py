@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import copy
 import json
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Literal
@@ -95,6 +95,20 @@ def _expected_contexts(declared_type: Any) -> list[str]:
     if declared_type == "BitstringStatusListCredential":
         return [VC_V2_CONTEXT]
     return [VC_V2_CONTEXT, RM_V1_CONTEXT]
+
+
+@dataclass(frozen=True)
+class ArtifactBinding:
+    """Recognized types, their schemas and exact contexts (mirrors ArtifactBinding)."""
+
+    name: str
+    schemas: Mapping[str, str]
+    contexts: Callable[[Any], list[str]]
+
+
+RM_V1_ARTIFACT_BINDING = ArtifactBinding(
+    "RM v1", RM_V1_ARTIFACT_SCHEMAS, _expected_contexts
+)
 
 
 _UNDEFINED = "urn:vc4qi:undefined-term#"
@@ -379,6 +393,7 @@ def verify_rm_artifact(
     manifest: BindingManifest,
     evaluation_time: str,
     static_resolver: ResourceResolver | None = None,
+    binding: ArtifactBinding | None = None,
 ) -> RmArtifactVerification:
     """Verify one RM v1 artifact from its exact catalog bytes; never raises.
 
@@ -386,6 +401,7 @@ def verify_rm_artifact(
     it defaults to ``session``.
     """
     static = static_resolver or session
+    artifact_binding = binding or RM_V1_ARTIFACT_BINDING
     checks: list[CheckOutcome] = []
     extra: dict[str, Any] = {}
 
@@ -438,7 +454,7 @@ def verify_rm_artifact(
     declared_type = (
         declared[1] if isinstance(declared, list) and len(declared) > 1 else None
     )
-    if document.get("@context") != _expected_contexts(declared_type):
+    if document.get("@context") != artifact_binding.contexts(declared_type):
         return fail(
             "carrier",
             "not_established",
@@ -456,12 +472,13 @@ def verify_rm_artifact(
         and types[0] == "VerifiableCredential"
         else None
     )
-    schema_id = RM_V1_ARTIFACT_SCHEMAS.get(artifact_type) if artifact_type else None
+    schema_id = artifact_binding.schemas.get(artifact_type) if artifact_type else None
     if schema_id is None:
         return fail(
             "type",
             "not_established",
-            "Credential type is not a recognized RM v1 artifact type.",
+            f"Credential type is not a recognized {artifact_binding.name} artifact "
+            "type.",
         )
     extra["artifact_type"] = artifact_type
     declared = document.get("credentialSchema")
@@ -591,7 +608,41 @@ def _selected_result(pointer: str) -> bool:
 STATIC_RESOURCE_BUDGET = CatalogBudget(max_resources=1_000, max_bytes=20_000_000)
 
 
-def _refuse_plan(request: RelianceRequest, reason: str) -> RmSliceEvaluation:
+def plan_refusal(
+    request: RelianceRequest, manifest: BindingManifest, profile: RelianceProfile
+) -> str | None:
+    """Gate 0: why the request does not name the verifier-selected plan (V09)."""
+    if (
+        request.binding.id == manifest.id
+        and request.binding.version == manifest.version
+        and request.profile.id == profile.id
+        and request.profile.version == profile.version
+    ):
+        return None
+    return (
+        f"Requested {request.profile.id}@{request.profile.version} with binding "
+        f"{request.binding.id}@{request.binding.version} is not the "
+        f"verifier-selected profile {profile.id}@{profile.version} "
+        f"for {manifest.id}@{manifest.version}."
+    )
+
+
+@dataclass(frozen=True)
+class VerifiedChain:
+    """Gates 0-3 over the target, supplied evidence and referenced credentials."""
+
+    target: RmArtifactVerification
+    artifacts: tuple[RmArtifactVerification, ...]
+    facts: Mapping[str, NodeFacts]
+    verification_of: Callable[
+        [RmArtifactVerification], list[ArtifactVerificationResult]
+    ]
+    verification: tuple[ArtifactVerificationResult, ...]
+    trace: tuple[TraceEntry, ...]
+    resources: tuple[ResourceObservation, ...]
+
+
+def refuse_plan(request: RelianceRequest, reason: str) -> RelianceResult:
     """Gate 0 refusal: nothing is resolved, read or evaluated."""
     not_run = _not_run("Not evaluated: the plan was refused at gate 0.")
     conformity: ConformityResult = (
@@ -606,7 +657,7 @@ def _refuse_plan(request: RelianceRequest, reason: str) -> RmSliceEvaluation:
         if request.conformity is not None
         else ConformityNotRequested()
     )
-    result = create_reliance_result(
+    return create_reliance_result(
         RelianceResult(
             request_id=request.request_id,
             target_id=request.target_id,
@@ -644,39 +695,16 @@ def _refuse_plan(request: RelianceRequest, reason: str) -> RmSliceEvaluation:
             ),
         )
     )
-    return RmSliceEvaluation(result=result, artifacts=())
 
 
-def evaluate_rm_slice(
+def verify_chain(
     request: RelianceRequest,
     catalog: StaticResourceCatalog,
     manifest: BindingManifest,
     profile: RelianceProfile,
-) -> RmSliceEvaluation:
-    """Evaluate a reliance request over gates 0-6; accept only if all is established."""
-    if (
-        manifest.id != RM_V1_BINDING_ID
-        or profile.binding.id != manifest.id
-        or profile.binding.version != manifest.version
-    ):
-        raise ValueError(
-            f"Profile {profile.id}@{profile.version} is not configured for "
-            f"{RM_V1_BINDING_ID}@{manifest.version}."
-        )
-    # Gate 0: the verifier selects profile and binding (V09).
-    if (
-        request.binding.id != manifest.id
-        or request.binding.version != manifest.version
-        or request.profile.id != profile.id
-        or request.profile.version != profile.version
-    ):
-        return _refuse_plan(
-            request,
-            f"Requested {request.profile.id}@{request.profile.version} with binding "
-            f"{request.binding.id}@{request.binding.version} is not the "
-            f"verifier-selected profile {profile.id}@{profile.version} "
-            f"for {manifest.id}@{manifest.version}.",
-        )
+    binding: ArtifactBinding | None = None,
+) -> VerifiedChain:
+    """Resolve and verify the chain (gates 0-3) under the request's budgets."""
     # Retrieved evidence counts against the request budget, each resource once;
     # pinned static material uses a separate internal budget.
     limits = request.resolver_limits
@@ -689,7 +717,7 @@ def evaluate_rm_slice(
         return dict(json.loads(session.resolve(uri).content.decode("utf-8")))
 
     target = verify_rm_artifact(
-        request.target_id, session, manifest, request.evaluation_time, static
+        request.target_id, session, manifest, request.evaluation_time, static, binding
     )
     artifacts = [target]
     depth: dict[str, int] = {request.target_id: 0}
@@ -698,7 +726,9 @@ def evaluate_rm_slice(
             continue
         depth[uri] = 1
         artifacts.append(
-            verify_rm_artifact(uri, session, manifest, request.evaluation_time, static)
+            verify_rm_artifact(
+                uri, session, manifest, request.evaluation_time, static, binding
+            )
         )
     # Follow the chain's own references (termsOfUse, evidence) from protected
     # credentials, within maxDepth; supplied-but-unreferenced credentials stay inert.
@@ -728,7 +758,7 @@ def evaluate_rm_slice(
             depth[uri] = at + 1
             artifacts.append(
                 verify_rm_artifact(
-                    uri, session, manifest, request.evaluation_time, static
+                    uri, session, manifest, request.evaluation_time, static, binding
                 )
             )
 
@@ -780,7 +810,12 @@ def evaluate_rm_slice(
         if isinstance(list_uri, str):
             if list_uri not in lists:
                 lists[list_uri] = verify_rm_artifact(
-                    list_uri, session, manifest, request.evaluation_time, static
+                    list_uri,
+                    session,
+                    manifest,
+                    request.evaluation_time,
+                    static,
+                    binding,
                 )
             checked = lists[list_uri]
             if (
@@ -918,6 +953,129 @@ def evaluate_rm_slice(
                 else None
             ),
         )
+    trace: list[TraceEntry] = []
+    resources: list[ResourceObservation] = []
+    for index, artifact in enumerate(artifacts):
+        role = "target" if index == 0 else "supplied-evidence"
+        use = node_use_key(artifact.artifact_id, artifact.digest_sri, role, request)
+        for check in artifact.checks:
+            trace.append(
+                TraceEntry(
+                    PROTECTION_CHECK_GATES[check.check],
+                    use,
+                    check.check,
+                    check.state,
+                    "executed",
+                    check.reason,
+                    (artifact.artifact_id,),
+                )
+            )
+        for related in artifact.related_resources:
+            trace.append(
+                TraceEntry(
+                    1,
+                    use,
+                    "related-resource-integrity",
+                    related.state,
+                    "executed",
+                    f"{related.id}: {related.reason}",
+                    ("/relatedResource", related.id),
+                )
+            )
+        checked_identity = identity[artifact.artifact_id]
+        trace.append(
+            TraceEntry(
+                1,
+                use,
+                "resource-identity",
+                checked_identity.state if checked_identity else "not_established",
+                "executed" if checked_identity else "not_run",
+                " ".join(checked_identity.reasons)
+                if checked_identity
+                else "Not evaluated because protection is not established.",
+                checked_identity.source_pointers if checked_identity else (),
+            )
+        )
+        trace.append(
+            TraceEntry(
+                3,
+                use,
+                "validity-period",
+                artifact.validity.state,
+                artifact.validity.execution,
+                " ".join(artifact.validity.reasons) or "Not evaluated.",
+                artifact.validity.source_pointers,
+            )
+        )
+        outcome = status[artifact.artifact_id]
+        trace.append(
+            TraceEntry(
+                3,
+                use,
+                "credential-status",
+                outcome.state if outcome else "not_established",
+                "executed" if outcome else "not_run",
+                outcome.reason
+                if outcome
+                else "Not evaluated because protection is not established.",
+                outcome.sources if outcome else (),
+            )
+        )
+        if artifact.digest_sri is not None:
+            resources.append(
+                ResourceObservation(
+                    artifact.artifact_id,
+                    artifact.digest_sri,
+                    "artifact",
+                    "catalog",
+                    request.evaluation_time,
+                )
+            )
+    for list_uri, checked in lists.items():
+        if checked.digest_sri is not None:
+            resources.append(
+                ResourceObservation(
+                    list_uri,
+                    checked.digest_sri,
+                    "status",
+                    "catalog",
+                    request.evaluation_time,
+                )
+            )
+    return VerifiedChain(
+        target=target,
+        artifacts=tuple(artifacts),
+        facts=facts,
+        verification_of=verification_of,
+        verification=tuple(verification),
+        trace=tuple(trace),
+        resources=tuple(resources),
+    )
+
+
+def evaluate_rm_slice(
+    request: RelianceRequest,
+    catalog: StaticResourceCatalog,
+    manifest: BindingManifest,
+    profile: RelianceProfile,
+) -> RmSliceEvaluation:
+    """Evaluate a reliance request over gates 0-6; accept only if all is established."""
+    if (
+        manifest.id != RM_V1_BINDING_ID
+        or profile.binding.id != manifest.id
+        or profile.binding.version != manifest.version
+    ):
+        raise ValueError(
+            f"Profile {profile.id}@{profile.version} is not configured for "
+            f"{RM_V1_BINDING_ID}@{manifest.version}."
+        )
+    # Gate 0: the verifier selects profile and binding (V09).
+    refusal = plan_refusal(request, manifest, profile)
+    if refusal is not None:
+        return RmSliceEvaluation(result=refuse_plan(request, refusal), artifacts=())
+    chain = verify_chain(request, catalog, manifest, profile)
+    target, artifacts, facts = chain.target, list(chain.artifacts), dict(chain.facts)
+    verification_of, verification = chain.verification_of, list(chain.verification)
     authority = certificate_authority(facts[request.target_id], facts.get, profile)
     supported = certificate_support(facts[request.target_id], facts.get, profile)
     winner = next((r for r in authority.routes if r.state == "established"), None)
@@ -1130,95 +1288,8 @@ def evaluate_rm_slice(
     required += [r.state for r in authorization] + [r.state for r in support]
     if isinstance(conformity, ConformityRequestedResult):
         required.append(conformity.state)
-    trace: list[TraceEntry] = []
-    resources: list[ResourceObservation] = []
-    for index, artifact in enumerate(artifacts):
-        role = "target" if index == 0 else "supplied-evidence"
-        use = node_use_key(artifact.artifact_id, artifact.digest_sri, role, request)
-        for check in artifact.checks:
-            trace.append(
-                TraceEntry(
-                    PROTECTION_CHECK_GATES[check.check],
-                    use,
-                    check.check,
-                    check.state,
-                    "executed",
-                    check.reason,
-                    (artifact.artifact_id,),
-                )
-            )
-        for related in artifact.related_resources:
-            trace.append(
-                TraceEntry(
-                    1,
-                    use,
-                    "related-resource-integrity",
-                    related.state,
-                    "executed",
-                    f"{related.id}: {related.reason}",
-                    ("/relatedResource", related.id),
-                )
-            )
-        checked_identity = identity[artifact.artifact_id]
-        trace.append(
-            TraceEntry(
-                1,
-                use,
-                "resource-identity",
-                checked_identity.state if checked_identity else "not_established",
-                "executed" if checked_identity else "not_run",
-                " ".join(checked_identity.reasons)
-                if checked_identity
-                else "Not evaluated because protection is not established.",
-                checked_identity.source_pointers if checked_identity else (),
-            )
-        )
-        trace.append(
-            TraceEntry(
-                3,
-                use,
-                "validity-period",
-                artifact.validity.state,
-                artifact.validity.execution,
-                " ".join(artifact.validity.reasons) or "Not evaluated.",
-                artifact.validity.source_pointers,
-            )
-        )
-        outcome = status[artifact.artifact_id]
-        trace.append(
-            TraceEntry(
-                3,
-                use,
-                "credential-status",
-                outcome.state if outcome else "not_established",
-                "executed" if outcome else "not_run",
-                outcome.reason
-                if outcome
-                else "Not evaluated because protection is not established.",
-                outcome.sources if outcome else (),
-            )
-        )
-        if artifact.digest_sri is not None:
-            resources.append(
-                ResourceObservation(
-                    artifact.artifact_id,
-                    artifact.digest_sri,
-                    "artifact",
-                    "catalog",
-                    request.evaluation_time,
-                )
-            )
-    for list_uri, checked in lists.items():
-        if checked.digest_sri is not None:
-            resources.append(
-                ResourceObservation(
-                    list_uri,
-                    checked.digest_sri,
-                    "status",
-                    "catalog",
-                    request.evaluation_time,
-                )
-            )
+    trace: list[TraceEntry] = list(chain.trace)
+    resources: list[ResourceObservation] = list(chain.resources)
     target_use = node_use_key(target.artifact_id, target.digest_sri, "target", request)
     for claim, traced_mapping, claim_coverage_by_route in claims:
         if traced_mapping is not None:
