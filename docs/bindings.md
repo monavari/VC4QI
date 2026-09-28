@@ -16,7 +16,7 @@ accreditation or legal effect.
 | --- | --- | --- | --- | --- |
 | [RM v1](../bindings/experimental/rm-v1/README.md) `…/bindings/rm/1` | reference-material-recursive | `RmAccreditation`, `RmOperationalScope`, `RmCertificate`, `RmStudy`, `RmLabAuthority` | `operational-scope`, `direct-accreditation`; restriction `accreditation-suspension`; required study support | `rm-verifier-1`, `rm-verifier-two-routes-1` |
 | [Calibration v1](../bindings/experimental/cal-v1/README.md) `…/bindings/cal/1` | calibration-direct-accreditation, calibration-capability, nmi-legal-mandate, test-report-supported-dcc | `CalAccreditation`, `CalOperationalScope`, `CalLegalMandate`, `CalCertificate`, `CalTestReport` | `direct-accreditation`, `operational-scope`, `statutory-mandate`; required instrument-calibration support for test reports | `cal-verifier-1`, `cal-verifier-capability-1`, `cal-verifier-nmi-1`, `cal-verifier-test-report-1` |
-| [GS v1](../bindings/experimental/gs-v1/README.md) `…/bindings/gs/1` | gs-scheme-authorization | `GsAccreditation`, `GsSchemeAuthorization`, `GsCertificate` | `competence-and-scheme-permission` | `gs-verifier-1` |
+| [GS v1](../bindings/experimental/gs-v1/README.md) `…/bindings/gs/1` | gs-scheme-authorization, experimental product passport | `GsAccreditation`, `GsSchemeAuthorization`, `GsCertificate`, `GsProductPassport` | `competence-and-scheme-permission`, `gs-certified-product` | `gs-verifier-1`, `gs-verifier-dpp-1` |
 
 Each binding directory holds a hand-authored context, generated schemas and a pinned
 resource catalog, a `manifest.json`, verifier profiles and signed test vectors. The

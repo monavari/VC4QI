@@ -13,7 +13,7 @@ The semantics are in the [model](model.md); the public API is in [API](api.md).
 | `packages/core-ts` | Canonical TypeScript library `@qi-vc/core`: the new `reliance` evaluator and the legacy modules |
 | `packages/core-py` | Python mirror `qi_vc_core`, checked against the same fixtures and a parity vector |
 | `bindings/experimental/` | The RM, calibration and GS bindings: contexts, schemas, manifests, profiles, signed test vectors |
-| `apps/demo-web` | Browser demo (legacy graph explorer) and the poster verifier bundled into `site/m375a` |
+| `apps/demo-web` | Browser demo (legacy graph explorer) and the demonstrator bundled into `site/demo` |
 | `site/` | Static project website published to GitHub Pages, with these docs rendered into it |
 | `contexts/v1`, `schemas/v1`, `policies`, `testdata/examples`, `examples` | Legacy artifacts of the manuscript-v2.1 model |
 | `packages/lims-adapter`, `packages/verifier-service` | Scaffolds only, not working services |
@@ -71,10 +71,12 @@ variants), actor grouping, credential inspection, trace replay and selective
 disclosure. Only the two GS variants run graph proof checks; the others skip them.
 Replay delay is presentation, not verification time.
 
-The BAM-M375a demonstrator (`site/m375a`) runs entirely in the browser: `pnpm -C
-apps/demo-web build:poster` bundles the repository's `evaluateRmSlice` (all seven gates)
-with the pinned RM v1 resources, signed fixtures and verifier profile into
-`site/m375a/verifier.js`, and CI checks the bundle is current. Node's `zlib` is replaced
+The demonstrator (`site/demo`, with RM, DCC, GS and DPP tabs) runs entirely in the
+browser: `pnpm -C apps/demo-web build:poster` bundles the repository's RM, calibration
+and GS slice evaluators (all seven gates) with the pinned resources, signed fixtures and
+verifier profiles of all three bindings into `site/demo/verifier.js`, and CI checks the
+bundle is current. `site/m375a/` redirects to the RM tab so the poster QR code stays
+valid. Node's `zlib` is replaced
 by a bounded gunzip shim (`apps/demo-web/poster/zlib-browser.ts`, using `fflate`), so
 status lists are verified in the browser too. Nothing is fetched and no server is
 needed; `tests/demonstrator.test.ts` runs the shipped bundle through its scenarios.

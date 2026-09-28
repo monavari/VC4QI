@@ -6,7 +6,11 @@
 //     (EN 71-1, EN 71-2) and household appliances (EN 60335-1, EN 60335-2-23);
 //   - GS-S: the fictional scheme owner's independent authorization of the same body to
 //     award the GS mark, for toys only;
-//   - GSC-1: a GS certificate for a toy against EN 71-1, citing both.
+//   - GSC-1: a GS certificate for a toy against EN 71-1, citing both;
+//   - GSC-2: a GS certificate for a household appliance, which GS-A covers but GS-S does
+//     not, so the complete route cannot cover its claim;
+//   - DPP-1 and DPP-2: experimental product passports issued by the fictional manufacturer
+//     for one serialized unit each, claiming the GS mark through GSC-1 and GSC-2.
 //
 //   pnpm -C packages/core-ts exec tsx scripts/generate-gs-v1-artifacts.ts          # write
 //   pnpm -C packages/core-ts exec tsx scripts/generate-gs-v1-artifacts.ts --check  # fail if stale
@@ -34,15 +38,21 @@ const gs = (term: string) => `${GS_V1_VOCAB}${term}`;
 const NAB = 'https://nab.vc4qi.example/controller';
 const SCHEME = 'https://scheme.vc4qi.example/controller';
 const BODY = 'https://gs-body.vc4qi.example/controller';
+const MAKER = 'https://maker.vc4qi.example/controller';
 const A_ID = 'https://nab.vc4qi.example/credentials/GS-A';
 const S_ID = 'https://scheme.vc4qi.example/credentials/GS-S';
 const C_ID = 'https://gs-body.vc4qi.example/credentials/GSC-1';
+const C2_ID = 'https://gs-body.vc4qi.example/credentials/GSC-2';
+const P1_ID = 'https://maker.vc4qi.example/credentials/DPP-1';
+const P2_ID = 'https://maker.vc4qi.example/credentials/DPP-2';
 const STATUS = {
   nab: 'https://nab.vc4qi.example/status/gs/1',
   scheme: 'https://scheme.vc4qi.example/status/gs/1',
   body: 'https://gs-body.vc4qi.example/status/gs/1',
+  maker: 'https://maker.vc4qi.example/status/gs/1',
 } as const;
-const STATUS_ENTRY: Record<string, [string, number]> = { [A_ID]: [STATUS.nab, 0], [S_ID]: [STATUS.scheme, 0], [C_ID]: [STATUS.body, 0] };
+const STATUS_ENTRY: Record<string, [string, number]> = { [A_ID]: [STATUS.nab, 0], [S_ID]: [STATUS.scheme, 0], [C_ID]: [STATUS.body, 0], [C2_ID]: [STATUS.body, 1],
+  [P1_ID]: [STATUS.maker, 0], [P2_ID]: [STATUS.maker, 1] };
 
 interface Party { name: string; controller: string; seed: Uint8Array; publicKey: Uint8Array }
 async function party(name: string, controller: string): Promise<Party> {
@@ -82,7 +92,8 @@ async function main() {
   const nab = await party('nab', NAB);
   const scheme = await party('scheme', SCHEME);
   const body = await party('gs-body', BODY);
-  for (const p of [nab, scheme, body]) {
+  const maker = await party('maker', MAKER);
+  for (const p of [nab, scheme, body, maker]) {
     const method = `${p.controller}#key-1`;
     record(p.controller, `controllers/${p.name}.json`, 'application/json', serialize({
       '@context': 'https://www.w3.org/ns/cid/v1', id: p.controller,
@@ -92,7 +103,7 @@ async function main() {
     }));
   }
   const clear = encodeStatusList(new Uint8Array(MIN_STATUS_BITS / 8));
-  for (const [p, listId] of [[nab, STATUS.nab], [scheme, STATUS.scheme], [body, STATUS.body]] as const) {
+  for (const [p, listId] of [[nab, STATUS.nab], [scheme, STATUS.scheme], [body, STATUS.body], [maker, STATUS.maker]] as const) {
     record(listId, `status/${p.name}.json`, 'application/vc', serialize(await sign({
       '@context': [VC_V2_CONTEXT], id: listId, type: ['VerifiableCredential', 'BitstringStatusListCredential'],
       issuer: p.controller, validFrom: '2026-09-01T00:00:00Z', validUntil: '2027-09-01T00:00:00Z',
@@ -121,11 +132,12 @@ async function main() {
       scope: [{ id: `${S_ID}#scope-toys`, productCategoryIri: gs('Toy') }],
     },
   }, scheme, '2025-01-01T00:00:00Z')));
-  record(C_ID, 'credentials/GSC-1.json', 'application/vc', serialize(await sign({
+  const c1Text = record(C_ID, 'credentials/GSC-1.json', 'application/vc', serialize(await sign({
     ...envelope(C_ID, 'GsCertificate', 'certificate.json', BODY, '2026-03-01T00:00:00Z', '2031-03-01T00:00:00Z'),
     credentialSubject: {
       id: 'urn:vc4qi-example:product:toy-001',
       activityTime: '2026-02-27T10:00:00Z',
+      manufacturerIri: MAKER,
       certification: { productCategoryIri: gs('Toy'), standardIris: [gs('EN-71-1')] },
     },
     termsOfUse: [
@@ -137,6 +149,43 @@ async function main() {
       { id: S_ID, digestSRI: sha384SRI(new TextEncoder().encode(sText)) },
     ],
   }, body, '2026-03-01T00:00:00Z')));
+
+  const c2Text = record(C2_ID, 'credentials/GSC-2.json', 'application/vc', serialize(await sign({
+    ...envelope(C2_ID, 'GsCertificate', 'certificate.json', BODY, '2026-04-01T00:00:00Z', '2031-04-01T00:00:00Z'),
+    credentialSubject: {
+      id: 'urn:vc4qi-example:product:hair-dryer-001',
+      activityTime: '2026-03-30T10:00:00Z',
+      manufacturerIri: MAKER,
+      certification: { productCategoryIri: gs('HouseholdAppliance'), standardIris: [gs('EN-60335-1'), gs('EN-60335-2-23')] },
+    },
+    termsOfUse: [
+      { type: 'GsAuthorizationPolicy', authorizationCredential: { id: A_ID, type: 'GsAccreditation' } },
+      { type: 'GsAuthorizationPolicy', authorizationCredential: { id: S_ID, type: 'GsSchemeAuthorization' } },
+    ],
+    relatedResource: [
+      { id: A_ID, digestSRI: sha384SRI(new TextEncoder().encode(aText)) },
+      { id: S_ID, digestSRI: sha384SRI(new TextEncoder().encode(sText)) },
+    ],
+  }, body, '2026-04-01T00:00:00Z')));
+
+  // Experimental product passports: the manufacturer claims the GS mark for one unit of a
+  // certified model. Not EU Digital Product Passport conformance.
+  const passport = async (id: string, file: string, serial: string, model: string, certId: string, certText: string, at: string) =>
+    record(id, file, 'application/vc', serialize(await sign({
+      ...envelope(id, 'GsProductPassport', 'product-passport.json', MAKER, at, '2036-01-01T00:00:00Z'),
+      credentialSubject: {
+        id: serial,
+        activityTime: at,
+        productModelIri: model,
+        marking: { markIri: gs('GsMark'), productModelIri: model },
+      },
+      termsOfUse: [{ type: 'GsAuthorizationPolicy', authorizationCredential: { id: certId, type: 'GsCertificate' } }],
+      relatedResource: [{ id: certId, digestSRI: sha384SRI(new TextEncoder().encode(certText)) }],
+    }, maker, at)));
+  await passport(P1_ID, 'credentials/DPP-1.json', 'urn:vc4qi-example:unit:toy-001-sn-0042', 'urn:vc4qi-example:product:toy-001',
+    C_ID, c1Text, '2026-05-10T00:00:00Z');
+  await passport(P2_ID, 'credentials/DPP-2.json', 'urn:vc4qi-example:unit:hair-dryer-001-sn-0007', 'urn:vc4qi-example:product:hair-dryer-001',
+    C2_ID, c2Text, '2026-05-10T00:00:00Z');
 
   outputs.set('catalog.json', `${JSON.stringify({
     description: 'Signed GS certification v1 fixtures. digestSRI is SHA-384 over the exact file bytes. '

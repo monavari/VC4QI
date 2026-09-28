@@ -2,13 +2,17 @@
 // Reliance evaluation over the experimental GS certification v1 binding, gates 0-6
 // (I5): the shared gate 0-3 chain, a gate-4 mapping of the selected certification
 // statement and a gate-5 route that needs competence AND scheme permission, with the
-// claim covered by both scopes. No support obligations or conformity rules are
-// installed. Node-only (status uses zlib).
+// claim covered by both scopes. For an experimental product passport the selected claim
+// is its GS marking, authorized through a GS certificate for the unit's model that holds
+// that complete route itself. No support obligations or conformity rules are installed.
+// Node-only (status uses zlib).
 import { createRelianceResult, decisionFromRequired } from './index.js';
 import type { StaticResourceCatalog } from './catalog.js';
 import { planRefusal, refusePlan, verifyChain } from './binding-chain.js';
 import { GS_V1_ARTIFACT_BINDING, GS_V1_BINDING_ID } from './gs-v1.js';
-import { certificationCoverage, GS_CERTIFICATE_ROUTES, mapCertification, routeScopes, type GsOutcome } from './gs-v1-evaluator.js';
+import {
+  certificationCoverage, GS_CERTIFICATE_ROUTES, mapCertification, mapMarking, markingCoverage, routeScopes, type GsOutcome,
+} from './gs-v1-evaluator.js';
 import type { BindingManifest } from './manifest.js';
 import type { RelianceProfile } from './profile.js';
 import { nodeUseKey, predicate, resolvePointer, type RmArtifactVerification } from './rm-v1-artifacts.js';
@@ -21,6 +25,7 @@ export interface GsSliceEvaluation {
 }
 
 const SELECTED_CERTIFICATION = '/credentialSubject/certification';
+const SELECTED_MARKING = '/credentialSubject/marking';
 
 export async function evaluateGsSlice(
   request: RelianceRequest, catalog: StaticResourceCatalog, manifest: BindingManifest, profile: RelianceProfile,
@@ -49,23 +54,29 @@ export async function evaluateGsSlice(
     : composeAuthority([], evaluated, ids.slice(profile.authority.maxRoutes));
   const winner = authority.routes.find(r => r.state === 'established');
 
+  const isPassport = Array.isArray(targetDocument?.type) && targetDocument.type[1] === 'GsProductPassport';
+  const selectable = isPassport ? SELECTED_MARKING : SELECTED_CERTIFICATION;
   const claims = request.selectedClaims.map(claim => {
     const coverage = new Map<string, GsOutcome>();
-    if (targetDocument === undefined || claim.sourcePointer !== SELECTED_CERTIFICATION
+    if (targetDocument === undefined || claim.sourcePointer !== selectable
         || resolvePointer(targetDocument, claim.sourcePointer) === undefined) {
       const reason = targetDocument === undefined ? 'The target is not usable, so its claims are not read.'
-        : `Selected claim ${claim.sourcePointer} is not the certification statement of the usable target.`;
+        : `Selected claim ${claim.sourcePointer} is not the ${isPassport ? 'marking' : 'certification statement'} of the usable target.`;
       return { claim, mapping: undefined, coverage, result: { claimId: claim.id, routeWitnessIds: [] as string[], ...predicate('not_established', [reason]) } };
     }
-    const mapping = mapCertification(resolvePointer(targetDocument, claim.sourcePointer), claim.sourcePointer);
-    if (mapping.certification === undefined) {
+    const value = resolvePointer(targetDocument, claim.sourcePointer);
+    const markingMapping = isPassport ? mapMarking(value, claim.sourcePointer) : undefined;
+    const mapping = markingMapping ?? mapCertification(value, claim.sourcePointer);
+    const marking = markingMapping?.marking;
+    const certification = isPassport ? undefined : mapping.certification;
+    if (marking === undefined && certification === undefined) {
       return { claim, mapping, coverage, result: { claimId: claim.id, routeWitnessIds: [] as string[],
         ...predicate(mapping.state, [`Gate 4: ${mapping.reason}`], [claim.sourcePointer]) } };
     }
-    const certification = mapping.certification;
     const composed = claimAuthority(authority, r => {
-      const { competence, scheme } = routeScopes(r, lookup);
-      const covered = certificationCoverage(certification, competence, scheme);
+      const covered = marking !== undefined
+        ? markingCoverage(marking, lookup(r.scope!)?.document)
+        : (() => { const { competence, scheme } = routeScopes(r, lookup); return certificationCoverage(certification!, competence, scheme); })();
       const sources = [...r.chain.slice(1), ...covered.sources];
       coverage.set(r.id, { ...covered, sources });
       return { id: 'claim-coverage', state: covered.state, reason: covered.reason, sources };
@@ -133,6 +144,7 @@ export async function evaluateGsSlice(
     trace, resources: chain.resources,
     limitations: [
       'The GS route is a fictional profile example (competence AND scheme permission), not a universal GS or legal rule.',
+      ...(isPassport ? ['The product passport is an experimental credential in this binding, not EU Digital Product Passport conformance.'] : []),
       'Verification failures of credentials outside the selected route are reported but do not decide the request.',
       'Fixture grants are fictional: an accreditation or scheme authorization here has no legal effect.',
     ],

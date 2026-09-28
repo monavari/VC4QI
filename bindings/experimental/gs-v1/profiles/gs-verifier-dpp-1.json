@@ -1,0 +1,45 @@
+{
+  "id": "https://vc4qi.example/profiles/gs-verifier-dpp",
+  "version": "1",
+  "status": "experimental",
+  "description": "Verifier-owned reliance profile for experimental product passports under the GS certification v1 binding: a unit's GS-mark claim is relied on only through a GS certificate for its model that names the manufacturer and itself holds competence AND scheme permission. Fictional; not EU Digital Product Passport conformance.",
+  "binding": {
+    "id": "https://vc4qi.example/bindings/gs/1",
+    "version": "1"
+  },
+  "trustAnchors": [
+    {
+      "id": "https://nab.vc4qi.example/controller",
+      "purposes": [
+        "accredit-certification-bodies"
+      ]
+    },
+    {
+      "id": "https://scheme.vc4qi.example/controller",
+      "purposes": [
+        "authorize-gs-certification"
+      ]
+    }
+  ],
+  "authority": {
+    "certificateRoutes": [
+      "gs-certified-product"
+    ],
+    "globalRestrictions": [],
+    "maxRoutes": 4
+  },
+  "credentialStatus": {
+    "required": true,
+    "purposes": [
+      "revocation"
+    ],
+    "maxAgeSeconds": 2592000
+  },
+  "mapping": {
+    "methodSuccession": "none"
+  },
+  "conformity": {
+    "requirements": [],
+    "decisionRules": []
+  }
+}
