@@ -3,8 +3,8 @@
 This page is the normative model of VC4QI: what a verifier must check before it relies
 on a Quality Infrastructure (QI) credential. The new evaluator implements it for the
 three experimental bindings (reference material, calibration and GS certification).
-The default public API is still the legacy verifier until the API switch in phase I5;
-see [status](status.md).
+It is the default public API since the switch in phase I5; see [API](api.md) and
+[status](status.md).
 
 The model summarizes the
 [standards-first requirements](plans/standards-first-handover-2026-09-21.txt), which
