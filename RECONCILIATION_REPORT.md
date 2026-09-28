@@ -1428,3 +1428,22 @@ Results: TS 422 passed plus the 9 network-only legacy failures; Python 392 passe
 skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios (2 passed), schemas and
 all resource, fixture and parity `--check` modes pass. Ledger totals unchanged (66
 passing, 2 excluded, 15 not implemented). See `docs/plans/standards-first-i5-evidence.md`.
+
+## Standards-first I5 step 3b: test-report-supported-dcc — 28 September 2026
+
+The calibration v1 binding gains a `CalTestReport` target type (new generated schema;
+context terms `CalTestReport`, `CalCalibrationReference`, `instrumentIri`). The direct
+route now takes its activity and anchor purpose from the target type
+(`issueTestReport`, `accredit-testing-laboratories` for reports). A new required
+support obligation, `cal-v1:instrument-calibration`, needs one cited calibration
+certificate. It must be for the same instrument and quantity kinds, calibrated before
+the test and valid at it, and its own authority must hold, with every one of its groups
+covered. The generators add `CAL-T` (NAB status index 1), the testing laboratory's
+controller and status list, and `REPORT-1`. `evidence` is optional in the report schema
+so that the evaluator decides missing support. New profile:
+`cal-verifier-test-report-1`.
+
+Results: TS 429 passed plus the 9 network-only legacy failures; Python 399 passed, 1
+skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios, schemas and all
+resource, fixture and parity `--check` modes pass. Ledger totals unchanged. See
+`docs/plans/standards-first-i5-evidence.md`.

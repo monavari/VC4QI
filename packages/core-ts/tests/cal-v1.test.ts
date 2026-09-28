@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // I5: the migrated calibration (DCC) binding — the calibration-direct-accreditation,
-// calibration-capability and nmi-legal-mandate use cases on signed data, plus S18 (no
+// calibration-capability, nmi-legal-mandate and test-report-supported-dcc use cases on
+// signed data, plus S18 (no
 // empty-method bypass), S19 (group conjunction) and S21 (CMC floor as a scope
 // contradiction, independent of conformity). Every variant is re-issued with the fixture
 // keys, so it is decided on its semantics, not a signature.
@@ -24,6 +25,7 @@ const profileJson = (file = 'cal-verifier-1.json') => JSON.parse(readFileSync(ne
 const profile = loadRelianceProfile(profileJson());
 const capabilityProfile = loadRelianceProfile(profileJson('cal-verifier-capability-1.json'));
 const nmiProfile = loadRelianceProfile(profileJson('cal-verifier-nmi-1.json'));
+const reportProfile = loadRelianceProfile(profileJson('cal-verifier-test-report-1.json'));
 const selects = (p: typeof profile) => ({ profile: { id: p.id, version: p.version } });
 const pinned = readPinnedResources(new URL('catalog.json', dir).pathname);
 const signed = readPinnedResources(new URL('test-vectors/signed/catalog.json', dir).pathname);
@@ -35,12 +37,15 @@ const URI = {
   DCC2: 'https://lab.vc4qi.example/credentials/DCC-2',
   M: 'https://ministry.vc4qi.example/credentials/CAL-M',
   DCCN: 'https://nmi.vc4qi.example/credentials/DCC-N',
+  T: 'https://nab.vc4qi.example/credentials/CAL-T',
+  REPORT: 'https://testlab.vc4qi.example/credentials/REPORT-1',
+  TLAB: 'https://testlab.vc4qi.example/controller',
   NAB: 'https://nab.vc4qi.example/controller',
   LAB: 'https://lab.vc4qi.example/controller',
   MINISTRY: 'https://ministry.vc4qi.example/controller',
   NMI: 'https://nmi.vc4qi.example/controller',
 } as const;
-const KEY: Record<string, string> = { [URI.NAB]: 'nab', [URI.LAB]: 'lab', [URI.MINISTRY]: 'ministry', [URI.NMI]: 'nmi' };
+const KEY: Record<string, string> = { [URI.NAB]: 'nab', [URI.LAB]: 'lab', [URI.MINISTRY]: 'ministry', [URI.NMI]: 'nmi', [URI.TLAB]: 'tlab' };
 const G1 = '/credentialSubject/measurementGroups/0';
 const G2 = '/credentialSubject/measurementGroups/1';
 
@@ -313,5 +318,76 @@ describe('several permitted routes compose as a three-valued OR', () => {
     expect(trace(result, 'route:direct-accreditation')).toMatchObject({ state: 'contradicted' });
     expect(trace(result, 'route:statutory-mandate')).toMatchObject({ state: 'not_established' });
     expect(result.decision).toBe('not_established');
+  });
+});
+
+const reportRequest = (overrides: Partial<RelianceRequestInput> = {}) => request({
+  requestId: 'urn:uuid:cal-v1-report', targetId: URI.REPORT, selectedClaims: [{ id: 'g1', sourcePointer: G1 }],
+  suppliedEvidence: [URI.T], ...selects(reportProfile), ...overrides,
+});
+const runReport = (overrides: Record<string, string | null> = {}, p = reportProfile) => run(overrides, reportRequest(), p);
+const supportTrace = (r: Awaited<ReturnType<typeof run>>, basis: string) => trace(r, `support:${basis}`);
+
+describe('test-report-supported-dcc: a test report supported by its instrument calibration', () => {
+  it('accepts REPORT-1: authorized by the testing accreditation and supported by DCC-1 with its own authority', async () => {
+    const result = await runReport();
+    expect(result.artifactVerification.every(v => v.state === 'established')).toBe(true);
+    expect(trace(result, 'route:direct-accreditation:activity-permission')?.reason).toMatch(/permits issuing test reports/);
+    expect(result.authorization[0]?.routeWitnessIds)
+      .toEqual(['route:direct-accreditation', URI.REPORT, URI.T, `record:${URI.T}#scope-pressure-test`]);
+    expect(result.support).toHaveLength(1);
+    expect(result.support[0]).toMatchObject({ obligationId: 'cal-v1:instrument-calibration', state: 'established',
+      witnessIds: [URI.REPORT, URI.DCC, URI.CA] });
+    expect(supportTrace(result, 'calibration-authority:group-1')).toMatchObject({ state: 'established' });
+    expect(result.decision).toBe('accept');
+  });
+
+  it('a testing accreditation is not a calibration accreditation (anchor purpose and activity follow the target type)', async () => {
+    const onlyCalibration = loadRelianceProfile({ ...profileJson('cal-verifier-test-report-1.json'),
+      trustAnchors: [{ id: URI.NAB, purposes: ['accredit-calibration-laboratories'] }] });
+    const result = await runReport({}, onlyCalibration);
+    expect(trace(result, 'route:direct-accreditation:trust-anchor')).toMatchObject({ state: 'not_established' });
+    expect(result.decision).toBe('not_established');
+    const asCertificate = await runReport(await reissueChain([[URI.T, d => { subject(d).permittedActivity = [`${CAL}issueCalibrationCertificate`]; }], [URI.REPORT]]));
+    expect(trace(asCertificate, 'route:direct-accreditation:activity-permission')).toMatchObject({ state: 'contradicted' });
+    expect(asCertificate.decision).toBe('reject');
+  });
+
+  it('a calibration of another instrument contradicts support', async () => {
+    const result = await runReport(await reissueChain([[URI.REPORT, d => { subject(d).instrumentIri = 'urn:vc4qi-example:item:other-gauge'; }]]));
+    expect(supportTrace(result, 'same-instrument')).toMatchObject({ state: 'contradicted' });
+    expect(result.authorization[0]?.state).toBe('established');
+    expect(result.decision).toBe('reject');
+  });
+
+  it('a test before the calibration, or outside its validity, contradicts support', async () => {
+    const early = await runReport(await reissueChain([[URI.REPORT, d => { subject(d).activityTime = '2026-01-10T09:00:00Z'; }]]));
+    expect(supportTrace(early, 'calibration-precedes-use')).toMatchObject({ state: 'contradicted' });
+    expect(supportTrace(early, 'calibration-valid-at-use')).toMatchObject({ state: 'contradicted' });
+    expect(early.decision).toBe('reject');
+  });
+
+  it('a report citing no calibration is not established', async () => {
+    const result = await runReport(await reissueChain([[URI.REPORT, d => {
+      delete d.evidence;
+      d.relatedResource = (d.relatedResource as JsonObject[]).filter(r => r.id !== URI.DCC);
+    }]]));
+    expect(result.support[0]).toMatchObject({ state: 'not_established' });
+    expect(result.decision).toBe('not_established');
+  });
+
+  it('support must establish the calibration\'s own authority, for every one of its groups', async () => {
+    const result = await runReport(await reissueChain([
+      [URI.DCC, d => { result0(d, 1).value = '15'; }], // g2 at 15 MPa > CA's 10 MPa
+      [URI.REPORT],
+    ]));
+    expect(supportTrace(result, 'calibration-authority:group-0')).toMatchObject({ state: 'established' });
+    expect(supportTrace(result, 'calibration-authority:group-1')).toMatchObject({ state: 'contradicted' });
+    expect(result.support[0]).toMatchObject({ state: 'contradicted', witnessIds: [] });
+    expect(result.decision).toBe('reject');
+  });
+
+  it('certificates carry no support obligation', async () => {
+    expect((await run()).support).toEqual([]);
   });
 });

@@ -1,0 +1,43 @@
+{
+  "id": "https://vc4qi.example/profiles/cal-verifier-test-report",
+  "version": "1",
+  "status": "experimental",
+  "description": "Verifier-owned reliance profile for test-report-supported-dcc under the experimental calibration v1 binding: a testing laboratory's report under its direct accreditation, supported by an independently authorized calibration of the instrument it used. Fictional fixture configuration; not an external standard.",
+  "binding": {
+    "id": "https://vc4qi.example/bindings/cal/1",
+    "version": "1"
+  },
+  "trustAnchors": [
+    {
+      "id": "https://nab.vc4qi.example/controller",
+      "purposes": [
+        "accredit-testing-laboratories",
+        "accredit-calibration-laboratories"
+      ]
+    }
+  ],
+  "authority": {
+    "certificateRoutes": [
+      "direct-accreditation"
+    ],
+    "globalRestrictions": [],
+    "maxRoutes": 4
+  },
+  "credentialStatus": {
+    "required": true,
+    "purposes": [
+      "revocation"
+    ],
+    "maxAgeSeconds": 2592000
+  },
+  "mapping": {
+    "methodSuccession": "none"
+  },
+  "conformity": {
+    "requirements": [],
+    "decisionRules": []
+  },
+  "bindingRules": {
+    "applyCmcFloor": true
+  }
+}
