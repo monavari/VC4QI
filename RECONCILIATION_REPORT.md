@@ -1408,3 +1408,64 @@ Results: TS 410 passed plus the 9 network-only legacy failures; Python 378 passe
 skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios, schemas, all resource,
 fixture and parity checks and the poster build pass. See
 `docs/plans/standards-first-i5-evidence.md`.
+
+## Standards-first I5 step 3a: calibration-capability and nmi-legal-mandate — 28 September 2026
+
+Restarted `claude/keen-edison-2k3ilo` from `main` after PR #14 merged (5d51ca5). The
+calibration v1 binding gains two routes. `operational-scope` (DCC ← O ← CA ← anchor)
+covers calibration-capability: bounded projection with no widening (quantity kind,
+methods, range and, under the profile's floor rule, CMC), scope-maintenance permission
+and coverage by O only. `statutory-mandate` (DCC ← M ← designation anchor) covers
+nmi-legal-mandate with no accreditation root. The generators and signed fixtures were
+reissued (new: CAL-O, DCC-2, CAL-M, DCC-N, ministry and NMI controllers and status lists;
+CAL-A now permits scope maintenance, so DCC-1 was re-signed). Two new per-use-case
+profiles were added; `cal-verifier-1` is unchanged. Combining all three routes in one
+profile turns a contradicted route beside unreferenced routes into `not_established`
+(three-valued OR). Existing expectations were kept by using per-use-case profiles, and a
+test records the combined behaviour.
+
+Results: TS 422 passed plus the 9 network-only legacy failures; Python 392 passed, 1
+skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios (2 passed), schemas and
+all resource, fixture and parity `--check` modes pass. Ledger totals unchanged (66
+passing, 2 excluded, 15 not implemented). See `docs/plans/standards-first-i5-evidence.md`.
+
+## Standards-first I5 step 3b: test-report-supported-dcc — 28 September 2026
+
+The calibration v1 binding gains a `CalTestReport` target type (new generated schema;
+context terms `CalTestReport`, `CalCalibrationReference`, `instrumentIri`). The direct
+route now takes its activity and anchor purpose from the target type
+(`issueTestReport`, `accredit-testing-laboratories` for reports). A new required
+support obligation, `cal-v1:instrument-calibration`, needs one cited calibration
+certificate. It must be for the same instrument and quantity kinds, calibrated before
+the test and valid at it, and its own authority must hold, with every one of its groups
+covered. The generators add `CAL-T` (NAB status index 1), the testing laboratory's
+controller and status list, and `REPORT-1`. `evidence` is optional in the report schema
+so that the evaluator decides missing support. New profile:
+`cal-verifier-test-report-1`.
+
+Results: TS 429 passed plus the 9 network-only legacy failures; Python 399 passed, 1
+skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios, schemas and all
+resource, fixture and parity `--check` modes pass. Ledger totals unchanged. See
+`docs/plans/standards-first-i5-evidence.md`.
+
+## Standards-first I5 step 3c: gs-scheme-authorization and the GS variants — 28 September 2026
+
+New experimental binding `bindings/experimental/gs-v1`: hand-authored context,
+generated schemas and catalog (`scripts/gs-v1/build-resources.mjs`), manifest, profile
+`gs-verifier-1` and generated signed fixtures
+(`packages/core-ts/scripts/generate-gs-v1-artifacts.ts`: GS-A, GS-S, GSC-1, three
+controllers and status lists). The route `competence-and-scheme-permission` evaluates
+both halves (typed reference, grantee, activity, anchor purpose) plus validity at the
+certification time. Coverage needs one competence record for the category and every
+standard AND one scheme record for the category, with no empty-standards bypass. TS
+modules `reliance/gs-v1*.ts` are exported as `reliance/gs-v1-node` and
+`reliance/gs-v1-slice`; the Python module is `qi_vc_core/reliance/gs_v1.py`. Both GS
+hair-dryer application variants are retained unchanged as signed legacy fixtures and are
+tested under the explicit legacy profile in both languages. Their assessments are not
+migrated. The step 3b commit was delayed by transient classifier errors on the commit
+command; it was pushed as 1fbfd4b before this step.
+
+Results: TS 439 passed plus the 9 network-only legacy failures; Python 409 passed, 1
+skip; Ruff 204 and mypy 198 unchanged; build, lint, scenarios, schemas and all
+resource, fixture and parity `--check` modes pass. Ledger totals unchanged. All base use
+cases are migrated; the default-API switch (I5 step 4) remains.

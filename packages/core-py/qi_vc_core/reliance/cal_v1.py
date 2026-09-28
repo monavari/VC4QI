@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Experimental calibration (DCC) v1 binding (mirrors cal-v1*.ts, phase I5).
 
+A test report additionally requires its instrument's calibration as support (gate 6).
+
 A selected measurement group is one claim. Gate 4 maps its results into exact pascal
 quantities (Pa, kPa, MPa; k = 2 only). Gate 5 requires one complete record of the
 route's scope credential to cover the group's quantity kind, every method it names and
@@ -12,6 +14,7 @@ established (S18).
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from fractions import Fraction
 from typing import Any
 
@@ -57,9 +60,11 @@ from .types import (
     RelianceRequest,
     RelianceResult,
     SemanticState,
+    SupportResult,
     TraceEntry,
     create_reliance_result,
     decision_from_required,
+    semantic_and,
     semantic_or,
 )
 
@@ -74,7 +79,10 @@ CAL_V1_ARTIFACT_BINDING = ArtifactBinding(
     "calibration v1",
     {
         "CalAccreditation": f"{CAL_V1_SCHEMA_BASE}accreditation.json",
+        "CalOperationalScope": f"{CAL_V1_SCHEMA_BASE}operational-scope.json",
+        "CalLegalMandate": f"{CAL_V1_SCHEMA_BASE}legal-mandate.json",
         "CalCertificate": f"{CAL_V1_SCHEMA_BASE}certificate.json",
+        "CalTestReport": f"{CAL_V1_SCHEMA_BASE}test-report.json",
         "BitstringStatusListCredential": f"{CAL_V1_SCHEMA_BASE}status-list.json",
     },
     lambda kind: [VC_V2_CONTEXT]
@@ -283,14 +291,51 @@ def group_coverage(
     )
 
 
+# What a direct accreditation must permit, and for which anchor purpose (by target).
+CAL_DIRECT_ACTIVITY: dict[str, tuple[str, str, str]] = {
+    "CalCertificate": (
+        "issueCalibrationCertificate",
+        "issuing calibration certificates",
+        "accredit-calibration-laboratories",
+    ),
+    "CalTestReport": (
+        "issueTestReport",
+        "issuing test reports",
+        "accredit-testing-laboratories",
+    ),
+}
+
+
+def _type_of(doc: dict[str, Any]) -> str | None:
+    kinds = doc.get("type")
+    return str(kinds[1]) if isinstance(kinds, list) and len(kinds) > 1 else None
+
+
 def cal_direct_accreditation(
     target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
 ) -> RouteResult:
-    """Route: certificate ← CA (accreditation naming its issuer) ← anchor."""
+    """Route: target ← CA (accreditation naming its issuer) ← anchor.
+
+    The activity and anchor purpose follow the target type.
+    """
     assert target.document is not None
     d = target.document
-    bases: list[BasisResult] = []
     chain = [target.uri]
+    kind = CAL_DIRECT_ACTIVITY.get(_type_of(d) or "")
+    if kind is None:
+        return _route(
+            "direct-accreditation",
+            [
+                _unknown(
+                    "target-type",
+                    f"No accreditation activity is installed for {_type_of(d)}.",
+                    ("/type",),
+                )
+            ],
+            chain,
+        )
+    activity, what, purpose = kind
+    bases: list[BasisResult] = []
     basis, a_node = _authorizing_reference(
         "authorizing-reference",
         d,
@@ -305,28 +350,590 @@ def cal_direct_accreditation(
     a = a_node.document
     chain.append(a_node.uri)
     bases.append(_grantee("principal-binding", a, d.get("issuer"), "Accreditation CA"))
+    bases.append(_permission("activity-permission", a, activity, what, "CA"))
+    bases.append(_anchor("trust-anchor", a, purpose, profile))
+    bases.append(_in_force_at_activity(d, [("CA", a)]))
+    return _route("direct-accreditation", bases, chain, a_node.uri)
+
+
+def _parse_range(record: dict[str, Any]) -> tuple[Fraction, Fraction] | None:
+    raw = record.get("range")
+    spec: dict[str, Any] = raw if isinstance(raw, dict) else {}
+    low = to_pascal(spec.get("from"), spec.get("unit"))
+    high = to_pascal(spec.get("to"), spec.get("unit"))
+    return None if low is None or high is None else (low, high)
+
+
+def _parse_floor(record: dict[str, Any]) -> tuple[bool, Fraction | None]:
+    """(well-formed, floor in Pa or None when the record states none)."""
+    spec = record.get("cmcFloor")
+    if not isinstance(spec, dict):
+        return True, None
+    floor = to_pascal(spec.get("value"), spec.get("unit"))
+    return floor is not None, floor
+
+
+def cal_contained_in(
+    child: list[dict[str, Any]], parent: list[dict[str, Any]], apply_cmc_floor: bool
+) -> CalOutcome:
+    """Bounded projection (no widening): each child record within ONE parent record.
+
+    Same quantity kind, a subset of its methods, a range inside its range and, when the
+    profile applies the CMC floor, a stated floor not below the parent's.
+    """
+    sources = ("/credentialSubject/scope",)
+    if not child:
+        return CalOutcome(
+            "not_established", "The operational scope has no records.", sources
+        )
+    per_child: list[tuple[SemanticState, str]] = []
+    for c in child:
+        c_range = _parse_range(c)
+        c_ok, c_floor = _parse_floor(c)
+        if c_range is None or not c_ok:
+            per_child.append(
+                (
+                    "not_established",
+                    f"{_short(c.get('id'))}: unsupported or malformed range or CMC "
+                    "floor.",
+                )
+            )
+            continue
+        low, high = c_range
+        methods = list(c.get("allowedMethodIris") or [])
+        outcomes: list[tuple[SemanticState, str]] = []
+        for p in parent:
+            p_range = _parse_range(p)
+            p_ok, p_floor = _parse_floor(p)
+            if p_range is None or not p_ok:
+                outcomes.append(
+                    (
+                        "not_established",
+                        f"{_short(p.get('id'))}: unsupported or malformed range or "
+                        "CMC floor.",
+                    )
+                )
+                continue
+            p_low, p_high = p_range
+            failures: list[str] = []
+            if c.get("quantityKindIri") != p.get("quantityKindIri"):
+                failures.append(
+                    f"quantity kind {_short(c.get('quantityKindIri'))} ≠ "
+                    f"{_short(p.get('quantityKindIri'))}"
+                )
+            allowed = list(p.get("allowedMethodIris") or [])
+            wider = [m for m in methods if m not in allowed]
+            if not methods and allowed:
+                failures.append("the parent restricts methods, the child does not")
+            if wider:
+                failures.append(
+                    f"method {', '.join(_short(m) for m in wider)} is not in "
+                    f"{_short(p.get('id'))}"
+                )
+            if low < p_low or high > p_high:
+                failures.append(
+                    f"range {_kpa(low)}–{_kpa(high)} kPa is not within "
+                    f"{_kpa(p_low)}–{_kpa(p_high)} kPa"
+                )
+            if apply_cmc_floor and p_floor is not None:
+                if c_floor is None:
+                    failures.append(
+                        f"it states no CMC floor, but {_short(p.get('id'))} admits "
+                        f"only {_kpa(p_floor)} kPa"
+                    )
+                elif c_floor < p_floor:
+                    failures.append(
+                        f"CMC {_kpa(c_floor)} kPa is below the admitted "
+                        f"{_kpa(p_floor)} kPa"
+                    )
+            if failures:
+                outcomes.append(
+                    (
+                        "contradicted",
+                        f"{_short(c.get('id'))} widens {_short(p.get('id'))}: "
+                        f"{'; '.join(failures)}",
+                    )
+                )
+            else:
+                outcomes.append(
+                    (
+                        "established",
+                        f"{_short(c.get('id'))} lies within {_short(p.get('id'))}",
+                    )
+                )
+        if not outcomes:
+            per_child.append(("not_established", "The parent grant has no records."))
+            continue
+        state = semantic_or(tuple(o[0] for o in outcomes))
+        winner = next((o for o in outcomes if o[0] == "established"), None)
+        per_child.append(
+            winner
+            if winner is not None
+            else (state, " | ".join(o[1] for o in outcomes))
+        )
+    combined = semantic_and(tuple(o[0] for o in per_child))
+    verdict = "holds" if combined == "established" else "fails"
+    detail = "; ".join(o[1] for o in per_child)
+    return CalOutcome(combined, f"Bounded projection {verdict}: {detail}.", sources)
+
+
+def _subject(doc: dict[str, Any]) -> dict[str, Any]:
+    subject = doc.get("credentialSubject")
+    return subject if isinstance(subject, dict) else {}
+
+
+def _permission(
+    basis_id: str, doc: dict[str, Any], activity: str, what: str, name: str
+) -> BasisResult:
+    sources = ("/credentialSubject/permittedActivity",)
+    if _permits(doc, CAL_V1_VOCAB + activity):
+        return _ok(basis_id, f"{name} permits {what}.", sources)
+    return _no(basis_id, f"{name} does not permit {what}.", sources)
+
+
+def cal_operational_scope(
+    target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
+) -> RouteResult:
+    """Route: certificate ← O (own capability scope) ← CA (maintenance) ← anchor.
+
+    O must lie within CA (no widening); claims are covered by O's records only.
+    """
+    assert target.document is not None
+    d = target.document
+    bases: list[BasisResult] = []
+    chain = [target.uri]
+    basis, o_node = _authorizing_reference(
+        "authorizing-reference",
+        d,
+        "CalOperationalScope",
+        lookup,
+        (target.uri,),
+        "CalAuthorizationPolicy",
+    )
+    bases.append(basis)
+    if o_node is None or o_node.document is None:
+        return _route("operational-scope", bases, chain)
+    o = o_node.document
+    chain.append(o_node.uri)
+    bases.append(
+        _grantee("principal-binding", o, d.get("issuer"), "Operational scope O")
+    )
+    bases.append(
+        _ok("self-maintained-scope", "O is issued by its own grantee.", ("/issuer",))
+        if o.get("issuer") == _subject(o).get("id")
+        else _no(
+            "self-maintained-scope", "O is not issued by its own grantee.", ("/issuer",)
+        )
+    )
+    bases.append(
+        _permission(
+            "activity-permission",
+            o,
+            "issueCalibrationCertificate",
+            "issuing calibration certificates",
+            "O",
+        )
+    )
+    grant_basis, a_node = _authorizing_reference(
+        "maintenance-grant",
+        o,
+        "CalAccreditation",
+        lookup,
+        (target.uri, o_node.uri),
+        "CalAuthorizationPolicy",
+    )
+    bases.append(grant_basis)
+    if a_node is None or a_node.document is None:
+        return _route("operational-scope", bases, chain)
+    a = a_node.document
+    chain.append(a_node.uri)
+    bases.append(
+        _grantee("accreditation-grantee", a, o.get("issuer"), "Accreditation CA")
+    )
     sources = ("/credentialSubject/permittedActivity",)
     bases.append(
         _ok(
-            "activity-permission",
-            "CA permits issuing calibration certificates.",
+            "projection-permission",
+            "CA permits maintaining an operational calibration scope.",
             sources,
         )
-        if _permits(a, CAL_V1_VOCAB + "issueCalibrationCertificate")
+        if _permits(a, CAL_V1_VOCAB + "maintainCalibrationScope")
+        and _permits(a, CAL_V1_VOCAB + "issueCalibrationCertificate")
         else _no(
-            "activity-permission",
-            "CA does not permit issuing calibration certificates.",
+            "projection-permission",
+            "CA does not permit maintaining an operational calibration scope.",
             sources,
+        )
+    )
+    child = [r for r in _subject(o).get("scope") or [] if isinstance(r, dict)]
+    parent = [r for r in _subject(a).get("scope") or [] if isinstance(r, dict)]
+    projection = cal_contained_in(
+        child, parent, profile.binding_rules.get("applyCmcFloor") is True
+    )
+    bases.append(
+        BasisResult(
+            "bounded-projection",
+            projection.state,
+            projection.reason,
+            projection.sources,
         )
     )
     bases.append(
         _anchor("trust-anchor", a, "accredit-calibration-laboratories", profile)
     )
-    bases.append(_in_force_at_activity(d, [("CA", a)]))
-    return _route("direct-accreditation", bases, chain, a_node.uri)
+    bases.append(_in_force_at_activity(d, [("O", o), ("CA", a)]))
+    return _route("operational-scope", bases, chain, o_node.uri)
 
 
-CAL_CERTIFICATE_ROUTES = {"direct-accreditation": cal_direct_accreditation}
+def cal_statutory_mandate(
+    target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
+) -> RouteResult:
+    """Route: certificate ← M (statutory mandate) ← designation anchor.
+
+    No accreditation root is required, and no legal effect is inferred.
+    """
+    assert target.document is not None
+    d = target.document
+    bases: list[BasisResult] = []
+    chain = [target.uri]
+    basis, m_node = _authorizing_reference(
+        "authorizing-reference",
+        d,
+        "CalLegalMandate",
+        lookup,
+        (target.uri,),
+        "CalAuthorizationPolicy",
+    )
+    bases.append(basis)
+    if m_node is None or m_node.document is None:
+        return _route("statutory-mandate", bases, chain)
+    m = m_node.document
+    chain.append(m_node.uri)
+    bases.append(_grantee("principal-binding", m, d.get("issuer"), "Mandate M"))
+    bases.append(
+        _permission(
+            "activity-permission",
+            m,
+            "issueCalibrationCertificate",
+            "issuing calibration certificates",
+            "M",
+        )
+    )
+    bases.append(
+        _anchor("trust-anchor", m, "designate-national-metrology-institutes", profile)
+    )
+    bases.append(_in_force_at_activity(d, [("M", m)]))
+    return _route("statutory-mandate", bases, chain, m_node.uri)
+
+
+CAL_CERTIFICATE_ROUTES = {
+    "direct-accreditation": cal_direct_accreditation,
+    "operational-scope": cal_operational_scope,
+    "statutory-mandate": cal_statutory_mandate,
+}
+
+
+def certificate_group_authority(
+    target: NodeFacts,
+    lookup: NodeLookup,
+    profile: RelianceProfile,
+    apply_cmc_floor: bool,
+) -> tuple[SemanticState, str, tuple[str, ...], list[BasisResult]]:
+    """Per-group authority of a certificate over the profile's routes."""
+    assert target.document is not None
+    ids = profile.authority.certificate_routes
+    budget = profile.authority.max_routes
+    evaluated: list[RouteResult] = []
+    for route_id in ids[:budget]:
+        evaluate = CAL_CERTIFICATE_ROUTES.get(route_id)
+        evaluated.append(
+            _route(
+                route_id,
+                [
+                    _unknown(
+                        "installed-evaluator",
+                        f"Route {route_id} has no installed evaluator.",
+                    )
+                ],
+                [target.uri],
+            )
+            if evaluate is None
+            else evaluate(target, lookup, profile)
+        )
+    authority = compose_authority((), tuple(evaluated), tuple(ids[budget:]))
+    groups = _subject(target.document).get("measurementGroups") or []
+    if not groups:
+        return (
+            "not_established",
+            "The certificate has no measurement groups.",
+            (target.uri,),
+            [],
+        )
+    bases: list[BasisResult] = []
+    chain: tuple[str, ...] = (target.uri,)
+    for index, raw in enumerate(groups):
+        pointer = f"/credentialSubject/measurementGroups/{index}"
+        mapped = map_group(raw, pointer)
+        if mapped.group is None:
+            bases.append(
+                BasisResult(
+                    f"group-{index}",
+                    mapped.state,
+                    f"Group {index}: {mapped.reason}",
+                    (pointer,),
+                )
+            )
+            continue
+        mapped_group: MappedGroup = mapped.group
+
+        def cover(route: RouteResult, group: MappedGroup = mapped_group) -> BasisResult:
+            assert route.scope is not None
+            node = lookup(route.scope)
+            scope = _subject((node.document if node else None) or {}).get("scope")
+            records = [r for r in scope or [] if isinstance(r, dict)]
+            covered = group_coverage(group, records, apply_cmc_floor)
+            return BasisResult(
+                "claim-coverage",
+                covered.state,
+                covered.reason,
+                (route.scope, *covered.sources),
+            )
+
+        composed = claim_authority(authority, cover)
+        winner = next((r for r in composed.routes if r.state == "established"), None)
+        if winner is not None:
+            chain = tuple(winner.chain)
+            detail = f"through {winner.id}"
+        else:
+            detail = " | ".join(
+                f"{r.id} {r.state}: "
+                + " ".join(b.reason for b in r.bases if b.state != "established")
+                for r in composed.routes
+            )
+        bases.append(
+            BasisResult(
+                f"group-{index}",
+                composed.state,
+                f"Group {index} ({_short(mapped_group.id)}) is {composed.state} "
+                f"{detail}".strip(),
+                (pointer,),
+            )
+        )
+    state = semantic_and(tuple(b.state for b in bases))
+    return state, f"The certificate's own authority is {state}.", chain, bases
+
+
+@dataclass(frozen=True)
+class CalSupportResult:
+    state: SemanticState
+    reason: str
+    bases: tuple[BasisResult, ...]
+    chain: tuple[str, ...]
+
+
+def _instant(value: Any) -> datetime | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def instrument_calibration_support(
+    target: NodeFacts,
+    lookup: NodeLookup,
+    profile: RelianceProfile,
+    apply_cmc_floor: bool,
+) -> CalSupportResult:
+    """Required support of a test report: its instrument's independent calibration."""
+    if target.usable != "established" or target.document is None:
+        return CalSupportResult(
+            "not_established",
+            "The target is not usable, so its support is not evaluated.",
+            (),
+            (),
+        )
+    report = target.document
+
+    def fail(basis: BasisResult) -> CalSupportResult:
+        return CalSupportResult(basis.state, basis.reason, (basis,), (target.uri,))
+
+    references = [
+        str(e.get("id"))
+        for e in report.get("evidence") or []
+        if isinstance(e, dict) and e.get("type") == "CalCalibrationReference"
+    ]
+    if not references:
+        return fail(
+            _unknown(
+                "calibration-reference",
+                "The report cites no calibration.",
+                ("/evidence",),
+            )
+        )
+    if len(references) > 1:
+        return fail(
+            _unknown(
+                "calibration-reference",
+                "Several calibration references; this binding has no composition "
+                "for them.",
+                ("/evidence",),
+            )
+        )
+    uri = references[0]
+    node = lookup(uri)
+    if node is None:
+        return fail(
+            _unknown(
+                "calibration-reference",
+                f"Calibration {uri} is unavailable.",
+                ("/evidence", uri),
+            )
+        )
+    if node.usable != "established" or node.document is None:
+        return fail(
+            BasisResult(
+                "calibration-reference",
+                "contradicted" if node.usable == "contradicted" else "not_established",
+                f"Calibration {uri} is not usable: {node.reason}",
+                ("/evidence", uri),
+            )
+        )
+    cert = node.document
+    if _type_of(cert) != "CalCertificate":
+        return fail(
+            _no(
+                "calibration-reference",
+                f"{uri} is a {_type_of(cert)}, not a calibration certificate.",
+                ("/evidence", uri),
+            )
+        )
+    r, c = _subject(report), _subject(cert)
+    bases: list[BasisResult] = [
+        _ok("calibration-reference", f"Cites calibration {uri}.", ("/evidence", uri))
+    ]
+    instrument_sources = ("/credentialSubject/instrumentIri",)
+    instrument = r.get("instrumentIri")
+    if not isinstance(instrument, str):
+        bases.append(
+            _unknown(
+                "same-instrument",
+                "The report names no instrument.",
+                instrument_sources,
+            )
+        )
+    elif c.get("id") == instrument:
+        bases.append(
+            _ok(
+                "same-instrument",
+                f"The calibration concerns instrument {instrument}.",
+                instrument_sources,
+            )
+        )
+    else:
+        bases.append(
+            _no(
+                "same-instrument",
+                f"The calibration concerns {c.get('id')}, not instrument "
+                f"{instrument}.",
+                instrument_sources,
+            )
+        )
+    group_sources = ("/credentialSubject/measurementGroups",)
+    used = [
+        g.get("quantityKindIri")
+        for g in r.get("measurementGroups") or []
+        if isinstance(g, dict)
+    ]
+    calibrated = [
+        g.get("quantityKindIri")
+        for g in c.get("measurementGroups") or []
+        if isinstance(g, dict)
+    ]
+    uncovered = [q for q in used if q not in calibrated]
+    if not used:
+        bases.append(
+            _unknown(
+                "same-quantity", "The report has no measurement groups.", group_sources
+            )
+        )
+    elif uncovered:
+        bases.append(
+            _no(
+                "same-quantity",
+                "The calibration does not cover "
+                f"{', '.join(_short(q) for q in uncovered)}.",
+                group_sources,
+            )
+        )
+    else:
+        kinds = ", ".join(dict.fromkeys(_short(q) for q in used))
+        bases.append(
+            _ok("same-quantity", f"The calibration covers {kinds}.", group_sources)
+        )
+    tested = _instant(r.get("activityTime"))
+    calibrated_at = _instant(c.get("activityTime"))
+    time_sources = ("/credentialSubject/activityTime",)
+    if tested is None or calibrated_at is None:
+        bases.append(
+            _unknown(
+                "calibration-precedes-use",
+                "An activity time is missing.",
+                time_sources,
+            )
+        )
+    else:
+        bases.append(
+            _ok(
+                "calibration-precedes-use",
+                f"Calibrated at {c.get('activityTime')}, before the test at "
+                f"{r.get('activityTime')}.",
+                time_sources,
+            )
+            if calibrated_at <= tested
+            else _no(
+                "calibration-precedes-use",
+                f"Calibrated at {c.get('activityTime')}, after the test at "
+                f"{r.get('activityTime')}.",
+                time_sources,
+            )
+        )
+        valid_from = _instant(cert.get("validFrom"))
+        valid_until = _instant(cert.get("validUntil"))
+        validity_sources = ("/validFrom", "/validUntil")
+        bases.append(
+            _ok(
+                "calibration-valid-at-use",
+                "The calibration certificate was valid at the test.",
+                validity_sources,
+            )
+            if valid_from is not None
+            and valid_until is not None
+            and valid_from <= tested <= valid_until
+            else _no(
+                "calibration-valid-at-use",
+                f"The calibration certificate (valid {cert.get('validFrom')} to "
+                f"{cert.get('validUntil')}) was not valid at the test at "
+                f"{r.get('activityTime')}.",
+                validity_sources,
+            )
+        )
+    state, reason, chain, group_bases = certificate_group_authority(
+        node, lookup, profile, apply_cmc_floor
+    )
+    bases.append(BasisResult("calibration-authority", state, reason, (uri,)))
+    bases.extend(
+        BasisResult(f"calibration-authority:{b.id}", b.state, b.reason, b.sources)
+        for b in group_bases
+    )
+    combined = semantic_and(tuple(b.state for b in bases))
+    summary = {
+        "established": "The instrument calibration is applicable and independently "
+        "authorized.",
+        "contradicted": "The instrument calibration is contradicted.",
+    }.get(combined, "The instrument calibration is not established.")
+    return CalSupportResult(combined, summary, tuple(bases), (target.uri, *chain))
 
 
 def _selected_group(pointer: str) -> bool:
@@ -493,6 +1100,30 @@ def evaluate_cal_slice(
             )
         )
 
+    # Gate 6 support: only a test report carries an obligation.
+    is_report = target_document is not None and _type_of(target_document) == (
+        "CalTestReport"
+    )
+    supported = (
+        instrument_calibration_support(target_facts, facts.get, profile, cmc_floor)
+        if is_report
+        else None
+    )
+    support: tuple[SupportResult, ...] = (
+        ()
+        if supported is None
+        else (
+            SupportResult(
+                state=supported.state,
+                execution="executed",
+                reasons=(supported.reason,),
+                source_pointers=("/evidence",),
+                obligation_id="cal-v1:instrument-calibration",
+                witness_ids=supported.chain if supported.state == "established" else (),
+            ),
+        )
+    )
+
     conformity: ConformityResult
     if request.conformity is None:
         conformity = ConformityNotRequested()
@@ -513,7 +1144,15 @@ def evaluate_cal_slice(
             decision_rule_id=request.conformity.decision_rule_id,
         )
 
-    decisive = {request.target_id, *(winner.chain if winner else ())}
+    decisive = {
+        request.target_id,
+        *(winner.chain if winner else ()),
+        *(
+            supported.chain
+            if supported is not None and supported.state == "established"
+            else ()
+        ),
+    }
     required: list[SemanticState] = [
         r.state
         for a in chain.artifacts
@@ -521,6 +1160,7 @@ def evaluate_cal_slice(
         for r in chain.verification_of(a)
     ]
     required += [r.state for r in authorization]
+    required += [r.state for r in support]
     if isinstance(conformity, ConformityRequestedResult):
         required.append(conformity.state)
 
@@ -612,6 +1252,30 @@ def evaluate_cal_slice(
                     basis.sources,
                 )
             )
+    for basis in supported.bases if supported is not None else ():
+        trace.append(
+            TraceEntry(
+                6,
+                use,
+                f"support:{basis.id}",
+                basis.state,
+                "executed",
+                basis.reason,
+                basis.sources,
+            )
+        )
+    for obligation in support:
+        trace.append(
+            TraceEntry(
+                6,
+                use,
+                obligation.obligation_id,
+                obligation.state,
+                obligation.execution,
+                " ".join(obligation.reasons),
+                (),
+            )
+        )
     if isinstance(conformity, ConformityRequestedResult):
         trace.append(
             TraceEntry(
@@ -633,7 +1297,7 @@ def evaluate_cal_slice(
             profile=request.profile,
             artifact_verification=chain.verification,
             authorization=tuple(authorization),
-            support=(),
+            support=support,
             conformity=conformity,
             decision=decision_from_required(tuple(required)),
             trace=tuple(trace),
@@ -641,10 +1305,12 @@ def evaluate_cal_slice(
             limitations=(
                 "Each selected measurement group is a separate required claim; the "
                 "decision is their conjunction.",
-                "Verification failures of credentials outside the selected route are "
-                "reported but do not decide the request.",
+                "Verification failures of credentials outside the selected route and "
+                "support chains are reported but do not decide the request.",
                 "The calibration v1 binding carries a JSON-LD simplification of DCC "
                 "results, not native DCC XML.",
+                "Fixture grants are fictional: an accreditation or statutory mandate "
+                "here has no legal effect.",
             ),
         )
     )

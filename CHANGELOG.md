@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Add an experimental signed GS certification binding and migrate
+  gs-scheme-authorization: the GS mark is relied on only through competence AND scheme
+  permission, with the certification covered by both scopes. Both GS application
+  variants are retained under the explicit legacy profile.
+
+- Migrate test-report-supported-dcc to the calibration binding: test reports are
+  authorized by a testing accreditation and require their instrument's calibration as
+  support, including that calibration's own authority over every measurement group.
+
+- Migrate calibration-capability and nmi-legal-mandate to the calibration binding:
+  an operational-scope route with bounded projection (no widening, no fallback to the
+  accreditation's wider scope) and a statutory-mandate route with no accreditation root.
+
 - Share the gate 0–3 reliance pipeline across bindings and add an experimental signed
   calibration (DCC) binding: measurement groups as required claims, one complete scope
   record per group, no empty-method bypass, and CMC floors as a profile rule.

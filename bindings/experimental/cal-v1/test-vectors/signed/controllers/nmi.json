@@ -1,0 +1,15 @@
+{
+  "@context": "https://www.w3.org/ns/cid/v1",
+  "id": "https://nmi.vc4qi.example/controller",
+  "verificationMethod": [
+    {
+      "id": "https://nmi.vc4qi.example/controller#key-1",
+      "type": "Multikey",
+      "controller": "https://nmi.vc4qi.example/controller",
+      "publicKeyMultibase": "z6MksxeMWTsRN6xCrVbNdaEweGBFWBU7ZvDDN8g6XLNJbPtm"
+    }
+  ],
+  "assertionMethod": [
+    "https://nmi.vc4qi.example/controller#key-1"
+  ]
+}

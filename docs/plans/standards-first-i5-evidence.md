@@ -1,15 +1,23 @@
 # I5 evidence: legacy isolation, migration and the default API
 
-**28 September 2026. I5 steps 1–2 done in both languages.**
+**28 September 2026. I5 steps 1–3 done in both languages.**
 
 - Legacy evaluation is reachable only through an explicitly selected, labelled legacy
   profile, with no fallback (V02, V03).
 - The shared gate 0–3 pipeline serves every binding.
 - The calibration-direct-accreditation use case is migrated to a new signed calibration
   (DCC) binding (S18, S19, S21).
+- The calibration-capability and nmi-legal-mandate use cases are migrated to the same
+  binding, with an operational-scope route and a statutory-mandate route (step 3a).
 
-Still open in I5: migration of the remaining base use cases and switching the default
-API.
+- The test-report-supported-dcc use case is migrated to the same binding, with an
+  instrument-calibration support obligation (step 3b).
+
+- The gs-scheme-authorization use case is migrated to a new signed GS certification
+  binding (competence AND scheme permission), and both GS application variants are
+  retained under the explicit legacy profile (step 3c).
+
+Still open in I5: switching the default API (step 4).
 
 ## Step 1: explicit legacy profile (V02, V03)
 
@@ -71,3 +79,124 @@ Step 2 results:
 - Build, lint, scenarios, schemas, the RM and calibration resource and fixture `--check`
   modes, the RM parity check and the poster build (unchanged) pass.
 - Ledger: S18, S19 and S21 `passing` (66 passing, 2 excluded, 15 not implemented).
+
+## Step 3a: calibration-capability and nmi-legal-mandate
+
+Both use cases are migrated to the calibration v1 binding. The generators now also
+produce a laboratory operational scope `CAL-O` with certificate `DCC-2`, and a
+fictional ministry's statutory mandate `CAL-M` to a national metrology institute with
+certificate `DCC-N`. `CAL-A` now also permits maintaining a calibration scope, so
+`DCC-1` was re-issued with the new digest.
+
+| Part | Behaviour |
+| --- | --- |
+| `operational-scope` route | DCC-2 ← O ← CA ← anchor. Bases: typed reference, principal binding, O issued by its own grantee, O permits issuing certificates, O cites CA, CA names O's issuer, CA permits scope maintenance, bounded projection, anchor purpose `accredit-calibration-laboratories`, O and CA in force at the activity time |
+| Bounded projection | `calContainedIn` / `cal_contained_in`: each O record lies within one CA record, with the same quantity kind, a subset of its methods and a range inside its range (exact pascals). When the profile applies the CMC floor, O must state a floor that is not below CA's. Claims are covered by O's records only |
+| `statutory-mandate` route | DCC-N ← M ← anchor purpose `designate-national-metrology-institutes`. Bases: typed reference, principal binding, activity permission, anchor, M in force at the activity time. No accreditation root is required or configured |
+| Profiles | `cal-verifier-capability-1` (operational-scope, NAB anchor) and `cal-verifier-nmi-1` (statutory-mandate, ministry anchor only). `cal-verifier-1` is unchanged |
+| Limitations | Every calibration result now states that fixture grants are fictional and have no legal effect |
+
+One profile per use case keeps the decision semantics explicit. Under a profile that
+permits all three routes, a contradicted route beside routes with no reference is
+`not_established`, not `reject`, because three-valued OR lets a missing route dominate
+a contradicted one. A test covers this.
+
+| Case | Input | Result |
+| --- | --- | --- |
+| Capability | DCC-2 under the capability profile | Accepted; witnesses route, DCC-2, O, CA, `record:O#scope-pressure-low` |
+| No widening | O range up to 20 MPa (CA: 10 MPa) | `bounded-projection` contradicted; reject |
+| No widening | O CMC 0.3 kPa below CA's 0.5 kPa | Contradicted; accepted when the profile does not apply the floor |
+| C08 analogue | CA without `maintainCalibrationScope` | `projection-permission` contradicted; reject |
+| No parent fallback | DCC-2 group at 5 MPa (inside CA, outside O) | Coverage on O contradicted; reject |
+| Mandate | DCC-N under the NMI profile | Accepted; witnesses route, DCC-N, M, `record:M#scope-pressure-primary`; no accreditation on the path |
+| Anchor purpose | Ministry not configured, or configured only to accredit | `trust-anchor` not_established; not_established |
+| Principal | M naming another institute | Contradicted; reject |
+| Coverage | DCC-N by PressureComparison (M allows PressureBalance) | Contradicted; reject |
+| Route OR | All-routes profile: each certificate | Accepted through the route its own references reach |
+| Route OR | All-routes profile: CA naming another laboratory | `not_established` (other routes have no reference) |
+
+Step 3a results:
+
+- TS 422 passed plus the 9 network-only legacy failures; Python 392 passed, 1 skipped.
+- Ruff 204 and mypy 198 unchanged.
+- Build, lint, scenarios, schemas, the RM and calibration resource and fixture `--check`
+  modes and the RM parity check pass.
+- Ledger totals unchanged (66 passing, 2 excluded, 15 not implemented); the migrated use
+  cases are recorded here rather than as new ledger rows.
+
+## Step 3b: test-report-supported-dcc
+
+The test report is a new target type of the calibration v1 binding. The generators add
+`CAL-T`, a NAB testing accreditation for a fictional testing laboratory (pressure tests
+by HydrostaticPressureTest, 0–25 MPa), and `REPORT-1`, its signed test report. The
+report cites `DCC-1` as the calibration of the pressure transmitter used.
+
+| Part | Behaviour |
+| --- | --- |
+| Direct route by target type | The activity and anchor purpose follow the target type. A certificate needs `issueCalibrationCertificate` and `accredit-calibration-laboratories`; a test report needs `issueTestReport` and `accredit-testing-laboratories`. A testing accreditation never authorizes a calibration, and the reverse also holds |
+| Support obligation `cal-v1:instrument-calibration` | `instrumentCalibrationSupport` / `instrument_calibration_support`. The report must cite exactly one usable `CalCertificate` (`evidence` of type `CalCalibrationReference`) for the same instrument and the report's quantity kinds, calibrated before the test and valid at it. The certificate's own authority must hold over the profile's routes, with every one of its measurement groups covered by the winning route's scope |
+| Decision | Support is required and its chain is decisive when established; certificates carry no support obligation |
+| Schema | `evidence` is optional in `test-report.json`, so the evaluator, not the schema, decides a missing calibration |
+| Profile | `cal-verifier-test-report-1` (NAB anchored for testing and calibration accreditation, direct accreditation) |
+
+| Case | Input | Result |
+| --- | --- | --- |
+| Use case | REPORT-1 | Accepted; claim witnesses route, REPORT-1, CAL-T, `record:CAL-T#scope-pressure-test`; support witnesses REPORT-1, DCC-1, CA |
+| Anchor purpose | NAB anchored for calibration only | `trust-anchor` not_established; not_established |
+| Activity | CAL-T permits only calibration certificates | `activity-permission` contradicted; reject |
+| Instrument | Report names another instrument | `same-instrument` contradicted; claim still authorized; reject |
+| Time | Test before the calibration and its validity | `calibration-precedes-use` and `calibration-valid-at-use` contradicted; reject |
+| Missing | Report cites no calibration | Support not_established; not_established |
+| Support authority | DCC-1 group 2 at 15 MPa, outside CA | `calibration-authority:group-1` contradicted; support contradicted with no witnesses; reject |
+| No obligation | DCC-1 as target | `support` is empty |
+
+Step 3b results:
+
+- TS 429 passed plus the 9 network-only legacy failures; Python 399 passed, 1 skipped.
+- Ruff 204 and mypy 198 unchanged.
+- Build, lint, scenarios, schemas and all resource, fixture and parity `--check` modes
+  pass.
+- Ledger totals unchanged (66 passing, 2 excluded, 15 not implemented).
+
+## Step 3c: gs-scheme-authorization and the GS application variants
+
+A new experimental binding, `bindings/experimental/gs-v1`, has its own context,
+generated schemas and catalog, manifest, verifier profile and generated signed
+fixtures. The fixtures are `GS-A` (the NAB's accreditation of a GS body for toys and
+household appliances), `GS-S` (a fictional scheme owner's authorization to award the
+GS mark, for toys only) and `GSC-1` (a toy certificate citing both). The TS modules are
+`reliance/gs-v1.ts`, `gs-v1-node.ts`, `gs-v1-evaluator.ts` and `gs-v1-slice.ts`; the
+Python module is `qi_vc_core/reliance/gs_v1.py`.
+
+| Part | Behaviour |
+| --- | --- |
+| Route `competence-and-scheme-permission` | Two halves, both always evaluated. Competence needs a typed `GsAccreditation` reference, grantee, `certifyProducts` and anchor purpose `accredit-certification-bodies`. Scheme permission needs a typed `GsSchemeAuthorization` reference, grantee, `awardGsMark` and anchor purpose `authorize-gs-certification`. Both grants must be in force at the certification time. The route chain is [certificate, GS-A, GS-S] |
+| Gate 4 | The selected claim is the certification statement (`/credentialSubject/certification`): a product category and the standards certified against |
+| Gate 5 coverage | One competence record must cover the category and every standard, and one scheme record the category. A record listing standards against a certification naming none is `not_established`, not a bypass |
+| Retained variants | `gs-hair-dryer-hitl` and `gs-hair-dryer-external-test-lab-hitl` keep their signed legacy fixtures and pass under the explicit legacy profile. Their assessments are not migrated |
+
+| Case | Input | Result |
+| --- | --- | --- |
+| Use case | GSC-1 | Accepted; witnesses route, GSC-1, GS-A, GS-S, `record:GS-A#scope-toys`, `record:GS-S#scope-toys` |
+| C02 | No scheme reference | Scheme half not_established; not_established |
+| Competence missing | No competence reference | Competence half not_established; not_established |
+| Grantee | GS-S naming another body | `scheme-grantee` contradicted; reject |
+| Category | Household appliance (competence covers, scheme does not) | Coverage contradicted; reject |
+| Standard | EN 71-3, outside GS-A | Contradicted; reject |
+| No bypass | No standards named | `not_established` |
+| Anchor | Scheme owner anchored only for accreditation | `scheme-anchor` not_established |
+| Time | GS-S valid only from after the certification | `scope-in-force-at-activity` not_established |
+| Variants | Both GS hair-dryer variants under the legacy profile | Target proof valid, no invalid proof, accepted and labelled legacy |
+
+Step 3c results:
+
+- TS 439 passed plus the 9 network-only legacy failures; Python 409 passed, 1 skipped.
+- Ruff 204 and mypy 198 unchanged.
+- Build, lint, scenarios, schemas and all resource, fixture and parity `--check` modes
+  (RM, calibration, GS) pass.
+- Ledger totals unchanged (66 passing, 2 excluded, 15 not implemented).
+
+All base use cases are now migrated. Reference-material-recursive is the RM v1 slice
+(I1–I4). Calibration-direct-accreditation, calibration-capability, nmi-legal-mandate
+and test-report-supported-dcc are in calibration v1. Gs-scheme-authorization is in
+GS v1. Both GS application variants are retained under the legacy profile.

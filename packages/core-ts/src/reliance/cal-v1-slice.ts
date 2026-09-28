@@ -3,13 +3,16 @@
 // (I5): the shared gate 0-3 chain, then per selected measurement group a gate-4
 // mapping and a gate-5 coverage by one complete record of each route's scope
 // credential. Selected groups are separate required claims, so the decision is their
-// conjunction. This binding installs no support obligations and no conformity rules.
-// Node-only (status uses zlib).
+// conjunction. A test report additionally requires the calibration of its instrument as
+// support (gate 6); certificates have no support obligation. No conformity rules are
+// installed. Node-only (status uses zlib).
 import { createRelianceResult, decisionFromRequired } from './index.js';
 import type { StaticResourceCatalog } from './catalog.js';
 import { planRefusal, refusePlan, verifyChain } from './binding-chain.js';
 import { CAL_V1_ARTIFACT_BINDING, CAL_V1_BINDING_ID } from './cal-v1.js';
-import { CAL_CERTIFICATE_ROUTES, groupCoverage, mapGroup, type CalOutcome } from './cal-v1-evaluator.js';
+import {
+  CAL_CERTIFICATE_ROUTES, groupCoverage, instrumentCalibrationSupport, mapGroup, type CalOutcome, type CalSupportResult,
+} from './cal-v1-evaluator.js';
 import type { BindingManifest } from './manifest.js';
 import type { RelianceProfile } from './profile.js';
 import { nodeUseKey, predicate, resolvePointer, type RmArtifactVerification } from './rm-v1-artifacts.js';
@@ -94,15 +97,25 @@ export async function evaluateCalSlice(
     } };
   });
   const authorization = claims.map(c => c.result);
+  // Gate 6 support: only a test report carries an obligation (its instrument's calibration).
+  const isReport = Array.isArray(targetDocument?.type) && targetDocument.type[1] === 'CalTestReport';
+  const supported: CalSupportResult | undefined = isReport ? instrumentCalibrationSupport(targetFacts, lookup, profile, cmcFloor) : undefined;
+  const support = supported === undefined ? [] : [{
+    obligationId: 'cal-v1:instrument-calibration',
+    witnessIds: supported.state === 'established' ? [...supported.chain] : [],
+    ...predicate(supported.state, [supported.reason], ['/evidence']),
+  }];
   const conformity = request.conformity
     ? { requested: true as const, ...request.conformity,
       ...predicate('not_established', ['The calibration v1 binding installs no conformity requirements or decision rules.']) }
     : { requested: false as const, execution: 'not_run' as const };
 
-  const decisive = new Set<string>([request.targetId, ...(winner?.chain ?? [])]);
+  const decisive = new Set<string>([request.targetId, ...(winner?.chain ?? []),
+    ...(supported?.state === 'established' ? supported.chain : [])]);
   const required: SemanticState[] = [
     ...artifacts.filter(a => decisive.has(a.artifactId)).flatMap(verificationOf).map(r => r.state),
     ...authorization.map(r => r.state),
+    ...support.map(r => r.state),
     ...(conformity.requested ? [conformity.state] : []),
   ];
 
@@ -135,6 +148,14 @@ export async function evaluateCalSlice(
         execution: 'executed', reason: basis.reason, sources: [...basis.sources] });
     }
   }
+  for (const basis of supported?.bases ?? []) {
+    trace.push({ gate: 6, nodeUse: targetUse, predicate: `support:${basis.id}`, state: basis.state,
+      execution: 'executed', reason: basis.reason, sources: [...basis.sources] });
+  }
+  for (const obligation of support) {
+    trace.push({ gate: 6, nodeUse: targetUse, predicate: obligation.obligationId, state: obligation.state,
+      execution: obligation.execution, reason: obligation.reasons.join(' '), sources: [] });
+  }
   if (conformity.requested) {
     trace.push({ gate: 6, nodeUse: targetUse, predicate: `conformity:${conformity.requirementId}`,
       state: conformity.state, execution: conformity.execution, reason: conformity.reasons.join(' '), sources: [] });
@@ -142,13 +163,14 @@ export async function evaluateCalSlice(
 
   const result = createRelianceResult({
     requestId: request.requestId, targetId: request.targetId, binding: request.binding, profile: request.profile,
-    artifactVerification, authorization, support: [], conformity,
+    artifactVerification, authorization, support, conformity,
     decision: decisionFromRequired(required),
     trace, resources: chain.resources,
     limitations: [
       'Each selected measurement group is a separate required claim; the decision is their conjunction.',
-      'Verification failures of credentials outside the selected route are reported but do not decide the request.',
+      'Verification failures of credentials outside the selected route and support chains are reported but do not decide the request.',
       'The calibration v1 binding carries a JSON-LD simplification of DCC results, not native DCC XML.',
+      'Fixture grants are fictional: an accreditation or statutory mandate here has no legal effect.',
     ],
   });
   return Object.freeze({ result, artifacts: Object.freeze([...artifacts]) });

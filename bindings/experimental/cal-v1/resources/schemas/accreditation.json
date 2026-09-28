@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vc4qi.example/schemas/cal/1/accreditation.json",
-  "title": "Calibration laboratory accreditation",
+  "title": "Calibration or testing laboratory accreditation",
   "description": "Experimental VC4QI calibration binding v1 fixture schema. Not an external standard.",
   "type": "object",
   "required": [
@@ -78,7 +78,9 @@
           "uniqueItems": true,
           "items": {
             "enum": [
-              "https://vc4qi.example/bindings/cal/1#issueCalibrationCertificate"
+              "https://vc4qi.example/bindings/cal/1#issueCalibrationCertificate",
+              "https://vc4qi.example/bindings/cal/1#maintainCalibrationScope",
+              "https://vc4qi.example/bindings/cal/1#issueTestReport"
             ]
           }
         },
