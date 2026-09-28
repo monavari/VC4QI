@@ -127,6 +127,65 @@ export function groupCoverage(group: MappedGroup, records: readonly Doc[], apply
     : { state, reason: `No single scope record covers the group (${outcomes.map(o => o.reason).join(' | ')}).`, sources };
 }
 
+/**
+ * Bounded projection (no widening): every record of an operational scope must lie within
+ * ONE record of its parent grant, with the same quantity kind, a subset of its methods
+ * and a range inside its range. When the profile applies the CMC floor, the child must
+ * admit no better capability than the parent (its floor stated and not below the
+ * parent's); otherwise the floor is not a scope dimension.
+ */
+export function calContainedIn(child: readonly Doc[], parent: readonly Doc[], applyCmcFloor: boolean): CalOutcome {
+  const sources = ['/credentialSubject/scope'];
+  if (child.length === 0) return { state: 'not_established', reason: 'The operational scope has no records.', sources };
+  const perChild = child.map(c => {
+    const cr = isObject(c.range) ? c.range : {};
+    const low = toPascal(cr.from, cr.unit), high = toPascal(cr.to, cr.unit);
+    const floorSpec = isObject(c.cmcFloor) ? c.cmcFloor : undefined;
+    const floor = floorSpec === undefined ? undefined : toPascal(floorSpec.value, floorSpec.unit);
+    if (low === undefined || high === undefined || (floorSpec !== undefined && floor === undefined)) {
+      return { state: 'not_established' as SemanticState, reason: `${short(c.id)}: unsupported or malformed range or CMC floor.` };
+    }
+    const methods = list(c.allowedMethodIris);
+    const outcomes = parent.map(p => {
+      const pr = isObject(p.range) ? p.range : {};
+      const pLow = toPascal(pr.from, pr.unit), pHigh = toPascal(pr.to, pr.unit);
+      const pFloorSpec = isObject(p.cmcFloor) ? p.cmcFloor : undefined;
+      const pFloor = pFloorSpec === undefined ? undefined : toPascal(pFloorSpec.value, pFloorSpec.unit);
+      if (pLow === undefined || pHigh === undefined || (pFloorSpec !== undefined && pFloor === undefined)) {
+        return { state: 'not_established' as SemanticState, reason: `${short(p.id)}: unsupported or malformed range or CMC floor.` };
+      }
+      const failures: string[] = [];
+      if (c.quantityKindIri !== p.quantityKindIri) failures.push(`quantity kind ${short(c.quantityKindIri)} ≠ ${short(p.quantityKindIri)}`);
+      const allowed = list(p.allowedMethodIris);
+      const wider = methods.filter(m => !allowed.includes(m));
+      if (methods.length === 0 && allowed.length > 0) failures.push('the parent restricts methods, the child does not');
+      if (wider.length > 0) failures.push(`method ${wider.map(short).join(', ')} is not in ${short(p.id)}`);
+      if (compareDecimal(low, pLow) < 0 || compareDecimal(high, pHigh) > 0) {
+        failures.push(`range ${kPa(low)}–${kPa(high)} kPa is not within ${kPa(pLow)}–${kPa(pHigh)} kPa`);
+      }
+      if (applyCmcFloor && pFloor !== undefined) {
+        if (floor === undefined) failures.push(`it states no CMC floor, but ${short(p.id)} admits only ${kPa(pFloor)} kPa`);
+        else if (compareDecimal(floor, pFloor) < 0) failures.push(`CMC ${kPa(floor)} kPa is below the admitted ${kPa(pFloor)} kPa`);
+      }
+      return failures.length > 0
+        ? { state: 'contradicted' as SemanticState, reason: `${short(c.id)} widens ${short(p.id)}: ${failures.join('; ')}` }
+        : { state: 'established' as SemanticState, reason: `${short(c.id)} lies within ${short(p.id)}` };
+    });
+    if (outcomes.length === 0) return { state: 'not_established' as SemanticState, reason: 'The parent grant has no records.' };
+    const state = semanticOr(outcomes.map(o => o.state));
+    return state === 'established'
+      ? outcomes.find(o => o.state === 'established')!
+      : { state, reason: outcomes.map(o => o.reason).join(' | ') };
+  });
+  const state = allOf(perChild.map(o => o.state));
+  return { state, reason: `${state === 'established' ? 'Bounded projection holds' : 'Bounded projection fails'}: ${perChild.map(o => o.reason).join('; ')}.`, sources };
+}
+
+const subjectOf = (doc: Doc): Doc => (isObject(doc.credentialSubject) ? doc.credentialSubject : {});
+const permission = (id: string, doc: Doc, activity: string, what: string, name: string): BasisResult => (permits(doc, `${CAL_V1_VOCAB}${activity}`)
+  ? { id, state: 'established', reason: `${name} permits ${what}.`, sources: ['/credentialSubject/permittedActivity'] }
+  : { id, state: 'contradicted', reason: `${name} does not permit ${what}.`, sources: ['/credentialSubject/permittedActivity'] });
+
 /** Route "direct-accreditation": certificate ← CA (accreditation naming its issuer) ← anchor. */
 export function calDirectAccreditation(target: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile): RouteResult {
   const D = target.document;
@@ -147,7 +206,69 @@ export function calDirectAccreditation(target: NodeFacts & { document: Doc }, lo
   return route('direct-accreditation', bases, chain, ref.node.uri);
 }
 
-export const CAL_CERTIFICATE_ROUTES = Object.freeze({ 'direct-accreditation': calDirectAccreditation });
+/**
+ * Route "operational-scope" (calibration-capability): certificate ← O (the laboratory's
+ * own capability scope) ← CA (accreditation permitting scope maintenance) ← anchor. O
+ * must lie within CA (no widening), and claims are covered by O's records only: a group
+ * outside O is not rescued by CA's wider scope.
+ */
+export function calOperationalScope(target: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile): RouteResult {
+  const D = target.document;
+  const bases: BasisResult[] = [];
+  const chain = [target.uri];
+  const ref = authorizingReference('authorizing-reference', D, 'CalOperationalScope', lookup, [target.uri], 'CalAuthorizationPolicy');
+  bases.push(ref.basis);
+  if (!ref.node) return route('operational-scope', bases, chain);
+  const O = ref.node.document;
+  chain.push(ref.node.uri);
+  bases.push(grantee('principal-binding', O, D.issuer, 'Operational scope O'));
+  bases.push(O.issuer === subjectOf(O).id
+    ? { id: 'self-maintained-scope', state: 'established', reason: 'O is issued by its own grantee.', sources: ['/issuer'] }
+    : { id: 'self-maintained-scope', state: 'contradicted', reason: 'O is not issued by its own grantee.', sources: ['/issuer'] });
+  bases.push(permission('activity-permission', O, 'issueCalibrationCertificate', 'issuing calibration certificates', 'O'));
+  const grant = authorizingReference('maintenance-grant', O, 'CalAccreditation', lookup, [target.uri, ref.node.uri], 'CalAuthorizationPolicy');
+  bases.push(grant.basis);
+  if (!grant.node) return route('operational-scope', bases, chain);
+  const A = grant.node.document;
+  chain.push(grant.node.uri);
+  bases.push(grantee('accreditation-grantee', A, O.issuer, 'Accreditation CA'));
+  bases.push(permits(A, `${CAL_V1_VOCAB}maintainCalibrationScope`) && permits(A, `${CAL_V1_VOCAB}issueCalibrationCertificate`)
+    ? { id: 'projection-permission', state: 'established', reason: 'CA permits maintaining an operational calibration scope.', sources: ['/credentialSubject/permittedActivity'] }
+    : { id: 'projection-permission', state: 'contradicted', reason: 'CA does not permit maintaining an operational calibration scope.', sources: ['/credentialSubject/permittedActivity'] });
+  const projection = calContainedIn(list(subjectOf(O).scope).filter(isObject), list(subjectOf(A).scope).filter(isObject),
+    profile.bindingRules.applyCmcFloor === true);
+  bases.push({ id: 'bounded-projection', state: projection.state, reason: projection.reason, sources: projection.sources });
+  bases.push(anchor('trust-anchor', A, 'accredit-calibration-laboratories', profile));
+  bases.push(inForceAtActivity(D, [['O', O], ['CA', A]]));
+  return route('operational-scope', bases, chain, ref.node.uri);
+}
+
+/**
+ * Route "statutory-mandate" (nmi-legal-mandate): certificate ← M (a statutory mandate
+ * naming the institute) ← anchor configured to designate metrology institutes. No
+ * accreditation root is required, and no legal effect is inferred from the fixture.
+ */
+export function calStatutoryMandate(target: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile): RouteResult {
+  const D = target.document;
+  const bases: BasisResult[] = [];
+  const chain = [target.uri];
+  const ref = authorizingReference('authorizing-reference', D, 'CalLegalMandate', lookup, [target.uri], 'CalAuthorizationPolicy');
+  bases.push(ref.basis);
+  if (!ref.node) return route('statutory-mandate', bases, chain);
+  const M = ref.node.document;
+  chain.push(ref.node.uri);
+  bases.push(grantee('principal-binding', M, D.issuer, 'Mandate M'));
+  bases.push(permission('activity-permission', M, 'issueCalibrationCertificate', 'issuing calibration certificates', 'M'));
+  bases.push(anchor('trust-anchor', M, 'designate-national-metrology-institutes', profile));
+  bases.push(inForceAtActivity(D, [['M', M]]));
+  return route('statutory-mandate', bases, chain, ref.node.uri);
+}
+
+export const CAL_CERTIFICATE_ROUTES = Object.freeze({
+  'direct-accreditation': calDirectAccreditation,
+  'operational-scope': calOperationalScope,
+  'statutory-mandate': calStatutoryMandate,
+});
 
 /** Semantic AND with an explicit empty case (used for a request's group conjunction). */
 export const allOf = (states: readonly SemanticState[]): SemanticState => (states.length === 0 ? 'not_established' : semanticAnd(states));

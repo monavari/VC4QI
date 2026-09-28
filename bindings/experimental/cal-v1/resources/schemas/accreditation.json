@@ -78,7 +78,8 @@
           "uniqueItems": true,
           "items": {
             "enum": [
-              "https://vc4qi.example/bindings/cal/1#issueCalibrationCertificate"
+              "https://vc4qi.example/bindings/cal/1#issueCalibrationCertificate",
+              "https://vc4qi.example/bindings/cal/1#maintainCalibrationScope"
             ]
           }
         },

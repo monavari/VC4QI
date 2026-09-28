@@ -60,6 +60,7 @@ from .types import (
     TraceEntry,
     create_reliance_result,
     decision_from_required,
+    semantic_and,
     semantic_or,
 )
 
@@ -74,6 +75,8 @@ CAL_V1_ARTIFACT_BINDING = ArtifactBinding(
     "calibration v1",
     {
         "CalAccreditation": f"{CAL_V1_SCHEMA_BASE}accreditation.json",
+        "CalOperationalScope": f"{CAL_V1_SCHEMA_BASE}operational-scope.json",
+        "CalLegalMandate": f"{CAL_V1_SCHEMA_BASE}legal-mandate.json",
         "CalCertificate": f"{CAL_V1_SCHEMA_BASE}certificate.json",
         "BitstringStatusListCredential": f"{CAL_V1_SCHEMA_BASE}status-list.json",
     },
@@ -326,7 +329,281 @@ def cal_direct_accreditation(
     return _route("direct-accreditation", bases, chain, a_node.uri)
 
 
-CAL_CERTIFICATE_ROUTES = {"direct-accreditation": cal_direct_accreditation}
+def _parse_range(record: dict[str, Any]) -> tuple[Fraction, Fraction] | None:
+    raw = record.get("range")
+    spec: dict[str, Any] = raw if isinstance(raw, dict) else {}
+    low = to_pascal(spec.get("from"), spec.get("unit"))
+    high = to_pascal(spec.get("to"), spec.get("unit"))
+    return None if low is None or high is None else (low, high)
+
+
+def _parse_floor(record: dict[str, Any]) -> tuple[bool, Fraction | None]:
+    """(well-formed, floor in Pa or None when the record states none)."""
+    spec = record.get("cmcFloor")
+    if not isinstance(spec, dict):
+        return True, None
+    floor = to_pascal(spec.get("value"), spec.get("unit"))
+    return floor is not None, floor
+
+
+def cal_contained_in(
+    child: list[dict[str, Any]], parent: list[dict[str, Any]], apply_cmc_floor: bool
+) -> CalOutcome:
+    """Bounded projection (no widening): each child record within ONE parent record.
+
+    Same quantity kind, a subset of its methods, a range inside its range and, when the
+    profile applies the CMC floor, a stated floor not below the parent's.
+    """
+    sources = ("/credentialSubject/scope",)
+    if not child:
+        return CalOutcome(
+            "not_established", "The operational scope has no records.", sources
+        )
+    per_child: list[tuple[SemanticState, str]] = []
+    for c in child:
+        c_range = _parse_range(c)
+        c_ok, c_floor = _parse_floor(c)
+        if c_range is None or not c_ok:
+            per_child.append(
+                (
+                    "not_established",
+                    f"{_short(c.get('id'))}: unsupported or malformed range or CMC "
+                    "floor.",
+                )
+            )
+            continue
+        low, high = c_range
+        methods = list(c.get("allowedMethodIris") or [])
+        outcomes: list[tuple[SemanticState, str]] = []
+        for p in parent:
+            p_range = _parse_range(p)
+            p_ok, p_floor = _parse_floor(p)
+            if p_range is None or not p_ok:
+                outcomes.append(
+                    (
+                        "not_established",
+                        f"{_short(p.get('id'))}: unsupported or malformed range or "
+                        "CMC floor.",
+                    )
+                )
+                continue
+            p_low, p_high = p_range
+            failures: list[str] = []
+            if c.get("quantityKindIri") != p.get("quantityKindIri"):
+                failures.append(
+                    f"quantity kind {_short(c.get('quantityKindIri'))} ≠ "
+                    f"{_short(p.get('quantityKindIri'))}"
+                )
+            allowed = list(p.get("allowedMethodIris") or [])
+            wider = [m for m in methods if m not in allowed]
+            if not methods and allowed:
+                failures.append("the parent restricts methods, the child does not")
+            if wider:
+                failures.append(
+                    f"method {', '.join(_short(m) for m in wider)} is not in "
+                    f"{_short(p.get('id'))}"
+                )
+            if low < p_low or high > p_high:
+                failures.append(
+                    f"range {_kpa(low)}–{_kpa(high)} kPa is not within "
+                    f"{_kpa(p_low)}–{_kpa(p_high)} kPa"
+                )
+            if apply_cmc_floor and p_floor is not None:
+                if c_floor is None:
+                    failures.append(
+                        f"it states no CMC floor, but {_short(p.get('id'))} admits "
+                        f"only {_kpa(p_floor)} kPa"
+                    )
+                elif c_floor < p_floor:
+                    failures.append(
+                        f"CMC {_kpa(c_floor)} kPa is below the admitted "
+                        f"{_kpa(p_floor)} kPa"
+                    )
+            if failures:
+                outcomes.append(
+                    (
+                        "contradicted",
+                        f"{_short(c.get('id'))} widens {_short(p.get('id'))}: "
+                        f"{'; '.join(failures)}",
+                    )
+                )
+            else:
+                outcomes.append(
+                    (
+                        "established",
+                        f"{_short(c.get('id'))} lies within {_short(p.get('id'))}",
+                    )
+                )
+        if not outcomes:
+            per_child.append(("not_established", "The parent grant has no records."))
+            continue
+        state = semantic_or(tuple(o[0] for o in outcomes))
+        winner = next((o for o in outcomes if o[0] == "established"), None)
+        per_child.append(
+            winner
+            if winner is not None
+            else (state, " | ".join(o[1] for o in outcomes))
+        )
+    combined = semantic_and(tuple(o[0] for o in per_child))
+    verdict = "holds" if combined == "established" else "fails"
+    detail = "; ".join(o[1] for o in per_child)
+    return CalOutcome(combined, f"Bounded projection {verdict}: {detail}.", sources)
+
+
+def _subject(doc: dict[str, Any]) -> dict[str, Any]:
+    subject = doc.get("credentialSubject")
+    return subject if isinstance(subject, dict) else {}
+
+
+def _permission(
+    basis_id: str, doc: dict[str, Any], activity: str, what: str, name: str
+) -> BasisResult:
+    sources = ("/credentialSubject/permittedActivity",)
+    if _permits(doc, CAL_V1_VOCAB + activity):
+        return _ok(basis_id, f"{name} permits {what}.", sources)
+    return _no(basis_id, f"{name} does not permit {what}.", sources)
+
+
+def cal_operational_scope(
+    target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
+) -> RouteResult:
+    """Route: certificate ← O (own capability scope) ← CA (maintenance) ← anchor.
+
+    O must lie within CA (no widening); claims are covered by O's records only.
+    """
+    assert target.document is not None
+    d = target.document
+    bases: list[BasisResult] = []
+    chain = [target.uri]
+    basis, o_node = _authorizing_reference(
+        "authorizing-reference",
+        d,
+        "CalOperationalScope",
+        lookup,
+        (target.uri,),
+        "CalAuthorizationPolicy",
+    )
+    bases.append(basis)
+    if o_node is None or o_node.document is None:
+        return _route("operational-scope", bases, chain)
+    o = o_node.document
+    chain.append(o_node.uri)
+    bases.append(
+        _grantee("principal-binding", o, d.get("issuer"), "Operational scope O")
+    )
+    bases.append(
+        _ok("self-maintained-scope", "O is issued by its own grantee.", ("/issuer",))
+        if o.get("issuer") == _subject(o).get("id")
+        else _no(
+            "self-maintained-scope", "O is not issued by its own grantee.", ("/issuer",)
+        )
+    )
+    bases.append(
+        _permission(
+            "activity-permission",
+            o,
+            "issueCalibrationCertificate",
+            "issuing calibration certificates",
+            "O",
+        )
+    )
+    grant_basis, a_node = _authorizing_reference(
+        "maintenance-grant",
+        o,
+        "CalAccreditation",
+        lookup,
+        (target.uri, o_node.uri),
+        "CalAuthorizationPolicy",
+    )
+    bases.append(grant_basis)
+    if a_node is None or a_node.document is None:
+        return _route("operational-scope", bases, chain)
+    a = a_node.document
+    chain.append(a_node.uri)
+    bases.append(
+        _grantee("accreditation-grantee", a, o.get("issuer"), "Accreditation CA")
+    )
+    sources = ("/credentialSubject/permittedActivity",)
+    bases.append(
+        _ok(
+            "projection-permission",
+            "CA permits maintaining an operational calibration scope.",
+            sources,
+        )
+        if _permits(a, CAL_V1_VOCAB + "maintainCalibrationScope")
+        and _permits(a, CAL_V1_VOCAB + "issueCalibrationCertificate")
+        else _no(
+            "projection-permission",
+            "CA does not permit maintaining an operational calibration scope.",
+            sources,
+        )
+    )
+    child = [r for r in _subject(o).get("scope") or [] if isinstance(r, dict)]
+    parent = [r for r in _subject(a).get("scope") or [] if isinstance(r, dict)]
+    projection = cal_contained_in(
+        child, parent, profile.binding_rules.get("applyCmcFloor") is True
+    )
+    bases.append(
+        BasisResult(
+            "bounded-projection",
+            projection.state,
+            projection.reason,
+            projection.sources,
+        )
+    )
+    bases.append(
+        _anchor("trust-anchor", a, "accredit-calibration-laboratories", profile)
+    )
+    bases.append(_in_force_at_activity(d, [("O", o), ("CA", a)]))
+    return _route("operational-scope", bases, chain, o_node.uri)
+
+
+def cal_statutory_mandate(
+    target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
+) -> RouteResult:
+    """Route: certificate ← M (statutory mandate) ← designation anchor.
+
+    No accreditation root is required, and no legal effect is inferred.
+    """
+    assert target.document is not None
+    d = target.document
+    bases: list[BasisResult] = []
+    chain = [target.uri]
+    basis, m_node = _authorizing_reference(
+        "authorizing-reference",
+        d,
+        "CalLegalMandate",
+        lookup,
+        (target.uri,),
+        "CalAuthorizationPolicy",
+    )
+    bases.append(basis)
+    if m_node is None or m_node.document is None:
+        return _route("statutory-mandate", bases, chain)
+    m = m_node.document
+    chain.append(m_node.uri)
+    bases.append(_grantee("principal-binding", m, d.get("issuer"), "Mandate M"))
+    bases.append(
+        _permission(
+            "activity-permission",
+            m,
+            "issueCalibrationCertificate",
+            "issuing calibration certificates",
+            "M",
+        )
+    )
+    bases.append(
+        _anchor("trust-anchor", m, "designate-national-metrology-institutes", profile)
+    )
+    bases.append(_in_force_at_activity(d, [("M", m)]))
+    return _route("statutory-mandate", bases, chain, m_node.uri)
+
+
+CAL_CERTIFICATE_ROUTES = {
+    "direct-accreditation": cal_direct_accreditation,
+    "operational-scope": cal_operational_scope,
+    "statutory-mandate": cal_statutory_mandate,
+}
 
 
 def _selected_group(pointer: str) -> bool:
@@ -645,6 +922,8 @@ def evaluate_cal_slice(
                 "reported but do not decide the request.",
                 "The calibration v1 binding carries a JSON-LD simplification of DCC "
                 "results, not native DCC XML.",
+                "Fixture grants are fictional: an accreditation or statutory mandate "
+                "here has no legal effect.",
             ),
         )
     )

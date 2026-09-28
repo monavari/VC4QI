@@ -1,15 +1,17 @@
 # I5 evidence: legacy isolation, migration and the default API
 
-**28 September 2026. I5 steps 1–2 done in both languages.**
+**28 September 2026. I5 steps 1–2 and step 3a done in both languages.**
 
 - Legacy evaluation is reachable only through an explicitly selected, labelled legacy
   profile, with no fallback (V02, V03).
 - The shared gate 0–3 pipeline serves every binding.
 - The calibration-direct-accreditation use case is migrated to a new signed calibration
   (DCC) binding (S18, S19, S21).
+- The calibration-capability and nmi-legal-mandate use cases are migrated to the same
+  binding, with an operational-scope route and a statutory-mandate route (step 3a).
 
-Still open in I5: migration of the remaining base use cases and switching the default
-API.
+Still open in I5: migration of test-report-supported-dcc and gs-scheme-authorization,
+keeping both GS application variants, and switching the default API.
 
 ## Step 1: explicit legacy profile (V02, V03)
 
@@ -71,3 +73,47 @@ Step 2 results:
 - Build, lint, scenarios, schemas, the RM and calibration resource and fixture `--check`
   modes, the RM parity check and the poster build (unchanged) pass.
 - Ledger: S18, S19 and S21 `passing` (66 passing, 2 excluded, 15 not implemented).
+
+## Step 3a: calibration-capability and nmi-legal-mandate
+
+Both use cases are migrated to the calibration v1 binding. The generators now also
+produce a laboratory operational scope `CAL-O` with certificate `DCC-2`, and a
+fictional ministry's statutory mandate `CAL-M` to a national metrology institute with
+certificate `DCC-N`. `CAL-A` now also permits maintaining a calibration scope, so
+`DCC-1` was re-issued with the new digest.
+
+| Part | Behaviour |
+| --- | --- |
+| `operational-scope` route | DCC-2 ← O ← CA ← anchor. Bases: typed reference, principal binding, O issued by its own grantee, O permits issuing certificates, O cites CA, CA names O's issuer, CA permits scope maintenance, bounded projection, anchor purpose `accredit-calibration-laboratories`, O and CA in force at the activity time |
+| Bounded projection | `calContainedIn` / `cal_contained_in`: each O record lies within one CA record, with the same quantity kind, a subset of its methods and a range inside its range (exact pascals). When the profile applies the CMC floor, O must state a floor that is not below CA's. Claims are covered by O's records only |
+| `statutory-mandate` route | DCC-N ← M ← anchor purpose `designate-national-metrology-institutes`. Bases: typed reference, principal binding, activity permission, anchor, M in force at the activity time. No accreditation root is required or configured |
+| Profiles | `cal-verifier-capability-1` (operational-scope, NAB anchor) and `cal-verifier-nmi-1` (statutory-mandate, ministry anchor only). `cal-verifier-1` is unchanged |
+| Limitations | Every calibration result now states that fixture grants are fictional and have no legal effect |
+
+One profile per use case keeps the decision semantics explicit. Under a profile that
+permits all three routes, a contradicted route beside routes with no reference is
+`not_established`, not `reject`, because three-valued OR lets a missing route dominate
+a contradicted one. A test covers this.
+
+| Case | Input | Result |
+| --- | --- | --- |
+| Capability | DCC-2 under the capability profile | Accepted; witnesses route, DCC-2, O, CA, `record:O#scope-pressure-low` |
+| No widening | O range up to 20 MPa (CA: 10 MPa) | `bounded-projection` contradicted; reject |
+| No widening | O CMC 0.3 kPa below CA's 0.5 kPa | Contradicted; accepted when the profile does not apply the floor |
+| C08 analogue | CA without `maintainCalibrationScope` | `projection-permission` contradicted; reject |
+| No parent fallback | DCC-2 group at 5 MPa (inside CA, outside O) | Coverage on O contradicted; reject |
+| Mandate | DCC-N under the NMI profile | Accepted; witnesses route, DCC-N, M, `record:M#scope-pressure-primary`; no accreditation on the path |
+| Anchor purpose | Ministry not configured, or configured only to accredit | `trust-anchor` not_established; not_established |
+| Principal | M naming another institute | Contradicted; reject |
+| Coverage | DCC-N by PressureComparison (M allows PressureBalance) | Contradicted; reject |
+| Route OR | All-routes profile: each certificate | Accepted through the route its own references reach |
+| Route OR | All-routes profile: CA naming another laboratory | `not_established` (other routes have no reference) |
+
+Step 3a results:
+
+- TS 422 passed plus the 9 network-only legacy failures; Python 392 passed, 1 skipped.
+- Ruff 204 and mypy 198 unchanged.
+- Build, lint, scenarios, schemas, the RM and calibration resource and fixture `--check`
+  modes and the RM parity check pass.
+- Ledger totals unchanged (66 passing, 2 excluded, 15 not implemented); the migrated use
+  cases are recorded here rather than as new ledger rows.
