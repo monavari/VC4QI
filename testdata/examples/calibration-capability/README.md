@@ -2,6 +2,10 @@
 
 **Generated legacy fixture; not a standards-first conformance claim.**
 
+Migrated standards-first form: [`bindings/experimental/cal-v1`](../../../bindings/experimental/cal-v1/README.md)
+(signed fixtures, evaluated by the calibration v1 binding's operational-scope route). This legacy copy
+is kept for the explicit legacy profile only.
+
 A calibration issuer uses bounded operational scope. Preserve maintenance permission, full-record containment and no widening.
 
 Existing policy and relation fields describe the old runtime. The fixture's assurance

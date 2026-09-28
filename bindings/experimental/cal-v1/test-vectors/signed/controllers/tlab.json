@@ -1,0 +1,15 @@
+{
+  "@context": "https://www.w3.org/ns/cid/v1",
+  "id": "https://testlab.vc4qi.example/controller",
+  "verificationMethod": [
+    {
+      "id": "https://testlab.vc4qi.example/controller#key-1",
+      "type": "Multikey",
+      "controller": "https://testlab.vc4qi.example/controller",
+      "publicKeyMultibase": "z6Mkwb3roq4qSqftdZ89TAZGtxBtzK8wPHRCwtHkiVmZrrC8"
+    }
+  ],
+  "assertionMethod": [
+    "https://testlab.vc4qi.example/controller#key-1"
+  ]
+}

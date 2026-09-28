@@ -13,7 +13,10 @@ export const CAL_V1_ARTIFACT_BINDING: ArtifactBinding = Object.freeze({
   name: 'calibration v1',
   schemas: Object.freeze({
     CalAccreditation: `${CAL_V1_SCHEMA_BASE}accreditation.json`,
+    CalOperationalScope: `${CAL_V1_SCHEMA_BASE}operational-scope.json`,
+    CalLegalMandate: `${CAL_V1_SCHEMA_BASE}legal-mandate.json`,
     CalCertificate: `${CAL_V1_SCHEMA_BASE}certificate.json`,
+    CalTestReport: `${CAL_V1_SCHEMA_BASE}test-report.json`,
     BitstringStatusListCredential: `${CAL_V1_SCHEMA_BASE}status-list.json`,
   }),
   contexts: (type: unknown) => (type === 'BitstringStatusListCredential' ? [VC_V2_CONTEXT] : [VC_V2_CONTEXT, CAL_V1_CONTEXT]),

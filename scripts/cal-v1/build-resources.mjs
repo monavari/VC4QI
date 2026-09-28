@@ -52,7 +52,7 @@ const statusEntry = closed({
 });
 const authorizationPolicy = closed({
   type: { const: 'CalAuthorizationPolicy' },
-  authorizationCredential: closed({ id: iri, type: { enum: ['CalAccreditation'] } }),
+  authorizationCredential: closed({ id: iri, type: { enum: ['CalAccreditation', 'CalOperationalScope', 'CalLegalMandate'] } }),
 });
 const relatedResource = nonemptySet(closed({
   id: iri,
@@ -103,17 +103,37 @@ function credentialSchema(file, type, title, subject, extra = {}, requiredExtra 
   };
 }
 
+const grantSubject = activities => closed({
+  id: iri,
+  permittedActivity: { ...nonemptySet(iri), items: { enum: activities.map(a => `${ACT}${a}`) } },
+  scope: nonemptySet(scopeRecord),
+});
+const authorizedBy = { termsOfUse: { type: 'array', minItems: 1, maxItems: 2, items: authorizationPolicy }, relatedResource };
+
 const schemas = {
-  'accreditation.json': credentialSchema('accreditation.json', 'CalAccreditation', 'Calibration laboratory accreditation',
-    closed({
-      id: iri,
-      permittedActivity: { ...nonemptySet(iri), items: { enum: [`${ACT}issueCalibrationCertificate`] } },
-      scope: nonemptySet(scopeRecord),
-    })),
+  'accreditation.json': credentialSchema('accreditation.json', 'CalAccreditation', 'Calibration or testing laboratory accreditation',
+    grantSubject(['issueCalibrationCertificate', 'maintainCalibrationScope', 'issueTestReport'])),
+  // A laboratory's own bounded operational (capability) scope, projected within its accreditation.
+  'operational-scope.json': credentialSchema('operational-scope.json', 'CalOperationalScope', 'Calibration operational scope',
+    grantSubject(['issueCalibrationCertificate']), authorizedBy, ['termsOfUse', 'relatedResource']),
+  // A statutory designation of a national metrology institute; fictional, with no legal effect.
+  'legal-mandate.json': credentialSchema('legal-mandate.json', 'CalLegalMandate', 'Statutory metrology mandate',
+    grantSubject(['issueCalibrationCertificate'])),
   'certificate.json': credentialSchema('certificate.json', 'CalCertificate', 'Calibration certificate (DCC)',
     closed({ id: iri, activityTime: dateTime, measurementGroups: { type: 'array', minItems: 1, items: measurementGroup } }),
-    { termsOfUse: { type: 'array', minItems: 1, maxItems: 2, items: authorizationPolicy }, relatedResource },
-    ['relatedResource']),
+    authorizedBy, ['relatedResource']),
+  // A test report whose measuring instrument must be supported by its own calibration.
+  'test-report.json': credentialSchema('test-report.json', 'CalTestReport', 'Test report supported by a calibration',
+    closed({
+      id: iri, activityTime: dateTime, instrumentIri: iri,
+      measurementGroups: { type: 'array', minItems: 1, items: measurementGroup },
+    }),
+    {
+      ...authorizedBy,
+      evidence: { type: 'array', minItems: 1, items: closed({ id: iri, type: { const: 'CalCalibrationReference' } }) },
+    },
+    // Evidence is optional here so that the evaluator, not the schema, decides missing support.
+    ['termsOfUse', 'relatedResource']),
   'status-list.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     $id: `${SCHEMA_BASE}status-list.json`,

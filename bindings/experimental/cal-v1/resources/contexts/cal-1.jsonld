@@ -6,7 +6,11 @@
     "xsd": "http://www.w3.org/2001/XMLSchema#",
 
     "CalAccreditation": "cal:CalAccreditation",
+    "CalOperationalScope": "cal:CalOperationalScope",
+    "CalLegalMandate": "cal:CalLegalMandate",
     "CalCertificate": "cal:CalCertificate",
+    "CalTestReport": "cal:CalTestReport",
+    "CalCalibrationReference": "cal:CalCalibrationReference",
     "CalAuthorizationPolicy": "cal:CalAuthorizationPolicy",
 
     "authorizationCredential": "cal:authorizationCredential",
@@ -21,6 +25,7 @@
     "cmcFloor": "cal:cmcFloor",
 
     "activityTime": {"@id": "cal:activityTime", "@type": "xsd:dateTime"},
+    "instrumentIri": {"@id": "cal:instrument", "@type": "@id"},
     "measurementGroups": {"@id": "cal:measurementGroups", "@container": "@list"},
     "methodIris": {"@id": "cal:methodIris", "@type": "@id", "@container": "@set"},
     "results": {"@id": "cal:results", "@container": "@list"},

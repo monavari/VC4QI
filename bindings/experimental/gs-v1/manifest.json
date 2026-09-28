@@ -1,0 +1,124 @@
+{
+  "$schema": "./manifest.schema.json",
+  "id": "https://vc4qi.example/bindings/gs/1",
+  "version": "1",
+  "status": "experimental",
+  "owner": {
+    "name": "VC4QI repository fixture governance",
+    "source": "docs/BINDING_MANIFEST.md",
+    "authority": "local-research-fixture-only"
+  },
+  "installation": {
+    "status": "incomplete",
+    "reason": "Migrated GS certification binding for the gs-scheme-authorization use case. The gate 0-6 evaluators for the competence-and-scheme-permission route and certification coverage are implemented; statutory GS routes, test-report support, application assessments and conformity rules are not.",
+    "pendingResources": []
+  },
+  "carrierAndSchema": {
+    "model": "W3C Verifiable Credentials Data Model 2.0",
+    "modelContext": "https://www.w3.org/ns/credentials/v2",
+    "requiredContexts": ["https://www.w3.org/ns/credentials/v2", "https://vc4qi.example/contexts/gs/1"],
+    "credentialTypes": [
+      "https://www.w3.org/2018/credentials#VerifiableCredential",
+      "https://vc4qi.example/bindings/gs/1#GsAccreditation",
+      "https://vc4qi.example/bindings/gs/1#GsSchemeAuthorization",
+      "https://vc4qi.example/bindings/gs/1#GsCertificate",
+      "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential"
+    ],
+    "schemaUris": [
+      "https://vc4qi.example/schemas/gs/1/accreditation.json",
+      "https://vc4qi.example/schemas/gs/1/scheme-authorization.json",
+      "https://vc4qi.example/schemas/gs/1/certificate.json",
+      "https://vc4qi.example/schemas/gs/1/status-list.json"
+    ],
+    "statusListCarrier": "BitstringStatusListCredential with the VCDM 2.0 context only",
+    "composition": "exact-listed-context-and-schema-combinations-only",
+    "pinnedResourceIndex": "bindings/experimental/gs-v1/catalog.json",
+    "orderedCollections": [],
+    "nativeRepresentation": "A JSON-LD simplification of a GS certificate; no native scheme document is carried"
+  },
+  "factMappings": [
+    {"fact": "grantorOrActor", "nativePath": "/issuer", "expandedIri": "https://www.w3.org/2018/credentials#issuer"},
+    {"fact": "grantee", "nativePath": "/credentialSubject/id", "expandedIri": "@id"},
+    {"fact": "permittedActivity", "nativePath": "/credentialSubject/permittedActivity", "expandedIri": "https://vc4qi.example/bindings/gs/1#permittedActivity"},
+    {"fact": "scopeRecords", "nativePath": "/credentialSubject/scope", "expandedIri": "https://vc4qi.example/bindings/gs/1#scope"},
+    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/bindings/gs/1#authorizationCredential"},
+    {"fact": "activityTime", "nativePath": "/credentialSubject/activityTime", "expandedIri": "https://vc4qi.example/bindings/gs/1#activityTime"},
+    {"fact": "certification", "nativePath": "/credentialSubject/certification", "expandedIri": "https://vc4qi.example/bindings/gs/1#certification"}
+  ],
+  "cardinality": {
+    "credentialSubject": {"minimum": 1, "maximum": 1},
+    "scopeRecords": {"minimum": 1},
+    "selectedAuthorizingPoliciesPerUse": {"minimum": 1, "maximum": 2},
+    "authorizingReferenceSelection": "by-declared-reference-type-per-route-half; resolved credential type must match (else contradicted); several of one type not_established",
+    "selectedClaims": "the certification statement at /credentialSubject/certification",
+    "ambiguousSelection": "not_established"
+  },
+  "discoveryAndIntegrity": {
+    "referenceCarriers": ["termsOfUse", "relatedResource", "credentialSchema"],
+    "discovery": "supplied-or-installed-static-catalog-only",
+    "unknownUri": "not_established",
+    "immutableRepresentation": "original-secured-bytes",
+    "digestAlgorithm": "sha384",
+    "digestEncoding": "SRI",
+    "digestInput": "exact-original-secured-bytes",
+    "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse authorizationCredential references on the credential chain"
+  },
+  "recognizedTypes": {
+    "authorizationPolicy": "https://vc4qi.example/bindings/gs/1#GsAuthorizationPolicy",
+    "authorizationPolicyEstablishes": ["authorizing-reference-candidate"],
+    "nonEstablishingByItself": ["authority", "scope", "conformity"]
+  },
+  "principalAndRights": {
+    "principalEqualityEvaluator": "https://vc4qi.example/evaluators/exact-identifier/1",
+    "identityAliases": "none",
+    "activities": {
+      "certifyProducts": "https://vc4qi.example/bindings/gs/1#certifyProducts",
+      "awardGsMark": "https://vc4qi.example/bindings/gs/1#awardGsMark"
+    },
+    "rules": [
+      "The accreditation (competence) and the scheme authorization each name the certification body issuing the certificate.",
+      "The accreditation permits certifying products; the scheme authorization permits awarding the GS mark.",
+      "The accreditation issuer is anchored for accrediting certification bodies; the scheme authorization issuer for authorizing GS certification.",
+      "Both grants were in force at the certificate's activity time."
+    ]
+  },
+  "scopeAndMapping": {
+    "mappingVersion": "gs-experimental-mapping-1",
+    "dimensions": ["productCategoryIri", "standardIris"],
+    "standardRule": "one competence record must cover the category and every certified standard; a record listing standards against a certification naming none is not_established (no empty-array bypass)",
+    "schemeRule": "one scheme record must cover the category",
+    "unsupported": ["display-label-equality", "standard-edition-succession", "product-variant-inheritance"]
+  },
+  "routesAndRestrictions": {
+    "installedCertificateRoutes": {
+      "competence-and-scheme-permission": ["A-referenced", "A-grantee-is-issuer", "A-permits-certification", "A-issuer-is-accreditation-anchor", "S-referenced", "S-grantee-is-issuer", "S-permits-GS-mark", "S-issuer-is-scheme-anchor", "A-and-S-in-force-at-activity", "claim-covered-by-A-and-S"]
+    },
+    "globalRestrictions": [],
+    "routeComposition": "AND-within-route-OR-between-complete-routes"
+  },
+  "protectionTimeAndResolution": {
+    "proofSuites": ["eddsa-rdfc-2022"],
+    "proofPurpose": "assertionMethod",
+    "verificationMethodRule": "exact-installed-method-controlled-by-issuer-and-authorized-for-assertionMethod",
+    "safeJsonLd": true,
+    "status": "authenticated-current-revocation-status-required",
+    "statusMechanism": "W3C Bitstring Status List v1.0: multibase base64url GZIP encodedList, bounded decompression",
+    "statusAuthority": "status-list-issuer-equals-credential-issuer",
+    "validity": ["validFrom", "validUntil"],
+    "historicalReliance": "unsupported-without-authenticated-historical-evidence",
+    "resolver": {"network": false, "unknownUri": "refuse", "budgets": ["maxResources", "maxDepth", "maxBytes"]},
+    "installedEvaluatorsOnly": true,
+    "issuerProvidedExecutableCode": false
+  },
+  "supportAndDisclosure": {
+    "requiredSupport": "none in this binding",
+    "presentationProtection": "separate-from-reliance",
+    "holderBinding": "unsupported-in-initial-slice"
+  },
+  "evidenceAndExclusions": {
+    "acceptanceLedger": "docs/plans/standards-first-acceptance.csv",
+    "testVectorRoots": ["bindings/experimental/gs-v1/test-vectors"],
+    "implementationEvidence": "docs/plans/standards-first-i5-evidence.md",
+    "unsupported": ["production-accreditation", "real-gs-scheme-rules", "legal-effect", "application-assessments", "public-example-namespace-resolution", "wallet-interoperability", "timestamp-service"]
+  }
+}

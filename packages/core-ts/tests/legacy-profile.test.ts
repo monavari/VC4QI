@@ -59,6 +59,17 @@ describe('V03: the same kind of credential under the explicit legacy profile', (
     expect(evaluation.limitations.join(' ')).toMatch(/not by standards-first reliance/);
   });
 
+  it('retains both GS application variants: each verifies its original signatures under the legacy profile', async () => {
+    for (const name of ['gs-hair-dryer-hitl', 'gs-hair-dryer-external-test-lab-hitl']) {
+      const { fixture, options: o } = options(name);
+      const evaluation = await evaluateLegacyProfile(fixture.target, fixture.policy, { ...o, assessCredential: passAssessments });
+      expect(evaluation.profile.label).toBe('legacy');
+      expect(evaluation.legacyTrace.results.some(r => r.code === 'PROOF_VALID' && r.target === String(fixture.target.id))).toBe(true);
+      expect(evaluation.legacyTrace.results.some(r => r.code === 'PROOF_INVALID')).toBe(false);
+      expect(evaluation.decision).toBe('accept');
+    }
+  });
+
   it('never treats a placeholder or converted signature as valid', async () => {
     const { fixture, options: o } = options('calibration-direct-accreditation');
     const evaluation = await evaluateLegacyProfile(fixture.target, fixture.policy, o);
