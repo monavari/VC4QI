@@ -5,11 +5,14 @@ The migrated gs-scheme-authorization use case: the GS mark is relied on only thr
 the complete route (competence AND scheme permission). Each half is discharged by its
 own typed reference, grantee, activity, anchor and validity, and the certified claim
 must be covered by both scopes. Neither incomplete basis alone establishes the route.
+A certificate also needs its studies (gate 6): a type examination and a factory
+inspection, each independently authorized.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
 from .catalog import StaticResource, StaticResourceCatalog
@@ -53,6 +56,7 @@ from .types import (
     RelianceRequest,
     RelianceResult,
     SemanticState,
+    SupportResult,
     TraceEntry,
     create_reliance_result,
     decision_from_required,
@@ -77,6 +81,8 @@ GS_V1_ARTIFACT_BINDING = ArtifactBinding(
         "GsSchemeAuthorization": f"{GS_V1_SCHEMA_BASE}scheme-authorization.json",
         "GsCertificate": f"{GS_V1_SCHEMA_BASE}certificate.json",
         "GsProductPassport": f"{GS_V1_SCHEMA_BASE}product-passport.json",
+        "GsTestReport": f"{GS_V1_SCHEMA_BASE}test-report.json",
+        "GsInspectionReport": f"{GS_V1_SCHEMA_BASE}inspection-report.json",
         "BitstringStatusListCredential": f"{GS_V1_SCHEMA_BASE}status-list.json",
     },
     lambda kind: [VC_V2_CONTEXT]
@@ -459,6 +465,269 @@ def gs_certified_product(
     return _route("gs-certified-product", bases, chain, c_node.uri)
 
 
+# ---------------------------------------------------------------- studies (gate 6)
+
+PASS = f"{GS_V1_VOCAB}Pass"
+_STUDIES = (
+    (
+        "type-examination",
+        "GsTypeExaminationReference",
+        "GsTestReport",
+        "testProducts",
+        "accredit-testing-laboratories",
+        "type examination",
+    ),
+    (
+        "factory-inspection",
+        "GsFactoryInspectionReference",
+        "GsInspectionReport",
+        "inspectFactories",
+        "accredit-certification-bodies",
+        "factory inspection",
+    ),
+)
+
+
+@dataclass(frozen=True)
+class GsSupportResult:
+    obligation_id: str
+    state: SemanticState
+    reason: str
+    bases: tuple[BasisResult, ...]
+    chain: tuple[str, ...]
+
+
+def _check(
+    basis_id: str, holds: bool | None, yes: str, no: str, sources: tuple[str, ...]
+) -> BasisResult:
+    if holds is None:
+        return _unknown(basis_id, no, sources)
+    return _ok(basis_id, yes, sources) if holds else _no(basis_id, no, sources)
+
+
+def _list(value: Any) -> list[Any]:
+    return value if isinstance(value, list) else []
+
+
+def _instant(value: Any) -> datetime | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def _study(
+    certificate: NodeFacts,
+    lookup: NodeLookup,
+    profile: RelianceProfile,
+    spec: tuple[str, str, str, str, str, str],
+) -> GsSupportResult:
+    obligation_id, reference, kind, activity, purpose, what = spec
+    assert certificate.document is not None
+    c_doc = certificate.document
+    c = _subject(c_doc)
+    certification = c.get("certification")
+    certified = certification if isinstance(certification, dict) else {}
+    bases: list[BasisResult] = []
+
+    def done(chain: tuple[str, ...]) -> GsSupportResult:
+        state = semantic_and(tuple(b.state for b in bases))
+        failed = next(
+            (b for b in bases if b.state == state and state != "established"), None
+        )
+        reason = (
+            f"The {what} applies and is independently authorized."
+            if state == "established"
+            else f"The {what}: {failed.reason if failed else 'not established'}"
+        )
+        return GsSupportResult(obligation_id, state, reason, tuple(bases), chain)
+
+    cited = [
+        str(e.get("id"))
+        for e in _list(c_doc.get("evidence"))
+        if isinstance(e, dict) and e.get("type") == reference
+    ]
+    if len(cited) != 1:
+        bases.append(
+            _unknown(
+                "reference",
+                f"The certificate cites no {what}."
+                if not cited
+                else f"The certificate cites several {what}s; none is chosen.",
+                ("/evidence",),
+            )
+        )
+        return done(())
+    uri = cited[0]
+    node = lookup(uri)
+    if node is None or node.usable != "established" or node.document is None:
+        reason = (
+            f"{_short(uri)} is unavailable."
+            if node is None
+            else f"{_short(uri)} is not usable: {node.reason}"
+        )
+        state: SemanticState = (
+            "contradicted"
+            if node is not None and node.usable == "contradicted"
+            else "not_established"
+        )
+        bases.append(BasisResult("reference", state, reason, ("/evidence", uri)))
+        return done(())
+    r_doc = node.document
+    r = _subject(r_doc)
+    bases.append(
+        _check(
+            "reference",
+            kind in _list(r_doc.get("type")),
+            f"Cites {what} {_short(uri)}.",
+            f"{_short(uri)} is not a {kind}.",
+            ("/evidence", uri),
+        )
+    )
+    if obligation_id == "type-examination":
+        bases.append(
+            _check(
+                "same-model",
+                r.get("productModelIri") == c.get("id"),
+                f"{_short(uri)} examined model {_short(c.get('id'))}.",
+                f"{_short(uri)} examined {_short(r.get('productModelIri'))}, "
+                f"not model {_short(c.get('id'))}.",
+                ("/credentialSubject/productModelIri",),
+            )
+        )
+        examined = _list(r.get("standardIris"))
+        wanted = _list(certified.get("standardIris"))
+        missing = [s for s in wanted if s not in examined]
+        same_category = r.get("productCategoryIri") == certified.get(
+            "productCategoryIri"
+        )
+        bases.append(
+            _check(
+                "covers-certification",
+                same_category and not missing,
+                f"{_short(uri)} covers {_short(certified.get('productCategoryIri'))} "
+                f"against [{', '.join(_short(s) for s in wanted)}].",
+                f"{_short(uri)} examined {_short(r.get('productCategoryIri'))}, "
+                f"not {_short(certified.get('productCategoryIri'))}."
+                if not same_category
+                else f"{_short(uri)} did not examine "
+                f"{', '.join(_short(s) for s in missing)}.",
+                ("/credentialSubject/standardIris",),
+            )
+        )
+    else:
+        inspected, maker = r.get("manufacturerIri"), c.get("manufacturerIri")
+        bases.append(
+            _check(
+                "same-manufacturer",
+                inspected == maker
+                if isinstance(inspected, str) and isinstance(maker, str)
+                else None,
+                f"{_short(uri)} inspected the certificate's manufacturer.",
+                f"{_short(uri)} inspected {inspected}, not the certificate's "
+                f"manufacturer {maker}.",
+                ("/credentialSubject/manufacturerIri",),
+            )
+        )
+    bases.append(
+        _check(
+            "outcome",
+            r.get("outcomeIri") == PASS,
+            f"{_short(uri)} passed.",
+            f"{_short(uri)} did not pass ({_short(r.get('outcomeIri'))}).",
+            ("/credentialSubject/outcomeIri",),
+        )
+    )
+    studied, certified_at = _instant(r.get("activityTime")), _instant(
+        c.get("activityTime")
+    )
+    bases.append(
+        _check(
+            "precedes-certification",
+            studied <= certified_at
+            if studied is not None and certified_at is not None
+            else None,
+            f"The {what} ({r.get('activityTime')}) precedes the certification.",
+            f"The {what} ({r.get('activityTime')}) follows the certification "
+            f"({c.get('activityTime')})."
+            if studied is not None and certified_at is not None
+            else "An activity time is missing.",
+            ("/credentialSubject/activityTime",),
+        )
+    )
+    basis, g_node = _authorizing_reference(
+        "accreditation-reference",
+        r_doc,
+        "GsAccreditation",
+        lookup,
+        (certificate.uri, uri),
+        "GsAuthorizationPolicy",
+    )
+    bases.append(basis)
+    if g_node is None or g_node.document is None:
+        return done((uri,))
+    g = g_node.document
+    name = _short(g_node.uri)
+    issuer = r_doc.get("issuer")
+    bases.append(
+        _grantee("accreditation-grantee", g, issuer, f"Accreditation {name}")
+    )
+    bases.append(
+        _check(
+            "accreditation-permission",
+            _permits(g, f"{GS_V1_VOCAB}{activity}"),
+            f"{name} permits {activity}.",
+            f"{name} does not permit {activity}.",
+            ("/credentialSubject/permittedActivity",),
+        )
+    )
+    bases.append(_anchor("accreditation-anchor", g, purpose, profile))
+    in_force = _in_force_at_activity(r_doc, [(name, g)])
+    bases.append(
+        BasisResult(
+            "accreditation-in-force", in_force.state, in_force.reason, in_force.sources
+        )
+    )
+    if obligation_id == "type-examination":
+        examined = _list(r.get("standardIris"))
+        covering = next(
+            (
+                s
+                for s in _list(_subject(g).get("scope"))
+                if isinstance(s, dict)
+                and s.get("productCategoryIri") == r.get("productCategoryIri")
+                and all(x in _list(s.get("standardIris")) for x in examined)
+            ),
+            None,
+        )
+        bases.append(
+            _check(
+                "accreditation-scope",
+                covering is not None,
+                f"{_short((covering or {}).get('id'))} covers the examination.",
+                f"No record of {name} covers {_short(r.get('productCategoryIri'))} "
+                f"against [{', '.join(_short(s) for s in examined)}].",
+                ("/credentialSubject/scope",),
+            )
+        )
+    return done((uri, g_node.uri))
+
+
+def certificate_support(
+    certificate: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
+) -> tuple[GsSupportResult, ...]:
+    """Gate 6 for a GS certificate: its type examination and factory inspection.
+
+    Each is cited once as typed evidence, is usable, concerns this certificate, passed,
+    precedes the certification, and is independently authorized by an anchored
+    accreditation of its issuer that permits the activity and was in force at the
+    study; a type examination's category and standards must lie in one scope record.
+    """
+    return tuple(_study(certificate, lookup, profile, spec) for spec in _STUDIES)
+
+
 GS_CERTIFICATE_ROUTES = {
     ROUTE_ID: gs_competence_and_scheme,
     "gs-certified-product": gs_certified_product,
@@ -492,6 +761,7 @@ def evaluate_gs_slice(
     ids = profile.authority.certificate_routes
     budget = profile.authority.max_routes
     authority: AuthorityResult
+    evaluated: list[RouteResult] = []
     if target_document is None:
         authority = AuthorityResult(
             "not_established",
@@ -500,7 +770,6 @@ def evaluate_gs_slice(
             (),
         )
     else:
-        evaluated: list[RouteResult] = []
         for route_id in ids[:budget]:
             evaluate = GS_CERTIFICATE_ROUTES.get(route_id)
             evaluated.append(
@@ -617,6 +886,48 @@ def evaluate_gs_slice(
             )
         )
 
+    # Gate 6: the studies of the certificate (the target, or the one a passport cites).
+    certificate_uri = (
+        None
+        if target_document is None
+        else next((r.chain[1] for r in evaluated if len(r.chain) > 1), None)
+        if is_passport
+        else request.target_id
+    )
+    certificate_node = None if certificate_uri is None else facts.get(certificate_uri)
+    studies: tuple[GsSupportResult, ...]
+    if target_document is None:
+        studies = ()
+    elif (
+        certificate_node is not None
+        and certificate_node.usable == "established"
+        and certificate_node.document is not None
+    ):
+        studies = certificate_support(certificate_node, facts.get, profile)
+    else:
+        studies = tuple(
+            GsSupportResult(
+                obligation,
+                "not_established",
+                "No usable GS certificate was reached, so its studies are not "
+                "evaluated.",
+                (),
+                (),
+            )
+            for obligation in ("type-examination", "factory-inspection")
+        )
+    support = tuple(
+        SupportResult(
+            state=s.state,
+            execution="executed",
+            reasons=(s.reason,),
+            source_pointers=("/evidence",),
+            obligation_id=f"gs-v1:{s.obligation_id}",
+            witness_ids=s.chain if s.state == "established" else (),
+        )
+        for s in studies
+    )
+
     conformity: ConformityResult
     if request.conformity is None:
         conformity = ConformityNotRequested()
@@ -637,7 +948,11 @@ def evaluate_gs_slice(
             decision_rule_id=request.conformity.decision_rule_id,
         )
 
-    decisive = {request.target_id, *(winner.chain if winner else ())}
+    decisive = {
+        request.target_id,
+        *(winner.chain if winner else ()),
+        *(u for s in studies if s.state == "established" for u in s.chain),
+    }
     required: list[SemanticState] = [
         r.state
         for a in chain.artifacts
@@ -645,6 +960,7 @@ def evaluate_gs_slice(
         for r in chain.verification_of(a)
     ]
     required += [r.state for r in authorization]
+    required += [r.state for r in support]
     if isinstance(conformity, ConformityRequestedResult):
         required.append(conformity.state)
 
@@ -736,6 +1052,31 @@ def evaluate_gs_slice(
                     basis.sources,
                 )
             )
+    for study in studies:
+        for basis in study.bases:
+            trace.append(
+                TraceEntry(
+                    6,
+                    use,
+                    f"support:{study.obligation_id}:{basis.id}",
+                    basis.state,
+                    "executed",
+                    basis.reason,
+                    basis.sources,
+                )
+            )
+    for obligation in support:
+        trace.append(
+            TraceEntry(
+                6,
+                use,
+                obligation.obligation_id,
+                obligation.state,
+                obligation.execution,
+                " ".join(obligation.reasons),
+                (),
+            )
+        )
     if isinstance(conformity, ConformityRequestedResult):
         trace.append(
             TraceEntry(
@@ -757,7 +1098,7 @@ def evaluate_gs_slice(
             profile=request.profile,
             artifact_verification=chain.verification,
             authorization=tuple(authorization),
-            support=(),
+            support=support,
             conformity=conformity,
             decision=decision_from_required(tuple(required)),
             trace=tuple(trace),
@@ -773,8 +1114,8 @@ def evaluate_gs_slice(
                     if is_passport
                     else ()
                 ),
-                "Verification failures of credentials outside the selected route are "
-                "reported but do not decide the request.",
+                "Verification failures of credentials outside the selected route and "
+                "study chains are reported but do not decide the request.",
                 "Fixture grants are fictional: an accreditation or scheme "
                 "authorization here has no legal effect.",
             ),

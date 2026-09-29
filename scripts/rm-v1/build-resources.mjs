@@ -80,7 +80,7 @@ const proof = closed({
 const quantity = closed({
   quantityKind: iri,
   value: decimal,
-  unit: closed({ ucumCode: { enum: ['mg/kg', 'kg/kg'] } }),
+  unit: closed({ ucumCode: { enum: ['mg/kg', 'kg/kg', '%'] } }),
   uncertainty: closed({ expandedUncertainty: decimal, coverageFactor: decimal }),
 });
 const statusEntry = closed({

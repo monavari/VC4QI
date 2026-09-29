@@ -46,9 +46,10 @@ Design rules:
 
 `verifier/`, `evidence/`, `edge/`, `policy/`, `scope/`, `assessment/` and
 `presentation-query/` implement the manuscript-v2.1 graph model with
-`CredentialEvidenceReference` and three serialized relations. They remain the default
-API until the I5 switch, and stay available afterwards through the explicit
-[legacy profile](api.md#legacy-profile).
+`CredentialEvidenceReference` and three serialized relations. Since the I5 switch they
+are no longer the default API: the package root exposes them only under `legacy`, with
+the explicit [legacy profile](api.md#legacy-profile). The default path
+(`reliance/evaluate.ts`) imports none of them.
 
 ## TypeScript and Python
 
@@ -79,4 +80,7 @@ bundle is current. `site/m375a/` redirects to the RM tab so the poster QR code s
 valid. Node's `zlib` is replaced
 by a bounded gunzip shim (`apps/demo-web/poster/zlib-browser.ts`, using `fflate`), so
 status lists are verified in the browser too. Nothing is fetched and no server is
-needed; `tests/demonstrator.test.ts` runs the shipped bundle through its scenarios.
+needed; `tests/demonstrator.test.ts` runs the shipped bundle through its scenarios. The
+page's credential chain is not drawn by hand: it follows each credential's
+`termsOfUse` and `evidence` references from the target, places credentials by their
+longest reference path, and colours nodes and edges with the evaluator's result.

@@ -7,14 +7,17 @@ export * as proofs from './proofs/index.js';
 export * as status from './status/index.js';
 export * as trustRegistry from './trust-registry/index.js';
 export * as issuer from './issuer/index.js';
-export * as verifier from './verifier/index.js';
 export * as scope from './scope/index.js';
 export * as evidence from './evidence/index.js';
 export * as policy from './policy/index.js';
 export * as edge from './edge/index.js';
 export * as terms from './terms/index.js';
 export * as assessment from './assessment/index.js';
-export * as presentationQuery from './presentation-query/index.js';
 export * as reliance from './reliance/index.js';
-/** Explicit legacy compatibility: the v0.3 graph verifier, selected by profile, labelled legacy. */
+/** The default entry point: standards-first reliance under a verifier-installed binding and profile. */
+export { evaluateReliance, SUPPORTED_BINDINGS, type RelianceEvaluation } from './reliance/evaluate.js';
+/**
+ * Explicit legacy compatibility: the v0.3 graph verifier (`legacy.verifyCredentialGraph`,
+ * `legacy.evaluateLegacyProfile`) and presentation queries, labelled legacy. Not the default.
+ */
 export * as legacy from './legacy/index.js';

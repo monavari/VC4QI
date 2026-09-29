@@ -200,12 +200,12 @@ function assessGsReport(request: {
   };
 }
 
-// Run verifier in-browser, importing the core library directly
+// Run the legacy v0.3 graph verifier in-browser (explicit legacy namespace; I7 moves the explorer to reliance)
 export async function runVerifier(
   scenario: Scenario,
   mode: VerifyMode,
 ): Promise<VerificationTrace> {
-  const { verifyCredentialGraph } = await import('@qi-vc/core').then(m => m.verifier);
+  const { verifyCredentialGraph } = await import('@qi-vc/core').then(m => m.legacy);
   const passingTarget = scenario.nodes.find((n) => n.isTarget)!.credential;
   const target: JsonObject =
     mode === 'failing' && scenario.failingTarget

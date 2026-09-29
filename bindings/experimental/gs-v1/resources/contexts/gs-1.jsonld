@@ -9,6 +9,10 @@
     "GsSchemeAuthorization": "gs:GsSchemeAuthorization",
     "GsCertificate": "gs:GsCertificate",
     "GsProductPassport": "gs:GsProductPassport",
+    "GsTestReport": "gs:GsTestReport",
+    "GsInspectionReport": "gs:GsInspectionReport",
+    "GsTypeExaminationReference": "gs:GsTypeExaminationReference",
+    "GsFactoryInspectionReference": "gs:GsFactoryInspectionReference",
     "GsAuthorizationPolicy": "gs:GsAuthorizationPolicy",
 
     "authorizationCredential": "gs:authorizationCredential",
@@ -22,6 +26,7 @@
     "manufacturerIri": {"@id": "gs:manufacturer", "@type": "@id"},
     "productModelIri": {"@id": "gs:productModel", "@type": "@id"},
     "marking": "gs:marking",
-    "markIri": {"@id": "gs:mark", "@type": "@id"}
+    "markIri": {"@id": "gs:mark", "@type": "@id"},
+    "outcomeIri": {"@id": "gs:outcome", "@type": "@id"}
   }
 }
