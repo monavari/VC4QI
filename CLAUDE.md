@@ -16,8 +16,8 @@ original representations and safe JSON-LD processing. Local experimental binding
 terms and narrowly necessary reviewed dependencies are permitted by the handover;
 no universal replacement edge vocabulary or whole-stack framework rewrite is required.
 
-The new evaluator runs for the experimental bindings, but the default API is still the
-legacy verifier until the I5 switch. Keep actual commands/results and unknown mechanisms
+The new evaluator (`evaluateReliance`) is the default API since the I5 switch; the legacy
+verifier is reachable only under `legacy`. Keep actual commands/results and unknown mechanisms
 in the append-only report, the implementation evidence and the acceptance ledger. Setup,
 checks, demo guardrails and escalation rules are maintained in AGENTS.md rather than
 repeated here. Historical model-specific staffing instructions are superseded.

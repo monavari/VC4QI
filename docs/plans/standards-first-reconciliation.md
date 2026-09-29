@@ -1,8 +1,8 @@
 # Standards-first reconciliation: documentation and implementation plan
 
 Prepared 21 September 2026. **Status, 28 September: D0–D4 and I0–I4 complete; I5 steps
-1–3 complete (legacy profile, shared pipeline, all base use cases migrated); the
-default-API switch (I5 step 4) is next, then I6–I8.** Current capabilities are in
+1–4 complete (legacy profile, shared pipeline, all base use cases migrated, default API
+switched); the version draft is open, then I6–I8.** Current capabilities are in
 [status](../status.md); commands and results for each phase are in the
 [implementation evidence](evidence.md) and the append-only
 [report](../../RECONCILIATION_REPORT.md).
@@ -368,7 +368,10 @@ calibration binding (S18, S19, S21 passing). Step 3a migrates calibration-capabi
 test-report-supported-dcc with an instrument-calibration support obligation. Step 3c
 migrates gs-scheme-authorization to a new GS certification binding (competence AND
 scheme permission) and retains both GS application variants under the explicit legacy
-profile. Open: default-API switch and version draft.
+profile. Step 4 switches the default API: `evaluateReliance` / `evaluate_reliance`
+dispatch to the installed binding's evaluator with no fallback, the default path imports
+no legacy module, and the graph verifier and presentation queries move under `legacy`.
+Open: version draft.
 
 ### I6 — external scope answers and experimental recognition
 

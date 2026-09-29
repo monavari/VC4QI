@@ -2,6 +2,37 @@
 
 ## Unreleased
 
+- The GS binding now follows the legacy GS examples: a GS mark on a product unit rests
+  on a GS certificate, which needs the GS body's accreditation (competence), the
+  scheme authorization (now issued by a fictional authority in the ZLS role) and two
+  studies, a type examination and a factory inspection (gate 6). Each study must concern
+  the certificate, have passed, precede the certification and be issued under an
+  accreditation that permits the activity. New fixtures: `TL-A` (external testing
+  laboratory), `FI-1`, `TR-1` to `TR-3`, `GSC-3`, `DPP-3` to `DPP-5`. The accepted
+  product is now a hair dryer (household appliances); the toy is outside the scheme
+  scope. TypeScript and Python.
+
+- The RM certificate fixtures carry the full certified set of the BAM-M375a DRMD
+  transcription (As 178 mg/kg, Cu 57.68 %, Zn 38.2 %, Pb 3.07 %, all k = 2); the As
+  value remains the selected claim.
+
+- The demonstrator page is simpler. The credential card shows the whole claim (for RM,
+  the table of certified values). The credential chain is generated from the
+  credentials' own `termsOfUse` and `evidence` references and coloured by the
+  evaluator's result, instead of being drawn by hand. The GS tab starts at the GS mark;
+  the DPP tab checks whether a unit is bound to its certificate (early unit, another
+  company).
+
+- **Breaking (drafted as 0.4.0): the default API is standards-first reliance.** The
+  package root exports `evaluateReliance(request, catalog, manifest, profile)` and
+  `SUPPORTED_BINDINGS` (Python `evaluate_reliance`, `install_binding`), which run the
+  installed binding's gate 0–6 evaluator with no fallback. The v0.3 graph verifier and
+  presentation queries move under `legacy` (`legacy.verifyCredentialGraph`,
+  `legacy.presentationQuery`; subpaths `@qi-vc/core/legacy/verifier` and
+  `@qi-vc/core/legacy/presentation-query`; Python `qi_vc_core.legacy`). A Node helper,
+  `installBinding(directory, profileName)`, loads a binding's manifest, one profile and
+  its pinned resources. The default path imports no legacy module (checked by a test).
+
 - The demonstrator moves to `site/demo/` and covers four examples, chosen from a top bar:
   RM (BAM-M375a), DCC (direct accreditation, capability scope, NMI mandate, supported
   test report), GS (toy accepted, household appliance rejected because the scheme

@@ -3,7 +3,8 @@
 //   controller documents for the fictional NAB, producer and laboratory, and
 //   signed credentials A (accreditation), A2 (a second, direct accreditation that
 //   D178 does not reference), H (lab authority), O (operational scope),
-//   S (homogeneity study) and D178 (RM certificate, x = 178 mg/kg, U = 5, k = 2),
+//   S (homogeneity study) and D178 (RM certificate, x = 178 mg/kg, U = 5, k = 2, with the
+//   Cu, Zn and Pb values of the BAM-M375a DRMD transcription as further certified results),
 //   plus D197 and D520, hypothetical reissues with the same inputs and x = 197 / 520.
 //
 //   pnpm -C packages/core-ts exec tsx scripts/generate-rm-v1-artifacts.ts          # write files
@@ -251,6 +252,16 @@ async function main() {
     relatedResource: integrity([H_ID, hText]),
   }, lab, '2026-01-15T00:00:00Z')), FIXTURE);
 
+  const certified = (element: string, value: string, ucumCode: string, expandedUncertainty: string) => ({
+    propertyIri: rm(element),
+    methodIri: rm('M1'),
+    data: { quantity: {
+      quantityKind: rm('MassFraction'),
+      value,
+      unit: { ucumCode },
+      uncertainty: { expandedUncertainty, coverageFactor: '2' },
+    } },
+  });
   // D178 is the certificate; D197 and D520 are hypothetical reissues by the same
   // fictional producer (fresh valid signatures) for the 197/520 witness cases.
   for (const value of ['178', '197', '520']) {
@@ -258,22 +269,21 @@ async function main() {
     record(D_ID, `credentials/D${value}.json`, 'application/vc', serialize(await sign({
       ...envelope(D_ID, 'RmCertificate', 'certificate.json', PRODUCER,
         '2026-02-01T00:00:00Z', '2028-02-01T00:00:00Z'),
+      name: `Reference material certificate, CuZn39Pb3 disc lot 1${value === '178' ? '' : ' (hypothetical reissue)'}`,
       credentialSubject: {
         id: BATCH,
         activityTime: '2026-01-20T00:00:00Z',
         materials: [{ matrixIri: rm('CuZn39Pb3'), formIri: rm('Disc'), name: 'Fictional CuZn39Pb3 brass disc' }],
         materialPropertiesList: [{
           isCertified: true,
-          results: [{
-            propertyIri: rm('As'),
-            methodIri: rm('M1'),
-            data: { quantity: {
-              quantityKind: rm('MassFraction'),
-              value,
-              unit: { ucumCode: 'mg/kg' },
-              uncertainty: { expandedUncertainty: '5', coverageFactor: '2' },
-            } },
-          }],
+          // The certified set of the BAM-M375a DRMD transcription (examples/rm/source):
+          // As first (the selected claim), then Cu, Zn and Pb, all with k = 2.
+          results: [
+            certified('As', value, 'mg/kg', '5'),
+            certified('Cu', '57.68', '%', '0.14'),
+            certified('Zn', '38.2', '%', '0.4'),
+            certified('Pb', '3.07', '%', '0.06'),
+          ],
         }],
       },
       termsOfUse: policy(O_ID, 'RmOperationalScope'),

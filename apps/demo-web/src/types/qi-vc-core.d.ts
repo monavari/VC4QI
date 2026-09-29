@@ -76,7 +76,8 @@ export interface EcdsaMultikeyPair {
   secretKeyMultibase?: string;
 }
 
-export declare const verifier: {
+/** Legacy v0.3 graph verifier: the explorer shows the legacy model (I7 moves it to reliance). */
+export declare const legacy: {
   verifyCredentialGraph: (
     targetCredential: JsonObject,
     policy: unknown,

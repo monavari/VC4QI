@@ -34,10 +34,7 @@ const loaded = Object.fromEntries((['rm', 'cal', 'gs'] as const).map(key => [key
 
 // ---------------------------------------------------------------- examples and cases
 
-export interface NodeSpec { readonly uri: string; readonly title: string; readonly subtitle: string; readonly kind: 'acc' | 'ops' | 'sup' | 'dom' }
-export interface EdgeSpec { readonly label: string; readonly carrier: string; readonly style: '' | 'dash' | 'dot'; readonly state: 'authorized' | 'supported' | 'present' }
-/** Rows alternate nodes and edges; each row has one cell per column (null = empty). */
-export type GraphRow = { readonly nodes: readonly (string | null)[] } | { readonly edges: readonly (EdgeSpec | null)[] };
+const short = (iri: unknown) => String(iri).split(/[#/:]/).pop() ?? '';
 
 export interface CaseSpec {
   readonly id: string;
@@ -48,19 +45,15 @@ export interface CaseSpec {
   readonly target: string;
   readonly claims: readonly { readonly id: string; readonly sourcePointer: string }[];
   readonly supplied: readonly string[];
-  /** The target's decisive value, and the unsigned change the tamper test makes to it. */
+  /** The unsigned change the tamper test makes to the target's bytes. */
   readonly tamper: readonly [string, string];
   readonly withhold: { readonly uri: string; readonly label: string };
-  readonly headline: (target: Record<string, unknown>) => string;
-  readonly nodes: Readonly<Record<string, NodeSpec>>;
-  readonly graph: readonly GraphRow[];
 }
 export interface ExampleSpec {
   readonly id: 'rm' | 'dcc' | 'gs' | 'dpp';
   readonly tab: string;
   readonly title: string;
   readonly intro: string;
-  readonly badge: readonly [string, string];
   readonly caseLabel: string;
   readonly cases: readonly CaseSpec[];
   /** Optional verifier choice: RM asks fit-for-use or not; DCC can restrict accepted routes. */
@@ -68,46 +61,12 @@ export interface ExampleSpec {
   readonly note: string;
 }
 
-const RM = 'https://vc4qi.example/bindings/rm/1#';
-const CAL = 'https://vc4qi.example/bindings/cal/1#';
-const GS = 'https://vc4qi.example/bindings/gs/1#';
-const short = (iri: unknown) => String(iri).split(/[#/:]/).pop() ?? '';
-const subjectOf = (d: Record<string, unknown>) => (d.credentialSubject ?? {}) as Record<string, unknown>;
-type Group = { quantityKindIri: string; methodIris?: string[]; results: { value: string; unit: string; expandedUncertainty: string }[] };
-const groupsOf = (d: Record<string, unknown>) => (subjectOf(d).measurementGroups ?? []) as Group[];
-const groupText = (g: Group) => g.results.map(r => `${r.value} ${r.unit} ± ${r.expandedUncertainty} ${r.unit}`).join(', ');
-
-const RM_URI = {
-  A: 'https://nab.vc4qi.example/credentials/A', H: 'https://nab.vc4qi.example/credentials/H',
-  O: 'https://producer.vc4qi.example/credentials/O', S: 'https://lab.vc4qi.example/credentials/S',
-};
-const rmNodes = (x: string): Record<string, NodeSpec> => ({
-  A: { uri: RM_URI.A, kind: 'acc', title: 'A  Accreditation', subtitle: 'NAB → producer · M1, M2 · 50–500 mg/kg' },
-  H: { uri: RM_URI.H, kind: 'acc', title: 'H  Lab authority', subtitle: 'NAB → laboratory · homogeneity studies' },
-  O: { uri: RM_URI.O, kind: 'ops', title: 'O  Operational scope', subtitle: 'producer-issued · M1 only · 50–500 mg/kg' },
-  S: { uri: RM_URI.S, kind: 'sup', title: 'S  Homogeneity study', subtitle: 'same batch · homogeneous' },
-  D: { uri: `https://producer.vc4qi.example/credentials/D${x}`, kind: 'dom', title: 'D  RM certificate', subtitle: `As = ${x} ± 5 mg/kg · M1` },
-});
-const RM_GRAPH: GraphRow[] = [
-  { nodes: ['A', 'H'] },
-  { edges: [{ label: 'bounded projection', carrier: 'termsOfUse · O within A', style: '', state: 'authorized' },
-    { label: 'laboratory authority', carrier: 'termsOfUse', style: 'dash', state: 'supported' }] },
-  { nodes: ['O', 'S'] },
-  { edges: [{ label: 'authority use', carrier: 'termsOfUse · claim in scope', style: 'dash', state: 'authorized' },
-    { label: 'support', carrier: 'evidence · same batch', style: 'dot', state: 'supported' }] },
-  { nodes: ['D', null] },
-];
 const rmCase = (x: '178' | '197' | '520', sublabel: string): CaseSpec => ({
-  id: x, label: `${x} mg/kg`, sublabel, binding: 'rm', profile: 'rm-verifier-1',
+  id: x, label: `As ${x}`, sublabel, binding: 'rm', profile: 'rm-verifier-1',
   target: `https://producer.vc4qi.example/credentials/D${x}`,
   claims: [{ id: 'as', sourcePointer: '/credentialSubject/materialPropertiesList/0/results/0' }],
   supplied: [], tamper: [`"value": "${x}"`, '"value": "150"'],
-  withhold: { uri: RM_URI.S, label: 'Withhold the homogeneity study' },
-  headline: d => {
-    const q = (subjectOf(d).materialPropertiesList as { results: { data: { quantity: { value: string; uncertainty: { expandedUncertainty: string } } } }[] }[])[0]!.results[0]!.data.quantity;
-    return `As = ${q.value} ± ${q.uncertainty.expandedUncertainty} mg/kg`;
-  },
-  nodes: rmNodes(x), graph: RM_GRAPH,
+  withhold: { uri: 'https://lab.vc4qi.example/credentials/S', label: 'Withhold the homogeneity study' },
 });
 
 const CAL_URI = {
@@ -117,116 +76,149 @@ const CAL_URI = {
   T: 'https://nab.vc4qi.example/credentials/CAL-T', REPORT: 'https://testlab.vc4qi.example/credentials/REPORT-1',
 };
 const G = (i: number) => ({ id: `g${i + 1}`, sourcePointer: `/credentialSubject/measurementGroups/${i}` });
-const calHeadline = (d: Record<string, unknown>) => groupsOf(d).map((g, i) => `g${i + 1}: ${short(g.quantityKindIri)} ${groupText(g)}`).join(' · ');
-const CA_NODE: NodeSpec = { uri: CAL_URI.CA, kind: 'acc', title: 'CAL-A  Accreditation', subtitle: 'NAB → lab · pressure 0–10 MPa · CMC 0.5 kPa' };
 const DCC_CASES: CaseSpec[] = [
-  { id: 'direct', label: 'Accredited lab', sublabel: 'DCC-1, two groups', binding: 'cal', profile: 'cal-verifier-1',
+  { id: 'direct', label: 'Accredited lab', sublabel: 'DCC-1', binding: 'cal', profile: 'cal-verifier-1',
     target: CAL_URI.DCC1, claims: [G(0), G(1)], supplied: [CAL_URI.CA], tamper: ['"value": "1000"', '"value": "15000"'],
-    withhold: { uri: CAL_URI.CA, label: 'Withhold the accreditation' }, headline: calHeadline,
-    nodes: { CA: CA_NODE, D: { uri: CAL_URI.DCC1, kind: 'dom', title: 'DCC-1  Calibration certificate', subtitle: 'pressure transmitter · 2 groups' } },
-    graph: [{ nodes: ['CA'] }, { edges: [{ label: 'authority use', carrier: 'termsOfUse · every group in scope', style: 'dash', state: 'authorized' }] }, { nodes: ['D'] }] },
-  { id: 'capability', label: 'Capability scope', sublabel: 'DCC-2 under CAL-O', binding: 'cal', profile: 'cal-verifier-capability-1',
+    withhold: { uri: CAL_URI.CA, label: 'Withhold the accreditation' } },
+  { id: 'capability', label: 'Capability scope', sublabel: 'DCC-2', binding: 'cal', profile: 'cal-verifier-capability-1',
     target: CAL_URI.DCC2, claims: [G(0)], supplied: [CAL_URI.O, CAL_URI.CA], tamper: ['"value": "1000"', '"value": "5000"'],
-    withhold: { uri: CAL_URI.O, label: 'Withhold the operational scope' }, headline: calHeadline,
-    nodes: { CA: CA_NODE,
-      O: { uri: CAL_URI.O, kind: 'ops', title: 'CAL-O  Operational scope', subtitle: 'lab-issued · 0–2 MPa · CMC 0.8 kPa' },
-      D: { uri: CAL_URI.DCC2, kind: 'dom', title: 'DCC-2  Calibration certificate', subtitle: 'pressure gauge' } },
-    graph: [{ nodes: ['CA'] }, { edges: [{ label: 'bounded projection', carrier: 'termsOfUse · O within CA, no widening', style: '', state: 'authorized' }] },
-      { nodes: ['O'] }, { edges: [{ label: 'authority use', carrier: 'termsOfUse · claim in O', style: 'dash', state: 'authorized' }] }, { nodes: ['D'] }] },
-  { id: 'nmi', label: 'National institute', sublabel: 'DCC-N, statutory mandate', binding: 'cal', profile: 'cal-verifier-nmi-1',
+    withhold: { uri: CAL_URI.O, label: 'Withhold the operational scope' } },
+  { id: 'nmi', label: 'National institute', sublabel: 'DCC-N', binding: 'cal', profile: 'cal-verifier-nmi-1',
     target: CAL_URI.DCCN, claims: [G(0)], supplied: [CAL_URI.M], tamper: ['"value": "20"', '"value": "200"'],
-    withhold: { uri: CAL_URI.M, label: 'Withhold the mandate' }, headline: calHeadline,
-    nodes: { M: { uri: CAL_URI.M, kind: 'acc', title: 'CAL-M  Statutory mandate', subtitle: 'ministry → NMI · 0–100 MPa · no accreditation' },
-      D: { uri: CAL_URI.DCCN, kind: 'dom', title: 'DCC-N  Calibration certificate', subtitle: 'transfer standard' } },
-    graph: [{ nodes: ['M'] }, { edges: [{ label: 'statutory authority', carrier: 'termsOfUse · claim in mandate', style: 'dash', state: 'authorized' }] }, { nodes: ['D'] }] },
-  { id: 'report', label: 'Test report', sublabel: 'REPORT-1 needs DCC-1', binding: 'cal', profile: 'cal-verifier-test-report-1',
+    withhold: { uri: CAL_URI.M, label: 'Withhold the mandate' } },
+  { id: 'report', label: 'Test report', sublabel: 'REPORT-1', binding: 'cal', profile: 'cal-verifier-test-report-1',
     target: CAL_URI.REPORT, claims: [G(0)], supplied: [CAL_URI.T], tamper: ['"value": "2"', '"value": "30"'],
-    withhold: { uri: CAL_URI.DCC1, label: "Withhold the instrument's calibration" }, headline: calHeadline,
-    nodes: { T: { uri: CAL_URI.T, kind: 'acc', title: 'CAL-T  Testing accreditation', subtitle: 'NAB → test lab · 0–25 MPa' }, CA: CA_NODE,
-      C: { uri: CAL_URI.DCC1, kind: 'sup', title: 'DCC-1  Instrument calibration', subtitle: 'pressure transmitter used in the test' },
-      D: { uri: CAL_URI.REPORT, kind: 'dom', title: 'REPORT-1  Test report', subtitle: 'valve pressure test' } },
-    graph: [{ nodes: [null, 'CA'] }, { edges: [null, { label: 'calibration authority', carrier: 'termsOfUse · every group in scope', style: 'dash', state: 'supported' }] },
-      { nodes: ['T', 'C'] },
-      { edges: [{ label: 'authority use', carrier: 'termsOfUse · claim in scope', style: 'dash', state: 'authorized' }, { label: 'support', carrier: 'evidence · same instrument, before the test', style: 'dot', state: 'supported' }] },
-      { nodes: ['D', null] }] },
+    withhold: { uri: CAL_URI.DCC1, label: "Withhold the instrument's calibration" } },
 ];
 
 const GS_URI = {
-  A: 'https://nab.vc4qi.example/credentials/GS-A', S: 'https://scheme.vc4qi.example/credentials/GS-S',
   C1: 'https://gs-body.vc4qi.example/credentials/GSC-1', C2: 'https://gs-body.vc4qi.example/credentials/GSC-2',
+  C3: 'https://gs-body.vc4qi.example/credentials/GSC-3', TR1: 'https://gs-body.vc4qi.example/credentials/TR-1',
+  TR2: 'https://testlab-gs.vc4qi.example/credentials/TR-2', TR3: 'https://gs-body.vc4qi.example/credentials/TR-3',
 };
-const gsNodes = (target: string, subtitle: string): Record<string, NodeSpec> => ({
-  A: { uri: GS_URI.A, kind: 'acc', title: 'GS-A  Accreditation', subtitle: 'NAB → GS body · toys, household appliances' },
-  S: { uri: GS_URI.S, kind: 'acc', title: 'GS-S  Scheme authorization', subtitle: 'scheme owner → GS body · toys only' },
-  D: { uri: target, kind: 'dom', title: `${short(target)}  GS certificate`, subtitle },
-});
-const GS_GRAPH: GraphRow[] = [
-  { nodes: ['A', 'S'] },
-  { edges: [{ label: 'competence', carrier: 'termsOfUse · category and standards', style: 'dash', state: 'authorized' },
-    { label: 'scheme permission', carrier: 'termsOfUse · category', style: 'dash', state: 'authorized' }] },
-  { nodes: ['D', null] },
-];
-const gsHeadline = (d: Record<string, unknown>) => {
-  const c = subjectOf(d).certification as { productCategoryIri: string; standardIris?: string[] };
-  return `GS mark: ${short(c.productCategoryIri)} against ${(c.standardIris ?? []).map(short).join(', ') || 'no standard'}`;
-};
-const gsCase = (id: string, label: string, sublabel: string, target: string, standard: string): CaseSpec => ({
-  id, label, sublabel, binding: 'gs', profile: 'gs-verifier-1', target,
-  claims: [{ id: 'gs', sourcePointer: '/credentialSubject/certification' }], supplied: [GS_URI.A, GS_URI.S],
-  tamper: [`${GS}${standard}"`, `${GS}EN-71-3"`], withhold: { uri: GS_URI.S, label: 'Withhold the scheme authorization' },
-  headline: gsHeadline, nodes: gsNodes(target, sublabel), graph: GS_GRAPH,
-});
-
-const DPP_URI = { P1: 'https://maker.vc4qi.example/credentials/DPP-1', P2: 'https://maker.vc4qi.example/credentials/DPP-2' };
-const dppCase = (id: string, label: string, sublabel: string, target: string, certificate: string, model: string): CaseSpec => ({
+const markCase = (id: string, label: string, sublabel: string, target: string, withhold: CaseSpec['withhold']): CaseSpec => ({
   id, label, sublabel, binding: 'gs', profile: 'gs-verifier-dpp-1', target,
   claims: [{ id: 'mark', sourcePointer: '/credentialSubject/marking' }], supplied: [],
-  tamper: ['-sn-', '-sn-9'], withhold: { uri: certificate, label: 'Withhold the GS certificate' },
-  headline: d => `GS mark on unit ${short(subjectOf(d).id)} of model ${short(subjectOf(d).productModelIri)}`,
-  nodes: {
-    A: gsNodes(certificate, '').A!, S: gsNodes(certificate, '').S!,
-    C: { uri: certificate, kind: 'ops', title: `${short(certificate)}  GS certificate`, subtitle: `model ${model} · names the manufacturer` },
-    D: { uri: target, kind: 'dom', title: `${short(target)}  Product passport`, subtitle: 'manufacturer-issued · one serialized unit' },
-  },
-  graph: [
-    { nodes: ['A', 'S'] },
-    { edges: [{ label: 'competence', carrier: 'termsOfUse · category and standards', style: 'dash', state: 'authorized' },
-      { label: 'scheme permission', carrier: 'termsOfUse · category', style: 'dash', state: 'authorized' }] },
-    { nodes: ['C', null] },
-    { edges: [{ label: 'certified product', carrier: 'termsOfUse · same model, same manufacturer', style: 'dash', state: 'authorized' }, null] },
-    { nodes: ['D', null] },
-  ],
+  tamper: ['-sn-', '-sn-9'], withhold,
 });
+const withholdStudy = (uri: string) => ({ uri, label: 'Withhold the type examination' });
+const withholdCertificate = (uri: string) => ({ uri, label: 'Withhold the GS certificate' });
 
 export const EXAMPLES: readonly ExampleSpec[] = [
-  { id: 'rm', tab: 'RM', title: 'A reference material you can verify', badge: ['BAM-M375a', 'CuZn39Pb3'],
-    intro: 'A certified reference material (arsenic in leaded brass) under an accreditation, the producer\'s operational scope and an independent homogeneity study.',
-    caseLabel: 'Certified arsenic mass fraction',
-    cases: [rmCase('178', 'certificate'), rmCase('197', 'hypothetical reissue'), rmCase('520', 'hypothetical reissue')],
-    choice: { label: 'What the verifier asks', options: [
-      { id: 'authorized', label: 'Is it authorized?', sublabel: 'no limit applied' },
-      { id: 'fit', label: 'Is it fit for my use?', sublabel: 'As + U ≤ 200 mg/kg' }] },
-    note: 'Certified value and material from BAM-M375a. The accreditation body, producer, laboratory, operational scope, methods M1 and M2 and all keys are fictional; BAM does not issue these credentials. The 197 and 520 certificates are hypothetical reissues with their own valid signatures.' },
-  { id: 'dcc', tab: 'DCC', title: 'A calibration certificate you can verify', badge: ['DCC', 'pressure'],
-    intro: 'Digital calibration certificates and a test report. Each measurement group is a separate claim, covered by one complete scope record, and a reported uncertainty may not be better than the admitted capability.',
-    caseLabel: 'Who issued the certificate',
+  { id: 'rm', tab: 'RM', title: 'Certified reference material',
+    intro: 'BAM-M375a, leaded brass: may I rely on the certified arsenic value?',
+    caseLabel: 'Certified As mass fraction (mg/kg)',
+    cases: [rmCase('178', 'certificate'), rmCase('197', 'hypothetical'), rmCase('520', 'hypothetical')],
+    choice: { label: 'The verifier asks', options: [
+      { id: 'authorized', label: 'Authorized?', sublabel: 'no limit' },
+      { id: 'fit', label: 'Fit for use?', sublabel: 'As + U ≤ 200' }] },
+    note: 'Certified values and material from the BAM-M375a DRMD. Accreditation body, producer, laboratory, scopes, methods and keys are fictional; BAM does not issue these credentials. 197 and 520 are hypothetical reissues.' },
+  { id: 'dcc', tab: 'DCC', title: 'Calibration certificate',
+    intro: 'May I rely on each measurement group of this calibration?',
+    caseLabel: 'Issuer',
     cases: DCC_CASES,
-    choice: { label: "The verifier's profile", options: [
-      { id: 'own', label: 'Accepts this route', sublabel: "the case's own profile" },
+    choice: { label: 'The verifier accepts', options: [
+      { id: 'own', label: 'This route', sublabel: 'own profile' },
       { id: 'direct-only', label: 'Direct accreditation only', sublabel: 'cal-verifier-1' }] },
-    note: 'A JSON-LD simplification of DCC measurement results, not native DCC XML. The accreditation bodies, laboratories, ministry, institute and all keys are fictional; a mandate here has no legal effect.' },
-  { id: 'gs', tab: 'GS', title: 'A GS certificate you can verify', badge: ['GS', 'certification'],
-    intro: 'The GS mark relies on two independent grants: the certification body\'s accreditation (competence) AND the scheme owner\'s permission. Neither alone is enough, and both must cover the product.',
-    caseLabel: 'Certified product',
-    cases: [gsCase('toy', 'Toy', 'GSC-1 · EN 71-1', GS_URI.C1, 'EN-71-1'), gsCase('appliance', 'Hair dryer', 'GSC-2 · EN 60335', GS_URI.C2, 'EN-60335-1')],
-    note: '(Competence AND scheme permission) is a fictional profile example, not a universal GS or legal rule. The accreditation body, scheme owner, GS body and all keys are fictional.' },
-  { id: 'dpp', tab: 'DPP', title: 'A product passport you can verify', badge: ['DPP', 'one unit'],
-    intro: "A manufacturer's passport for one serialized product claims the GS mark. The claim holds only through a GS certificate for that model which names the manufacturer, was in force when the unit was placed on the market, and is itself authorized.",
-    caseLabel: 'Product unit',
-    cases: [dppCase('toy', 'Toy unit', 'DPP-1 via GSC-1', DPP_URI.P1, GS_URI.C1, 'toy-001'),
-      dppCase('appliance', 'Hair dryer unit', 'DPP-2 via GSC-2', DPP_URI.P2, GS_URI.C2, 'hair-dryer-001')],
-    note: 'An experimental product passport inside the GS binding, to show reliance on a passport claim; it is not EU Digital Product Passport (ESPR) conformance. The manufacturer, GS body, accreditation body, scheme owner and all keys are fictional.' },
+    note: 'A JSON-LD simplification of DCC results, not native DCC XML. All parties and keys are fictional.' },
+  { id: 'gs', tab: 'GS', title: 'GS mark',
+    intro: 'May I rely on the GS mark on this product?',
+    caseLabel: 'Product',
+    cases: [
+      markCase('in-house', 'Hair dryer HD-01', 'GS body tested', 'https://maker.vc4qi.example/credentials/DPP-1', withholdStudy(GS_URI.TR1)),
+      markCase('external', 'Hair dryer HD-02', 'external lab tested', 'https://maker.vc4qi.example/credentials/DPP-3', withholdStudy(GS_URI.TR2)),
+      markCase('toy', 'Toy 001', 'outside ZLS scope', 'https://maker.vc4qi.example/credentials/DPP-2', withholdStudy(GS_URI.TR3)),
+    ],
+    note: 'Shaped like the legacy GS examples: mark → GS certificate → accreditation, ZLS-role scheme authorization, type examination and factory inspection. A fictional profile, not a legal GS rule; all parties and keys are fictional.' },
+  { id: 'dpp', tab: 'DPP', title: 'Product passport',
+    intro: 'Is this unit really covered by the GS certificate it cites?',
+    caseLabel: 'Passport',
+    cases: [
+      markCase('unit', 'Unit sn-0042', 'on market after certification', 'https://maker.vc4qi.example/credentials/DPP-1', withholdCertificate(GS_URI.C1)),
+      markCase('early', 'Unit sn-0001', 'on market before certification', 'https://maker.vc4qi.example/credentials/DPP-4', withholdCertificate(GS_URI.C1)),
+      markCase('clone', 'Unit sn-9999', 'issued by another company', 'https://clone.vc4qi.example/credentials/DPP-5', withholdCertificate(GS_URI.C1)),
+    ],
+    note: 'An experimental passport in the GS binding, not EU Digital Product Passport (ESPR) conformance. All parties and keys are fictional.' },
 ];
+
+// ---------------------------------------------------------------- the credential graph
+
+/** Party labels for the fictional controllers, by host. */
+const PARTY: Record<string, string> = {
+  nab: 'Accreditation body', producer: 'RM producer', lab: 'Laboratory', ministry: 'Ministry', nmi: 'NMI',
+  testlab: 'Test laboratory', zls: 'ZLS role', 'gs-body': 'GS body', maker: 'Manufacturer',
+  'testlab-gs': 'Test laboratory', clone: 'Other company',
+};
+const party = (iri: unknown) => {
+  const host = /^https:\/\/([^./]+)\./.exec(String(iri))?.[1];
+  return host === undefined ? String(iri).split('#')[0]!.split(':').pop()! : PARTY[host] ?? host;
+};
+const ROLE: Record<string, string> = {
+  RmAccreditation: 'Accreditation', RmLabAuthority: 'Laboratory authority', RmOperationalScope: 'Operational scope',
+  RmStudy: 'Homogeneity study', RmCertificate: 'RM certificate (DRMD)',
+  CalAccreditation: 'Accreditation', CalOperationalScope: 'Operational scope', CalLegalMandate: 'Statutory mandate',
+  CalCertificate: 'Calibration certificate', CalTestReport: 'Test report',
+  GsAccreditation: 'Accreditation', GsSchemeAuthorization: 'Scheme authorization', GsCertificate: 'GS certificate',
+  GsTestReport: 'Type examination', GsInspectionReport: 'Factory inspection', GsProductPassport: 'GS mark · product',
+};
+export interface GraphNode {
+  readonly uri: string; readonly name: string; readonly role: string; readonly parties: string;
+  readonly layer: number; readonly present: boolean; readonly state: SemanticState; readonly target: boolean;
+}
+export interface GraphEdge { readonly from: string; readonly to: string; readonly kind: 'authority' | 'support'; readonly state: SemanticState | 'not_required' }
+export interface Graph { readonly nodes: readonly GraphNode[]; readonly edges: readonly GraphEdge[] }
+
+/**
+ * The graph is read from the credentials themselves: from the target, every
+ * termsOfUse authorizationCredential (authority) and evidence entry (support) is
+ * followed. Layers are the longest reference path from the target. Node states are the
+ * evaluator's per-artifact verification. The target's authority links take the answer
+ * to "authorized", links below a study the answer to "supported", and other links the
+ * verification of the credential they point to.
+ */
+function buildGraph(target: string, texts: Record<string, string>, result: RelianceResult,
+  authorized: SemanticState, supported: SemanticState | 'not_required'): Graph {
+  const docs = new Map<string, Record<string, unknown>>();
+  for (const [uri, text] of Object.entries(texts)) { try { docs.set(uri, JSON.parse(text) as Record<string, unknown>); } catch { /* not JSON */ } }
+  const refs = (d: Record<string, unknown> | undefined) => [
+    ...((d?.termsOfUse ?? []) as { authorizationCredential?: { id?: string } }[])
+      .map(t => t.authorizationCredential?.id).filter((x): x is string => typeof x === 'string').map(to => ({ to, kind: 'authority' as const })),
+    ...((d?.evidence ?? []) as { id?: string }[]).map(e => e.id).filter((x): x is string => typeof x === 'string')
+      .map(to => ({ to, kind: 'support' as const })),
+  ];
+  const verification = new Map(result.artifactVerification.map(a => [a.artifactId, a.state]));
+  const layer = new Map<string, number>([[target, 0]]);
+  const underSupport = new Set<string>();
+  const edges: GraphEdge[] = [];
+  const queue: [string, boolean][] = [[target, false]];
+  const seenEdge = new Set<string>();
+  while (queue.length > 0) {
+    const [uri, viaSupport] = queue.shift()!;
+    for (const { to, kind } of refs(docs.get(uri))) {
+      const key = `${uri}>${to}`;
+      const support = viaSupport || kind === 'support';
+      if (!seenEdge.has(key)) {
+        seenEdge.add(key);
+        // The target's own authority links carry the answer to "authorized"; deeper links
+        // show their credential's verification; links below a study carry "supported".
+        edges.push({ from: uri, to, kind,
+          state: support ? supported : uri === target ? authorized : verification.get(to) ?? 'not_established' });
+      }
+      const depth = (layer.get(uri) ?? 0) + 1;
+      if ((layer.get(to) ?? -1) < depth && depth < 8) { layer.set(to, depth); queue.push([to, support]); }
+      else if (support && !underSupport.has(to)) { underSupport.add(to); }
+    }
+  }
+  const nodes = [...layer].map(([uri, l]) => {
+    const d = docs.get(uri);
+    const type = Array.isArray(d?.type) ? String((d.type as unknown[])[1]) : '';
+    const subject = (d?.credentialSubject ?? {}) as Record<string, unknown>;
+    return { uri, name: short(uri), role: ROLE[type] ?? (type || 'not supplied'), layer: l, present: d !== undefined, target: uri === target,
+      parties: d === undefined ? 'withheld' : `${party(d.issuer)} → ${party(subject.id)}`,
+      state: verification.get(uri) ?? 'not_established' };
+  });
+  return { nodes, edges };
+}
 
 // ---------------------------------------------------------------- evaluation
 
@@ -247,14 +239,11 @@ export interface ScenarioResult {
   readonly profile: string;
   readonly result: RelianceResult;
   readonly questions: readonly QuestionResult[];
-  readonly headline: string;
   readonly target: Record<string, unknown>;
   readonly texts: Readonly<Record<string, string>>;
-  readonly present: Readonly<Record<string, boolean>>;
-  readonly protection: Readonly<Record<string, SemanticState>>;
+  readonly graph: Graph;
 }
 
-const artifactOf = (entry: TraceEntry) => (entry.nodeUse.split('|')[0] ?? '').trim();
 const all = (entries: readonly TraceEntry[]): SemanticState =>
   entries.length === 0 ? 'not_established' : semanticAnd(entries.map(e => e.state));
 const first = (entries: readonly TraceEntry[], state: SemanticState) => entries.find(e => e.state === state);
@@ -344,16 +333,9 @@ export async function evaluateScenario(options: ScenarioOptions): Promise<Scenar
           : 'This example asks only whether the claim is authorized; the binding installs no decision rule.' },
   ];
 
-  const present: Record<string, boolean> = {};
-  const protectionByUri: Record<string, SemanticState> = {};
-  for (const node of Object.values(spec.nodes)) {
-    present[node.uri] = inputs.some(i => i.uri === node.uri);
-    const entries = protection.filter(e => artifactOf(e) === node.uri);
-    protectionByUri[node.uri] = entries.length ? all(entries) : 'not_established';
-  }
   const target = JSON.parse(texts[spec.target]!) as Record<string, unknown>;
-  return { options, example, spec, profile: profileName, result, questions, headline: spec.headline(target), target,
-    texts, present, protection: protectionByUri };
+  const graph = buildGraph(spec.target, texts, result, authorizedState, supportState);
+  return { options, example, spec, profile: profileName, result, questions, target, texts, graph };
 }
 
 export const buildInfo = {

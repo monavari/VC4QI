@@ -1,8 +1,9 @@
 # Status
 
 **28 September 2026.** The standards-first evaluator decides real requests on signed
-fixtures for all base use cases, in TypeScript and Python. The default public API is
-still the legacy verifier; switching it is the next step. Nothing here is a release, and
+fixtures for all base use cases, in TypeScript and Python, and is the default public API
+(`evaluateReliance` / `evaluate_reliance`); the legacy verifier is reachable only under
+`legacy`. Nothing here is a release, and
 no real accreditation or external endorsement is claimed.
 
 ## What runs today
@@ -13,7 +14,7 @@ no real accreditation or external endorsement is claimed.
 | Signed fixtures | Generated for RM (A, A2, O, D178/197/520, S, H), calibration (CAL-A, CAL-O, CAL-M, CAL-T, DCC-1, DCC-2, DCC-N, REPORT-1) and GS (GS-A, GS-S, GSC-1), with controller documents and status lists |
 | Protection and time | `eddsa-rdfc-2022` over JSON-LD safe mode, authorized keys, exact-byte integrity, Bitstring status with freshness, validity at the activity time |
 | Legacy compatibility | Explicit, labelled legacy profile with no fallback; both GS application variants verify under it |
-| Default API | Still the legacy `verifyCredentialGraph`; the switch is I5 step 4 |
+| Default API | `evaluateReliance` (Python `evaluate_reliance`) over the installed binding; the v0.3 graph verifier and presentation queries only under `legacy` (I5 step 4) |
 | Selective disclosure | TypeScript `ecdsa-sd-2023` on legacy fixtures; Python evaluates disclosed subsets semantically only |
 | Demo | The demonstrator runs the full evaluators (gates 0–6) in the browser for RM, DCC, GS and DPP examples; the older graph explorer still shows the legacy model |
 | Not implemented | Authority-issued answers and Recognized Entities (I6), compiled-graph demo (I7), final reproducibility package (I8), wallet, verifier service and LIMS adapter |
@@ -37,7 +38,7 @@ discovered outside the credential chain).
 | I2 | Gate trace, status lists, plan refusal and resource budgets (25 September) |
 | I3 | Complete routes, global restriction and independently authorized support (25 September) |
 | I4 | Claim mapping, scope coverage, conformity, time rules and parity; first accepted request (27 September) |
-| I5 | Legacy profile, shared gate 0–3 pipeline, calibration and GS bindings, all base use cases migrated (28 September); default-API switch open |
+| I5 | Legacy profile, shared gate 0–3 pipeline, calibration and GS bindings, all base use cases migrated, default API switched (28 September); version draft open |
 | I6–I8 | Not started |
 
 Commands, results and limitations for every phase are in the

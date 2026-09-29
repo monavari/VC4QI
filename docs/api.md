@@ -4,18 +4,30 @@ VC4QI ships one canonical TypeScript library, `@qi-vc/core` (`packages/core-ts`)
 Python mirror, `qi_vc_core` (`packages/core-py`). Both are unreleased research code at
 version 0.3.0; the new reliance API may still change.
 
-## Two evaluators, side by side
+## Default and legacy entry points
 
-| | Standards-first reliance (new) | Legacy graph verifier |
+| | Standards-first reliance (default) | Legacy graph verifier |
 | --- | --- | --- |
-| Entry points (TS) | `evaluateRmSlice`, `evaluateCalSlice`, `evaluateGsSlice` from `@qi-vc/core/reliance/{rm,cal,gs}-v1-slice` | `verifier.verifyCredentialGraph` (default today), or `legacy.evaluateLegacyProfile` |
-| Entry points (Python) | `evaluate_rm_slice` in `qi_vc_core.reliance.rm_v1_artifacts`, `evaluate_cal_slice` in `…cal_v1`, `evaluate_gs_slice` in `…gs_v1` | `verify_credential_graph`, or `qi_vc_core.legacy.evaluate_legacy_profile` |
+| Entry points (TS) | `evaluateReliance` from `@qi-vc/core`; per binding `evaluateRmSlice`, `evaluateCalSlice`, `evaluateGsSlice` from `@qi-vc/core/reliance/{rm,cal,gs}-v1-slice` | `legacy.evaluateLegacyProfile`, or `legacy.verifyCredentialGraph` |
+| Entry points (Python) | `evaluate_reliance` from `qi_vc_core`; per binding `evaluate_rm_slice`, `evaluate_cal_slice`, `evaluate_gs_slice` | `qi_vc_core.legacy.evaluate_legacy_profile`, or `qi_vc_core.legacy.verify_credential_graph` |
 | Input | A reliance request plus a binding manifest and a verifier profile | Target credential, policy and resolver options |
 | Output | `RelianceResult`: separate verification, authorization, support, conformity and decision, with trace and witnesses | `verified` from a zero FAIL count, plus a legacy trace |
 | Credentials | The signed experimental bindings in `bindings/experimental/` | The legacy examples in `testdata/examples/` |
 
-The default entry point is still the legacy verifier. Switching the default is the last
-step of phase I5 and will be a breaking change (drafted as version 0.4.0).
+`evaluateReliance(request, catalog, manifest, profile)` is the default since I5 step 4.
+It runs the gate 0–6 evaluator of the verifier's installed binding
+(`SUPPORTED_BINDINGS`: RM, calibration and GS v1). A binding without an evaluator is a
+configuration error, and there is no fallback to the legacy verifier. The default path
+imports no legacy module.
+
+This is a breaking change against 0.3.0, drafted as 0.4.0:
+
+| 0.3.0 | Now |
+| --- | --- |
+| `verifier.verifyCredentialGraph` (root) | `legacy.verifyCredentialGraph`, or better `legacy.evaluateLegacyProfile` |
+| `presentationQuery` (root) | `legacy.presentationQuery` |
+| `@qi-vc/core/verifier`, `@qi-vc/core/presentation-query` | `@qi-vc/core/legacy/verifier`, `@qi-vc/core/legacy/presentation-query` |
+| Python `qi_vc_core.verify_credential_graph`, `VerifyGraphOptions` | `qi_vc_core.legacy.verify_credential_graph`, `…legacy.VerifyGraphOptions` |
 
 ## Reliance request and result
 
@@ -57,18 +69,11 @@ The tests are the runnable reference; for example
 `packages/core-py/tests/test_rm_v1_claims.py`. In outline (TypeScript):
 
 ```ts
-import { readFileSync } from 'node:fs';
-import { reliance } from '@qi-vc/core';
-import { evaluateRmSlice } from '@qi-vc/core/reliance/rm-v1-slice';
-import { readPinnedResources } from '@qi-vc/core/reliance/rm-v1-node';
+import { evaluateReliance, reliance } from '@qi-vc/core';
+import { installBinding } from '@qi-vc/core/reliance/binding-node';
 
-const dir = 'bindings/experimental/rm-v1/';
-const manifest = reliance.loadBindingManifest(JSON.parse(readFileSync(dir + 'manifest.json', 'utf8')));
-const profile = reliance.loadRelianceProfile(JSON.parse(readFileSync(dir + 'profiles/rm-verifier-1.json', 'utf8')));
-const catalog = new reliance.StaticResourceCatalog([
-  ...readPinnedResources(dir + 'catalog.json'),
-  ...readPinnedResources(dir + 'test-vectors/signed/catalog.json'),
-]);
+// Manifest, one verifier profile, and a catalog of the pinned resources and signed test vectors.
+const { manifest, profile, catalog } = installBinding('bindings/experimental/rm-v1', 'rm-verifier-1');
 const request = reliance.createRelianceRequest({
   requestId: 'urn:uuid:example', targetId: 'https://producer.vc4qi.example/credentials/D178',
   selectedClaims: [{ id: 'as', sourcePointer: '/credentialSubject/materialPropertiesList/0/results/0' }],
@@ -80,7 +85,7 @@ const request = reliance.createRelianceRequest({
   suppliedEvidence: [], resolverLimits: { maxResources: 64, maxDepth: 4, maxBytes: 5_000_000 },
   conformity: { requirementId: 'as-mass-fraction-max-200-mg-per-kg', decisionRuleId: 'guarded-acceptance-expanded-u' },
 });
-const { result } = await evaluateRmSlice(request, catalog, manifest, profile);
+const { result } = await evaluateReliance(request, catalog, manifest, profile);
 console.log(result.decision); // 'accept' for x = 178
 ```
 
@@ -113,8 +118,9 @@ The transition runs in this order:
    (done for all base use cases, I5 steps 2–3).
 4. Legacy evaluation only through the explicit legacy profile, with no fallback (done,
    I5 step 1).
-5. Switch the default, and migrate policies, examples, queries and demo consumers
-   together (next, I5 step 4).
+5. Switch the default to `evaluateReliance`, and move the graph verifier and
+   presentation queries under `legacy` (done, I5 step 4). The browser demonstrator runs
+   the new evaluators; the older graph explorer consumes `legacy` until I7.
 
 Python mirrors the supported semantics and states, routes, records and arithmetic; a
 committed parity vector (`bindings/experimental/rm-v1/test-vectors/parity/`) checks that

@@ -81,19 +81,32 @@ function credentialSchema(file, type, title, subject, extra = {}, requiredExtra 
       'credentialSubject', 'credentialStatus', ...requiredExtra]),
   };
 }
-const grantSubject = (activity, record) => closed({
+const grantSubject = (activities, record) => closed({
   id: iri,
-  permittedActivity: { ...nonemptySet(iri), items: { enum: [`${ACT}${activity}`] } },
+  permittedActivity: { ...nonemptySet(iri), items: { enum: activities.map(a => `${ACT}${a}`) } },
   scope: nonemptySet(record),
 });
+// A study is authorized by exactly one accreditation of its issuer.
+const studyPolicy = { type: 'array', minItems: 1, maxItems: 1, items: authorizationPolicy };
+const supportReference = closed({ id: iri, type: { enum: ['GsTypeExaminationReference', 'GsFactoryInspectionReference'] } });
 
 const schemas = {
-  // Competence: an accreditation of a certification body for product categories and standards.
-  'accreditation.json': credentialSchema('accreditation.json', 'GsAccreditation', 'Certification body accreditation (competence)',
-    grantSubject('certifyProducts', closed({ id: iri, productCategoryIri: iri, standardIris: nonemptySet(iri) }))),
-  // Scheme permission: the scheme owner's independent permission to award the mark.
+  // Competence: an accreditation of a certification body (certifying, testing, factory
+  // inspection) or of a testing laboratory, for product categories and standards.
+  'accreditation.json': credentialSchema('accreditation.json', 'GsAccreditation', 'Accreditation (competence)',
+    grantSubject(['certifyProducts', 'testProducts', 'inspectFactories'],
+      closed({ id: iri, productCategoryIri: iri, standardIris: nonemptySet(iri) }))),
+  // Scheme permission: the scheme authority's (ZLS role) independent permission to award the mark.
   'scheme-authorization.json': credentialSchema('scheme-authorization.json', 'GsSchemeAuthorization', 'GS scheme authorization',
-    grantSubject('awardGsMark', closed({ id: iri, productCategoryIri: iri }))),
+    grantSubject(['awardGsMark'], closed({ id: iri, productCategoryIri: iri }))),
+  // Study: a type examination of one product model against standards.
+  'test-report.json': credentialSchema('test-report.json', 'GsTestReport', 'Type-examination test report',
+    closed({ id: iri, activityTime: dateTime, productModelIri: iri, productCategoryIri: iri, standardIris: nonemptySet(iri), outcomeIri: iri }),
+    { termsOfUse: studyPolicy, relatedResource }, ['termsOfUse', 'relatedResource']),
+  // Study: an inspection of the manufacturer's production site.
+  'inspection-report.json': credentialSchema('inspection-report.json', 'GsInspectionReport', 'Factory inspection report',
+    closed({ id: iri, activityTime: dateTime, manufacturerIri: iri, outcomeIri: iri }),
+    { termsOfUse: studyPolicy, relatedResource }, ['termsOfUse', 'relatedResource']),
   // Standards may be absent or empty so that the evaluator, not the schema, decides them.
   'certificate.json': credentialSchema('certificate.json', 'GsCertificate', 'GS certificate',
     closed({
@@ -103,7 +116,9 @@ const schemas = {
       manufacturerIri: iri,
       certification: closed({ productCategoryIri: iri, standardIris: { type: 'array', uniqueItems: true, items: iri } }, ['productCategoryIri']),
     }, ['id', 'activityTime', 'certification']),
-    { termsOfUse: { type: 'array', minItems: 1, maxItems: 3, items: authorizationPolicy }, relatedResource },
+    // Studies are cited as evidence; the evaluator, not the schema, decides whether they suffice.
+    { termsOfUse: { type: 'array', minItems: 1, maxItems: 3, items: authorizationPolicy },
+      evidence: { type: 'array', minItems: 1, maxItems: 4, items: supportReference }, relatedResource },
     ['termsOfUse', 'relatedResource']),
   // An experimental product passport for one serialized item; its GS-mark claim is
   // authorized only through a GS certificate for the item's model (not EU DPP conformance).
