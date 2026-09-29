@@ -751,7 +751,9 @@ I5). Totals: 59 passing, 2 excluded, 22 not implemented.
   binding (competence AND scheme permission), and both GS application variants are
   retained under the explicit legacy profile (step 3c).
 
-Still open in I5: switching the default API (step 4).
+- The default API is switched to standards-first reliance (step 4).
+
+Still open in I5: the version draft.
 
 ### Step 1: explicit legacy profile (V02, V03)
 
@@ -934,3 +936,43 @@ All base use cases are now migrated. Reference-material-recursive is the RM v1 s
 (I1–I4). Calibration-direct-accreditation, calibration-capability, nmi-legal-mandate
 and test-report-supported-dcc are in calibration v1. Gs-scheme-authorization is in
 GS v1. Both GS application variants are retained under the legacy profile.
+
+### Step 4: default API switch
+
+| Part | Location | Behaviour |
+| --- | --- | --- |
+| Default entry point | `src/reliance/evaluate.ts` (root export `evaluateReliance`, `SUPPORTED_BINDINGS`), `qi_vc_core/reliance/evaluate.py` (root `evaluate_reliance`) | Dispatches on the installed manifest to the RM, calibration or GS v1 evaluator. An unknown binding is a configuration error; a request naming another binding is refused at gate 0 by that evaluator |
+| Binding installer | `src/reliance/binding-node.ts` (`installBinding`), Python `install_binding` | Manifest, one profile (name restricted to `[a-z0-9-]`), pinned resources and, by default, signed test vectors; digests checked by the catalog |
+| Legacy namespace | `src/legacy/index.ts`, `qi_vc_core/legacy` | Adds `verifyCredentialGraph` and `presentationQuery`; the root no longer exports `verifier` or `presentationQuery` (Python: `verify_credential_graph`) |
+| Consumers | `apps/demo-web` graph explorer | Uses `legacy.verifyCredentialGraph`; its `node:zlib` stub re-exports the bounded gunzip shim, since the root now reaches the status-list decoder |
+
+| Case | Input | Result |
+| --- | --- | --- |
+| Equivalence | D178 (RM), DCC-1 (calibration), GSC-1 (GS) through the default entry point | Accept; result deep-equal to the binding's own evaluator |
+| No fallback | Manifest with an unknown binding id | Error "No evaluator for binding" |
+| Wrong binding | GS request under the installed RM binding | Not accepted; no artifact evaluated |
+| Import graph | Modules reachable from `reliance/evaluate.ts` | None under `verifier`, `evidence`, `edge`, `policy`, `scope`, `assessment`, `presentation-query`, `terms` or `legacy` |
+
+Step 4 results:
+
+- `default-api.test.ts` 8 passed; `test_default_api.py` 7 passed.
+- TS 459 passed plus the 9 network-only legacy failures; Python 423 passed, 1 skipped.
+- Ruff 204 and mypy 198 unchanged.
+- Build, lint, the graph explorer and demonstrator builds, scenarios and schemas pass.
+  The demonstrator bundle is unchanged.
+- The API example in `docs/api.md` was run as written and printed `accept`.
+
+### After step 4: GS studies (gate 6)
+
+The GS binding's certificate now requires two studies, as in the legacy GS examples.
+See the [GS binding](../../bindings/experimental/gs-v1/README.md) and the report entry of 29
+September. `gs-v1.test.ts` (25) and `test_gs_v1.py` (24) cover:
+
+- in-house and external-laboratory type examinations;
+- the toy outside the scheme scope;
+- a withheld study;
+- a study missing a standard;
+- a laboratory accreditation without testing;
+- an inspection of another manufacturer;
+- a study made after the certification;
+- passports for an early unit and another company.

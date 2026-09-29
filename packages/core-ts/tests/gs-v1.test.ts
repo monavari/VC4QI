@@ -27,16 +27,26 @@ const signed = readPinnedResources(new URL('test-vectors/signed/catalog.json', d
 const GS = 'https://vc4qi.example/bindings/gs/1#';
 const URI = {
   A: 'https://nab.vc4qi.example/credentials/GS-A',
-  S: 'https://scheme.vc4qi.example/credentials/GS-S',
+  S: 'https://zls.vc4qi.example/credentials/GS-S',
   C: 'https://gs-body.vc4qi.example/credentials/GSC-1',
   NAB: 'https://nab.vc4qi.example/controller',
-  SCHEME: 'https://scheme.vc4qi.example/controller',
+  SCHEME: 'https://zls.vc4qi.example/controller',
   BODY: 'https://gs-body.vc4qi.example/controller',
   MAKER: 'https://maker.vc4qi.example/controller',
+  TESTLAB: 'https://testlab-gs.vc4qi.example/controller',
+  CLONE: 'https://clone.vc4qi.example/controller',
+  C3: 'https://gs-body.vc4qi.example/credentials/GSC-3',
+  TR1: 'https://gs-body.vc4qi.example/credentials/TR-1',
+  TR2: 'https://testlab-gs.vc4qi.example/credentials/TR-2',
+  FI: 'https://gs-body.vc4qi.example/credentials/FI-1',
+  TLA: 'https://nab.vc4qi.example/credentials/TL-A',
+  P3: 'https://maker.vc4qi.example/credentials/DPP-3',
+  P4: 'https://maker.vc4qi.example/credentials/DPP-4',
+  P5: 'https://clone.vc4qi.example/credentials/DPP-5',
   P1: 'https://maker.vc4qi.example/credentials/DPP-1',
   P2: 'https://maker.vc4qi.example/credentials/DPP-2',
 } as const;
-const KEY: Record<string, string> = { [URI.NAB]: 'nab', [URI.SCHEME]: 'scheme', [URI.BODY]: 'gs-body', [URI.MAKER]: 'maker' };
+const KEY: Record<string, string> = { [URI.NAB]: 'nab', [URI.SCHEME]: 'zls', [URI.TESTLAB]: 'gs-testlab', [URI.CLONE]: 'clone', [URI.BODY]: 'gs-body', [URI.MAKER]: 'maker' };
 const CERTIFICATION = '/credentialSubject/certification';
 
 const json = (uri: string) => JSON.parse(new TextDecoder().decode(signed.find(r => r.uri === uri)!.bytes)) as JsonObject;
@@ -101,12 +111,15 @@ describe('gs-scheme-authorization, migrated to the GS certification v1 binding',
     expect(() => execFileSync(tsx, [new URL('../scripts/generate-gs-v1-artifacts.ts', import.meta.url).pathname, '--check'], { stdio: 'pipe' })).not.toThrow();
   });
 
-  it('accepts GSC-1 through competence AND scheme permission, covered by both scopes', async () => {
+  it('accepts GSC-1 (hair dryer, in-house type examination) through competence AND scheme permission, with its studies', async () => {
     const result = await run();
     expect(result.artifactVerification.every(v => v.state === 'established')).toBe(true);
     expect(trace(result, ROUTE)).toMatchObject({ state: 'established' });
     expect(result.authorization[0]?.routeWitnessIds).toEqual([ROUTE, URI.C, URI.A, URI.S,
-      `record:${URI.A}#scope-toys`, `record:${URI.S}#scope-toys`]);
+      `record:${URI.A}#scope-household`, `record:${URI.S}#scope-household`]);
+    expect(result.support.map(s => [s.obligationId, s.state])).toEqual([
+      ['gs-v1:type-examination', 'established'], ['gs-v1:factory-inspection', 'established']]);
+    expect(result.support[0]?.witnessIds).toEqual([URI.TR1, URI.A]);
     expect(result.limitations.join(' ')).toMatch(/not a universal GS or legal rule/);
     expect(result.decision).toBe('accept');
   });
@@ -136,19 +149,19 @@ describe('gs-scheme-authorization, migrated to the GS certification v1 binding',
 
   it('a category the competence covers but the scheme does not is not covered', async () => {
     const result = await run(await reissueChain([[URI.C, d => {
-      certification(d).productCategoryIri = `${GS}HouseholdAppliance`;
-      certification(d).standardIris = [`${GS}EN-60335-1`];
+      certification(d).productCategoryIri = `${GS}Toy`;
+      certification(d).standardIris = [`${GS}EN-71-1`];
     }]]));
     const covered = trace(result, 'claim-coverage:gs:competence-and-scheme-permission');
     expect(covered).toMatchObject({ state: 'contradicted' });
-    expect(covered?.reason).toMatch(/scope-household covers HouseholdAppliance/);
+    expect(covered?.reason).toMatch(/scope-toys covers Toy/);
     expect(covered?.reason).toMatch(/No single scheme record covers it/);
     expect(result.decision).toBe('reject');
   });
 
   it('a standard outside the accredited scope is not covered, and naming none is no bypass', async () => {
-    const outside = await run(await reissueChain([[URI.C, d => { certification(d).standardIris = [`${GS}EN-71-3`]; }]]));
-    expect(trace(outside, 'claim-coverage:gs:competence-and-scheme-permission')?.reason).toMatch(/EN-71-3 is not in the accredited scope/);
+    const outside = await run(await reissueChain([[URI.C, d => { certification(d).standardIris = [`${GS}EN-60335-2-9`]; }]]));
+    expect(trace(outside, 'claim-coverage:gs:competence-and-scheme-permission')?.reason).toMatch(/EN-60335-2-9 is not in the accredited scope/);
     expect(outside.decision).toBe('reject');
     const none = await run(await reissueChain([[URI.C, d => { certification(d).standardIris = []; }]]));
     expect(trace(none, 'claim-coverage:gs:competence-and-scheme-permission'))
@@ -175,6 +188,64 @@ describe('gs-scheme-authorization, migrated to the GS certification v1 binding',
   });
 });
 
+describe('GS studies (gate 6): type examination and factory inspection', () => {
+  const runCert = (targetId: string, overrides: Record<string, string | null> = {}) =>
+    evaluateGsSlice(request({ targetId }), catalogWith(overrides), manifest, profile).then(e => e.result);
+
+  it('GSC-3 is accepted with a type examination by an externally accredited laboratory', async () => {
+    const result = await runCert(URI.C3);
+    expect(result.support[0]).toMatchObject({ state: 'established', witnessIds: [URI.TR2, URI.TLA] });
+    expect(result.decision).toBe('accept');
+  });
+
+  it('GSC-2 (toy) is rejected: the ZLS-role authorization does not cover toys, although its studies hold', async () => {
+    const result = await runCert('https://gs-body.vc4qi.example/credentials/GSC-2');
+    expect(result.support.every(s => s.state === 'established')).toBe(true);
+    expect(result.authorization[0]?.state).toBe('contradicted');
+    expect(result.decision).toBe('reject');
+  });
+
+  it('a withheld type examination leaves the certificate not established', async () => {
+    const result = await runCert(URI.C, { [URI.TR1]: null });
+    expect(result.support[0]).toMatchObject({ obligationId: 'gs-v1:type-examination', state: 'not_established' });
+    expect(result.authorization[0]?.state).toBe('established');
+    expect(result.decision).toBe('not_established');
+  });
+
+  it('a type examination that did not cover every certified standard contradicts the support', async () => {
+    const result = await runCert(URI.C, await reissueChain([
+      [URI.TR1, d => { subject(d).standardIris = [`${GS}EN-60335-1`]; }], [URI.C],
+    ]));
+    expect(trace(result, 'support:type-examination:covers-certification'))
+      .toMatchObject({ state: 'contradicted', reason: expect.stringMatching(/did not examine EN-60335-2-23/) });
+    expect(result.decision).toBe('reject');
+  });
+
+  it('a laboratory accreditation that does not permit testing does not authorize the examination', async () => {
+    const result = await runCert(URI.C3, await reissueChain([
+      [URI.TLA, d => { subject(d).permittedActivity = [`${GS}certifyProducts`]; }], [URI.TR2], [URI.C3],
+    ]));
+    expect(trace(result, 'support:type-examination:accreditation-permission')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
+  });
+
+  it('a factory inspection of another manufacturer contradicts the support', async () => {
+    const result = await runCert(URI.C, await reissueChain([
+      [URI.FI, d => { subject(d).manufacturerIri = 'https://other-maker.vc4qi.example/controller'; }], [URI.C],
+    ]));
+    expect(trace(result, 'support:factory-inspection:same-manufacturer')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
+  });
+
+  it('a study made after the certification cannot support it', async () => {
+    const result = await runCert(URI.C, await reissueChain([
+      [URI.TR1, d => { subject(d).activityTime = '2026-03-10T00:00:00Z'; d.validFrom = '2026-03-10T00:00:00Z'; }], [URI.C],
+    ]));
+    expect(trace(result, 'support:type-examination:precedes-certification')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
+  });
+});
+
 const dppProfile = loadRelianceProfile(JSON.parse(readFileSync(new URL('profiles/gs-verifier-dpp-1.json', dir), 'utf8')) as JsonObject);
 const runPassport = (overrides: Record<string, string | null> = {}, targetId: string = URI.P1) =>
   evaluateGsSlice(request({ requestId: 'urn:uuid:gs-v1-dpp', targetId, selectedClaims: [{ id: 'mark', sourcePointer: '/credentialSubject/marking' }],
@@ -188,6 +259,7 @@ describe('experimental product passport (DPP): a GS-mark claim for one unit', ()
     expect(trace(result, `${DPP_ROUTE}:manufacturer-binding`)).toMatchObject({ state: 'established' });
     expect(trace(result, `${DPP_ROUTE}:certificate:claim-coverage`)).toMatchObject({ state: 'established' });
     expect(result.authorization[0]?.routeWitnessIds).toEqual([DPP_ROUTE, URI.P1, URI.C, URI.A, URI.S, `record:${URI.C}`]);
+    expect(result.support.map(s => s.state)).toEqual(['established', 'established']);
     expect(result.limitations.join(' ')).toMatch(/not EU Digital Product Passport conformance/);
     expect(result.decision).toBe('accept');
   });
@@ -225,6 +297,19 @@ describe('experimental product passport (DPP): a GS-mark claim for one unit', ()
     const result = await runPassport(await reissueChain([[URI.C, withoutReference('GsSchemeAuthorization')], [URI.P1]]));
     expect(trace(result, `${DPP_ROUTE}:certificate:scheme-reference`)).toMatchObject({ state: 'not_established' });
     expect(result.decision).toBe('not_established');
+  });
+
+  it('DPP-3 (external laboratory) is accepted; DPP-4, placed on the market before the certificate, is not', async () => {
+    expect((await runPassport({}, URI.P3)).decision).toBe('accept');
+    const early = await runPassport({}, URI.P4);
+    expect(trace(early, `${DPP_ROUTE}:certificate-in-force`)?.state).not.toBe('established');
+    expect(early.decision).not.toBe('accept');
+  });
+
+  it('DPP-5, issued by another company citing GSC-1, is rejected by the manufacturer binding', async () => {
+    const result = await runPassport({}, URI.P5);
+    expect(trace(result, `${DPP_ROUTE}:manufacturer-binding`)).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
   });
 
   it('a withheld certificate leaves the claim not established', async () => {

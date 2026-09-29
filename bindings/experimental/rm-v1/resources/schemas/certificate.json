@@ -169,7 +169,8 @@
                                 "ucumCode": {
                                   "enum": [
                                     "mg/kg",
-                                    "kg/kg"
+                                    "kg/kg",
+                                    "%"
                                   ]
                                 }
                               },
