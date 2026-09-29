@@ -10,7 +10,7 @@ const bundle = new URL('../../../site/demo/verifier.js', import.meta.url).href;
 type Result = {
   result: { decision: string };
   questions: { id: string; state: string }[];
-  protection: Record<string, string>;
+  graph: { nodes: { name: string; layer: number; present: boolean }[]; edges: { from: string; to: string; kind: string }[] };
 };
 type Api = {
   EXAMPLES: { id: string; cases: { id: string }[] }[];
@@ -49,12 +49,29 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     }
   });
 
-  it('GS and DPP: the toy is accepted, the appliance is rejected (the scheme does not cover it)', async () => {
-    for (const example of ['gs', 'dpp']) {
-      expect((await run(example, 'toy')).result.decision).toBe('accept');
-      const appliance = await run(example, 'appliance');
-      expect([appliance.result.decision, answers(appliance).authorized]).toEqual(['reject', 'contradicted']);
+  it('GS: mark → certificate → accreditation, ZLS authorization and studies; the toy is outside the ZLS scope', async () => {
+    for (const caseId of ['in-house', 'external']) {
+      const r = await run('gs', caseId);
+      expect([r.result.decision, answers(r).supported]).toEqual(['accept', 'established']);
     }
+    const toy = await run('gs', 'toy');
+    expect([toy.result.decision, answers(toy).authorized]).toEqual(['reject', 'contradicted']);
+    // The graph is read from the credentials' references, not drawn by hand.
+    const g = (await run('gs', 'in-house')).graph;
+    expect(g.nodes.map(n => [n.name, n.layer])).toEqual([['DPP-1', 0], ['GSC-1', 1], ['GS-A', 3], ['GS-S', 2], ['TR-1', 2], ['FI-1', 2]]);
+    expect(g.edges.filter(e => e.kind === 'support').map(e => e.to.split('/').pop())).toEqual(['TR-1', 'FI-1']);
+  });
+
+  it('DPP: a valid unit is accepted; an early unit cannot be told; another company is rejected', async () => {
+    expect((await run('dpp', 'unit')).result.decision).toBe('accept');
+    expect((await run('dpp', 'early')).result.decision).toBe('not_established');
+    const clone = await run('dpp', 'clone');
+    expect([clone.result.decision, answers(clone).authorized]).toEqual(['reject', 'contradicted']);
+  });
+
+  it('RM: the credential graph marks a withheld study as not present', async () => {
+    const r = await run('rm', '178', { choice: 'fit', withhold: true });
+    expect(r.graph.nodes.find(n => n.name === 'S')?.present).toBe(false);
   });
 
   it('every example: tampering fails protection, withholding a credential is never accepted', async () => {

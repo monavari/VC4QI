@@ -16,6 +16,8 @@ export const GS_V1_ARTIFACT_BINDING: ArtifactBinding = Object.freeze({
     GsSchemeAuthorization: `${GS_V1_SCHEMA_BASE}scheme-authorization.json`,
     GsCertificate: `${GS_V1_SCHEMA_BASE}certificate.json`,
     GsProductPassport: `${GS_V1_SCHEMA_BASE}product-passport.json`,
+    GsTestReport: `${GS_V1_SCHEMA_BASE}test-report.json`,
+    GsInspectionReport: `${GS_V1_SCHEMA_BASE}inspection-report.json`,
     BitstringStatusListCredential: `${GS_V1_SCHEMA_BASE}status-list.json`,
   }),
   contexts: (type: unknown) => (type === 'BitstringStatusListCredential' ? [VC_V2_CONTEXT] : [VC_V2_CONTEXT, GS_V1_CONTEXT]),

@@ -4,14 +4,17 @@
 // statement and a gate-5 route that needs competence AND scheme permission, with the
 // claim covered by both scopes. For an experimental product passport the selected claim
 // is its GS marking, authorized through a GS certificate for the unit's model that holds
-// that complete route itself. No support obligations or conformity rules are installed.
+// that complete route itself. Gate 6 requires the certificate's studies (a type
+// examination and a factory inspection, each independently authorized). No conformity
+// rules are installed.
 // Node-only (status uses zlib).
 import { createRelianceResult, decisionFromRequired } from './index.js';
 import type { StaticResourceCatalog } from './catalog.js';
 import { planRefusal, refusePlan, verifyChain } from './binding-chain.js';
 import { GS_V1_ARTIFACT_BINDING, GS_V1_BINDING_ID } from './gs-v1.js';
 import {
-  certificationCoverage, GS_CERTIFICATE_ROUTES, mapCertification, mapMarking, markingCoverage, routeScopes, type GsOutcome,
+  certificateSupport, certificationCoverage, GS_CERTIFICATE_ROUTES, mapCertification, mapMarking, markingCoverage, routeScopes,
+  type GsOutcome, type GsSupportResult,
 } from './gs-v1-evaluator.js';
 import type { BindingManifest } from './manifest.js';
 import type { RelianceProfile } from './profile.js';
@@ -91,15 +94,32 @@ export async function evaluateGsSlice(
     } };
   });
   const authorization = claims.map(c => c.result);
+
+  // Gate 6: the studies of the certificate (the target itself, or the one a passport cites).
+  const certificateUri = targetDocument === undefined ? undefined
+    : isPassport ? evaluated.find(r => r.chain.length > 1)?.chain[1] : request.targetId;
+  const certificateNode = certificateUri === undefined ? undefined : lookup(certificateUri);
+  const studies: GsSupportResult[] = targetDocument === undefined ? []
+    : certificateNode?.usable === 'established' && certificateNode.document !== undefined
+      ? certificateSupport(certificateNode as NodeFacts & { document: Record<string, unknown> }, lookup, profile)
+      : (['type-examination', 'factory-inspection'] as const).map(obligationId => ({ obligationId, state: 'not_established' as const,
+        reason: 'No usable GS certificate was reached, so its studies are not evaluated.', bases: [], chain: [] }));
+  const support = studies.map(s => ({
+    obligationId: `gs-v1:${s.obligationId}`,
+    witnessIds: s.state === 'established' ? [...s.chain] : [],
+    ...predicate(s.state, [s.reason], ['/evidence']),
+  }));
   const conformity = request.conformity
     ? { requested: true as const, ...request.conformity,
       ...predicate('not_established', ['The GS v1 binding installs no conformity requirements or decision rules.']) }
     : { requested: false as const, execution: 'not_run' as const };
 
-  const decisive = new Set<string>([request.targetId, ...(winner?.chain ?? [])]);
+  const decisive = new Set<string>([request.targetId, ...(winner?.chain ?? []),
+    ...studies.filter(s => s.state === 'established').flatMap(s => s.chain)]);
   const required: SemanticState[] = [
     ...artifacts.filter(a => decisive.has(a.artifactId)).flatMap(verificationOf).map(r => r.state),
     ...authorization.map(r => r.state),
+    ...support.map(r => r.state),
     ...(conformity.requested ? [conformity.state] : []),
   ];
 
@@ -132,6 +152,16 @@ export async function evaluateGsSlice(
         execution: 'executed', reason: basis.reason, sources: [...basis.sources] });
     }
   }
+  for (const study of studies) {
+    for (const basis of study.bases) {
+      trace.push({ gate: 6, nodeUse: targetUse, predicate: `support:${study.obligationId}:${basis.id}`, state: basis.state,
+        execution: 'executed', reason: basis.reason, sources: [...basis.sources] });
+    }
+  }
+  for (const obligation of support) {
+    trace.push({ gate: 6, nodeUse: targetUse, predicate: obligation.obligationId, state: obligation.state,
+      execution: obligation.execution, reason: obligation.reasons.join(' '), sources: [] });
+  }
   if (conformity.requested) {
     trace.push({ gate: 6, nodeUse: targetUse, predicate: `conformity:${conformity.requirementId}`,
       state: conformity.state, execution: conformity.execution, reason: conformity.reasons.join(' '), sources: [] });
@@ -139,13 +169,13 @@ export async function evaluateGsSlice(
 
   const result = createRelianceResult({
     requestId: request.requestId, targetId: request.targetId, binding: request.binding, profile: request.profile,
-    artifactVerification, authorization, support: [], conformity,
+    artifactVerification, authorization, support, conformity,
     decision: decisionFromRequired(required),
     trace, resources: chain.resources,
     limitations: [
       'The GS route is a fictional profile example (competence AND scheme permission), not a universal GS or legal rule.',
       ...(isPassport ? ['The product passport is an experimental credential in this binding, not EU Digital Product Passport conformance.'] : []),
-      'Verification failures of credentials outside the selected route are reported but do not decide the request.',
+      'Verification failures of credentials outside the selected route and study chains are reported but do not decide the request.',
       'Fixture grants are fictional: an accreditation or scheme authorization here has no legal effect.',
     ],
   });

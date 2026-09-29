@@ -1,0 +1,15 @@
+{
+  "@context": "https://www.w3.org/ns/cid/v1",
+  "id": "https://zls.vc4qi.example/controller",
+  "verificationMethod": [
+    {
+      "id": "https://zls.vc4qi.example/controller#key-1",
+      "type": "Multikey",
+      "controller": "https://zls.vc4qi.example/controller",
+      "publicKeyMultibase": "z6MktGxDxR1VhFKGdcQrzxpFexwUBrpMrBaEKbo2kxhxkHui"
+    }
+  ],
+  "assertionMethod": [
+    "https://zls.vc4qi.example/controller#key-1"
+  ]
+}

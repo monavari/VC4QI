@@ -12,8 +12,8 @@ keys and grants are fictional.
 | calibration-capability | B | The laboratory's own bounded capability scope within its accreditation, with no widening | Calibration v1, `cal-verifier-capability-1` | same |
 | nmi-legal-mandate | C | A national metrology institute authorized by a statutory mandate, with no accreditation root | Calibration v1, `cal-verifier-nmi-1` | same |
 | test-report-supported-dcc | F | A test report supported by its instrument's own authorized calibration | Calibration v1, `cal-verifier-test-report-1` | same |
-| gs-scheme-authorization | GS | A GS mark needing competence AND scheme permission | GS v1, `gs-verifier-1` | `gs-v1.test.ts` / `test_gs_v1.py` |
-| gs-product-passport (experimental) | DPP | A manufacturer's product passport claiming the GS mark through a cited GS certificate; not EU DPP (ESPR) conformance | GS v1, `gs-verifier-dpp-1` | same |
+| gs-scheme-authorization | GS | A GS mark needing competence AND scheme permission, and a type examination and factory inspection | GS v1, `gs-verifier-1`, `gs-verifier-dpp-1` | `gs-v1.test.ts` / `test_gs_v1.py` |
+| gs-product-passport (experimental) | DPP | A unit's passport bound to its GS certificate: same manufacturer, same model, placed on the market while the certificate was in force; not EU DPP (ESPR) conformance | GS v1, `gs-verifier-dpp-1` | same |
 | gs-hair-dryer-hitl | D | GS certificate, serialized product, in-house reports and assessments | Legacy profile only | `legacy-profile.test.ts` / `test_legacy_profile.py` |
 | gs-hair-dryer-external-test-lab-hitl | D | As above, with an independently accredited external laboratory | Legacy profile only | same |
 
@@ -71,8 +71,13 @@ are checked byte-for-byte across languages by the parity vector.
 - **Test report.** REPORT-1 is authorized by the testing accreditation CAL-T and
   requires DCC-1 as its instrument's calibration. DCC-1 must be for the same
   instrument, earlier than the test, valid at it and itself authorized for every group.
-- **GS scheme.** GSC-1 needs GS-A (competence for toys against EN 71-1) and GS-S
-  (permission to award the mark for toys). Either alone is `not_established`.
+- **GS mark.** As in the legacy GS examples, the mark on a hair dryer (DPP-1) rests on
+  the certificate GSC-1. GSC-1 needs GS-A (the GS body's competence against EN 60335-1
+  and -2-23) and GS-S (the ZLS-role permission to award the mark for household
+  appliances); either alone is `not_established`. GSC-1 also needs its studies: a type
+  examination TR-1 and a factory inspection FI-1, each under an accreditation permitting
+  the activity. GSC-3 uses an external laboratory's examination (TR-2 under TL-A). A toy
+  certificate (GSC-2) is rejected because GS-S does not cover toys.
 
 ## Legacy scenarios
 

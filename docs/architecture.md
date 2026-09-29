@@ -80,4 +80,7 @@ bundle is current. `site/m375a/` redirects to the RM tab so the poster QR code s
 valid. Node's `zlib` is replaced
 by a bounded gunzip shim (`apps/demo-web/poster/zlib-browser.ts`, using `fflate`), so
 status lists are verified in the browser too. Nothing is fetched and no server is
-needed; `tests/demonstrator.test.ts` runs the shipped bundle through its scenarios.
+needed; `tests/demonstrator.test.ts` runs the shipped bundle through its scenarios. The
+page's credential chain is not drawn by hand: it follows each credential's
+`termsOfUse` and `evidence` references from the target, places credentials by their
+longest reference path, and colours nodes and edges with the evaluator's result.

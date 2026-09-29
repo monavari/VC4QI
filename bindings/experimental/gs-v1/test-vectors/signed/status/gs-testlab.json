@@ -2,12 +2,12 @@
   "@context": [
     "https://www.w3.org/ns/credentials/v2"
   ],
-  "id": "https://scheme.vc4qi.example/status/gs/1",
+  "id": "https://testlab-gs.vc4qi.example/status/gs/1",
   "type": [
     "VerifiableCredential",
     "BitstringStatusListCredential"
   ],
-  "issuer": "https://scheme.vc4qi.example/controller",
+  "issuer": "https://testlab-gs.vc4qi.example/controller",
   "validFrom": "2026-09-01T00:00:00Z",
   "validUntil": "2027-09-01T00:00:00Z",
   "credentialSchema": {
@@ -15,7 +15,7 @@
     "type": "JsonSchema"
   },
   "credentialSubject": {
-    "id": "https://scheme.vc4qi.example/status/gs/1#list",
+    "id": "https://testlab-gs.vc4qi.example/status/gs/1#list",
     "type": "BitstringStatusList",
     "statusPurpose": "revocation",
     "encodedList": "uH4sIAAAAAAACA-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
@@ -24,8 +24,8 @@
     "type": "DataIntegrityProof",
     "cryptosuite": "eddsa-rdfc-2022",
     "proofPurpose": "assertionMethod",
-    "verificationMethod": "https://scheme.vc4qi.example/controller#key-1",
+    "verificationMethod": "https://testlab-gs.vc4qi.example/controller#key-1",
     "created": "2026-09-01T00:00:00Z",
-    "proofValue": "z5QJ1YfB7pNmwJ93UUvtjehRypFTP3KwEvHXADLxVmfKKg2e2axE4zFjeyTnTK9d2KDYXoQNoX1anBYR5uHYbjtHr"
+    "proofValue": "z3B1iYyr9W3PSHhDmvseTCKgNo6fQRu8zDw9s51w7jF8PTA7xNHzweUyVndky61nhkMtGWd1nMi5MCDFbtp59jS8Q"
   }
 }

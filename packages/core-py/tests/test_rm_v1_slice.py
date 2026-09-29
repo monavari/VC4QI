@@ -206,9 +206,12 @@ def test_extracts_protected_facts_with_source_pointers() -> None:
         ("/termsOfUse/0/authorizationCredential/id", URI["O"])
     ]
     assert by_fact["requiredStudy"] == [("/evidence/0/id", URI["S"])]
-    [(pointer, value)] = by_fact["selectedResult"]
-    assert pointer == "/credentialSubject/materialPropertiesList/0/results/0"
-    assert value["data"]["quantity"]["value"] == "178"
+    # Every certified result (As, Cu, Zn, Pb) is a candidate; As is the first.
+    results = by_fact["selectedResult"]
+    assert [p for p, _ in results] == [
+        f"/credentialSubject/materialPropertiesList/0/results/{i}" for i in range(4)
+    ]
+    assert results[0][1]["data"]["quantity"]["value"] == "178"
 
 
 def test_p01_signed_chain_for_178_is_relied_upon() -> None:

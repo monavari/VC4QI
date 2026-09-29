@@ -155,7 +155,8 @@ describe('I4 complete records, identifiers and units (S09-S17, S22-S24)', () => 
     });
     const result = await run(overrides, request({ selectedClaims: [
       { id: 'as', sourcePointer: RESULT },
-      { id: 'pb', sourcePointer: '/credentialSubject/materialPropertiesList/0/results/1' },
+      // The appended Pb result follows the four certified results (As, Cu, Zn, Pb).
+      { id: 'pb', sourcePointer: '/credentialSubject/materialPropertiesList/0/results/4' },
     ] }));
     expect(result.authorization.map(a => a.state)).toEqual(['established', 'established']);
     expect(result.authorization[0]?.routeWitnessIds.at(-1)).toBe(`record:${URI.O}#as`);

@@ -1605,3 +1605,52 @@ passed plus the 9 known network-only failures; Python 423 passed, 1 skipped. Ruf
 and mypy 198 unchanged. The `docs/api.md` example ran as written and printed `accept`.
 Package versions stay 0.3.0: the 0.4.0 number is a draft in the changelog, and final
 numbering follows the migration evidence. No release or tag.
+
+## GS chain after the legacy examples, full RM certified data, demonstrator cleanup — 29 September 2026
+
+User review of the demonstrator: the GS example was structurally wrong (it started at
+the certificate and had no studies), the RM credential showed only the arsenic value,
+the page had too much text, and the question was whether the graph was generated.
+
+GS. The legacy examples (`testdata/examples/gs-hair-dryer-hitl`, `…-external-test-lab-hitl`)
+chain product mark → GS certificate → issuing scope (accreditation by the NAB, scheme
+authorization by the ZLS) plus a type-examination report and a factory inspection. The
+GS binding now mirrors that shape without the legacy relations. The certificate
+carries typed `evidence` references to a `GsTestReport` and a `GsInspectionReport`, and
+gate 6 (`certificateSupport` / `certificate_support`) requires both. Each study must
+concern the certificate (same model with category and standards covered, or same
+manufacturer), pass, precede the certification, and be issued under an anchored
+accreditation of its issuer that permits `testProducts` or `inspectFactories` and was in
+force at the study. For a type examination, the accreditation scope must also cover the
+examination. The scheme authority is renamed to a fictional authority in the ZLS role
+(`zls.vc4qi.example`). The accepted product is now a hair dryer (household
+appliances), as in the legacy example, and the toy is outside the ZLS-role scope. New
+fixtures: TL-A (external laboratory accreditation), FI-1, TR-1 to TR-3, GSC-3, DPP-3
+(external laboratory), DPP-4 (unit placed on the market before the certificate) and
+DPP-5 (issued by another company). `gs-v1.test.ts` 25 passed; `test_gs_v1.py` 24
+passed.
+
+RM. D178, D197 and D520 now carry the full certified set of the BAM-M375a DRMD
+transcription (`examples/rm/source/BAM_M375a.xml`): As 178.0 mg/kg (U 5.0), Cu 57.68 %
+(U 0.14), Zn 38.2 % (U 0.4), Pb 3.07 % (U 0.06), k = 2. As stays first and selected.
+The RM schema admits the UCUM unit `%`. Three tests assumed a single result and were
+updated: two S11 tests (the appended Pb result is now index 4) and one Python
+fact-extraction test (four candidate results).
+
+Demonstrator. Before this change the graph was hand-coded per case, and only its
+states came from the evaluator. It is now built from the credentials: from the target,
+every `termsOfUse` authorization reference and `evidence` entry is followed, and
+credentials are layered by their longest reference path. Nodes take the evaluator's
+per-artifact verification; the target's authority links take the "authorized" answer,
+links below a study take "supported", and other links take the verification of the
+credential they point to. The credential card renders the whole claim (the RM
+certified-value table with the selected row highlighted, DCC groups, GS fields), and
+the text is cut to one question per tab. The GS tab starts at the GS mark, with cases
+for the in-house laboratory, the external laboratory and the toy. The DPP tab covers a
+valid unit, an early unit (not_established) and another company (reject).
+`demonstrator.test.ts` 7 passed. A local Chromium run (not a CI lane) found no console
+errors and no overflow at 390 px and 1280 px.
+
+Checks: TS 470 passed plus the 9 known network-only failures; Python 432 passed, 1
+skipped; ruff 204 and mypy 198 (baseline); build, lint, scenarios, schemas, docs and
+every resource and generator `--check` pass.
