@@ -50,7 +50,7 @@ CASES = [
         (SelectedClaim("gs", "/credentialSubject/certification"),),
         (
             "https://nab.vc4qi.example/credentials/GS-A",
-            "https://scheme.vc4qi.example/credentials/GS-S",
+            "https://zls.vc4qi.example/credentials/GS-S",
         ),
     ),
 ]

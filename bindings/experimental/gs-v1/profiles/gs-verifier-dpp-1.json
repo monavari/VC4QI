@@ -11,11 +11,12 @@
     {
       "id": "https://nab.vc4qi.example/controller",
       "purposes": [
-        "accredit-certification-bodies"
+        "accredit-certification-bodies",
+        "accredit-testing-laboratories"
       ]
     },
     {
-      "id": "https://scheme.vc4qi.example/controller",
+      "id": "https://zls.vc4qi.example/controller",
       "purposes": [
         "authorize-gs-certification"
       ]

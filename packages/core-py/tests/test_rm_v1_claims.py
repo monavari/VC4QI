@@ -245,7 +245,8 @@ def test_s11_two_claims_with_their_own_records() -> None:
     )
     claims = (
         SelectedClaim("as", "/credentialSubject/materialPropertiesList/0/results/0"),
-        SelectedClaim("pb", "/credentialSubject/materialPropertiesList/0/results/1"),
+        # The appended Pb result follows the four certified results.
+        SelectedClaim("pb", "/credentialSubject/materialPropertiesList/0/results/4"),
     )
     result = run(overrides, request(selected_claims=claims))
     assert [a.state for a in result.authorization] == ["established", "established"]

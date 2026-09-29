@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vc4qi.example/schemas/gs/1/accreditation.json",
-  "title": "Certification body accreditation (competence)",
+  "title": "Accreditation (competence)",
   "description": "Experimental VC4QI GS certification binding v1 fixture schema. Not an external standard.",
   "type": "object",
   "required": [
@@ -78,7 +78,9 @@
           "uniqueItems": true,
           "items": {
             "enum": [
-              "https://vc4qi.example/bindings/gs/1#certifyProducts"
+              "https://vc4qi.example/bindings/gs/1#certifyProducts",
+              "https://vc4qi.example/bindings/gs/1#testProducts",
+              "https://vc4qi.example/bindings/gs/1#inspectFactories"
             ]
           }
         },
