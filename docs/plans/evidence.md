@@ -961,3 +961,18 @@ Step 4 results:
 - Build, lint, the graph explorer and demonstrator builds, scenarios and schemas pass.
   The demonstrator bundle is unchanged.
 - The API example in `docs/api.md` was run as written and printed `accept`.
+
+### After step 4: GS studies (gate 6)
+
+The GS binding's certificate now requires two studies, as in the legacy GS examples.
+See the [GS binding](../../bindings/experimental/gs-v1/README.md) and the report entry of 29
+September. `gs-v1.test.ts` (25) and `test_gs_v1.py` (24) cover:
+
+- in-house and external-laboratory type examinations;
+- the toy outside the scheme scope;
+- a withheld study;
+- a study missing a standard;
+- a laboratory accreditation without testing;
+- an inspection of another manufacturer;
+- a study made after the certification;
+- passports for an early unit and another company.

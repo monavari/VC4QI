@@ -38,15 +38,26 @@ PINNED = read_pinned_resources(GS_V1_DIRECTORY / "catalog.json")
 SIGNED = read_pinned_resources(GS_V1_DIRECTORY / "test-vectors/signed/catalog.json")
 GS = "https://vc4qi.example/bindings/gs/1#"
 GS_A = "https://nab.vc4qi.example/credentials/GS-A"
-GS_S = "https://scheme.vc4qi.example/credentials/GS-S"
+GS_S = "https://zls.vc4qi.example/credentials/GS-S"
 GSC = "https://gs-body.vc4qi.example/credentials/GSC-1"
 DPP1 = "https://maker.vc4qi.example/credentials/DPP-1"
 DPP2 = "https://maker.vc4qi.example/credentials/DPP-2"
+DPP3 = "https://maker.vc4qi.example/credentials/DPP-3"
+DPP4 = "https://maker.vc4qi.example/credentials/DPP-4"
+DPP5 = "https://clone.vc4qi.example/credentials/DPP-5"
+GSC2 = "https://gs-body.vc4qi.example/credentials/GSC-2"
+GSC3 = "https://gs-body.vc4qi.example/credentials/GSC-3"
+TR1 = "https://gs-body.vc4qi.example/credentials/TR-1"
+TR2 = "https://testlab-gs.vc4qi.example/credentials/TR-2"
+FI1 = "https://gs-body.vc4qi.example/credentials/FI-1"
+TLA = "https://nab.vc4qi.example/credentials/TL-A"
 NAB = "https://nab.vc4qi.example/controller"
-SCHEME = "https://scheme.vc4qi.example/controller"
+SCHEME = "https://zls.vc4qi.example/controller"
 KEY = {
     NAB: "nab",
-    SCHEME: "scheme",
+    SCHEME: "zls",
+    "https://testlab-gs.vc4qi.example/controller": "gs-testlab",
+    "https://clone.vc4qi.example/controller": "clone",
     "https://gs-body.vc4qi.example/controller": "gs-body",
     "https://maker.vc4qi.example/controller": "maker",
 }
@@ -141,11 +152,11 @@ def without_reference(kind: str) -> Callable[[dict[str, Any]], None]:
     return edit
 
 
-def request() -> RelianceRequest:
+def request(target: str = GSC) -> RelianceRequest:
     return create_reliance_request(
         RelianceRequest(
             request_id="urn:uuid:gs-v1-request",
-            target_id=GSC,
+            target_id=target,
             selected_claims=(SelectedClaim("gs", CERTIFICATION),),
             purpose="rely-on-gs-certification",
             binding=VersionedIdentifier(MANIFEST.id, MANIFEST.version),
@@ -160,9 +171,13 @@ def request() -> RelianceRequest:
     )
 
 
-def run(overrides: dict[str, str | None] | None = None, profile: Any = PROFILE) -> Any:
+def run(
+    overrides: dict[str, str | None] | None = None,
+    profile: Any = PROFILE,
+    target: str = GSC,
+) -> Any:
     return evaluate_gs_slice(
-        request(), catalog_with(overrides), MANIFEST, profile
+        request(target), catalog_with(overrides), MANIFEST, profile
     ).result
 
 
@@ -179,8 +194,8 @@ def test_gs_certificate_accepted_through_competence_and_scheme() -> None:
         GSC,
         GS_A,
         GS_S,
-        f"record:{GS_A}#scope-toys",
-        f"record:{GS_S}#scope-toys",
+        f"record:{GS_A}#scope-household",
+        f"record:{GS_S}#scope-household",
     )
     assert "not a universal GS or legal rule" in " ".join(result.limitations)
     assert result.decision == "accept"
@@ -212,23 +227,25 @@ def test_scheme_authorization_for_another_body_rejects() -> None:
 
 def test_category_outside_the_scheme_is_not_covered() -> None:
     def edit(d: dict[str, Any]) -> None:
-        certification(d)["productCategoryIri"] = GS + "HouseholdAppliance"
-        certification(d)["standardIris"] = [GS + "EN-60335-1"]
+        certification(d)["productCategoryIri"] = GS + "Toy"
+        certification(d)["standardIris"] = [GS + "EN-71-1"]
 
     result = run(reissue_chain([(GSC, edit)]))
     covered = entry(result, COVERAGE)
     assert covered.state == "contradicted"
-    assert "scope-household covers HouseholdAppliance" in covered.reason
+    assert "scope-toys covers Toy" in covered.reason
     assert "No single scheme record covers it" in covered.reason
     assert result.decision == "reject"
 
 
 def test_standards_outside_scope_or_none_named() -> None:
     def outside_edit(d: dict[str, Any]) -> None:
-        certification(d)["standardIris"] = [GS + "EN-71-3"]
+        certification(d)["standardIris"] = [GS + "EN-60335-2-9"]
 
     outside = run(reissue_chain([(GSC, outside_edit)]))
-    assert "EN-71-3 is not in the accredited scope" in entry(outside, COVERAGE).reason
+    assert "EN-60335-2-9 is not in the accredited scope" in (
+        entry(outside, COVERAGE).reason
+    )
     assert outside.decision == "reject"
 
     def none_edit(d: dict[str, Any]) -> None:
@@ -371,3 +388,95 @@ def test_withheld_certificate_is_not_established() -> None:
     result = run_passport({GSC: None})
     assert result.authorization[0].state == "not_established"
     assert result.decision == "not_established"
+
+
+# ---------------------------------------------------------------- studies (gate 6)
+
+
+def subject(d: dict[str, Any]) -> dict[str, Any]:
+    return d["credentialSubject"]  # type: ignore[no-any-return]
+
+
+def test_certificate_studies_are_established_with_their_accreditation() -> None:
+    result = run()
+    assert [(s.obligation_id, s.state) for s in result.support] == [
+        ("gs-v1:type-examination", "established"),
+        ("gs-v1:factory-inspection", "established"),
+    ]
+    assert result.support[0].witness_ids == (TR1, GS_A)
+
+
+def test_external_laboratory_type_examination_is_accepted() -> None:
+    result = run(target=GSC3)
+    assert result.support[0].witness_ids == (TR2, TLA)
+    assert result.decision == "accept"
+
+
+def test_toy_rejected_by_scheme_scope_although_studies_hold() -> None:
+    result = run(target=GSC2)
+    assert all(s.state == "established" for s in result.support)
+    assert result.authorization[0].state == "contradicted"
+    assert result.decision == "reject"
+
+
+def test_withheld_type_examination_is_not_established() -> None:
+    result = run({TR1: None})
+    assert result.support[0].state == "not_established"
+    assert result.authorization[0].state == "established"
+    assert result.decision == "not_established"
+
+
+def test_type_examination_missing_a_standard_contradicts() -> None:
+    def narrow(d: dict[str, Any]) -> None:
+        subject(d)["standardIris"] = [GS + "EN-60335-1"]
+
+    result = run(reissue_chain([(TR1, narrow), (GSC, None)]))
+    covers = entry(result, "support:type-examination:covers-certification")
+    assert covers.state == "contradicted"
+    assert "did not examine EN-60335-2-23" in covers.reason
+    assert result.decision == "reject"
+
+
+def test_laboratory_accreditation_without_testing_does_not_authorize() -> None:
+    def no_testing(d: dict[str, Any]) -> None:
+        subject(d)["permittedActivity"] = [GS + "certifyProducts"]
+
+    result = run(
+        reissue_chain([(TLA, no_testing), (TR2, None), (GSC3, None)]), target=GSC3
+    )
+    permission = entry(result, "support:type-examination:accreditation-permission")
+    assert permission.state == "contradicted"
+    assert result.decision == "reject"
+
+
+def test_factory_inspection_of_another_manufacturer_contradicts() -> None:
+    def other(d: dict[str, Any]) -> None:
+        subject(d)["manufacturerIri"] = "https://other-maker.vc4qi.example/controller"
+
+    result = run(reissue_chain([(FI1, other), (GSC, None)]))
+    same = entry(result, "support:factory-inspection:same-manufacturer")
+    assert same.state == "contradicted"
+    assert result.decision == "reject"
+
+
+def test_study_after_the_certification_cannot_support_it() -> None:
+    def late(d: dict[str, Any]) -> None:
+        subject(d)["activityTime"] = "2026-03-10T00:00:00Z"
+        d["validFrom"] = "2026-03-10T00:00:00Z"
+
+    result = run(reissue_chain([(TR1, late), (GSC, None)]))
+    precedes = entry(result, "support:type-examination:precedes-certification")
+    assert precedes.state == "contradicted"
+    assert result.decision == "reject"
+
+
+def test_passports_external_lab_early_unit_and_other_company() -> None:
+    assert run_passport(target=DPP3).decision == "accept"
+    early = run_passport(target=DPP4)
+    in_force = entry(early, "route:gs-certified-product:certificate-in-force")
+    assert in_force.state != "established"
+    assert early.decision != "accept"
+    clone = run_passport(target=DPP5)
+    binding = entry(clone, "route:gs-certified-product:manufacturer-binding")
+    assert binding.state == "contradicted"
+    assert clone.decision == "reject"

@@ -7,8 +7,11 @@
 // scheme owner's independent authorization for product categories. Each half is
 // discharged by its own typed reference, grantee, activity, anchor and validity, and
 // the certified claim must be covered by BOTH scopes. Neither incomplete basis alone
-// establishes the route. An experimental product passport claims the GS mark for one
-// unit and is authorized only through such a certificate for its model.
+// establishes the route. A certificate also needs its studies (gate 6): a type
+// examination of the model and a factory inspection of the manufacturer, each issued
+// under an accreditation that permits the activity. An experimental product passport
+// claims the GS mark for one unit and is authorized only through such a certificate for
+// its model.
 import { semanticAnd, semanticOr } from './index.js';
 import { GS_V1_VOCAB } from './gs-v1.js';
 import {
@@ -198,6 +201,105 @@ export function gsCertifiedProduct(target: NodeFacts & { document: Doc }, lookup
   bases.push({ id: 'certificate:claim-coverage', state: covered.state, reason: covered.reason, sources: ['/credentialSubject/certification'] });
   chain.push(...own.chain.slice(1));
   return route('gs-certified-product', bases, chain, ref.node.uri);
+}
+
+// ---------------------------------------------------------------- studies (gate 6)
+
+export interface GsSupportResult {
+  readonly obligationId: 'type-examination' | 'factory-inspection';
+  readonly state: SemanticState;
+  readonly reason: string;
+  readonly bases: readonly BasisResult[];
+  /** The study and its accreditation, when both were reached. */
+  readonly chain: readonly string[];
+}
+
+const PASS = `${GS_V1_VOCAB}Pass`;
+const STUDIES = [
+  { obligationId: 'type-examination', reference: 'GsTypeExaminationReference', type: 'GsTestReport',
+    activity: 'testProducts', purpose: 'accredit-testing-laboratories', what: 'type examination' },
+  { obligationId: 'factory-inspection', reference: 'GsFactoryInspectionReference', type: 'GsInspectionReport',
+    activity: 'inspectFactories', purpose: 'accredit-certification-bodies', what: 'factory inspection' },
+] as const;
+const check = (id: string, holds: boolean | undefined, yes: string, no: string, sources: string[]): BasisResult =>
+  holds === undefined ? { id, state: 'not_established', reason: no, sources }
+    : { id, state: holds ? 'established' : 'contradicted', reason: holds ? yes : no, sources };
+
+/**
+ * Gate 6 for a GS certificate: each required study is cited once as typed evidence, is
+ * usable, concerns this certificate (model and standards, or manufacturer), passed,
+ * precedes the certification, and is independently authorized: the study issuer holds
+ * an anchored accreditation permitting the activity, in force at the study, whose scope
+ * (for a type examination) covers the category and every examined standard.
+ */
+export function certificateSupport(certificate: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile): GsSupportResult[] {
+  const C = certificate.document;
+  const c = subjectOf(C);
+  const certified = isObject(c.certification) ? c.certification : {};
+  return STUDIES.map(({ obligationId, reference, type, activity, purpose, what }) => {
+    const bases: BasisResult[] = [];
+    const done = (chain: string[]): GsSupportResult => {
+      const state = semanticAnd(bases.map(b => b.state));
+      const failed = bases.find(b => b.state === state && state !== 'established');
+      return { obligationId, state, bases, chain,
+        reason: state === 'established' ? `The ${what} applies and is independently authorized.` : `The ${what}: ${failed?.reason ?? 'not established'}` };
+    };
+    const cited = list(C.evidence).filter(isObject).filter(e => e.type === reference).map(e => String(e.id));
+    if (cited.length !== 1) {
+      bases.push({ id: 'reference', state: 'not_established', sources: ['/evidence'],
+        reason: cited.length === 0 ? `The certificate cites no ${what}.` : `The certificate cites several ${what}s; none is chosen.` });
+      return done([]);
+    }
+    const uri = cited[0]!;
+    const node = lookup(uri);
+    if (node === undefined || node.usable !== 'established' || node.document === undefined) {
+      bases.push({ id: 'reference', state: node?.usable === 'contradicted' ? 'contradicted' : 'not_established', sources: ['/evidence', uri],
+        reason: node === undefined ? `${short(uri)} is unavailable.` : `${short(uri)} is not usable: ${node.reason}` });
+      return done([]);
+    }
+    const R = node.document;
+    const r = subjectOf(R);
+    const types = list(R.type);
+    bases.push(check('reference', types.includes(type), `Cites ${what} ${short(uri)}.`, `${short(uri)} is not a ${type}.`, ['/evidence', uri]));
+    if (obligationId === 'type-examination') {
+      bases.push(check('same-model', r.productModelIri === c.id, `${short(uri)} examined model ${short(c.id)}.`,
+        `${short(uri)} examined ${short(r.productModelIri)}, not model ${short(c.id)}.`, ['/credentialSubject/productModelIri']));
+      const examined = list(r.standardIris), wanted = list(certified.standardIris);
+      const missing = wanted.filter(s => !examined.includes(s));
+      bases.push(check('covers-certification', r.productCategoryIri === certified.productCategoryIri && missing.length === 0,
+        `${short(uri)} covers ${short(certified.productCategoryIri)} against [${wanted.map(short).join(', ')}].`,
+        r.productCategoryIri !== certified.productCategoryIri ? `${short(uri)} examined ${short(r.productCategoryIri)}, not ${short(certified.productCategoryIri)}.`
+          : `${short(uri)} did not examine ${missing.map(short).join(', ')}.`, ['/credentialSubject/standardIris']));
+    } else {
+      bases.push(check('same-manufacturer', typeof r.manufacturerIri === 'string' && typeof c.manufacturerIri === 'string' ? r.manufacturerIri === c.manufacturerIri : undefined,
+        `${short(uri)} inspected the certificate's manufacturer.`,
+        `${short(uri)} inspected ${String(r.manufacturerIri)}, not the certificate's manufacturer ${String(c.manufacturerIri)}.`, ['/credentialSubject/manufacturerIri']));
+    }
+    bases.push(check('outcome', r.outcomeIri === PASS, `${short(uri)} passed.`, `${short(uri)} did not pass (${short(r.outcomeIri)}).`, ['/credentialSubject/outcomeIri']));
+    const studied = Date.parse(String(r.activityTime)), certifiedAt = Date.parse(String(c.activityTime));
+    bases.push(check('precedes-certification', Number.isFinite(studied) && Number.isFinite(certifiedAt) ? studied <= certifiedAt : undefined,
+      `The ${what} (${String(r.activityTime)}) precedes the certification.`,
+      Number.isFinite(studied) && Number.isFinite(certifiedAt) ? `The ${what} (${String(r.activityTime)}) follows the certification (${String(c.activityTime)}).` : 'An activity time is missing.',
+      ['/credentialSubject/activityTime']));
+    // Independent authorization of the study.
+    const ref = authorizingReference('accreditation-reference', R, 'GsAccreditation', lookup, [certificate.uri, uri], 'GsAuthorizationPolicy');
+    bases.push(ref.basis);
+    if (!ref.node) return done([uri]);
+    const G = ref.node.document;
+    bases.push(grantee('accreditation-grantee', G, R.issuer, `Accreditation ${short(ref.node.uri)}`));
+    bases.push(check('accreditation-permission', permits(G, `${GS_V1_VOCAB}${activity}`), `${short(ref.node.uri)} permits ${activity}.`,
+      `${short(ref.node.uri)} does not permit ${activity}.`, ['/credentialSubject/permittedActivity']));
+    bases.push(anchor('accreditation-anchor', G, purpose, profile));
+    bases.push({ ...inForceAtActivity(R, [[short(ref.node.uri)!, G]]), id: 'accreditation-in-force' });
+    if (obligationId === 'type-examination') {
+      const examined = list(r.standardIris);
+      const records = list(subjectOf(G).scope).filter(isObject);
+      const covering = records.find(s => s.productCategoryIri === r.productCategoryIri && examined.every(x => list(s.standardIris).includes(x)));
+      bases.push(check('accreditation-scope', covering !== undefined, `${short(covering?.id)} covers the examination.`,
+        `No record of ${short(ref.node.uri)} covers ${short(r.productCategoryIri)} against [${examined.map(short).join(', ')}].`, ['/credentialSubject/scope']));
+    }
+    return done([uri, ref.node.uri]);
+  });
 }
 
 export const GS_CERTIFICATE_ROUTES = Object.freeze({

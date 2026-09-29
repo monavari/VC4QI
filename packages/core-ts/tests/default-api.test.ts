@@ -43,7 +43,7 @@ const CASES = [
     binding: 'gs-v1', profile: 'gs-verifier-1', direct: evaluateGsSlice,
     target: 'https://gs-body.vc4qi.example/credentials/GSC-1',
     claims: [{ id: 'gs', sourcePointer: '/credentialSubject/certification' }],
-    supplied: ['https://nab.vc4qi.example/credentials/GS-A', 'https://scheme.vc4qi.example/credentials/GS-S'],
+    supplied: ['https://nab.vc4qi.example/credentials/GS-A', 'https://zls.vc4qi.example/credentials/GS-S'],
   },
 ] as const;
 

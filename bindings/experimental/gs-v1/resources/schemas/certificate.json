@@ -145,6 +145,31 @@
         "additionalProperties": false
       }
     },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uri"
+          },
+          "type": {
+            "enum": [
+              "GsTypeExaminationReference",
+              "GsFactoryInspectionReference"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "relatedResource": {
       "type": "array",
       "minItems": 1,
