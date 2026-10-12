@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Generate the selective-disclosure (G2 / Phase 6) fixtures for the
-// reference-material certificate, using real M375a values (see
-// examples/rm/source/). Produces, with a deterministic ECDSA P-256 key:
+// reference-material certificate, using M375a certified values (see
+// examples/rm/source/) with a fictional producer. Produces, with a deterministic ECDSA P-256 key:
 //
 //   examples/rm/reference-material-certificate.sd.json
 //       — SD-secured ("base") RM credential (commits to all fields).
@@ -64,7 +64,7 @@ function result(
   };
 }
 
-/** Build the unsecured SD RM credential from real M375a data. */
+/** Build the unsecured SD RM credential from M375a certified values. */
 function buildCredential(): JsonObject {
   return {
     '@context': [VC_CONTEXT, QI_CONTEXT, RM_CONTEXT],
@@ -86,9 +86,9 @@ function buildCredential(): JsonObject {
         // disclosable (D-SD-1) — see selectivePointers below for what the holder reveals.
         referenceMaterialProducer: {
           id: 'did:web:rm-producer.example',
-          name: 'Example Reference Material Producer',
+          name: 'Example Reference Material Producer (fictional)',
           // Selectively disclosable contact details (withheld in the derived subset).
-          location: 'Richard-Willstätter-Str 11, 12489 Berlin, DE',
+          location: 'Example Street 1, 00000 Example City',
         },
       },
       materials: [
@@ -111,10 +111,10 @@ function buildCredential(): JsonObject {
         },
       ],
       // Selectively disclosable personnel (D-SD-1): the certifying committee.
-      // Real names from M375a. Withheld in the routine-verification subset.
+      // Fictional names. Withheld in the routine-verification subset.
       respPersons: [
-        { name: 'Dr. S. Richter', role: 'Committee for Certification' },
-        { name: 'Dr. S. Recknagel', role: 'Project Coordinator' },
+        { name: 'Dr. A. Example', role: 'Committee for Certification' },
+        { name: 'Dr. B. Example', role: 'Project Coordinator' },
       ],
     },
     evidence: [
