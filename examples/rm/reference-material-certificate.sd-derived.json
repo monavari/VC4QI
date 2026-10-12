@@ -29,7 +29,7 @@
       },
       "referenceMaterialProducer": {
         "id": "did:web:rm-producer.example",
-        "name": "Example Reference Material Producer"
+        "name": "Example Reference Material Producer (fictional)"
       }
     },
     "materials": [
@@ -122,10 +122,10 @@
   ],
   "proof": {
     "type": "DataIntegrityProof",
-    "created": "2026-06-08T19:08:09Z",
+    "created": "2026-10-12T19:39:15Z",
     "verificationMethod": "did:web:rm-producer.example#key-2",
     "cryptosuite": "ecdsa-sd-2023",
     "proofPurpose": "assertionMethod",
-    "proofValue": "u2V0BhVhASizYzRJeD5jrvK6Hjexb41a-lru73LlLFZncawLRyxjMvKGJ7ghZu3K2_oLWlzNIevepEbX2Gb1j8qDAZYxojlgjgCQC2eqQ4wdurZC_oVd9vfZlsIDsPJoaoiLisc6GBPQCluaArQBYIDE1FyCrSNRxfkIL-QzH8P1tGvwXNs_BMyQTAnfnIySSAVgg6Zn7D8LPGVUJaEz7ZqW96hMOQRE5Va3bdIlIJDPmsokCWCALnR-vJmoHrSedXmN0F6TafjLK55AqsDPPw35b0y8YDwNYINab_Gf_3tU_rNxhA6EtvNZMwRzO7-ruBdc_V9iOfKbFBFggyjm7xtltlOAtcGYBqZ1Npy8lqyrKBwfrVvRiLEG9nkcFWCBiT288sEWKJbMqnnoEkxNyEJQbiplyUyohfWwgjGbW9wZYIFbHzF920mAA-FryzXo0OoEtHLCEaAPXFS22fyAr9YdrB1ggeH-U7Unh2v4guiEFSAW_nP0x4vsV_GhmajgrI3PFPUIIWCCF4Ao6vZA0uYzy_MFnQVnvjUyeG4t4bLygybXWc75JbAlYILmFMKHYlY8dypdfssz1ERgPElX5C7gOZQ42nFtN_VT_ClggPEKZOyuywsSfeYSDhzHmVpvy9iaF2UDLfJY8XfIzOd8LWCCmlzpATsIhR-t3dWbryyq2s_j6VGAJ7r5tc39TR6IvEwxYIADvjUTVLEqGgLUDeq73cliN1SG3q5g1BrarjMwqfeK2mDIAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGBgZGBoYGxgcGB0YHhgfGCAYIRgiGCMYJBglGCYYJxgoGCkYKhgrGCwYLRguGC8YMBgx"
+    "proofValue": "u2V0BhVhAbhW5qv3KKIaP813T7oEqmefqsxuCXRfnE43S56bX_3bkQjX5AbPTEwl4K3nZhionCofpl4D2vmVP3efw2d2IF1gjgCQDkw4dgBgVQiBKVhrtxcEoy-wEUFByq5JprPZShXJRBwCArQBYIGWsjFY5bHdG6FeSsjMFvDrTxgLNxETYZaVUDVJ1oyL7AVgg18APbzQi7eqKUaubRcO5Ix_Fa0L5HjgyiXq9CtruAuYCWCCmpmW10rItMdk8dKYHNhWkng2eA_2JObhgbgPzpDXuHANYIE25tYCyZggmZ3zgN0GT1BZauliIpuLE_YyzlHe4u7VMBFggpgzXdSGInyYqQeTrlaXd3NpO61w4EiWMGF5t153vhOwFWCDxDXcslWMQEL00trLHFMj-bUNC48qWCWC_Fp0U2TuymAZYIHVuxXtkBh7bAgvwKrf1byoFg8OhO_RKP-T4fJgpsqF3B1gg5To0xW3lwxylfcyxBGNk_1oa1HTjwH6gCPN2eJY_QBcIWCBD09t3w9WXRXQttzpzLJQYTyZGpMtep-_nh4n-1-OGKwlYIAciFhHMKaQHzGS6ybOlBja0mPucj47VkoCGGp-BMkr5Clgg_qgDT1Mp21IDFMXCs_XU5XCv3RSdsW5_UOEgEUwbrvELWCB7kKfnF98Xbwe5syF2mQ7PbhbXadXjoVQxu_ZFv1fqeAxYIBFpRvOD2Up4xYmc1W4B9BFRnuqEmS9dJeopb0NhTFuimDIAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGBgZGBoYGxgcGB0YHhgfGCAYIRgiGCMYJBglGCYYJxgoGCkYKhgrGCwYLRguGC8YMBgx"
   }
 }

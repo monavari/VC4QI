@@ -135,7 +135,7 @@ JSON-LD context conflict with W3C VC 2.0) are both resolved and recorded below.
   PASS/FAIL; fresh-key issue→derive→verify round-trip.
   `packages/core-py/tests/test_sd_parity.py` (5): kernel runs over the disclosed
   subset, edge classified `authorizedBy`/`operationalScope`, SD crypto ignored.
-- **Provenance** — `examples/rm/source/M375a.xml` + `README.md`.
+- **Provenance** — `examples/rm/source/README.md`.
 - **Docs** — `docs/SELECTIVE_DISCLOSURE.md`, `docs/MODEL_SPEC.md`,
   `docs/adrs/adr-009-selective-disclosure-ecdsa-sd-2023.md`, and
   `docs/PAPER_FEEDBACK.md` (the VC 2.0 context findings).
@@ -1631,7 +1631,7 @@ DPP-5 (issued by another company). `gs-v1.test.ts` 25 passed; `test_gs_v1.py` 24
 passed.
 
 RM. D178, D197 and D520 now carry the full certified set of the M375a DRMD
-transcription (`examples/rm/source/M375a.xml`): As 178.0 mg/kg (U 5.0), Cu 57.68 %
+transcription (`examples/rm/source/README.md`): As 178.0 mg/kg (U 5.0), Cu 57.68 %
 (U 0.14), Zn 38.2 % (U 0.4), Pb 3.07 % (U 0.06), k = 2. As stays first and selected.
 The RM schema admits the UCUM unit `%`. Three tests assumed a single result and were
 updated: two S11 tests (the appended Pb result is now index 4) and one Python

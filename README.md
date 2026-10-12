@@ -1,7 +1,7 @@
 # VC4QI
 
 **Verifiable Credentials for Quality Infrastructure.** A research reference
-implementation,, for deciding what a verifier may rely on when it receives
+implementation for deciding what a verifier may rely on when it receives
 accreditation, calibration, reference-material or certification credentials.
 
 [![CI](https://github.com/monavari/VC4QI/actions/workflows/ci.yml/badge.svg)](https://github.com/monavari/VC4QI/actions/workflows/ci.yml)
