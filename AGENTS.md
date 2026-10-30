@@ -1,120 +1,74 @@
 # AGENTS.md — VC4QI agent configuration
 
-## Mandate and source order
+## Scope and sources
 
-VC4QI is migrating from the manuscript-v2.1 implementation to the standards-first
-reliance model. The new evaluator runs for the experimental RM, calibration and GS
-bindings and is the default API since the I5 switch (`evaluateReliance`); the legacy
-verifier is reachable only under the explicit `legacy` namespace.
-Documentation of the target is not execution evidence. Read, in order:
+VC4QI is a research reference implementation of standards-first reliance evaluation for
+Quality Infrastructure credentials. Read, in order:
 
 1. The active user instructions.
-2. [The supplied reconciliation requirements](docs/plans/standards-first-handover-2026-09-21.txt),
-   including explicit supersessions in §0.1.
-3. The [execution plan](docs/plans/standards-first-reconciliation.md),
-   [model](docs/model.md) and [ADR-010](docs/adrs/adr-010-standards-first-reliance.md).
-4. [Status](docs/status.md), the [implementation evidence](docs/plans/evidence.md)
-   and the append-only [report](RECONCILIATION_REPORT.md).
+2. The [model](docs/model.md) and [ADR-010](docs/adrs/adr-010-standards-first-reliance.md).
+3. [Status](docs/status.md) and the [acceptance ledger](docs/acceptance-ledger.csv).
 
-The handover resolves conflicts with older instructions. Historical documents and
-accepted-but-superseded ADRs do not restore obsolete requirements. Actual manuscript
-sources are not included; do not invent paper section numbers or publication claims.
+Documentation of a target is not execution evidence. Manuscript sources are not in the
+repository; do not invent paper section numbers or publication claims.
 
-## Repository and branch
+## Repository and branches
 
 TypeScript in `packages/core-ts` is canonical; `packages/core-py` mirrors supported
-semantics through shared fixtures. `apps/demo-web` is the existing browser demo.
-`packages/lims-adapter` and `packages/verifier-service` are scaffolds, not completed
-services. Contexts, schemas, policies, examples and docs live at the repository root.
+semantics through shared fixtures and a parity vector. Bindings live in
+`bindings/experimental/`, the demonstrator bundle in `apps/demonstrator`, the website
+in `site/`.
 
-Work on `refactor/standards-first-reconciliation`, preserving the merged baseline
-at `225e78f37fccb6f3813ba5f0a85ff3e2b2eb72b9`. Do not touch
-`archive/three-layer-capability-model`. Do not push, tag, publish or create a release
-without active session authorization. Preserve unrelated working changes.
+Work on a branch from `main`. Do not touch `archive/three-layer-capability-model`. Do
+not push, tag, publish or create a release without active session authorization.
+Preserve unrelated working changes.
 
-## Migration rules
+## Rules
 
-- Changes to the evaluator, graph, policy, scope and presentation-query code are
-  authorized when needed for the new model. Retain useful infrastructure and
-  regressions; isolate legacy behavior behind explicit profile selection.
-- No universal serialized relation vocabulary or closed six-basis model is required.
-  Accepted bindings map protected native facts to verifier-owned obligations.
-  PROV provenance does not establish granting rights or containment.
-- Prefer existing dependencies. A narrowly necessary maintained dependency is
-  permitted with documented purpose, version/license review and tests. Do not
-  replace the whole stack or add unrelated frameworks.
-- Experimental fixture binding terms are permitted under a clearly owned reserved
-  `.example` namespace with versioned interpretation/context/schema. Do not claim
-  they are production standards or invent plausible external ontology terms.
-- Keep original secured representations intact before protection verification.
-  Never redefine W3C/schema.org protected terms or drop decision-relevant data
-  through unsafe JSON-LD expansion. The legacy `safe: false` path is a known gap;
-  the new evaluator always uses safe mode.
-- Required obligations use `established`, `contradicted`, `not_established`;
-  `not_run` is execution metadata. Absence of FAIL does not establish reliance.
-- Complete routes, global restrictions, principal/grant permission, well-founded
-  support, scope and optional conformity are distinct requirements. The RM baseline
-  has no accreditation uncertainty ceiling.
-- Preserve TS `ecdsa-sd-2023`; Python SD remains semantic evaluation of a TS-derived
-  subset, not Python SD cryptographic verification.
+- No universal serialized relation vocabulary. Bindings map protected native facts to
+  verifier-owned obligations; PROV provenance establishes neither granting rights nor
+  containment.
+- Required obligations use `established`, `contradicted`, `not_established`; `not_run`
+  is execution metadata. Absence of a failure never establishes reliance.
+- Complete routes, global restrictions, principal and grant permission, well-founded
+  support, scope and optional conformity are distinct requirements. The RM baseline has
+  no accreditation uncertainty ceiling.
+- Keep original secured representations intact before protection verification. Never
+  redefine W3C or schema.org protected terms; always use JSON-LD safe mode.
+- Experimental terms live under the reserved `vc4qi.example` namespace with a versioned
+  context and schema. Never claim they are production standards or mint terms under a
+  real institution's namespace.
+- Prefer existing dependencies; a narrowly necessary maintained dependency needs a
+  documented purpose, licence review and tests.
 
-## Fixtures and unresolved inputs
+## Fixtures
 
-Never hand-edit generated signed fixtures. Change generators and regenerate proofs
-and integrity metadata according to the selected binding. For a hand-authored signed
-artifact, changing content requires reissuance; recomputing a digest alone is not enough.
-Fictional test keys and authorities must remain clearly labeled.
+Never hand-edit generated signed fixtures, catalogs or the parity vector. Change the
+generator and regenerate; every generator has a `--check` mode (`pnpm check:generated`).
+Fictional keys are derived from public seeds and must stay labelled as insecure.
+For a missing real-world governance input, insert a localized `TODO(human): <question>`
+rather than inventing an answer.
 
-Routine implementation choices already authorized by the handover do not require
-confirmation. For missing real-world governance inputs, insert a localized
-`TODO(human): <question>` and append its impact to the report. Continue independent
-work; do not substitute TODOs for the specified fictional baseline.
+## Checks
 
-## Setup and checks
-
-Use Node 20 and pnpm 10.15.1 (the current package-manager pin), Python 3.12, and
-an isolated Python environment. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup.
-I0 repaired the uv workspace and Make targets; use `uv sync --locked --all-packages
---extra dev` with uv 0.12.17. CI reads pnpm 10.15.1 from `packageManager`. Python lint
-has recorded pre-existing debt (Ruff 204, mypy 198); see the I0 evidence before
-claiming all checks green.
-
-For each implementation phase, record actual commands, exit codes and limitations:
+Node 20, pnpm 10.15.1, Python 3.12 and uv 0.12.17; see [CONTRIBUTING](CONTRIBUTING.md).
 
 ```bash
 pnpm -r build
 pnpm -r --if-present lint
 pnpm -C packages/core-ts test
-pnpm test:scenarios
-.venv/bin/python -m pytest packages/core-py/tests
-pnpm validate:schemas
+uv run --locked --all-packages --extra dev pytest packages/core-py/tests
+pnpm check:generated
+pnpm docs:check
 ```
 
-Run Python lint when its environment is configured, and report unavailable/failed
-checks explicitly. For documentation changes, run markdownlint and `pnpm docs:check`
-(the site build's link check); do not present earlier runtime results as new evidence.
-Every binding generator has a `--check` mode that must pass. Offline-resource and
-actual UI interaction lanes are still to be added (I7/I8).
-Current schema validation skips some examples without `$schema`; exit 0 is not full
-fixture coverage. Never hand-edit output to make an acceptance test pass.
+Python lint has recorded baseline debt; a change must not increase it. Report
+unavailable or failed checks explicitly and never present earlier results as new
+evidence. Update the ledger when a case changes state, with the command and exit code.
 
-## Demo
+## Completion
 
-Preserve the seven demo entries covering A–F, including both GS application variants,
-actor grouping, graph/credential inspection, replay and selective disclosure. Two GS
-variants currently enable proof checks; other scenarios skip them. The target UI
-must render the evaluator's compiled graph and distinguish simulation from verified
-reliance. Keep Vite stubs in sync with core APIs and report their assurance limits.
-
-Use `pnpm -C apps/demo-web dev` or `pnpm -C apps/demo-web build`. Existing colors
-may remain as internal display conventions; they do not define credential vocabulary.
-
-## Collaboration and completion
-
-Delegate only independent tasks with narrow context and distinct file ownership, and
-avoid repeated whole-repository audits. Append evidence to `RECONCILIATION_REPORT.md`
-and a phase section to `docs/plans/evidence.md`; keep historical claims intact. Track
-requirements and the 83 cases in `docs/plans/`. Keep the documentation set small: update
-the existing page that owns a topic (see `docs/index.md`) rather than adding a new one. Use
-`refactor(phase-N): short description` for coherent phase commits or meaningful units.
-No unexecuted test, external endorsement or future release may be reported as complete.
+Keep the documentation set small: update the page that owns a topic (see
+`docs/index.md`) rather than adding one. Record user-visible changes in
+`CHANGELOG.md`. No unexecuted test, external endorsement or future release may be
+reported as complete.

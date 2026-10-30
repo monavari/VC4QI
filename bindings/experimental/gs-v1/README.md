@@ -1,7 +1,7 @@
 # Experimental GS certification v1 binding
 
 A standards-first binding for the **gs-scheme-authorization** use case, migrated from
-the legacy example in `testdata/examples/gs-scheme-authorization`. It reuses the shared
+the v0.3 example of the same name. It reuses the shared
 gate 0–3 pipeline (`reliance/binding-chain.ts`) and adds GS gates 4–6
 (`reliance/gs-v1-evaluator.ts`, `gs-v1-slice.ts`; Python
 `qi_vc_core/reliance/gs_v1.py`).

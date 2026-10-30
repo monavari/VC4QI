@@ -10,13 +10,14 @@ The semantics are in the [model](model.md); the public API is in [API](api.md).
 
 | Path | Contents |
 | --- | --- |
-| `packages/core-ts` | Canonical TypeScript library `@qi-vc/core`: the new `reliance` evaluator and the legacy modules |
+| `packages/core-ts` | Canonical TypeScript library `@qi-vc/core`: the `reliance` evaluator, Ed25519 Data Integrity proofs and RDF canonicalization |
 | `packages/core-py` | Python mirror `qi_vc_core`, checked against the same fixtures and a parity vector |
 | `bindings/experimental/` | The RM, calibration and GS bindings: contexts, schemas, manifests, profiles, signed test vectors |
-| `apps/demo-web` | Browser demo (legacy graph explorer) and the demonstrator bundled into `site/demo` |
+| `bindings/vendor/` | Vendored W3C contexts (VCDM 2.0, Multikey), pinned by the binding catalogs |
+| `apps/demonstrator` | Builds the browser bundle `site/demo/verifier.js` |
 | `site/` | Static project website published to GitHub Pages, with these docs rendered into it |
-| `contexts/v1`, `schemas/v1`, `policies`, `testdata/examples`, `examples` | Legacy artifacts of the manuscript-v2.1 model |
-| `packages/lims-adapter`, `packages/verifier-service` | Scaffolds only, not working services |
+| `scripts/` | Binding resource builders and the site builder |
+| `testdata/regressions` | Shared TS/Python regression vectors |
 
 ## The new evaluator (`reliance/`)
 
@@ -42,15 +43,6 @@ Design rules:
 - Resolution is catalog-only and offline; unknown URIs are refused.
 - Configuration selects installed evaluators; nothing executes issuer-supplied code.
 
-## The legacy runtime
-
-`verifier/`, `evidence/`, `edge/`, `policy/`, `scope/`, `assessment/` and
-`presentation-query/` implement the manuscript-v2.1 graph model with
-`CredentialEvidenceReference` and three serialized relations. Since the I5 switch they
-are no longer the default API: the package root exposes them only under `legacy`, with
-the explicit [legacy profile](api.md#legacy-profile). The default path
-(`reliance/evaluate.ts`) imports none of them.
-
 ## TypeScript and Python
 
 TypeScript is canonical. Python mirrors every supported semantic feature against the
@@ -60,27 +52,21 @@ arithmetic and gate 4–6 traces. Known differences:
 - PyLD has no JSON-LD safe mode. Python rejects undefined terms with a sentinel
   expansion check, which is narrower; closed JSON Schemas reject undeclared properties
   in both languages.
-- Python does not issue, derive or verify `ecdsa-sd-2023` proofs; it evaluates
-  TS-derived disclosed subsets semantically.
 - Two implementations agreeing on a fixture is not independent cryptographic
   conformance.
 
-## Demo and website
-
-`apps/demo-web` is the existing graph explorer: seven legacy scenarios (A–F, with two GS
-variants), actor grouping, credential inspection, trace replay and selective
-disclosure. Only the two GS variants run graph proof checks; the others skip them.
-Replay delay is presentation, not verification time.
+## Demonstrator and website
 
 The demonstrator (`site/demo`, with RM, DCC, GS and DPP tabs) runs entirely in the
-browser: `pnpm -C apps/demo-web build:poster` bundles the repository's RM, calibration
-and GS slice evaluators (all seven gates) with the pinned resources, signed fixtures and
+browser: `pnpm -C apps/demonstrator build` bundles the repository's RM, calibration and
+GS slice evaluators (all seven gates) with the pinned resources, signed fixtures and
 verifier profiles of all three bindings into `site/demo/verifier.js`, and CI checks the
 bundle is current. `site/m375a/` redirects to the RM tab so the poster QR code stays
-valid. Node's `zlib` is replaced
-by a bounded gunzip shim (`apps/demo-web/poster/zlib-browser.ts`, using `fflate`), so
-status lists are verified in the browser too. Nothing is fetched and no server is
-needed; `tests/demonstrator.test.ts` runs the shipped bundle through its scenarios. The
-page's credential chain is not drawn by hand: it follows each credential's
-`termsOfUse` and `evidence` references from the target, places credentials by their
-longest reference path, and colours nodes and edges with the evaluator's result.
+valid. Node's `crypto` and `zlib` are replaced by browser shims
+(`apps/demonstrator/crypto-browser.ts`, and a bounded gunzip in `zlib-browser.ts` using
+`fflate`), so status lists are verified in the browser too. Nothing is fetched and no
+server is needed; `packages/core-ts/tests/demonstrator.test.ts` runs the shipped bundle
+through its scenarios. The page's credential chain is not drawn by hand: it follows each
+credential's `termsOfUse` and `evidence` references from the target, places credentials
+by their longest reference path, and colours nodes and edges with the evaluator's
+result.

@@ -242,7 +242,7 @@ for (const [file, schema] of Object.entries(schemas)) {
 const entries = [
   {
     uri: VC_V2,
-    path: 'contexts/v1/vendor/credentials-v2.jsonld',
+    path: 'bindings/vendor/credentials-v2.jsonld',
     mediaType: 'application/ld+json',
     origin: 'W3C Verifiable Credentials Data Model v2.0 context, vendored copy already used by the repository loader',
     version: 'VCDM 2.0',

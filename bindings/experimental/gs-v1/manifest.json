@@ -128,9 +128,8 @@
     "holderBinding": "unsupported-in-initial-slice"
   },
   "evidenceAndExclusions": {
-    "acceptanceLedger": "docs/plans/standards-first-acceptance.csv",
+    "acceptanceLedger": "docs/acceptance-ledger.csv",
     "testVectorRoots": ["bindings/experimental/gs-v1/test-vectors"],
-    "implementationEvidence": "docs/plans/evidence.md",
     "unsupported": ["production-accreditation", "real-gs-scheme-rules", "legal-effect", "application-assessments", "public-example-namespace-resolution", "wallet-interoperability", "timestamp-service"]
   }
 }

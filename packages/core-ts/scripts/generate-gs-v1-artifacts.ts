@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-// Generates the signed experimental GS certification v1 fixtures, shaped like the legacy
-// GS application examples (testdata/examples/gs-hair-dryer-*): a GS mark on a product
+// Generates the signed experimental GS certification v1 fixtures, shaped like the v0.3
+// GS application examples (gs-hair-dryer-*): a GS mark on a product
 // unit rests on a GS certificate for its model, which rests on the GS body's
 // accreditation (competence), the ZLS-role scheme authorization, and two studies (a
 // type examination and a factory inspection). Controller documents and one Bitstring

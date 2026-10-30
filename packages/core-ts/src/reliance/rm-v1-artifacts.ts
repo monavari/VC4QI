@@ -60,14 +60,14 @@ export const RM_V1_ARTIFACT_BINDING: ArtifactBinding = Object.freeze({
 export type ProtectionCheck =
   | 'resolve' | 'parse' | 'carrier' | 'type' | 'schema' | 'proof' | 'key' | 'signature';
 
-/** Canonical gate (handover §5.3) of each protection check. */
+/** Canonical gate (docs/model.md, section 4) of each protection check. */
 export const PROTECTION_CHECK_GATES: Readonly<Record<ProtectionCheck, Gate>> = Object.freeze({
   resolve: 1, parse: 0, carrier: 0, type: 0, schema: 0, proof: 2, key: 2, signature: 2,
 });
 
 /**
  * Node-use key: the same artifact bytes can discharge different obligations for
- * different roles, purposes, profiles and times (handover §5.1).
+ * different roles, purposes, profiles and times.
  */
 export function nodeUseKey(
   artifactId: string, digestSRI: string | undefined, role: string, request: RelianceRequest,

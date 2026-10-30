@@ -1,23 +1,25 @@
 cff-version: 1.2.0
-message: "If you use VC4QI, please cite the associated manuscript."
+message: "If you use VC4QI, please cite the associated paper."
 title: "VC4QI: Verifiable Credentials for Quality Infrastructure"
 abstract: >-
-  Reference implementation of a policy-resolved evidence-graph verifier for
-  Quality Infrastructure credentials using W3C VC 2.0 primitives.
+  Reference implementation of a standards-first reliance evaluator for Quality
+  Infrastructure credentials over W3C Verifiable Credentials 2.0, with
+  experimental reference-material, calibration and GS certification bindings.
 authors:
   - family-names: Monavari
     given-names: Mehran
 license: Apache-2.0
 repository-code: "https://github.com/monavari/VC4QI"
-version: 0.3.0
-date-released: 2026-06-08
-doi: "10.5281/zenodo.20612364"
+version: 0.4.0
+date-released: 2026-10-30
 preferred-citation:
   type: article
   title: >-
-    Verifiable Credentials for Quality Infrastructure: a policy-resolved
-    evidence-graph model for accreditation, calibration, and conformity
+    Verifiable Trust Chains for Quality Infrastructure: A Verification
+    Framework over W3C Verifiable Credentials
   authors:
     - family-names: Monavari
       given-names: Mehran
+    - family-names: Prellwitz
+      given-names: Matthias
   year: 2026

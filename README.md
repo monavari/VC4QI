@@ -27,9 +27,9 @@ producer's scope. These cases run on signed test credentials in both languages.
 
 The standards-first evaluator decides requests for all base use cases (reference
 material, calibration, statutory metrology, test reports and GS certification) on signed
-fixtures, in TypeScript with a Python mirror. The default public API is still the legacy
-graph verifier until the planned API switch. Authorities, keys and grants are
-fictional; no release, real accreditation or external endorsement is claimed. See
+fixtures, in TypeScript with a Python mirror, and is the library's only verifier since
+0.4.0 (the v0.3 graph verifier remains at tag `v0.3.0`). Authorities, keys and grants
+are fictional; no real accreditation or external endorsement is claimed. See
 [status](docs/status.md).
 
 ## Run it
@@ -44,8 +44,9 @@ pnpm -C packages/core-ts test
 .venv/bin/python -m pytest packages/core-py/tests
 ```
 
-Run the browser demo with `pnpm -C apps/demo-web dev`, and build the documentation site
-locally with `pnpm docs:build` (output in `_site/`). More checks are listed in
+Rebuild the demonstrator bundle with `pnpm -C apps/demonstrator build`, and build the
+website with the demonstrator and documentation locally with `pnpm docs:build` (output
+in `_site/`; open `_site/demo/index.html`). More checks are listed in
 [CONTRIBUTING](CONTRIBUTING.md).
 
 ## Documentation
@@ -54,17 +55,13 @@ locally with `pnpm docs:build` (output in `_site/`). More checks are listed in
 | --- | --- |
 | [Reliance model](docs/model.md) | The rules: carriers, states, gates, authority, scope, support |
 | [Status](docs/status.md) | What runs today, the acceptance ledger and open issues |
-| [Use cases](docs/use-cases.md) | The eight example scenarios and how to run them |
-| [API and migration](docs/api.md) | The reliance API, the legacy profile and the planned switch |
+| [Use cases](docs/use-cases.md) | The example scenarios and how to run them |
+| [API](docs/api.md) | The reliance API and the changes from 0.3.0 |
 | [Bindings](docs/bindings.md) | How each credential family is interpreted |
 | [Architecture](docs/architecture.md) | Code layout, gates and TypeScript–Python parity |
-| [Applications](docs/applications.md) | Assessments, presentation queries and selective disclosure |
 
-Project records: [execution plan](docs/plans/standards-first-reconciliation.md),
-[implementation evidence](docs/plans/evidence.md),
-[acceptance ledger](docs/plans/standards-first-acceptance.csv),
-[architecture decisions](docs/adrs/README.md), [changelog](CHANGELOG.md) and the running
-[report](RECONCILIATION_REPORT.md).
+Project records: [acceptance ledger](docs/acceptance-ledger.csv),
+[architecture decisions](docs/adrs/README.md) and [changelog](CHANGELOG.md).
 
 ## License
 

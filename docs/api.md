@@ -1,33 +1,21 @@
-# API and migration
+# API
 
 VC4QI ships one canonical TypeScript library, `@qi-vc/core` (`packages/core-ts`), and a
-Python mirror, `qi_vc_core` (`packages/core-py`). Both are unreleased research code at
-version 0.3.0; the new reliance API may still change.
+Python mirror, `qi_vc_core` (`packages/core-py`). Both are research code at version
+0.4.0; the reliance API may still change.
 
-## Default and legacy entry points
+## Entry points
 
-| | Standards-first reliance (default) | Legacy graph verifier |
+| | TypeScript | Python |
 | --- | --- | --- |
-| Entry points (TS) | `evaluateReliance` from `@qi-vc/core`; per binding `evaluateRmSlice`, `evaluateCalSlice`, `evaluateGsSlice` from `@qi-vc/core/reliance/{rm,cal,gs}-v1-slice` | `legacy.evaluateLegacyProfile`, or `legacy.verifyCredentialGraph` |
-| Entry points (Python) | `evaluate_reliance` from `qi_vc_core`; per binding `evaluate_rm_slice`, `evaluate_cal_slice`, `evaluate_gs_slice` | `qi_vc_core.legacy.evaluate_legacy_profile`, or `qi_vc_core.legacy.verify_credential_graph` |
-| Input | A reliance request plus a binding manifest and a verifier profile | Target credential, policy and resolver options |
-| Output | `RelianceResult`: separate verification, authorization, support, conformity and decision, with trace and witnesses | `verified` from a zero FAIL count, plus a legacy trace |
-| Credentials | The signed experimental bindings in `bindings/experimental/` | The legacy examples in `testdata/examples/` |
+| Any installed binding | `evaluateReliance` from `@qi-vc/core` | `evaluate_reliance` from `qi_vc_core` |
+| One binding | `evaluateRmSlice`, `evaluateCalSlice`, `evaluateGsSlice` from `@qi-vc/core/reliance/{rm,cal,gs}-v1-slice` | `evaluate_rm_slice`, `evaluate_cal_slice`, `evaluate_gs_slice` |
+| Install a binding | `installBinding` from `@qi-vc/core/reliance/binding-node` | `install_binding` |
 
-`evaluateReliance(request, catalog, manifest, profile)` is the default since I5 step 4.
-It runs the gate 0–6 evaluator of the verifier's installed binding
-(`SUPPORTED_BINDINGS`: RM, calibration and GS v1). A binding without an evaluator is a
-configuration error, and there is no fallback to the legacy verifier. The default path
-imports no legacy module.
-
-This is a breaking change against 0.3.0, drafted as 0.4.0:
-
-| 0.3.0 | Now |
-| --- | --- |
-| `verifier.verifyCredentialGraph` (root) | `legacy.verifyCredentialGraph`, or better `legacy.evaluateLegacyProfile` |
-| `presentationQuery` (root) | `legacy.presentationQuery` |
-| `@qi-vc/core/verifier`, `@qi-vc/core/presentation-query` | `@qi-vc/core/legacy/verifier`, `@qi-vc/core/legacy/presentation-query` |
-| Python `qi_vc_core.verify_credential_graph`, `VerifyGraphOptions` | `qi_vc_core.legacy.verify_credential_graph`, `…legacy.VerifyGraphOptions` |
+`evaluateReliance(request, catalog, manifest, profile)` runs the gate 0–6 evaluator of
+the verifier's installed binding (`SUPPORTED_BINDINGS`: RM, calibration and GS v1). A
+binding without an evaluator is a configuration error; nothing falls back to another
+evaluator.
 
 ## Reliance request and result
 
@@ -89,43 +77,24 @@ const { result } = await evaluateReliance(request, catalog, manifest, profile);
 console.log(result.decision); // 'accept' for x = 178
 ```
 
-## Legacy profile
+## Changes from 0.3.0
 
-`legacy.evaluateLegacyProfile(target, policy, options)` (Python
-`qi_vc_core.legacy.evaluate_legacy_profile`) runs the v0.3 graph verifier on the
-original signed bytes. It refuses `skipProof` and `skipStatus`, and returns a result
-labelled with the legacy profile (`legacy-qi-vc-graph` 0.3), never a reliance result.
-The standards-first evaluators never fall back to it: a legacy credential under a new
-profile stops at the gate-0 carrier check.
+0.4.0 removes the v0.3 policy-resolved graph verifier (`verifyCredentialGraph`, the
+`legacy` namespace), its policies, contexts, schemas and fixtures, presentation-query
+helpers, verifier assessments and the `ecdsa-sd-2023` selective-disclosure path. They
+remain available at tag [`v0.3.0`](https://github.com/monavari/VC4QI/tree/v0.3.0).
 
-## What changes, and how
-
-| Legacy surface | Standards-first replacement |
+| 0.3.0 | 0.4.0 |
 | --- | --- |
 | `verifyCredentialGraph(target, policy, options)` | A reliance request under a verifier-selected binding and profile |
 | `CredentialEvidenceReference` with three relations and six basis kinds | Native carriers (`termsOfUse`, `evidence`, `relatedResource`) interpreted by a binding |
 | `verified` from zero FAIL results | Separate verification, authorization, support, conformity and a three-state decision |
-| Optional proof skipping in demos | Always-on protection; simulation is labelled as such |
-| Credential-ID graph edges | Artifact identity plus context-specific node-uses and route and record witnesses |
+| Optional proof skipping in demos | Always-on protection |
 | Mandatory custom `scopeRef` | A verifier-owned claim-to-record witness |
-| Legacy policy and presentation-query paths | Profile-derived paths; a query match alone is never reliance |
 
-The transition runs in this order:
-
-1. New types and signed slices alongside the legacy runtime (done, I1–I4).
-2. Legacy fixtures and tests kept in a clearly labelled lane (done).
-3. Migrated credentials regenerated from generators, never edited with old proofs kept
-   (done for all base use cases, I5 steps 2–3).
-4. Legacy evaluation only through the explicit legacy profile, with no fallback (done,
-   I5 step 1).
-5. Switch the default to `evaluateReliance`, and move the graph verifier and
-   presentation queries under `legacy` (done, I5 step 4). The browser demonstrator runs
-   the new evaluators; the older graph explorer consumes `legacy` until I7.
+A credential in the v0.3 format under a v0.4 profile stops at the gate-0 carrier check
+(case V02).
 
 Python mirrors the supported semantics and states, routes, records and arithmetic; a
 committed parity vector (`bindings/experimental/rm-v1/test-vectors/parity/`) checks that
-both languages agree exactly. Python evaluates TS-derived selective-disclosure subsets
-semantically only; it does not verify SD cryptography.
-
-No release, tag or DOI is claimed. Existing citation metadata describes the historical
-v0.3.0.
+both languages agree exactly.

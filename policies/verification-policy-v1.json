@@ -1,6 +1,0 @@
-{
-  "id": "verification-policy-v1-superseded",
-  "status": "superseded",
-  "supersededBy": "policies/profiles/",
-  "description": "The v0.1 fixed-chain verification policy has been superseded by v0.2 policy profiles. Use policies/profiles/*.json with the evidence-graph verifier."
-}

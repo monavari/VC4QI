@@ -1,0 +1,17 @@
+{
+  "name": "@qi-vc/demonstrator",
+  "version": "0.4.0",
+  "private": true,
+  "description": "Browser bundle of the reliance evaluator for the demonstrator page (site/demo)",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit -p tsconfig.json && vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@noble/hashes": "^1.8.0",
+    "fflate": "0.8.2",
+    "typescript": "^5.4.5",
+    "vite": "^6.3.5"
+  }
+}

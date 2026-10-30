@@ -112,7 +112,7 @@ RM_V1_ARTIFACT_BINDING = ArtifactBinding(
 
 
 _UNDEFINED = "urn:vc4qi:undefined-term#"
-# Canonical gate (handover section 5.3) of each protection check.
+# Canonical gate (docs/model.md, section 4) of each protection check.
 PROTECTION_CHECK_GATES: dict[str, Gate] = {
     "resolve": 1,
     "parse": 0,

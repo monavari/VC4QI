@@ -3,7 +3,7 @@
 //
 // Quantities are decimal strings (xsd:decimal). Comparisons use exact rationals:
 // value × unit factor, with mg/kg = 10^-6 kg/kg, so no floating-point tolerance can
-// move an acceptance boundary (handover §6.3 rules 7-8). Unknown units or malformed
+// move an acceptance boundary (cases S14-S16). Unknown units or malformed
 // numbers are never compared.
 
 /** Exact non-negative decimal as numerator / 10^scale. */

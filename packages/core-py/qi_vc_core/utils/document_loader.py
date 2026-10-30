@@ -11,22 +11,11 @@ DocumentLoader = Callable[[str], dict[str, Any]]
 _REPO_ROOT = Path(__file__).parents[4]
 
 # Mirrors LOCAL_CONTEXT_MAP in packages/core-ts/src/utils/document-loader.ts.
-# Keep the two in step: a URL missing here falls back to the network, which makes
-# canonicalization non-deterministic and, offline, makes proof verification fail
-# for a reason unrelated to the signature.
-_QI_CONTEXTS = "https://w3id.org/qi-vc/contexts/v1"
-
+# Vendored W3C contexts, so canonicalization resolves every term offline.
 _LOCAL_CONTEXT_MAP: dict[str, str] = {
-    f"{_QI_CONTEXTS}/qi-core.jsonld": "contexts/v1/qi-core.jsonld",
-    f"{_QI_CONTEXTS}/qi-calibration.jsonld": "contexts/v1/qi-calibration.jsonld",
-    f"{_QI_CONTEXTS}/qi-rm.jsonld": "contexts/v1/qi-rm.jsonld",
-    f"{_QI_CONTEXTS}/qi-evidence-context.jsonld": (
-        "contexts/v1/qi-evidence-context.jsonld"
-    ),
-    # Vendored W3C contexts, so canonicalization resolves every term offline.
-    "https://www.w3.org/ns/credentials/v2": "contexts/v1/vendor/credentials-v2.jsonld",
+    "https://www.w3.org/ns/credentials/v2": "bindings/vendor/credentials-v2.jsonld",
     "https://w3id.org/security/multikey/v1": (
-        "contexts/v1/vendor/security-multikey-v1.jsonld"
+        "bindings/vendor/security-multikey-v1.jsonld"
     ),
 }
 
@@ -46,7 +35,7 @@ def build_document_loader(
 ) -> DocumentLoader:
     """Build a pyld-compatible document loader.
 
-    Serves local QI-VC contexts without network calls. Falls back to HTTP
+    Serves the vendored W3C contexts without network calls. Falls back to HTTP
     for unknown URLs unless strict=True.
     """
     extra: dict[str, Any] = contexts or {}
