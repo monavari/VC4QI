@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Selective-disclosure (G2 / Phase 6) tests: ecdsa-sd-2023 issue/derive/verify
-// over real M375a fixtures, plus the verifier's cryptosuite dispatch.
+// over M375a-derived fixtures, plus the verifier's cryptosuite dispatch.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -98,7 +98,7 @@ describe('ecdsa-sd-2023 fixtures (M375a)', () => {
       credentialSubject: {
         id: 'urn:example:lot:rt',
         materials: [{ name: 'M375a', matrix: 'CuZn39Pb3 (leaded brass)' }],
-        respPersons: [{ name: 'Dr. S. Richter', role: 'Committee for Certification' }],
+        respPersons: [{ name: 'Dr. A. Example', role: 'Committee for Certification' }],
       },
     };
     const base = await issueSd(credential, key, {

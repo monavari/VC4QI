@@ -1,39 +1,21 @@
 # Source provenance — M375a
 
-`M375a.xml` is a transcription of the M375a (CuZn39Pb3, leaded brass)
-Digital Reference Material Document (DRMD, `schemaVersion 0.3.0`), provided as
-real-world provenance for the selective-disclosure (G2) fixtures under
-`examples/rm/`.
+The certified analyte values in the reference-material fixtures under `examples/rm/`
+(`reference-material-certificate.sd.json`, its derived subset and the v1 RM artifacts)
+are transcribed from the published certificate of reference material M375a
+(CuZn39Pb3, leaded brass): **Cu 57.68 % (U=0.14)**, **Zn 38.2 % (U=0.4)**,
+**Pb 3.07 % (U=0.06)**, **As 178.0 mg/kg (U=5.0)**, all with coverage factor
+k = 2 (GUM, ISO/IEC Guide 98-3:2008). The source document itself is not
+redistributed in this repository.
 
-Notes:
-
-- The certified analyte values used in our JSON fixtures
-  (`reference-material-certificate.sd.json` and its derived subset) are taken
-  from this document: **Cu 57.68 % (U=0.14)**, **Zn 38.2 % (U=0.4)**,
-  **Pb 3.07 % (U=0.06)**, **As 178.0 mg/kg (U=5.0)**, all with coverage factor
-  k = 2 (GUM, ISO/IEC Guide 98-3:2008). The producer, contact, and responsible
-  persons (Dr. S. Richter, Dr. S. Recknagel) are likewise taken from this source
-  and become the **selectively disclosable** fields in the SD demo.
-- This XML is **abridged**: the per-element analytical-method `procedures` text
-  blocks and the non-certified "Informative Properties Set" have been removed for
-  repository cleanliness. The certified properties, administrative data,
-  responsible persons, and statements are preserved.
-- The original carries its own enveloped `XMLDSig` (`rsa-sha256`) signature. That
-  signature is **unrelated** to the QI-VC Data Integrity / SD proofs and is not
-  used or verified by this project; it is retained only where present as part of
-  the source artifact.
-- Character encoding has been normalized to clean UTF-8 (the source as received
-  had latin1/utf-8 round-trip mojibake, e.g. `für`).
+Producer, contact and personnel names in the fixtures are fictional. This project is
+not affiliated with, issued by or endorsed by the material's producer or any other
+real institution.
 
 ## Reconciliation boundary (2026-09-22)
 
-This abridged, encoding-normalized transcription is provenance material. Retaining a
-signature element does not establish that its signature validates over the modified XML;
-this project has not verified it. A JSON wrapper digest binds only its selected resource
-representation and cannot transfer the XML signature to re-encoded JSON.
-
-Existing source-derived values and names do not make fictional fixture issuance an
-endorsement by any real institution. The new signed A/O/D/S/H baseline uses
-clearly fictional authorities and an explicitly experimental binding. Preserve native
-source attribution while keeping its assurance separate from test-only Data Integrity
-proofs. See the [model](../../../docs/model.md) and [selective disclosure](../../../docs/applications.md#selective-disclosure).
+Transcribed values do not make fictional fixture issuance an endorsement by any real
+institution. The signed A/O/D/S/H baseline uses clearly fictional authorities and an
+explicitly experimental binding, and test-only Data Integrity proofs carry no
+assurance from the original document. See the [model](../../../docs/model.md) and
+[selective disclosure](../../../docs/applications.md#selective-disclosure).

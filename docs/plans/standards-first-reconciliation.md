@@ -191,7 +191,7 @@ directories mean every matching file is reviewed, not just one representative.
 | `docs/schemas/*.md`, `docs/tutorials/*.md` | New carrier/API walkthroughs with original secured representations and witnesses; label executable legacy instructions during transition. |
 | `docs/scenarios/scenario-catalogue.md`, `tests/scenarios/README.md` | Catalogue actual scenarios, purpose, binding, crypto assurance, expected states and diagnostic assertions; resolve A–F versus old paper labels. |
 | All eight `testdata/examples/*/README.md` files | Migrate six base use cases and both GS application variants; explain correct institutional roles and fixture generation. |
-| `examples/gs/README.md`, `examples/rm/source/README.md` | Updated GS relations and fictional status; retain native XML provenance and explain what its wrapper does and does not protect. |
+| `examples/gs/README.md`, `examples/rm/source/README.md` | Updated GS relations and fictional status; record source provenance and explain what its wrapper does and does not protect. |
 | `tests/fixtures/keys/README.md` | Fixture issuer/key/controller mapping; deterministic test-only material and adversarial controls. |
 | `README.md`, `docs/IMPLEMENTATION_STATUS.md` | Current-versus-target capability table: semantics, crypto, experimental bindings, simulation and unsupported integrations. |
 | `docs/NON_GOALS.md`, `SECURITY.md` | Explicit supported boundary, resolution/security threats and physical-object limitations; retain reporting contacts. |
