@@ -19,8 +19,8 @@ a concrete, self-consistent credential chain for that material to:
 
 Two variants are needed (paper §5.3):
 
-- **Variant A** — single producer accreditation, all certified elements characterized
-  by the producer directly.
+- **Variant A** — single producer accreditation, all certified elements
+  characterized by the producer directly.
 - **Variant B** — multi-lab characterization; three fictional ISO/IEC 17025
   labs (lab-A, lab-B, lab-C) each contribute a subset of elements, linked via
   `CredentialEvidenceReference` evidence entries with `characterisationOf`
@@ -41,7 +41,6 @@ The matching capability and accreditation credentials are at
 
 **Key data choices:**
 
-- Producer accreditation reference: `D-RM-11075-01-00` (real NAB number).
 - Certified elements match the actual M375a certificate (Cu 57.68 %, Zn 38.2 %,
   Pb 3.07 % and trace elements).
 - Silicon (Si) is included as an informative-only result (`isCertified: false`)

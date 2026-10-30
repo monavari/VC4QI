@@ -29,8 +29,8 @@
       },
       "referenceMaterialProducer": {
         "id": "did:web:rm-producer.example",
-        "name": "Example Reference Material Producer",
-        "location": "Richard-Willstätter-Str 11, 12489 Berlin, DE"
+        "name": "Example Reference Material Producer (fictional)",
+        "location": "Example Street 1, 00000 Example City"
       }
     },
     "materials": [
@@ -111,11 +111,11 @@
     ],
     "respPersons": [
       {
-        "name": "Dr. S. Richter",
+        "name": "Dr. A. Example",
         "role": "Committee for Certification"
       },
       {
-        "name": "Dr. S. Recknagel",
+        "name": "Dr. B. Example",
         "role": "Project Coordinator"
       }
     ]
@@ -133,10 +133,10 @@
   ],
   "proof": {
     "type": "DataIntegrityProof",
-    "created": "2026-06-08T19:08:09Z",
+    "created": "2026-10-12T19:39:15Z",
     "verificationMethod": "did:web:rm-producer.example#key-2",
     "cryptosuite": "ecdsa-sd-2023",
     "proofPurpose": "assertionMethod",
-    "proofValue": "u2V0AhVhASizYzRJeD5jrvK6Hjexb41a-lru73LlLFZncawLRyxjMvKGJ7ghZu3K2_oLWlzNIevepEbX2Gb1j8qDAZYxojlgjgCQC2eqQ4wdurZC_oVd9vfZlsIDsPJoaoiLisc6GBPQCluZYICWW4vjLz2n1_9QyqN-klAGR41EXeKRTlpMWP_IPWiNVh1hAs1JAU8peuGz-AZmj8XwRjaz-pUPN0qS46E6F1hkQx8bFmb48sHHo5FAF0xK_J1fkO1PjHcKGSOEDrrAbDfRDpFhAaPAYsuy7msiWkzY_flUrmeg0ipmlubfbXoivFh9YuKVwJZllu5YAr7aMm9dZvdclCAzX4Jbl8_DqnH2W722EMlhABEahiqIC9L6TN_N20q-5cZNknb-ih3kfsSEjnBl4bEMhLONUvGPDcHBt4VPUUS6gEQtDiSG_nWH-SGjPY9N_ClhAqGewltMurdEgY94UDYFFOP7d7W_1eukaxV1eDAU4E9S2ylxB16nLb99EVn8zT2fDdHYJ8L9_3SK-YJ8utXMnOFhAjwdN75c1UoEEguRWLdH2ZpscVXKtG5_zyK0Rm45y_4PiDeT0uBWmKjUtys3oQbUEPDS2_tK05R7dMaIsMSFTnFhAgmLL2hTm7VMPV44DYtei-iXdcaep3niIR1AJnUdsCLbdsmUeXmUaPISCY4AexOArX1SjKTI6UksvQuIDT39jVFhAhxkQN-F5XummRHYFGK6gORCOnUTtq8B32Jw6ccWhf_HZi5UwmrDahg2iDN-nv7x_yEZWQeY79hXWnCTblD7lAYxnL2lzc3VlcmovdmFsaWRGcm9tay92YWxpZFVudGlscS9jcmVkZW50aWFsU2NoZW1hdS9jcmVkZW50aWFsU3ViamVjdC9pZHguL2NyZWRlbnRpYWxTdWJqZWN0L2FkbWluaXN0cmF0aXZlRGF0YS9jb3JlRGF0YXguL2NyZWRlbnRpYWxTdWJqZWN0L2FkbWluaXN0cmF0aXZlRGF0YS92YWxpZGl0eXhCL2NyZWRlbnRpYWxTdWJqZWN0L2FkbWluaXN0cmF0aXZlRGF0YS9yZWZlcmVuY2VNYXRlcmlhbFByb2R1Y2VyL2lkeEQvY3JlZGVudGlhbFN1YmplY3QvYWRtaW5pc3RyYXRpdmVEYXRhL3JlZmVyZW5jZU1hdGVyaWFsUHJvZHVjZXIvbmFtZXgcL2NyZWRlbnRpYWxTdWJqZWN0L21hdGVyaWFsc3gpL2NyZWRlbnRpYWxTdWJqZWN0L21hdGVyaWFsUHJvcGVydGllc0xpc3RpL2V2aWRlbmNl"
+    "proofValue": "u2V0AhVhAbhW5qv3KKIaP813T7oEqmefqsxuCXRfnE43S56bX_3bkQjX5AbPTEwl4K3nZhionCofpl4D2vmVP3efw2d2IF1gjgCQDkw4dgBgVQiBKVhrtxcEoy-wEUFByq5JprPZShXJRBwBYIAvhXhOD4Imt8dEnsmuyrewi4oGWCcB0Zu7XWzFMafOkh1hA8q7w3PnZB-t28TqKNNAxev9_5R-yhVjoqVZ5W0n8uQZxCNv6GwZgKQvICJrV_3EaFooUMCYDzMzEgSVxpdXtTlhAquaVYde8l7hBhlTJevViT9gfnMnbpd70A38eeC5Dq_932DwORB3I5mx3yOUZpX9r9z53CGqo4UqdGrXMeUYdnVhA2ZXQp7UKnKSKzAWCqewrCV3WDgHWSnznH7JVah8AGXj4Vob4zIlsq-DW0WlHJIZcnx_8prAg7VLUQGZzB6ND7lhA_GgxQFGWaknkpT3VPpxpHkL9Y-Hgc6LKPLbVFskgrsMu6_htt1mlVyCgSCavI2eBngmLt65Yc6ekulPFUfmP31hAjxNjFPwHefU7weOdcH2qCm8hK5hJOMmvUgxO4cjX98jWi25H1dk3ItBDYdqI5-cj-qi77Ea1GHD6WF0xClRQFlhA8RsaSF9Og2RjAzmbG645DToZa-i-jkKJ67yERHUyn48u2iFyQdGpk-riDvc3tCH9ccCR8APG-M0iwlf0trM6k1hAfAiTJrqPDFylLrILXkH-01h8g44W5OmrraCieaAZIhUoe6NN18ogWS4VjYvsLeFIAmbMxOCfqlHx6x6zhdf0kIxnL2lzc3VlcmovdmFsaWRGcm9tay92YWxpZFVudGlscS9jcmVkZW50aWFsU2NoZW1hdS9jcmVkZW50aWFsU3ViamVjdC9pZHguL2NyZWRlbnRpYWxTdWJqZWN0L2FkbWluaXN0cmF0aXZlRGF0YS9jb3JlRGF0YXguL2NyZWRlbnRpYWxTdWJqZWN0L2FkbWluaXN0cmF0aXZlRGF0YS92YWxpZGl0eXhCL2NyZWRlbnRpYWxTdWJqZWN0L2FkbWluaXN0cmF0aXZlRGF0YS9yZWZlcmVuY2VNYXRlcmlhbFByb2R1Y2VyL2lkeEQvY3JlZGVudGlhbFN1YmplY3QvYWRtaW5pc3RyYXRpdmVEYXRhL3JlZmVyZW5jZU1hdGVyaWFsUHJvZHVjZXIvbmFtZXgcL2NyZWRlbnRpYWxTdWJqZWN0L21hdGVyaWFsc3gpL2NyZWRlbnRpYWxTdWJqZWN0L21hdGVyaWFsUHJvcGVydGllc0xpc3RpL2V2aWRlbmNl"
   }
 }

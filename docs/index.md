@@ -1,7 +1,7 @@
 # VC4QI documentation
 
-VC4QI (Verifiable Credentials for Quality Infrastructure) is research software from
-the RM producer. It asks what a verifier may actually rely on when it receives accreditation,
+VC4QI (Verifiable Credentials for Quality Infrastructure) is research software. It
+asks what a verifier may actually rely on when it receives accreditation,
 calibration, reference-material or certification credentials, and implements the
 answer as a reference evaluator in TypeScript with a Python mirror.
 
