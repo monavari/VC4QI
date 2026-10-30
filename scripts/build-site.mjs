@@ -31,18 +31,12 @@ const NAV = [
     ['docs/model.md', 'Reliance model'],
     ['docs/status.md', 'Status'],
     ['docs/use-cases.md', 'Use cases'],
-    ['docs/api.md', 'API and migration'],
+    ['docs/api.md', 'API'],
     ['docs/bindings.md', 'Bindings'],
     ['docs/architecture.md', 'Architecture'],
-    ['docs/applications.md', 'Applications'],
-    ['docs/paper-feedback.md', 'Manuscript feedback'],
   ]],
   ['Project records', [
-    ['docs/plans/standards-first-reconciliation.md', 'Execution plan'],
-    ['docs/plans/evidence.md', 'Implementation evidence'],
-    ['docs/plans/standards-first-traceability.md', 'Requirements traceability'],
     ['docs/adrs/README.md', 'Architecture decisions'],
-    ['docs/history/README.md', 'Historical documents'],
   ]],
 ];
 const git = args => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' });
@@ -138,7 +132,7 @@ function render(source) {
 <link rel="stylesheet" href="${up}assets/docs.css">
 </head>
 <body>
-<header class="top"><a class="brand" href="${up}index.html"><strong>VC4QI</strong></a><nav class="toplinks"><a href="${up}docs/index.html">Documentation</a><a href="${up}m375a/">Demonstrator</a><a href="${REPO}">GitHub</a></nav></header>
+<header class="top"><a class="brand" href="${up}index.html"><strong>VC4QI</strong></a><nav class="toplinks"><a href="${up}docs/index.html">Documentation</a><a href="${up}demo/">Demonstrator</a><a href="${REPO}">GitHub</a></nav></header>
 <div class="layout">
 <details class="side" open><summary>Contents</summary><nav aria-label="Documentation">${nav}</nav></details>
 <script>if (matchMedia('(max-width: 52rem)').matches) document.querySelector('details.side').removeAttribute('open');</script>
@@ -165,8 +159,7 @@ for (const source of PUBLISHED) {
 // Check every other Markdown file's relative links, so READMEs stay correct on GitHub.
 const LINK = /(?<!!)\[(?:[^\]]|\][^(])*?\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
 for (const file of git(['ls-files', '-co', '--exclude-standard', '*.md']).split('\n')) {
-  if (!file || PUBLISHED.includes(file) || file === 'RECONCILIATION_REPORT.md' || file.startsWith('docs/history/')
-      || file.includes('node_modules/') || !existsSync(join(ROOT, file))) continue;
+  if (!file || PUBLISHED.includes(file) || file.includes('node_modules/') || !existsSync(join(ROOT, file))) continue;
   const text = readFileSync(join(ROOT, file), 'utf8').replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
   for (const match of text.matchAll(LINK)) resolveLink(file, match[1]);
 }

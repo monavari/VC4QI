@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
-"""I5 step 4 (mirrors tests/default-api.test.ts): the default entry point is
-standards-first reliance; the v0.3 graph verifier is reachable only under legacy."""
+"""Mirrors tests/default-api.test.ts: the entry point is standards-first reliance;
+the v0.3 graph verifier was removed in v0.4 (tag v0.3.0 keeps it)."""
 
 from __future__ import annotations
 
@@ -84,7 +84,7 @@ def _request(
     )
 
 
-def test_root_exports_reliance_and_keeps_the_graph_verifier_under_legacy() -> None:
+def test_root_exports_reliance_and_no_legacy_graph_verifier() -> None:
     assert qi_vc_core.SUPPORTED_BINDINGS == (
         "https://vc4qi.example/bindings/rm/1",
         "https://vc4qi.example/bindings/cal/1",
@@ -92,9 +92,7 @@ def test_root_exports_reliance_and_keeps_the_graph_verifier_under_legacy() -> No
     )
     assert not hasattr(qi_vc_core, "verify_credential_graph")
     assert "verify_credential_graph" not in qi_vc_core.__all__
-    assert callable(qi_vc_core.legacy.verify_credential_graph)
-    assert callable(qi_vc_core.legacy.evaluate_legacy_profile)
-    assert callable(qi_vc_core.legacy.presentation_query.policy_to_dcql)
+    assert not hasattr(qi_vc_core, "legacy")
 
 
 @pytest.mark.parametrize(

@@ -29,29 +29,29 @@ Please include:
 
 ## Test Keys Disclaimer
 
-All cryptographic keys in `tests/fixtures/keys/` are **TEST ONLY** and are
-committed solely for deterministic test execution. They are explicitly marked
-`TEST ONLY - NOT FOR PRODUCTION` in every file. Never use these keys in any
-production or staging environment.
+Every signing key used by the experimental bindings is an **insecure fictional
+fixture** derived from a public seed in its generator
+(`packages/core-ts/scripts/generate-*-v1-artifacts.ts`), so anyone can recompute it.
+No private key is committed. Never use these keys in any production or staging
+environment.
 
 ## Scope
 
 In scope: credential issuance/verification logic, cryptographic operations,
-schema validation, trust registry resolution, status list handling.
+schema validation, key authorization, status list handling.
 
 Out of scope: issues in upstream dependencies (report those to the upstream
 project), demo UI cosmetic issues.
 
-## Standards-first migration assurance
+## Assurance
 
 VC4QI is research software; a supported-version label is not a security certification.
 The new reliance evaluator requires authorized proof keys, safe JSON-LD processing,
 exact-byte integrity, authenticated status with freshness, complete authority routes
 and independently justified support, and resolves only from a pinned offline catalog.
-It runs for the experimental bindings; the default API is still the legacy verifier,
-which has known gaps (for example, legacy canonicalization with `safe: false`). See
-[status](docs/status.md).
+It is the only verifier in the repository and runs for the experimental bindings; the
+v0.3 graph verifier, with its known gaps, was removed in v0.4. See [status](docs/status.md).
 
-Proof skipping is simulation. Missing required evidence cannot authorize reliance, and
+Missing required evidence cannot authorize reliance, and
 signed identifiers do not establish physical sample truth. Historical reliance and
 interactive presentation security need their own evidence and are not implemented.

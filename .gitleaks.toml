@@ -3,17 +3,15 @@ useDefault = true
 
 [[rules]]
 id = "test-key-material"
-description = "Detects private key PEM blocks outside the designated test fixtures directory"
+description = "Detects private key PEM blocks; the repository commits none"
 regex = '''-----BEGIN (EC |RSA |OPENSSH )?PRIVATE KEY-----'''
-[rules.allowlist]
-paths = ['''tests/fixtures/keys/''']
 
 [[rules]]
 id = "generic-api-key-extended"
 description = "Generic high-entropy API key pattern"
 regex = '''(?i)(api[_-]?key|apikey|secret[_-]?key)\s*[:=]\s*["\']?[A-Za-z0-9/+]{32,}["\']?'''
 [rules.allowlist]
-paths = ['''tests/''', '''examples/''']
+paths = ['''packages/[^/]+/tests/''', '''testdata/''', '''bindings/experimental/''']
 
 [allowlist]
 description = "Global allowlist"

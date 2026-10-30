@@ -2,9 +2,7 @@
 
 A standards-first binding for the **calibration-direct-accreditation**,
 **calibration-capability**, **nmi-legal-mandate** and **test-report-supported-dcc** use
-cases, migrated from the legacy
-examples in `testdata/examples/`. It
-reuses the shared gate 0–3 pipeline (`reliance/binding-chain.ts`) and adds calibration
+cases, migrated from the v0.3 examples. It reuses the shared gate 0–3 pipeline (`reliance/binding-chain.ts`) and adds calibration
 gates 4–6 (`reliance/cal-v1-evaluator.ts`, `cal-v1-slice.ts`; Python
 `qi_vc_core/reliance/cal_v1.py`).
 

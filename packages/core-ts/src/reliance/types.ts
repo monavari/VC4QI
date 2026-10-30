@@ -10,7 +10,7 @@ export type ExecutionState = 'executed' | 'not_run';
 export type RelianceDecision = 'accept' | 'reject' | 'not_established';
 
 /**
- * Canonical gate numbers (handover §5.3), used in code, tests, docs and UI:
+ * Canonical gate numbers (docs/model.md, section 4), used in code, tests, docs and UI:
  * 0 plan and structure, 1 resource identity, 2 protection, 3 temporal
  * applicability, 4 meaning and mapping, 5 authority and scope, 6 support and decision.
  */

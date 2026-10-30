@@ -4,8 +4,7 @@
 A verifier installs one binding and selects one of its profiles; the request is
 evaluated by that binding's gate 0-6 evaluator. There is no fallback: an uninstalled
 binding is a configuration error, and a request naming another binding or profile is
-refused by the evaluator at gate 0. Legacy credentials are evaluated only through
-``qi_vc_core.legacy.evaluate_legacy_profile``.
+refused by the evaluator at gate 0.
 """
 
 from __future__ import annotations

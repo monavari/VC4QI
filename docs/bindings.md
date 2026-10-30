@@ -98,20 +98,3 @@ Keep native DCC/D-SI XML, and claim SIS or SIRP support only after a pinned mapp
 validated. Otherwise define the term in a local `.example` namespace with a safe context
 and witness-bearing tests. Never mint identifiers under a real institution's namespace
 or invent plausible external terms.
-
-## Legacy artifacts
-
-The repository-root `contexts/v1`, `schemas/v1`, `policies` and `testdata/examples`
-implement the superseded manuscript-v2.1 model (`CredentialEvidenceReference` with
-`authorizedBy`, `derivedFrom`, `supportedBy` and `authorizationBasis.kind`). They are
-evaluated only through the explicit [legacy profile](api.md#legacy-profile) and are kept
-for provenance and the demo.
-
-| Legacy identifier | Status |
-| --- | --- |
-| `http://qudt.org/vocab/quantitykind/Pressure`, `MassFraction` and `http://qudt.org/vocab/unit/` | QUDT identifiers used only by the legacy binding |
-| `https://w3id.org/qi-vc/terms/v1/matrix/CuZn39Pb3`, `CuZn40Pb2` | Repository placeholders, not institutional governance |
-| `https://w3id.org/qi-vc/terms/v1/element/As`, `method/EURAMET-cg-17`, `form/disc` | Legacy placeholders |
-
-The legacy schema validator skips examples without `$schema`, so a passing
-`pnpm validate:schemas` does not cover every legacy example.

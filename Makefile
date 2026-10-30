@@ -1,4 +1,4 @@
-.PHONY: setup test lint validate-schemas demo clean
+.PHONY: setup test lint check-generated demo clean
 
 # Prerequisites: Node 20, pnpm 10.15.1, Python 3.12 and uv on PATH.
 setup:
@@ -7,7 +7,6 @@ setup:
 
 test:
 	pnpm test
-	pnpm test:scenarios
 	uv run --locked --all-packages --extra dev pytest packages/core-py/tests
 
 lint:
@@ -15,11 +14,12 @@ lint:
 	uv run --locked --all-packages --extra dev ruff check .
 	uv run --locked --all-packages --extra dev mypy packages/core-py
 
-validate-schemas:
-	pnpm validate:schemas
+check-generated:
+	pnpm check:generated
 
 demo:
-	pnpm --filter @qi-vc/demo-web dev
+	pnpm -C apps/demonstrator build
+	pnpm docs:build
 
 clean:
 	find . -name "node_modules" -type d -prune -exec rm -rf {} +

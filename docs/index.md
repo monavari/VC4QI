@@ -16,23 +16,13 @@ contradicted or not established. "Cannot tell" never counts as yes.
 | Understand the idea and its rules | [Reliance model](model.md) |
 | See what runs today and what is open | [Status](status.md) |
 | Walk through the example scenarios | [Use cases](use-cases.md) |
-| Call the library | [API and migration](api.md) |
+| Call the library | [API](api.md) |
 | Know how a credential family is interpreted | [Bindings](bindings.md) |
 | Find your way around the code | [Architecture](architecture.md) |
-| Learn about assessments, queries and selective disclosure | [Applications](applications.md) |
-| Review the implementation against the manuscript | [Manuscript feedback](paper-feedback.md) |
 
-## Project records
-
-- [Execution plan](plans/standards-first-reconciliation.md): phases I0–I8 with
-  deliverables and exit criteria.
-- [Implementation evidence](plans/evidence.md): commands, results and limitations for
-  every phase.
-- [Acceptance ledger](plans/standards-first-acceptance.csv) (83 cases) and
-  [requirements traceability](plans/standards-first-traceability.md).
-- [Architecture decisions](adrs/README.md) and [historical documents](history/README.md).
-- The [requirements source](plans/standards-first-handover-2026-09-21.txt) that resolves
-  any ambiguity.
+The [acceptance ledger](acceptance-ledger.csv) lists 83 cases with their expected
+outcome, test and evidence, and the [architecture decisions](adrs/README.md) record why
+the design is as it is.
 
 ## Try it
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Shared types across all @qi-vc/core modules.
+// Shared types for the canonicalization, proof and reliance modules.
 
 export type JsonObject = Record<string, unknown>;
 
@@ -23,73 +23,9 @@ export interface Ed25519KeyPair {
 /** W3C VC 2.0 Data Integrity proof */
 export interface DataIntegrityProof {
   type: 'DataIntegrityProof';
-  cryptosuite: 'eddsa-rdfc-2022' | 'ecdsa-rdfc-2019' | 'ecdsa-sd-2023';
+  cryptosuite: 'eddsa-rdfc-2022';
   proofPurpose: 'assertionMethod';
   verificationMethod: string;
-  /** Present for eddsa-rdfc-2022; ecdsa-sd-2023 base/derived proofs may omit it. */
   created?: string;
   proofValue: string;
-}
-
-/**
- * ECDSA P-256 multikey, used by the ecdsa-sd-2023 selective-disclosure path.
- * Distinct from the Ed25519 key used by eddsa-rdfc-2022 (see proofs/sd.ts).
- */
-export interface EcdsaMultikeyPair {
-  id: string;
-  controller: string;
-  type: 'Multikey';
-  publicKeyMultibase: string;
-  /** Present only for issuance (the secret half). */
-  secretKeyMultibase?: string;
-}
-
-/** Bitstring Status List entry embedded in a credential */
-export interface BitstringStatusListEntry {
-  id: string;
-  type: 'BitstringStatusListEntry';
-  statusPurpose: 'revocation' | 'suspension' | 'message';
-  statusListIndex: string;
-  statusListCredential: string;
-}
-
-export type TraceLevel =
-  | 'credential'
-  | 'assessment'
-  | 'edge'
-  | 'graph'
-  | 'policy'
-  | 'scope'
-  | 'presentation';
-
-export type TraceStatus = 'PASS' | 'FAIL' | 'SKIP' | 'WARN';
-
-export interface TraceEntry {
-  id: string;
-  level: TraceLevel;
-  target?: string;
-  from?: string;
-  to?: string;
-  relation?: string;
-  assessmentMethod?: 'agent' | 'human' | 'hybrid';
-  assessorId?: string;
-  assessmentId?: string;
-  status: TraceStatus;
-  code: string;
-  detail: string;
-}
-
-export interface VerificationSummary {
-  nodesResolved: number;
-  edgesEvaluated: number;
-  failures: number;
-  warnings: number;
-}
-
-export interface VerificationTrace {
-  verified: boolean;
-  profile: string;
-  target: string;
-  summary: VerificationSummary;
-  results: TraceEntry[];
 }

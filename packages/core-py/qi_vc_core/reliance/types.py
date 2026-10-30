@@ -10,7 +10,7 @@ SemanticState = Literal["established", "contradicted", "not_established"]
 ExecutionState = Literal["executed", "not_run"]
 RelianceDecision = Literal["accept", "reject", "not_established"]
 Gate = Literal[0, 1, 2, 3, 4, 5, 6]
-# Canonical gate numbers (handover section 5.3), shared with the TypeScript core.
+# Canonical gate numbers (docs/model.md, section 4), shared with the TypeScript core.
 GATE_NAMES: tuple[str, ...] = (
     "plan-and-structure",
     "resource-identity",

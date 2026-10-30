@@ -1,6 +1,29 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — 2026-10-30
+
+- **Breaking: the v0.3 graph verifier and its material are removed.** The library's only
+  verifier is the standards-first reliance evaluator (`evaluateReliance`, Python
+  `evaluate_reliance`). Removed: the `legacy` namespace (`verifyCredentialGraph`,
+  `evaluateLegacyProfile`), presentation-query helpers, verifier assessments, the
+  `ecdsa-sd-2023` selective-disclosure path, the trust-registry credential, the v0.3
+  contexts, schemas, policies, examples and scenario fixtures, the legacy graph-explorer
+  demo, and the LIMS and verifier-service scaffolds. Tag `v0.3.0` keeps all of them.
+  A v0.3 credential under a v0.4 profile stops at the gate-0 carrier check (V02); the
+  explicit legacy-profile case V03 is excluded.
+- The vendored W3C contexts move to `bindings/vendor/`; binding catalogs are
+  regenerated with unchanged digests, and no signed fixture changes.
+- The demonstrator bundle builds from `apps/demonstrator` (`pnpm -C apps/demonstrator
+  build`); `site/demo/verifier.js` changes only in the embedded manifests' ledger path.
+- CI checks every generator's `--check` mode (`pnpm check:generated`) in place of the
+  v0.3 schema validator and scenario tests.
+- Project records are condensed: the reconciliation report, phase plans, evidence log,
+  handover, traceability tables, manuscript feedback and superseded ADRs are removed
+  (they remain in the history at commit `fc36bc6`). The acceptance ledger moves to
+  `docs/acceptance-ledger.csv`.
+- The repository carries no institutional affiliation; the RM example is named M375a.
+
+### Earlier unreleased changes, included in 0.4.0
 
 - The GS binding now follows the legacy GS examples: a GS mark on a product unit rests
   on a GS certificate, which needs the GS body's accreditation (competence), the

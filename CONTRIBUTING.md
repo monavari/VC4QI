@@ -14,29 +14,24 @@ uv sync --locked --all-packages --extra dev
 ```
 
 `make setup` runs these two installation commands; it does not install the prerequisite
-tools. The uv workspace includes only core-py; service and LIMS scaffolds are excluded.
-uv uses the project `.venv`, even if an unrelated environment is active.
+tools. The uv workspace includes only core-py. uv uses the project `.venv`, even if an unrelated environment is active.
 
 ```bash
 pnpm -r build
 pnpm -r --if-present lint
 pnpm -C packages/core-ts test
 uv run --locked --all-packages --extra dev pytest packages/core-py/tests
-pnpm test:scenarios
-pnpm validate:schemas
+pnpm check:generated
 ```
 
-`make test` runs TS, scenarios and Python tests. `make lint` runs the existing TS
-check and Python Ruff/mypy checks. Python lint currently fails on recorded baseline debt
-(Ruff 204, mypy 198; see the
-[I0 evidence](docs/plans/evidence.md#i0-baseline-and-scope-safety)); a change must not
-increase it. Do not suppress rules or report lint as passing.
+`make test` runs the TypeScript and Python tests. `make lint` runs the TypeScript check
+and Python Ruff/mypy checks; Python lint has recorded baseline debt (see
+[status](docs/status.md#latest-checks)), and a change must not increase it. Do not
+suppress rules or report lint as passing.
 
-Generated files have `--check` modes that CI-style reviews expect to pass, for example
-`node scripts/cal-v1/build-resources.mjs --check` and
-`pnpm -C packages/core-ts exec tsx scripts/generate-cal-v1-artifacts.ts --check` (the
-same for `rm-v1` and `gs-v1`). The scenario command skips graph proofs, and schema
-validation skips legacy examples without `$schema`; see [status](docs/status.md).
+Generated files (binding resources and catalogs, signed fixtures and the RM parity
+vector) have `--check` modes; `pnpm check:generated` runs all of them, and CI requires
+them to pass.
 
 For documentation changes, run markdownlint and the site build's link check:
 
@@ -51,12 +46,10 @@ evidence.
 
 ## Branch naming
 
-The reconciliation follows [AGENTS.md](AGENTS.md) and the
-[execution plan](docs/plans/standards-first-reconciliation.md).
+Agents follow [AGENTS.md](AGENTS.md).
 
 | Purpose | Pattern |
 | --- | --- |
-| Milestone work | `m<N>-<short-name>` (e.g., `m1-schemas`) |
 | Feature | `feat/<short-name>` |
 | Bug fix | `fix/<short-name>` |
 | Documentation | `docs/<short-name>` |
@@ -75,7 +68,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`.
 
-Scope examples: `schemas`, `core-ts`, `core-py`, `verifier`, `demo`.
+Scope examples: `bindings`, `core-ts`, `core-py`, `reliance`, `demo`, `docs`.
 
 ## Pull request requirements
 
@@ -86,9 +79,10 @@ Scope examples: `schemas`, `core-ts`, `core-py`, `verifier`, `demo`.
 - CHANGELOG.md updated under `[Unreleased]`
 - No production keys or secrets in committed files
 
-## Schema governance
+## Binding governance
 
-Substantive changes to `schemas/`, `contexts/`, or `policies/` require:
+Substantive changes to a binding in `bindings/` (context, schemas, manifest, profiles)
+require:
 
 1. An Architecture Decision Record (ADR) in `docs/adrs/`
 2. Reference implementations updated (both TS and Python)
@@ -121,14 +115,13 @@ Documentation files (`.md`) are covered by CC-BY-4.0 and do not need SPDX header
 - Unit tests for all new public functions
 - Integration tests for cross-module flows
 - Coverage must not decrease below 80% for `packages/core-ts` and `packages/core-py`
-- Scenario tests for any new end-to-end flow
 - Requirement/case IDs, commands/exits and relevant state/reason/route/record/arithmetic witnesses
 - Explicit distinction between real protection, simulated checks and unsupported integrations
 
 ## Dependency additions
 
-The standards-first handover permits narrowly necessary maintained dependencies with
-a documented purpose, version/license review and tests. Prefer existing dependencies;
+Narrowly necessary maintained dependencies are permitted with a documented purpose,
+version/license review and tests. Prefer existing dependencies;
 do not replace the whole stack or add unrelated frameworks. Record the rationale in
 the PR. Existing maintainer/schema review rules govern merging; they do not require
 repeated permission for authorized local migration work.

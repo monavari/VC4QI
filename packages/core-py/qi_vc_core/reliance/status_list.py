@@ -201,7 +201,7 @@ def evaluate_status(
             f"Status list is older than the profile's {policy.max_age_seconds} s "
             "freshness limit."
         )
-    # A list observed at T says nothing about an earlier activity (handover 7.3, P13).
+    # A list observed at T says nothing about an earlier activity (P13).
     activity = _time(activity_time or evaluation_time)
     if activity is None or activity < issued:
         return no(
