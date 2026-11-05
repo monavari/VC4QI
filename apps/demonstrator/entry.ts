@@ -129,7 +129,7 @@ export const EXAMPLES: readonly ExampleSpec[] = [
       markCase('external', 'Hair dryer HD-02', 'external lab tested', 'https://maker.vc4qi.example/credentials/DPP-3', withholdStudy(GS_URI.TR2)),
       markCase('toy', 'Toy 001', 'outside ZLS scope', 'https://maker.vc4qi.example/credentials/DPP-2', withholdStudy(GS_URI.TR3)),
     ],
-    note: 'Shaped like the legacy GS examples: mark → GS certificate → accreditation, ZLS-role scheme authorization, type examination and factory inspection. A fictional profile, not a legal GS rule; all parties and keys are fictional.' },
+    note: 'Shaped like a GS certification chain: mark → GS certificate → accreditation, ZLS-role scheme authorization, type examination and factory inspection. A fictional profile, not a legal GS rule; all parties and keys are fictional.' },
   { id: 'dpp', tab: 'DPP', title: 'Product passport',
     intro: 'Is this unit really covered by the GS certificate it cites?',
     caseLabel: 'Passport',

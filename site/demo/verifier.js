@@ -23206,7 +23206,7 @@ const Is = "2026-09-25T12:00:00Z", Am = { rm: Wh, cal: lm, gs: Im }, Td = Object
       Ft("external", "Hair dryer HD-02", "external lab tested", "https://maker.vc4qi.example/credentials/DPP-3", ds(Vt.TR2)),
       Ft("toy", "Toy 001", "outside ZLS scope", "https://maker.vc4qi.example/credentials/DPP-2", ds(Vt.TR3))
     ],
-    note: "Shaped like the legacy GS examples: mark → GS certificate → accreditation, ZLS-role scheme authorization, type examination and factory inspection. A fictional profile, not a legal GS rule; all parties and keys are fictional."
+    note: "Shaped like a GS certification chain: mark → GS certificate → accreditation, ZLS-role scheme authorization, type examination and factory inspection. A fictional profile, not a legal GS rule; all parties and keys are fictional."
   },
   {
     id: "dpp",
