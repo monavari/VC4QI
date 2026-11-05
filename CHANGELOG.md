@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.0 — 2026-10-30
+## 0.4.0 — 2026-11-05
 
 - **Breaking: the v0.3 graph verifier and its material are removed.** The library's only
   verifier is the standards-first reliance evaluator (`evaluateReliance`, Python

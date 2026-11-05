@@ -1,6 +1,6 @@
 # Status
 
-**Version 0.4.0, 30 October 2026.** The standards-first evaluator decides real requests
+**Version 0.4.0, 5 November 2026.** The standards-first evaluator decides real requests
 on signed fixtures for all base use cases, in TypeScript and Python, and is the
 library's only verifier. All authorities, keys and grants are fictional; no real
 accreditation or external endorsement is claimed.
