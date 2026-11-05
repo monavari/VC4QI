@@ -57,7 +57,7 @@ arithmetic and gate 4–6 traces. Known differences:
 
 ## Demonstrator and website
 
-The demonstrator (`site/demo`, with RM, DCC, GS and DPP tabs) runs entirely in the
+The demonstrator (`site/demo`, with a guided story and RM, DCC, GS and DPP tabs) runs entirely in the
 browser: `pnpm -C apps/demonstrator build` bundles the repository's RM, calibration and
 GS slice evaluators (all seven gates) with the pinned resources, signed fixtures and
 verifier profiles of all three bindings into `site/demo/verifier.js`, and CI checks the

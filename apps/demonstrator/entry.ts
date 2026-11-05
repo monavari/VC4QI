@@ -32,6 +32,20 @@ const loaded = Object.fromEntries((['rm', 'cal', 'gs'] as const).map(key => [key
   files: resources[key].files,
 }])) as Record<BindingKey, { manifest: BindingManifest; profiles: Record<string, RelianceProfile>; files: typeof resources.rm.files }>;
 
+/**
+ * A second passport verifier, derived here and not shipped as a binding profile: the
+ * same profile as gs-verifier-dpp-1 without the scheme owner's anchor, so the same bytes
+ * meet a verifier that recognises the accreditation body only.
+ */
+const ACCREDITATION_ONLY = 'gs-verifier-dpp-accreditation-only (demonstrator)';
+{
+  const base = resources.gs.profiles['gs-verifier-dpp-1'] as { id: string; trustAnchors: { id: string }[] };
+  loaded.gs.profiles[ACCREDITATION_ONLY] = loadRelianceProfile({ ...base,
+    id: 'https://vc4qi.example/profiles/gs-verifier-dpp-accreditation-only',
+    description: 'Demonstrator-only variant of gs-verifier-dpp-1 that configures the accreditation body as its only trust anchor. Fictional.',
+    trustAnchors: base.trustAnchors.filter(anchor => anchor.id !== 'https://zls.vc4qi.example/controller') });
+}
+
 // ---------------------------------------------------------------- examples and cases
 
 const short = (iri: unknown) => String(iri).split(/[#/:]/).pop() ?? '';
@@ -146,7 +160,105 @@ export const EXAMPLES: readonly ExampleSpec[] = [
       passportCase('early', 'Unit sn-0001', 'on market before certification', 'https://maker.vc4qi.example/credentials/DPP-2', withholdMarkCredential(GS_URI.M4)),
       passportCase('borrowed', 'Unit sn-0050', 'cites another unit\'s credential', 'https://maker.vc4qi.example/credentials/DPP-3', withholdMarkCredential(GS_URI.M1)),
     ],
+    choice: { label: 'The verifier trusts', options: [
+      { id: 'both', label: 'Accreditation body and scheme owner', sublabel: 'gs-verifier-dpp-1' },
+      { id: 'accreditation-only', label: 'Accreditation body only', sublabel: 'no scheme-owner anchor' }] },
     note: 'An experimental product passport shaped after the EU Digital Product Passport (ESPR): unique product identifier, GTIN, commodity code, economic operator and facility, technical and sustainability data, and compliance information. Its GS-mark entry is supported by the unit\'s GS-mark credential, which keeps its own authority route. The GS binding evaluates only that entry. Not ESPR conformance; identifiers are fictional, and today\'s GS scheme has no per-unit credential. All parties and keys are fictional.' },
+];
+
+// ---------------------------------------------------------------- the story
+
+export type StoryPart = 'build' | 'verify' | 'manipulate' | 'decide' | 'disclose';
+export const STORY_PARTS: readonly { readonly id: StoryPart; readonly label: string }[] = [
+  { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' }, { id: 'manipulate', label: 'Manipulate' },
+  { id: 'decide', label: 'The verifier decides' }, { id: 'disclose', label: 'Selective disclosure' },
+];
+/**
+ * One step of the guided story. Build steps show credentials that already exist, in the
+ * order they were issued, as the passport's chain grows; they evaluate nothing. Verify,
+ * manipulate and decide steps run a scenario, and `expect` is the decision the tests
+ * require of it. The disclosure step is a placeholder: nothing in it is evaluated.
+ */
+export interface StoryStep {
+  readonly id: string;
+  readonly part: StoryPart;
+  readonly title: string;
+  readonly text: string;
+  /** Who acts: the issuer and recipient (build) or the verifier (other steps). */
+  readonly actor: string;
+  /** Build steps: the credentials issued in this step. */
+  readonly issues?: readonly string[];
+  readonly scenario?: ScenarioOptions;
+  readonly expect?: RelianceResult['decision'];
+  /** Disclosure placeholder: per credential, what a verifier needs and what could stay hidden. */
+  readonly disclosure?: readonly { readonly credential: string; readonly reveal: string; readonly hide: string }[];
+}
+
+const GS_CHAIN = {
+  A: 'https://nab.vc4qi.example/credentials/GS-A', S: 'https://zls.vc4qi.example/credentials/GS-S',
+  FI: 'https://gs-body.vc4qi.example/credentials/FI-1', TR: GS_URI.TR1, C: GS_URI.C1, M: GS_URI.M1,
+  P: 'https://maker.vc4qi.example/credentials/DPP-1',
+};
+const passport = (over: Partial<ScenarioOptions> = {}): ScenarioOptions =>
+  ({ example: 'dpp', caseId: 'unit', choice: 'both', tamper: false, withhold: false, ...over });
+const SURVEILLANCE = 'Verifier: market surveillance authority (trusts the accreditation body and the scheme owner)';
+
+export const STORY: readonly StoryStep[] = [
+  { id: 'accredit', part: 'build', actor: 'Accreditation body → GS body', issues: [GS_CHAIN.A], scenario: passport(),
+    title: 'The accreditation body accredits the GS body',
+    text: 'It attests competence: testing and certifying toys and household appliances against named standards. It signs with a key published in its controller document, and can suspend the accreditation through its status list.' },
+  { id: 'authorize', part: 'build', actor: 'Scheme owner → GS body', issues: [GS_CHAIN.S], scenario: passport(),
+    title: 'The scheme owner permits the GS body to award the GS mark',
+    text: 'Competence is not permission. A second authority, in the role ZLS has for the GS mark, grants the right to award the mark, for household appliances only.' },
+  { id: 'examine', part: 'build', actor: 'GS body → manufacturer', issues: [GS_CHAIN.FI, GS_CHAIN.TR], scenario: passport(),
+    title: 'The GS body inspects the factory and examines the type',
+    text: 'Two studies: a factory inspection of the plant and a type examination of model HD-01. Each is signed under the GS body\'s accreditation. They support the certificate; they grant nothing.' },
+  { id: 'certify', part: 'build', actor: 'GS body → manufacturer', issues: [GS_CHAIN.C], scenario: passport(),
+    title: 'The GS body certifies model HD-01',
+    text: 'The certificate points to both of its authorities, the accreditation and the scheme permission, and to both studies. Every link is a reference inside a signed credential.' },
+  { id: 'mark', part: 'build', actor: 'Manufacturer → product unit sn-0042', issues: [GS_CHAIN.M, GS_CHAIN.P], scenario: passport(),
+    title: 'The manufacturer marks the unit and issues its product passport',
+    text: 'A GS-mark credential for unit sn-0042, citing the certificate, and a product passport whose compliance information lists the mark. Per-unit credentials are the experimental part: today\'s GS scheme has none.' },
+
+  { id: 'verify', part: 'verify', actor: SURVEILLANCE, scenario: passport(), expect: 'accept',
+    title: 'Market surveillance checks the passport',
+    text: 'It knows none of the parties in advance and trusts only two roots. It follows every reference from the passport down to them and answers six questions before it relies on the GS mark.' },
+
+  { id: 'tamper', part: 'manipulate', actor: SURVEILLANCE, scenario: passport({ tamper: true }), expect: 'reject',
+    title: 'Someone edits the passport',
+    text: 'The serial number is changed after signing. The signature no longer matches the bytes. This is the only manipulation a signature check alone catches; the next three pass it.' },
+  { id: 'borrowed', part: 'manipulate', actor: SURVEILLANCE, scenario: passport({ caseId: 'borrowed' }), expect: 'reject',
+    title: 'A passport borrows another unit\'s credential',
+    text: 'Unit sn-0050 is an HD-02, but its passport cites the GS-mark credential of unit sn-0042. Every credential is genuine and correctly signed; the link between them is not.' },
+  { id: 'clone', part: 'manipulate', actor: 'Verifier: market surveillance authority, checking a GS-mark credential',
+    scenario: { example: 'gs', caseId: 'clone', tamper: false, withhold: false }, expect: 'reject',
+    title: 'Another company cites a genuine certificate',
+    text: 'A different company issues a GS-mark credential for its own unit and points it at the real HD-01 certificate. The certificate names another manufacturer.' },
+  { id: 'toy', part: 'manipulate', actor: 'Verifier: market surveillance authority, checking a GS-mark credential',
+    scenario: { example: 'gs', caseId: 'toy', tamper: false, withhold: false }, expect: 'reject',
+    title: 'The GS body certifies a toy',
+    text: 'The GS body is accredited for toys and its certificate is genuine. But the scheme owner permitted the GS mark for household appliances only, so the mark on the toy is not authorized.' },
+  { id: 'withheld', part: 'manipulate', actor: SURVEILLANCE, scenario: passport({ withholdUri: GS_CHAIN.TR }), expect: 'not_established',
+    title: 'The type examination is withheld',
+    text: 'Nothing presented is false, but the study the certificate rests on is missing. The verifier cannot tell, and "cannot tell" is never accepted.' },
+
+  { id: 'surveillance', part: 'decide', actor: SURVEILLANCE, scenario: passport(), expect: 'accept',
+    title: 'Verifier 1: market surveillance',
+    text: 'Its profile recognises both the accreditation body and the scheme owner, so both halves of the authority, competence and permission, reach a root it trusts.' },
+  { id: 'abroad', part: 'decide', actor: 'Verifier: a buyer abroad (trusts the accreditation body only)',
+    scenario: passport({ choice: 'accreditation-only' }), expect: 'not_established',
+    title: 'Verifier 2: a buyer abroad',
+    text: 'The same passport and the same bytes. This verifier recognises the accreditation body but not the scheme owner, so it cannot tell whether the mark was permitted. The verifier\'s policy decides, not the issuer\'s.' },
+
+  { id: 'disclose', part: 'disclose', actor: 'Holder: the manufacturer · Verifier: market surveillance authority',
+    title: 'Show what the question needs, and no more',
+    text: 'Withholding a whole credential leaves the verifier unable to tell. Selective disclosure would let the holder reveal only the fields the verifier\'s question needs, with each signature still checkable. Mechanisms such as SD-JWT VC, ecdsa-sd-2023 or bbs-2023 would provide it.',
+    disclosure: [
+      { credential: 'Product passport DPP-1', reveal: 'Unit, model and the GS-mark entry', hide: 'Facility, technical and sustainability data' },
+      { credential: 'Type examination TR-1', reveal: 'Issuer, model, standards and the outcome', hide: 'In a real report: measurements and design details' },
+      { credential: 'Factory inspection FI-1', reveal: 'Issuer, date and the outcome', hide: 'The site identifier' },
+      { credential: 'GS certificate GSC-1', reveal: 'Everything: it is the public claim', hide: 'Nothing' },
+    ] },
 ];
 
 // ---------------------------------------------------------------- the credential graph
@@ -239,6 +351,8 @@ export interface ScenarioOptions {
   readonly choice?: string;
   readonly tamper: boolean;
   readonly withhold: boolean;
+  /** Withhold this credential instead of the case's own (the story's withheld study). */
+  readonly withholdUri?: string;
 }
 export interface ScenarioResult {
   readonly options: ScenarioOptions;
@@ -260,14 +374,16 @@ export async function evaluateScenario(options: ScenarioOptions): Promise<Scenar
   const example = EXAMPLES.find(e => e.id === options.example) ?? EXAMPLES[0]!;
   const spec = example.cases.find(c => c.id === options.caseId) ?? example.cases[0]!;
   const bound = loaded[spec.binding];
-  const profileName = example.id === 'dcc' && options.choice === 'direct-only' ? 'cal-verifier-1' : spec.profile;
+  const profileName = example.id === 'dcc' && options.choice === 'direct-only' ? 'cal-verifier-1'
+    : example.id === 'dpp' && options.choice === 'accreditation-only' ? ACCREDITATION_ONLY : spec.profile;
   const profile = bound.profiles[profileName]!;
   const conformity = example.id === 'rm' && options.choice !== 'authorized'
     ? { requirementId: 'as-mass-fraction-max-200-mg-per-kg', decisionRuleId: 'guarded-acceptance-expanded-u' } : undefined;
+  const withheld = options.withholdUri ?? (options.withhold ? spec.withhold.uri : undefined);
 
   const texts: Record<string, string> = {};
   const inputs = bound.files
-    .filter(file => !(options.withhold && file.uri === spec.withhold.uri))
+    .filter(file => file.uri !== withheld)
     .map(file => {
       // Tamper test: change the decisive value without re-signing. The catalog pins what
       // is served, so only the signature check can catch the change, and must.
@@ -287,7 +403,7 @@ export async function evaluateScenario(options: ScenarioOptions): Promise<Scenar
     trustConfigId: 'https://vc4qi.example/trust/fixture-anchors',
     evaluationTime: EVALUATION_TIME,
     activityTime: EVALUATION_TIME,
-    suppliedEvidence: spec.supplied.filter(uri => !(options.withhold && uri === spec.withhold.uri)),
+    suppliedEvidence: spec.supplied.filter(uri => uri !== withheld),
     resolverLimits: { maxResources: 64, maxDepth: 4, maxBytes: 5_000_000 },
     ...(conformity ? { conformity } : {}),
   });
