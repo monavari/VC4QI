@@ -39,13 +39,13 @@ is at commit
 
 ## Latest checks
 
-On 30 October 2026, for the 0.4.0 tree:
+On 5 November 2026, for the 0.4.0 tree:
 
 | Check | Result |
 | --- | --- |
 | `pnpm -r build` and `pnpm -r --if-present lint` | Pass |
-| `pnpm -C packages/core-ts test` | 278 passed (19 files) |
-| `uv run --locked --all-packages --extra dev pytest packages/core-py/tests` | 259 passed |
+| `pnpm -C packages/core-ts test` | 279 passed (19 files) |
+| `uv run --locked --all-packages --extra dev pytest packages/core-py/tests` | 260 passed |
 | `pnpm check:generated` | All resources, signed fixtures and the parity vector up to date |
 | `pnpm docs:check` | All links valid |
 | Python Ruff / mypy | 23 / 30 recorded findings, all in pre-existing proof, canonicalization and utility code (down from 204 / 198 before the cleanup) |

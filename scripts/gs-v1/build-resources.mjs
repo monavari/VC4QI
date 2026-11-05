@@ -91,10 +91,10 @@ const studyPolicy = { type: 'array', minItems: 1, maxItems: 1, items: authorizat
 const supportReference = closed({ id: iri, type: { enum: ['GsTypeExaminationReference', 'GsFactoryInspectionReference'] } });
 
 const schemas = {
-  // Competence: an accreditation of a certification body (certifying, testing, factory
-  // inspection) or of a testing laboratory, for product categories and standards.
+  // Competence: an accreditation of a certification body (certifying, which includes factory
+  // inspection, and testing) or of a testing laboratory, for product categories and standards.
   'accreditation.json': credentialSchema('accreditation.json', 'GsAccreditation', 'Accreditation (competence)',
-    grantSubject(['certifyProducts', 'testProducts', 'inspectFactories'],
+    grantSubject(['certifyProducts', 'testProducts'],
       closed({ id: iri, productCategoryIri: iri, standardIris: nonemptySet(iri) }))),
   // Scheme permission: the scheme authority's (ZLS role) independent permission to award the mark.
   'scheme-authorization.json': credentialSchema('scheme-authorization.json', 'GsSchemeAuthorization', 'GS scheme authorization',

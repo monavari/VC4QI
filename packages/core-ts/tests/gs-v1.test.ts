@@ -229,6 +229,14 @@ describe('GS studies (gate 6): type examination and factory inspection', () => {
     expect(result.decision).toBe('reject');
   });
 
+  it('a factory inspection needs an accreditation that permits certification; testing alone is not enough', async () => {
+    const result = await runCert(URI.C, await reissueChain([
+      [URI.A, d => { subject(d).permittedActivity = [`${GS}testProducts`]; }], [URI.FI], [URI.TR1], [URI.C],
+    ]));
+    expect(trace(result, 'support:factory-inspection:accreditation-permission')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
+  });
+
   it('a factory inspection of another manufacturer contradicts the support', async () => {
     const result = await runCert(URI.C, await reissueChain([
       [URI.FI, d => { subject(d).manufacturerIri = 'https://other-maker.vc4qi.example/controller'; }], [URI.C],
