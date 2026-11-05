@@ -2,20 +2,14 @@
 
 ## Status
 
-Accepted as the migration target on 22 September 2026. Implemented for the experimental
-RM, calibration and GS bindings (phases I1–I5); the default API switch is pending.
-Supersedes [ADR-008](adr-008-three-relations-no-role.md), the all-relations-in-evidence
-contract of [the historical graph ADR](adr-006-evidence-graph-architecture.md),
-the sole-canonicalizer requirement of [ADR-002](adr-002-urdna2015-canonicalization.md),
-the universal registry/root contract of [ADR-004](adr-004-trust-registry-as-vc.md), and
-[ADR-007's canonical fixture assumptions](adr-007-m375a-worked-example.md).
-It amends ADR-009's disclosure requirements while retaining TS ECDSA-SD and Python's
-semantic-only SD scope. Prior decision text remains historical evidence.
+Accepted on 22 September 2026 and implemented for the experimental RM, calibration and
+GS bindings. Since v0.4 the reliance evaluator is the only verifier in the repository.
+It superseded ADRs 002, 004, 005, 006 (evidence graph), 007 and 008 and amended 009;
+those records remain at tag `v0.3.0`.
 
 ## Context
 
-The [new handover](../plans/standards-first-handover-2026-09-21.txt) replaces the old
-wire-edge contract and kernel freeze. Institutional authority and support must be
+The standards-first requirements replaced the v0.3 wire-edge contract and kernel freeze. Institutional authority and support must be
 interpreted through accepted native bindings, while required reliance predicates need
 explicit evidence states, complete routes and well-founded recursive justification.
 Existing crypto/fixtures/demo infrastructure remains useful, but old failure-count
@@ -40,19 +34,17 @@ aggregation and wire dispatch cannot represent the new contract reliably.
   has no accreditation uncertainty ceiling and must execute all three headline outcomes.
 - Use suite-specific transforms and standard resource-integrity rules; no sole generic
   RDF/JSON digest assumption. Pin static resources and keep safe expansion.
-- Retain selective disclosure with binding-derived required facts, not a universal custom
-  `scopeRef`. Preserve Python's lack of SD crypto as an explicit boundary.
+- Treat selective disclosure as a presentation constraint: a disclosed subset must keep
+  every binding-derived required fact. No universal custom `scopeRef`.
 - Support scoped experimental authority answers and pinned Recognized Entities discovery;
   do not claim full draft, wallet, legal or deployed institutional interoperability.
 
 ## Consequences
 
-New wire/profile/API versions are required. Explicit legacy adapters verify the original
-secured representation before mapping; no silent fallback or transferred signature claim.
-The current runtime and test counts establish only legacy capabilities until migration.
-Required tests assert state, reason/gate, selected records/routes and arithmetic witnesses.
-Documentation and release metadata must distinguish target, implemented, simulated and
-unsupported behavior. Existing historical citations are not identifiers for a future release.
+New wire, profile and API versions were required. The v0.3 graph verifier was first
+isolated behind an explicit legacy profile with no fallback, then removed in v0.4.
+Required tests assert state, reason and gate, selected records and routes, and
+arithmetic witnesses. Documentation distinguishes implemented, simulated and
+unsupported behavior.
 
-See the [model](../model.md), [bindings](../bindings.md),
-[API and migration](../api.md) and [execution plan](../plans/standards-first-reconciliation.md).
+See the [model](../model.md), [bindings](../bindings.md) and [API](../api.md).

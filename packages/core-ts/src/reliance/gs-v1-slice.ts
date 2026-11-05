@@ -2,25 +2,29 @@
 // Reliance evaluation over the experimental GS certification v1 binding, gates 0-6
 // (I5): the shared gate 0-3 chain, a gate-4 mapping of the selected certification
 // statement and a gate-5 route that needs competence AND scheme permission, with the
-// claim covered by both scopes. For an experimental product passport the selected claim
-// is its GS marking, authorized through a GS certificate for the unit's model that holds
-// that complete route itself. Gate 6 requires the certificate's studies (a type
-// examination and a factory inspection, each independently authorized). No conformity
-// rules are installed.
+// claim covered by both scopes. For an experimental GS-mark credential the selected claim
+// is its marking, authorized through a GS certificate for the unit's model that holds
+// that complete route itself. For an experimental product passport (shaped after the EU
+// Digital Product Passport) the selected claim is its GS-mark entry: the passport is the
+// responsible economic operator's declaration, and the entry is supported by the GS-mark
+// credential it cites, which keeps its own route. Gate 6 requires the certificate's
+// studies (a type examination and a factory inspection, each independently authorized).
+// No conformity rules are installed.
 // Node-only (status uses zlib).
 import { createRelianceResult, decisionFromRequired } from './index.js';
 import type { StaticResourceCatalog } from './catalog.js';
 import { planRefusal, refusePlan, verifyChain } from './binding-chain.js';
 import { GS_V1_ARTIFACT_BINDING, GS_V1_BINDING_ID } from './gs-v1.js';
 import {
-  certificateSupport, certificationCoverage, GS_CERTIFICATE_ROUTES, mapCertification, mapMarking, markingCoverage, routeScopes,
-  type GsOutcome, type GsSupportResult,
+  certificateSupport, certificationCoverage, GS_CERTIFICATE_ROUTES, mapCertification, mapMarking, markCredentialSupport, markingCoverage,
+  routeScopes, type GsOutcome, type GsSupportResult,
 } from './gs-v1-evaluator.js';
 import type { BindingManifest } from './manifest.js';
 import type { RelianceProfile } from './profile.js';
 import { nodeUseKey, predicate, resolvePointer, type RmArtifactVerification } from './rm-v1-artifacts.js';
 import { claimAuthority, composeAuthority, type NodeFacts, type RouteResult } from './rm-v1-authority.js';
 import type { RelianceRequest, RelianceResult, SemanticState, TraceEntry } from './types.js';
+import type { JsonObject } from '../types.js';
 
 export interface GsSliceEvaluation {
   readonly result: RelianceResult;
@@ -29,6 +33,10 @@ export interface GsSliceEvaluation {
 
 const SELECTED_CERTIFICATION = '/credentialSubject/certification';
 const SELECTED_MARKING = '/credentialSubject/marking';
+const SELECTED_PASSPORT_MARK = '/credentialSubject/complianceInformation/gsMark';
+type TargetKind = 'certificate' | 'mark' | 'passport';
+const KIND_OF: Record<string, TargetKind> = { GsMarkCredential: 'mark', ProductPassport: 'passport' };
+const SELECTABLE: Record<TargetKind, string> = { certificate: SELECTED_CERTIFICATION, mark: SELECTED_MARKING, passport: SELECTED_PASSPORT_MARK };
 
 export async function evaluateGsSlice(
   request: RelianceRequest, catalog: StaticResourceCatalog, manifest: BindingManifest, profile: RelianceProfile,
@@ -57,29 +65,34 @@ export async function evaluateGsSlice(
     : composeAuthority([], evaluated, ids.slice(profile.authority.maxRoutes));
   const winner = authority.routes.find(r => r.state === 'established');
 
-  const isPassport = Array.isArray(targetDocument?.type) && targetDocument.type[1] === 'GsProductPassport';
-  const selectable = isPassport ? SELECTED_MARKING : SELECTED_CERTIFICATION;
+  const kind: TargetKind = (Array.isArray(targetDocument?.type) && KIND_OF[String(targetDocument.type[1])]) || 'certificate';
+  const selectable = SELECTABLE[kind];
   const claims = request.selectedClaims.map(claim => {
     const coverage = new Map<string, GsOutcome>();
     if (targetDocument === undefined || claim.sourcePointer !== selectable
         || resolvePointer(targetDocument, claim.sourcePointer) === undefined) {
       const reason = targetDocument === undefined ? 'The target is not usable, so its claims are not read.'
-        : `Selected claim ${claim.sourcePointer} is not the ${isPassport ? 'marking' : 'certification statement'} of the usable target.`;
+        : kind === 'passport' ? `This binding interprets only the GS-mark entry (${SELECTED_PASSPORT_MARK}) of a product passport; ${claim.sourcePointer} has no interpretation here.`
+          : `Selected claim ${claim.sourcePointer} is not the ${kind === 'mark' ? 'marking' : 'certification statement'} of the usable target.`;
       return { claim, mapping: undefined, coverage, result: { claimId: claim.id, routeWitnessIds: [] as string[], ...predicate('not_established', [reason]) } };
     }
     const value = resolvePointer(targetDocument, claim.sourcePointer);
-    const markingMapping = isPassport ? mapMarking(value, claim.sourcePointer) : undefined;
+    const markingMapping = kind === 'certificate' ? undefined
+      : mapMarking(value, claim.sourcePointer, (targetDocument.credentialSubject as JsonObject | undefined)?.productModelIri);
     const mapping = markingMapping ?? mapCertification(value, claim.sourcePointer);
     const marking = markingMapping?.marking;
-    const certification = isPassport ? undefined : mapping.certification;
+    const certification = kind === 'certificate' ? mapping.certification : undefined;
     if (marking === undefined && certification === undefined) {
       return { claim, mapping, coverage, result: { claimId: claim.id, routeWitnessIds: [] as string[],
         ...predicate(mapping.state, [`Gate 4: ${mapping.reason}`], [claim.sourcePointer]) } };
     }
     const composed = claimAuthority(authority, r => {
-      const covered = marking !== undefined
-        ? markingCoverage(marking, lookup(r.scope!)?.document)
-        : (() => { const { competence, scheme } = routeScopes(r, lookup); return certificationCoverage(certification!, competence, scheme); })();
+      const covered: GsOutcome = kind === 'passport'
+        ? { state: 'established', sources: [SELECTED_PASSPORT_MARK],
+          reason: 'The entry is declared by the passport\'s responsible economic operator; it is relied on through the GS-mark credential it cites (gate 6).' }
+        : marking !== undefined
+          ? markingCoverage(marking, lookup(r.scope!)?.document)
+          : (() => { const { competence, scheme } = routeScopes(r, lookup); return certificationCoverage(certification!, competence, scheme); })();
       const sources = [...r.chain.slice(1), ...covered.sources];
       coverage.set(r.id, { ...covered, sources });
       return { id: 'claim-coverage', state: covered.state, reason: covered.reason, sources };
@@ -95,16 +108,22 @@ export async function evaluateGsSlice(
   });
   const authorization = claims.map(c => c.result);
 
-  // Gate 6: the studies of the certificate (the target itself, or the one a passport cites).
+  // Gate 6: for a passport, the GS-mark credential it cites; then the studies of the
+  // certificate (the target itself, the one a GS-mark credential cites, or the one reached
+  // through a passport's GS-mark credential).
+  const markSupport = kind === 'passport' && targetDocument !== undefined
+    ? markCredentialSupport(targetFacts as NodeFacts & { document: Record<string, unknown> }, lookup, profile) : undefined;
   const certificateUri = targetDocument === undefined ? undefined
-    : isPassport ? evaluated.find(r => r.chain.length > 1)?.chain[1] : request.targetId;
+    : kind === 'passport' ? markSupport?.certificateUri
+      : kind === 'mark' ? evaluated.find(r => r.chain.length > 1)?.chain[1] : request.targetId;
   const certificateNode = certificateUri === undefined ? undefined : lookup(certificateUri);
   const studies: GsSupportResult[] = targetDocument === undefined ? []
     : certificateNode?.usable === 'established' && certificateNode.document !== undefined
       ? certificateSupport(certificateNode as NodeFacts & { document: Record<string, unknown> }, lookup, profile)
       : (['type-examination', 'factory-inspection'] as const).map(obligationId => ({ obligationId, state: 'not_established' as const,
         reason: 'No usable GS certificate was reached, so its studies are not evaluated.', bases: [], chain: [] }));
-  const support = studies.map(s => ({
+  const obligations: GsSupportResult[] = [...(markSupport ? [markSupport.support] : []), ...studies];
+  const support = obligations.map(s => ({
     obligationId: `gs-v1:${s.obligationId}`,
     witnessIds: s.state === 'established' ? [...s.chain] : [],
     ...predicate(s.state, [s.reason], ['/evidence']),
@@ -115,7 +134,7 @@ export async function evaluateGsSlice(
     : { requested: false as const, execution: 'not_run' as const };
 
   const decisive = new Set<string>([request.targetId, ...(winner?.chain ?? []),
-    ...studies.filter(s => s.state === 'established').flatMap(s => s.chain)]);
+    ...obligations.filter(s => s.state === 'established').flatMap(s => s.chain)]);
   const required: SemanticState[] = [
     ...artifacts.filter(a => decisive.has(a.artifactId)).flatMap(verificationOf).map(r => r.state),
     ...authorization.map(r => r.state),
@@ -152,7 +171,7 @@ export async function evaluateGsSlice(
         execution: 'executed', reason: basis.reason, sources: [...basis.sources] });
     }
   }
-  for (const study of studies) {
+  for (const study of obligations) {
     for (const basis of study.bases) {
       trace.push({ gate: 6, nodeUse: targetUse, predicate: `support:${study.obligationId}:${basis.id}`, state: basis.state,
         execution: 'executed', reason: basis.reason, sources: [...basis.sources] });
@@ -174,7 +193,8 @@ export async function evaluateGsSlice(
     trace, resources: chain.resources,
     limitations: [
       'The GS route is a fictional profile example (competence AND scheme permission), not a universal GS or legal rule.',
-      ...(isPassport ? ['The product passport is an experimental credential in this binding, not EU Digital Product Passport conformance.'] : []),
+      ...(kind === 'passport' ? ['The product passport is an experimental credential shaped after the EU Digital Product Passport (ESPR), not ESPR conformance; this binding interprets only its GS-mark entry.'] : []),
+      ...(kind === 'mark' ? ['The GS-mark credential is an experimental manufacturer credential; today\'s GS scheme has no per-unit credential.'] : []),
       'Verification failures of credentials outside the selected route and study chains are reported but do not decide the request.',
       'Fixture grants are fictional: an accreditation or scheme authorization here has no legal effect.',
     ],

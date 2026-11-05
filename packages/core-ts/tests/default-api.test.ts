@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-// I5 step 4: the default entry point is standards-first reliance. `evaluateReliance`
-// dispatches to the installed binding's own gate 0-6 evaluator with no fallback; the
-// v0.3 graph verifier and presentation queries are reachable only under `legacy`.
+// The entry point is standards-first reliance. `evaluateReliance` dispatches to the
+// installed binding's own gate 0-6 evaluator with no fallback; the v0.3 graph verifier
+// was removed in v0.4 (tag v0.3.0 keeps it).
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -48,16 +48,12 @@ const CASES = [
 ] as const;
 
 describe('default API: standards-first reliance', () => {
-  it('the package root exports evaluateReliance; the graph verifier and presentation queries only under legacy', () => {
+  it('the package root exports evaluateReliance and no legacy graph verifier', () => {
     expect(typeof core.evaluateReliance).toBe('function');
     expect(core.SUPPORTED_BINDINGS).toEqual([
       'https://vc4qi.example/bindings/rm/1', 'https://vc4qi.example/bindings/cal/1', 'https://vc4qi.example/bindings/gs/1',
     ]);
-    expect('verifier' in core).toBe(false);
-    expect('presentationQuery' in core).toBe(false);
-    expect(typeof core.legacy.verifyCredentialGraph).toBe('function');
-    expect(typeof core.legacy.evaluateLegacyProfile).toBe('function');
-    expect(typeof core.legacy.presentationQuery.policyToDcql).toBe('function');
+    for (const name of ['verifier', 'presentationQuery', 'legacy']) expect(name in core).toBe(false);
   });
 
   for (const c of CASES) {

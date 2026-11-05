@@ -291,9 +291,23 @@ function claimHTML(D, selected) {
     }));
     return h + '</tbody></table>';
   }
-  if (type === 'GsProductPassport') {
-    return kv('Product unit', esc(short(s.id))) + kv('Model', esc(short(s.productModelIri))) + kv('Mark claimed', esc(short(s.marking?.markIri)) + ' for ' + esc(short(s.marking?.productModelIri)))
+  if (type === 'GsMarkCredential') {
+    return kv('Product unit', esc(short(s.id))) + kv('Model', esc(short(s.productModelIri)))
+      + kv('Mark claimed', esc(short(s.marking?.markIri)) + ' for ' + esc(short(s.marking?.productModelIri)))
       + kv('Placed on market', date(s.activityTime)) + kv('Issued by', esc(D.issuer));
+  }
+  if (type === 'ProductPassport') {
+    const evaluated = selected.includes('/credentialSubject/complianceInformation/gsMark');
+    const mark = s.complianceInformation?.gsMark;
+    h += kv('Product', esc(s.productName ?? '')) + kv('Unique product identifier', esc(short(s.id))) + kv('Model', esc(short(s.productModelIri)))
+      + kv('GTIN', esc(s.gtin ?? '')) + kv('Commodity code', esc(s.commodityCode ?? '')) + kv('Economic operator', esc(s.economicOperatorIri ?? ''))
+      + kv('Facility', esc(short(s.facilityIri))) + kv('Placed on market', date(s.activityTime));
+    h += '<table><thead><tr><th>Passport section</th><th>Content</th><th>Evaluated</th></tr></thead><tbody>';
+    h += '<tr><td>Technical data</td><td>Rated power ' + esc(s.technicalData?.ratedPowerW) + ' W</td><td>no</td></tr>';
+    h += '<tr><td>Sustainability</td><td>Spare parts for ' + esc(s.sustainability?.sparePartsAvailabilityYears) + ' years</td><td>no</td></tr>';
+    h += "<tr class='" + (evaluated ? 'sel' : '') + "'><td>Compliance: GS mark</td><td>" + esc(short(mark?.markIri)) + ' for model ' + esc(short(mark?.productModelIri))
+      + ' · GS-mark credential ' + esc((D.evidence ?? []).map(e => short(e.id)).join(', ')) + '</td><td>' + (evaluated ? 'yes' : 'no') + '</td></tr>';
+    return h + '</tbody></table>';
   }
   if (type === 'GsCertificate') {
     return kv('Model', esc(short(s.id))) + kv('Manufacturer', esc(s.manufacturerIri ?? '')) + kv('Category', esc(short(s.certification?.productCategoryIri)))
@@ -315,7 +329,7 @@ function cardHTML(D, selected, tampered) {
   h += "<div class='body'>" + claimHTML(D, selected) + "<div class='meta'>";
   h += kv('issuer', esc(D.issuer)) + kv('valid', date(D.validFrom) + ' – ' + date(D.validUntil));
   if (D.termsOfUse) h += kv('authority', esc(D.termsOfUse.map(t => short(t.authorizationCredential.id)).join(', ')));
-  if (D.evidence) h += kv('studies', esc(D.evidence.map(e => short(e.id)).join(', ')));
+  if (D.evidence) h += kv('evidence', esc(D.evidence.map(e => short(e.id)).join(', ')));
   if (D.credentialStatus) h += kv('status', esc(short(D.credentialStatus.statusListCredential)) + ' #' + esc(D.credentialStatus.statusListIndex));
   if (D.proof) h += kv('proof', esc(D.proof.cryptosuite) + ' · ' + esc(short(D.proof.verificationMethod)));
   return h + '</div></div>';

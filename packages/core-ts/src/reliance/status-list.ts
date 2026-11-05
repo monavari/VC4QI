@@ -5,7 +5,7 @@
 // the first byte. Decompression is bounded. The status list is itself a protected
 // artifact and counts only when signed by the target credential's own issuer.
 // Uses node:zlib; the browser demonstrator aliases it to a bounded gunzip shim
-// (apps/demo-web/poster/zlib-browser.ts). Decoding avoids Node's Buffer.
+// (apps/demonstrator/zlib-browser.ts). Decoding avoids Node's Buffer.
 import { gunzipSync, gzipSync } from 'node:zlib';
 import type { SemanticState } from './types.js';
 
@@ -163,7 +163,7 @@ export function evaluateStatus(
     return { state: 'not_established', reason: `Status list is older than the profile's ${policy.maxAgeSeconds} s freshness limit.`, listUri, sources };
   }
   // A list observed at T says nothing about an earlier activity: historical status is
-  // not substituted by current status (handover §7.3, P13).
+  // not substituted by current status (P13).
   const activity = Date.parse(activityTime);
   if (!Number.isFinite(activity) || activity < issued) {
     return { state: 'not_established', reason: `Status list observed at ${String(list.validFrom)} cannot establish status at the earlier activity time ${activityTime}; historical status is unavailable.`, listUri, sources };

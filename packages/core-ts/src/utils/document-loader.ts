@@ -20,27 +20,15 @@ function loadLocal(filePath: string): unknown {
 
 /** Map from context URL to local file path (relative to repo root) */
 const LOCAL_CONTEXT_MAP: Record<string, string> = {
-  'https://w3id.org/qi-vc/contexts/v1/qi-core.jsonld':
-    'contexts/v1/qi-core.jsonld',
-  'https://w3id.org/qi-vc/contexts/v1/qi-calibration.jsonld':
-    'contexts/v1/qi-calibration.jsonld',
-  'https://w3id.org/qi-vc/contexts/v1/qi-rm.jsonld':
-    'contexts/v1/qi-rm.jsonld',
-  'https://w3id.org/qi-vc/contexts/v1/qi-evidence-context.jsonld':
-    'contexts/v1/qi-evidence-context.jsonld',
-  // Vendored W3C contexts. Required for deterministic, offline selective-disclosure
-  // (ecdsa-sd-2023) sign/derive/verify, which runs jsonld in safe mode and therefore
-  // needs every term to resolve. Also used by the qi-evidence context.
-  'https://www.w3.org/ns/credentials/v2':
-    'contexts/v1/vendor/credentials-v2.jsonld',
-  'https://w3id.org/security/multikey/v1':
-    'contexts/v1/vendor/security-multikey-v1.jsonld',
+  // Vendored W3C contexts, so canonicalization resolves every term offline.
+  'https://www.w3.org/ns/credentials/v2': 'bindings/vendor/credentials-v2.jsonld',
+  'https://w3id.org/security/multikey/v1': 'bindings/vendor/security-multikey-v1.jsonld',
 };
 
 /**
  * Build a document loader that:
- * 1. Serves local QI-VC contexts without network calls.
- * 2. Serves W3C/security contexts from the in-memory cache if pre-loaded.
+ * 1. Serves the vendored W3C contexts without network calls.
+ * 2. Serves caller-provided contexts.
  * 3. Falls back to HTTP fetch for any other URL (disabled in strict mode).
  */
 export function buildDocumentLoader(opts: {
@@ -51,7 +39,7 @@ export function buildDocumentLoader(opts: {
 }): DocumentLoader {
   const { contexts = {}, strict = false } = opts;
 
-  // Pre-load QI-VC local contexts
+  // Pre-load the vendored contexts
   for (const [url, relPath] of Object.entries(LOCAL_CONTEXT_MAP)) {
     if (!contextCache.has(url)) {
       const absPath = join(REPO_ROOT, relPath);

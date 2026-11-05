@@ -9,9 +9,12 @@
 // the certified claim must be covered by BOTH scopes. Neither incomplete basis alone
 // establishes the route. A certificate also needs its studies (gate 6): a type
 // examination of the model and a factory inspection of the manufacturer, each issued
-// under an accreditation that permits the activity. An experimental product passport
+// under an accreditation that permits the activity. An experimental GS-mark credential
 // claims the GS mark for one unit and is authorized only through such a certificate for
-// its model.
+// its model. An experimental product passport, shaped after the EU Digital Product
+// Passport, is the responsible economic operator's declaration for the unit; its GS-mark
+// entry is relied on only through the GS-mark credential it cites, which keeps its own
+// authority route (support, as for any aggregated result).
 import { semanticAnd, semanticOr } from './index.js';
 import { GS_V1_VOCAB } from './gs-v1.js';
 import {
@@ -138,15 +141,19 @@ export function routeScopes(r: RouteResult, lookup: NodeLookup): { competence: D
   return { competence: records(r.scope), scheme: records(r.chain.length === 3 ? r.chain[2] : undefined) };
 }
 
-// ---------------------------------------------------------------- product passports
+// ---------------------------------------------------------------- GS-mark credentials
 
 /** The one mark this binding interprets. */
 export const GS_MARK = `${GS_V1_VOCAB}GsMark`;
 
 export interface MappedMarking { readonly markIri: string; readonly productModelIri: string }
 
-/** Gate 4 for a product passport: the claimed marking, for which model. */
-export function mapMarking(value: unknown, pointer: string): GsOutcome & { marking?: MappedMarking } {
+/**
+ * Gate 4 for a GS-mark credential or a passport's GS-mark entry: the claimed mark, for
+ * which model. It must name the credential's own model; a claim for another model is
+ * contradicted.
+ */
+export function mapMarking(value: unknown, pointer: string, ownModel: unknown): GsOutcome & { marking?: MappedMarking } {
   const sources = [pointer];
   if (!isObject(value) || typeof value.markIri !== 'string' || typeof value.productModelIri !== 'string') {
     return { state: 'not_established', reason: 'The selected marking names no mark or product model.', sources };
@@ -154,11 +161,19 @@ export function mapMarking(value: unknown, pointer: string): GsOutcome & { marki
   if (value.markIri !== GS_MARK) {
     return { state: 'not_established', reason: `Mark ${short(value.markIri)} has no interpretation in this binding.`, sources };
   }
+  const modelSources = [pointer, '/credentialSubject/productModelIri'];
+  if (typeof ownModel !== 'string') {
+    return { state: 'not_established', reason: 'The credential names no product model.', sources: modelSources };
+  }
+  if (ownModel !== value.productModelIri) {
+    return { state: 'contradicted', reason: `The marking claims the mark for model ${short(value.productModelIri)}, but the credential is for model ${short(ownModel)}.`,
+      sources: modelSources };
+  }
   return { state: 'established', reason: `Mapped a GS-mark claim for model ${short(value.productModelIri)}.`, sources,
     marking: { markIri: value.markIri, productModelIri: value.productModelIri } };
 }
 
-/** Claim coverage for a passport: the certificate on the route certifies exactly this model. */
+/** Claim coverage for a GS-mark credential: the certificate on the route certifies exactly this model. */
 export function markingCoverage(marking: MappedMarking, certificate: Doc | undefined): GsOutcome {
   const sources = ['/credentialSubject/id'];
   if (certificate === undefined) return { state: 'not_established', reason: 'No certificate was reached.', sources };
@@ -169,12 +184,12 @@ export function markingCoverage(marking: MappedMarking, certificate: Doc | undef
 }
 
 /**
- * Route "gs-certified-product" for an experimental product passport: the manufacturer may
+ * Route "gs-certified-product" for an experimental GS-mark credential: the manufacturer may
  * claim the GS mark for a unit only under a GS certificate (typed reference in
  * termsOfUse) that names it as manufacturer, is in force when the unit is placed on the
  * market, and itself holds the complete GS route with its certification covered. The
- * certificate's own bases are reported with the prefix "certificate:". Not EU Digital
- * Product Passport conformance.
+ * certificate's own bases are reported with the prefix "certificate:". Today's GS scheme
+ * has no per-unit credential.
  */
 export function gsCertifiedProduct(target: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile): RouteResult {
   const P = target.document;
@@ -206,7 +221,7 @@ export function gsCertifiedProduct(target: NodeFacts & { document: Doc }, lookup
 // ---------------------------------------------------------------- studies (gate 6)
 
 export interface GsSupportResult {
-  readonly obligationId: 'type-examination' | 'factory-inspection';
+  readonly obligationId: 'type-examination' | 'factory-inspection' | 'gs-mark-credential';
   readonly state: SemanticState;
   readonly reason: string;
   readonly bases: readonly BasisResult[];
@@ -219,7 +234,9 @@ const STUDIES = [
   { obligationId: 'type-examination', reference: 'GsTypeExaminationReference', type: 'GsTestReport',
     activity: 'testProducts', purpose: 'accredit-testing-laboratories', what: 'type examination' },
   { obligationId: 'factory-inspection', reference: 'GsFactoryInspectionReference', type: 'GsInspectionReport',
-    activity: 'inspectFactories', purpose: 'accredit-certification-bodies', what: 'factory inspection' },
+    // Factory inspection is part of the certification body's certification competence, not a
+    // separately accredited activity.
+    activity: 'certifyProducts', purpose: 'accredit-certification-bodies', what: 'factory inspection' },
 ] as const;
 const check = (id: string, holds: boolean | undefined, yes: string, no: string, sources: string[]): BasisResult =>
   holds === undefined ? { id, state: 'not_established', reason: no, sources }
@@ -302,7 +319,95 @@ export function certificateSupport(certificate: NodeFacts & { document: Doc }, l
   });
 }
 
+// ---------------------------------------------------------------- product passports
+
+/**
+ * Route "responsible-economic-operator" for an experimental product passport, shaped after
+ * the EU Digital Product Passport (not ESPR conformance): the passport is the declaration
+ * of the economic operator responsible for the unit, so its issuer must be the operator it
+ * names. No grant credential exists for this; it is the verifier profile's rule. The
+ * passport's GS-mark entry is relied on only through the GS-mark credential it cites
+ * (gate 6, `markCredentialSupport`).
+ */
+export function responsibleEconomicOperator(target: NodeFacts & { document: Doc }, _lookup: NodeLookup, _profile: RelianceProfile): RouteResult {
+  const P = target.document;
+  const operator = subjectOf(P).economicOperatorIri;
+  const sources = ['/credentialSubject/economicOperatorIri', '/issuer'];
+  return route('responsible-economic-operator', [typeof operator !== 'string'
+    ? { id: 'operator-is-issuer', state: 'not_established', reason: 'The passport names no responsible economic operator.', sources }
+    : check('operator-is-issuer', operator === P.issuer, `The passport is issued by its responsible economic operator ${operator}.`,
+      `The passport names ${operator} as its responsible economic operator but is issued by ${String(P.issuer)}.`, sources)],
+  // The operator declares its own passport, so the passport is the scope of its entries.
+  [target.uri], target.uri);
+}
+
+export interface GsMarkSupport {
+  readonly support: GsSupportResult;
+  /** The GS certificate reached through the GS-mark credential, when one was. */
+  readonly certificateUri?: string;
+}
+
+/**
+ * Gate 6 for a product passport's GS-mark entry: the passport cites exactly one GS-mark
+ * credential as typed evidence. That credential must be usable, for the same unit, issued
+ * by the same economic operator, claim the mark for the same model as the passport entry,
+ * and itself hold its complete route (`gs-certified-product`, bases prefixed
+ * "mark-credential:") with the mark covered by its certificate.
+ */
+export function markCredentialSupport(passport: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile): GsMarkSupport {
+  const P = passport.document;
+  const p = subjectOf(P);
+  const compliance = isObject(p.complianceInformation) ? p.complianceInformation : {};
+  const entry = isObject(compliance.gsMark) ? compliance.gsMark : {};
+  const bases: BasisResult[] = [];
+  const done = (chain: string[], certificateUri?: string): GsMarkSupport => {
+    const state = semanticAnd(bases.map(b => b.state));
+    const failed = bases.find(b => b.state === state && state !== 'established');
+    return { ...(certificateUri === undefined ? {} : { certificateUri }), support: { obligationId: 'gs-mark-credential', state, bases, chain,
+      reason: state === 'established' ? 'The GS-mark credential applies to this unit and holds its own route.'
+        : `The GS-mark credential: ${failed?.reason ?? 'not established'}` } };
+  };
+  const cited = list(P.evidence).filter(isObject).filter(e => e.type === 'GsMarkCredentialReference').map(e => String(e.id));
+  if (cited.length !== 1) {
+    bases.push({ id: 'reference', state: 'not_established', sources: ['/evidence'],
+      reason: cited.length === 0 ? 'The passport cites no GS-mark credential.' : 'The passport cites several GS-mark credentials; none is chosen.' });
+    return done([]);
+  }
+  const uri = cited[0]!;
+  const node = lookup(uri);
+  if (node === undefined || node.usable !== 'established' || node.document === undefined) {
+    bases.push({ id: 'reference', state: node?.usable === 'contradicted' ? 'contradicted' : 'not_established', sources: ['/evidence', uri],
+      reason: node === undefined ? `${short(uri)} is unavailable.` : `${short(uri)} is not usable: ${node.reason}` });
+    return done([]);
+  }
+  const M = node.document;
+  const m = subjectOf(M);
+  bases.push(check('reference', list(M.type).includes('GsMarkCredential'), `Cites GS-mark credential ${short(uri)}.`,
+    `${short(uri)} is not a GsMarkCredential.`, ['/evidence', uri]));
+  bases.push(check('same-unit', m.id === p.id, `${short(uri)} is for this unit ${short(p.id)}.`,
+    `${short(uri)} is for unit ${short(m.id)}, not this unit ${short(p.id)}.`, ['/credentialSubject/id']));
+  bases.push(check('same-operator', M.issuer === P.issuer, `${short(uri)} is issued by the passport's issuer.`,
+    `${short(uri)} is issued by ${String(M.issuer)}, not the passport's issuer ${String(P.issuer)}.`, ['/issuer']));
+  const mark = mapMarking(m.marking, '/credentialSubject/marking', m.productModelIri);
+  bases.push({ id: 'mark-credential:mapping', state: mark.state, reason: mark.reason, sources: [...mark.sources] });
+  bases.push(check('same-model', mark.marking === undefined ? undefined
+      : mark.marking.productModelIri === entry.productModelIri && m.productModelIri === p.productModelIri,
+    `${short(uri)} claims the mark for the passport's model ${short(p.productModelIri)}.`,
+    mark.marking === undefined ? `${short(uri)} claims no mark for a model.`
+      : `${short(uri)} claims the mark for model ${short(mark.marking.productModelIri)}, not the passport's model ${short(p.productModelIri)}.`,
+    ['/credentialSubject/complianceInformation/gsMark/productModelIri', '/credentialSubject/productModelIri']));
+  const own = gsCertifiedProduct(node as NodeFacts & { document: Doc }, lookup, profile);
+  bases.push(...own.bases.map(b => ({ ...b, id: `mark-credential:${b.id}` })));
+  const certificate = own.scope === undefined ? undefined : lookup(own.scope)?.document;
+  const covered = mark.marking === undefined
+    ? { state: 'not_established' as const, reason: 'No mark was mapped.', sources: [] as string[] }
+    : markingCoverage(mark.marking, certificate);
+  bases.push({ id: 'mark-credential:claim-coverage', state: covered.state, reason: covered.reason, sources: [...covered.sources] });
+  return done([uri, ...own.chain.slice(1)], own.scope);
+}
+
 export const GS_CERTIFICATE_ROUTES = Object.freeze({
   'competence-and-scheme-permission': gsCompetenceAndScheme,
   'gs-certified-product': gsCertifiedProduct,
+  'responsible-economic-operator': responsibleEconomicOperator,
 });

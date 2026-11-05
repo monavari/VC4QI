@@ -4,16 +4,16 @@ What does this PR do? Link the related issue or milestone.
 
 ## Type of change
 
-- [ ] New feature (M-series milestone)
+- [ ] New feature
 - [ ] Bug fix
-- [ ] Schema / context / policy change (requires ADR)
+- [ ] Binding change: context, schema, profile or fixtures (requires ADR)
 - [ ] Documentation
 - [ ] CI / tooling
 
 ## Checklist
 
 - [ ] Tests added or updated
-- [ ] Schema changes include an ADR in `docs/adrs/`
+- [ ] Binding changes include an ADR in `docs/adrs/`
 - [ ] `CHANGELOG.md` updated under `[Unreleased]`
 - [ ] SPDX license headers present in all new source files
 - [ ] No production keys or secrets committed

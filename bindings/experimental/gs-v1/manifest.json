@@ -10,7 +10,7 @@
   },
   "installation": {
     "status": "incomplete",
-    "reason": "Migrated GS certification binding for the gs-scheme-authorization use case, plus an experimental product passport (not EU DPP conformance). The gate 0-6 evaluators for the competence-and-scheme-permission and gs-certified-product routes, their coverage and the certificate's required studies (type examination and factory inspection) are implemented; statutory GS routes, application assessments and conformity rules are not.",
+    "reason": "Migrated GS certification binding for the gs-scheme-authorization use case, plus an experimental GS-mark credential for one unit and an experimental product passport shaped after the ESPR DPP whose GS-mark entry is supported by that credential (not ESPR conformance). The gate 0-6 evaluators for the competence-and-scheme-permission and gs-certified-product routes, their coverage and the certificate's required studies (type examination and factory inspection) are implemented; statutory GS routes, application assessments and conformity rules are not.",
     "pendingResources": []
   },
   "carrierAndSchema": {
@@ -22,7 +22,8 @@
       "https://vc4qi.example/bindings/gs/1#GsAccreditation",
       "https://vc4qi.example/bindings/gs/1#GsSchemeAuthorization",
       "https://vc4qi.example/bindings/gs/1#GsCertificate",
-      "https://vc4qi.example/bindings/gs/1#GsProductPassport",
+      "https://vc4qi.example/bindings/gs/1#GsMarkCredential",
+      "https://vc4qi.example/bindings/gs/1#ProductPassport",
       "https://vc4qi.example/bindings/gs/1#GsTestReport",
       "https://vc4qi.example/bindings/gs/1#GsInspectionReport",
       "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential"
@@ -31,6 +32,7 @@
       "https://vc4qi.example/schemas/gs/1/accreditation.json",
       "https://vc4qi.example/schemas/gs/1/scheme-authorization.json",
       "https://vc4qi.example/schemas/gs/1/certificate.json",
+      "https://vc4qi.example/schemas/gs/1/mark-credential.json",
       "https://vc4qi.example/schemas/gs/1/product-passport.json",
       "https://vc4qi.example/schemas/gs/1/test-report.json",
       "https://vc4qi.example/schemas/gs/1/inspection-report.json",
@@ -50,6 +52,10 @@
     {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/bindings/gs/1#authorizationCredential"},
     {"fact": "activityTime", "nativePath": "/credentialSubject/activityTime", "expandedIri": "https://vc4qi.example/bindings/gs/1#activityTime"},
     {"fact": "certification", "nativePath": "/credentialSubject/certification", "expandedIri": "https://vc4qi.example/bindings/gs/1#certification"},
+    {"fact": "productModel", "nativePath": "/credentialSubject/productModelIri", "expandedIri": "https://vc4qi.example/bindings/gs/1#productModel"},
+    {"fact": "marking", "nativePath": "/credentialSubject/marking", "expandedIri": "https://vc4qi.example/bindings/gs/1#marking"},
+    {"fact": "passportGsMarkEntry", "nativePath": "/credentialSubject/complianceInformation/gsMark", "expandedIri": "https://vc4qi.example/bindings/gs/1#gsMark"},
+    {"fact": "responsibleEconomicOperator", "nativePath": "/credentialSubject/economicOperatorIri", "expandedIri": "https://vc4qi.example/bindings/gs/1#economicOperator"},
     {"fact": "requiredStudy", "nativePath": "/evidence/*/id", "expandedIri": "https://www.w3.org/2018/credentials#evidence"}
   ],
   "cardinality": {
@@ -57,7 +63,7 @@
     "scopeRecords": {"minimum": 1},
     "selectedAuthorizingPoliciesPerUse": {"minimum": 1, "maximum": 2},
     "authorizingReferenceSelection": "by-declared-reference-type-per-route-half; resolved credential type must match (else contradicted); several of one type not_established",
-    "selectedClaims": "the certification statement at /credentialSubject/certification",
+    "selectedClaims": "the certification statement at /credentialSubject/certification; for a GS-mark credential its marking at /credentialSubject/marking; for a product passport only the GS-mark entry at /credentialSubject/complianceInformation/gsMark (other passport sections have no interpretation in this binding)",
     "ambiguousSelection": "not_established"
   },
   "discoveryAndIntegrity": {
@@ -81,7 +87,6 @@
     "activities": {
       "certifyProducts": "https://vc4qi.example/bindings/gs/1#certifyProducts",
       "testProducts": "https://vc4qi.example/bindings/gs/1#testProducts",
-      "inspectFactories": "https://vc4qi.example/bindings/gs/1#inspectFactories",
       "awardGsMark": "https://vc4qi.example/bindings/gs/1#awardGsMark"
     },
     "rules": [
@@ -89,8 +94,9 @@
       "The accreditation permits certifying products; the scheme authorization permits awarding the GS mark.",
       "The accreditation issuer is anchored for accrediting certification bodies; the scheme authorization issuer for authorizing GS certification.",
       "Both grants were in force at the certificate's activity time.",
-      "A certificate needs a type examination of its model covering its category and standards, and a factory inspection of its manufacturer; each passed, precedes the certification and is issued under an anchored accreditation of its issuer that permits the activity (testing laboratories: accredit-testing-laboratories; inspection: accredit-certification-bodies) and was in force at the study.",
-      "A product passport's GS-mark claim needs a GS certificate that names the passport issuer as manufacturer, certifies the passport's model, was in force when the unit was placed on the market and itself holds the complete route."
+      "A certificate needs a type examination of its model covering its category and standards, and a factory inspection of its manufacturer; each passed, precedes the certification and is issued under an anchored accreditation of its issuer that permits the activity (type examination: testing, under an issuer anchored for accrediting testing laboratories; factory inspection: certification, which includes factory inspection, under an issuer anchored for accrediting certification bodies) and was in force at the study.",
+      "A GS-mark credential's marking must name the credential's own model, and needs a GS certificate that names the credential issuer as manufacturer, certifies that model, was in force when the unit was placed on the market and itself holds the complete route.",
+      "A product passport is issued by the responsible economic operator it names. Its GS-mark entry must name the passport's model and is supported by exactly one cited GS-mark credential for the same unit, from the same issuer and for the same model, which itself holds its complete route."
     ]
   },
   "scopeAndMapping": {
@@ -103,7 +109,8 @@
   "routesAndRestrictions": {
     "installedCertificateRoutes": {
       "competence-and-scheme-permission": ["A-referenced", "A-grantee-is-issuer", "A-permits-certification", "A-issuer-is-accreditation-anchor", "S-referenced", "S-grantee-is-issuer", "S-permits-GS-mark", "S-issuer-is-scheme-anchor", "A-and-S-in-force-at-activity", "claim-covered-by-A-and-S"],
-      "gs-certified-product": ["C-referenced", "C-names-passport-issuer-as-manufacturer", "C-in-force-at-passport-activity", "C-holds-competence-and-scheme-permission", "C-certification-covered", "C-certifies-the-passport-model"]
+      "gs-certified-product": ["C-referenced", "C-names-mark-issuer-as-manufacturer", "C-in-force-at-mark-activity", "C-holds-competence-and-scheme-permission", "C-certification-covered", "C-certifies-the-mark-model", "marking-names-the-credential-model"],
+      "responsible-economic-operator": ["passport-issuer-is-named-economic-operator", "gs-mark-entry-supported-by-cited-gs-mark-credential"]
     },
     "globalRestrictions": [],
     "routeComposition": "AND-within-route-OR-between-complete-routes"
@@ -128,9 +135,8 @@
     "holderBinding": "unsupported-in-initial-slice"
   },
   "evidenceAndExclusions": {
-    "acceptanceLedger": "docs/plans/standards-first-acceptance.csv",
+    "acceptanceLedger": "docs/acceptance-ledger.csv",
     "testVectorRoots": ["bindings/experimental/gs-v1/test-vectors"],
-    "implementationEvidence": "docs/plans/evidence.md",
     "unsupported": ["production-accreditation", "real-gs-scheme-rules", "legal-effect", "application-assessments", "public-example-namespace-resolution", "wallet-interoperability", "timestamp-service"]
   }
 }

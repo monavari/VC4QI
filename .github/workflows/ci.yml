@@ -3,7 +3,7 @@ name: CI
 
 on:
   push:
-    branches: [main, refactor/standards-first-reconciliation]
+    branches: [main]
   pull_request:
 
 jobs:
@@ -21,12 +21,11 @@ jobs:
       - run: pnpm -r build
       - run: pnpm --if-present -r lint
       - run: pnpm --if-present -r test
-      - run: pnpm test:scenarios
       - name: Documentation links and site build
         run: pnpm docs:check
-      - name: Poster verifier bundle is up to date
+      - name: Demonstrator bundle is up to date
         run: |
-          pnpm -C apps/demo-web build:poster
+          pnpm -C apps/demonstrator build
           git diff --exit-code site/demo/verifier.js
 
   test-py:
@@ -44,8 +43,8 @@ jobs:
       - name: Run pytest
         run: uv run --locked --all-packages --extra dev pytest packages/core-py/tests
 
-  validate-schemas:
-    name: Validate JSON schemas
+  generated:
+    name: Generated resources and signed fixtures are up to date
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,7 +54,7 @@ jobs:
           node-version: '20'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm validate:schemas
+      - run: pnpm check:generated
 
   lint-markdown:
     name: Lint Markdown

@@ -23,6 +23,8 @@ const SCHEMA_BASE = 'https://vc4qi.example/schemas/gs/1/';
 const ACT = 'https://vc4qi.example/bindings/gs/1#';
 
 const iri = { type: 'string', format: 'uri' };
+// A decimal as a string (typed xsd:decimal in the context), as in the RM binding.
+const decimal = { type: 'string', pattern: '^(0|[1-9][0-9]*)(\\.[0-9]+)?$' };
 const dateTime = {
   type: 'string',
   pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$',
@@ -91,10 +93,10 @@ const studyPolicy = { type: 'array', minItems: 1, maxItems: 1, items: authorizat
 const supportReference = closed({ id: iri, type: { enum: ['GsTypeExaminationReference', 'GsFactoryInspectionReference'] } });
 
 const schemas = {
-  // Competence: an accreditation of a certification body (certifying, testing, factory
-  // inspection) or of a testing laboratory, for product categories and standards.
+  // Competence: an accreditation of a certification body (certifying, which includes factory
+  // inspection, and testing) or of a testing laboratory, for product categories and standards.
   'accreditation.json': credentialSchema('accreditation.json', 'GsAccreditation', 'Accreditation (competence)',
-    grantSubject(['certifyProducts', 'testProducts', 'inspectFactories'],
+    grantSubject(['certifyProducts', 'testProducts'],
       closed({ id: iri, productCategoryIri: iri, standardIris: nonemptySet(iri) }))),
   // Scheme permission: the scheme authority's (ZLS role) independent permission to award the mark.
   'scheme-authorization.json': credentialSchema('scheme-authorization.json', 'GsSchemeAuthorization', 'GS scheme authorization',
@@ -120,9 +122,10 @@ const schemas = {
     { termsOfUse: { type: 'array', minItems: 1, maxItems: 3, items: authorizationPolicy },
       evidence: { type: 'array', minItems: 1, maxItems: 4, items: supportReference }, relatedResource },
     ['termsOfUse', 'relatedResource']),
-  // An experimental product passport for one serialized item; its GS-mark claim is
-  // authorized only through a GS certificate for the item's model (not EU DPP conformance).
-  'product-passport.json': credentialSchema('product-passport.json', 'GsProductPassport', 'Product passport (experimental)',
+  // An experimental GS-mark credential: the manufacturer's claim that one serialized unit
+  // carries the GS mark, authorized only through a GS certificate for the unit's model.
+  // Today's GS scheme has no per-unit credential.
+  'mark-credential.json': credentialSchema('mark-credential.json', 'GsMarkCredential', 'GS-mark credential (experimental)',
     closed({
       id: iri,
       activityTime: dateTime,
@@ -131,6 +134,26 @@ const schemas = {
     }),
     { termsOfUse: { type: 'array', minItems: 1, maxItems: 1, items: authorizationPolicy }, relatedResource },
     ['termsOfUse', 'relatedResource']),
+  // An experimental product passport for one serialized unit, shaped after the EU Digital
+  // Product Passport of the ESPR (not ESPR conformance): product and operator identifiers,
+  // technical and sustainability data, and compliance information whose GS-mark entry is
+  // supported by the GS-mark credential cited as evidence. Only that entry is interpreted.
+  'product-passport.json': credentialSchema('product-passport.json', 'ProductPassport', 'Product passport (experimental)',
+    closed({
+      id: iri,
+      activityTime: dateTime,
+      productName: { type: 'string', minLength: 1 },
+      productModelIri: iri,
+      gtin: { type: 'string', pattern: '^[0-9]{13,14}$' },
+      commodityCode: { type: 'string', pattern: '^[0-9]{8}$' },
+      economicOperatorIri: iri,
+      facilityIri: iri,
+      technicalData: closed({ ratedPowerW: decimal }),
+      sustainability: closed({ sparePartsAvailabilityYears: decimal }),
+      complianceInformation: closed({ gsMark: closed({ markIri: iri, productModelIri: iri }) }),
+    }),
+    { evidence: { type: 'array', minItems: 1, maxItems: 1, items: closed({ id: iri, type: { const: 'GsMarkCredentialReference' } }) }, relatedResource },
+    ['evidence', 'relatedResource']),
   'status-list.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     $id: `${SCHEMA_BASE}status-list.json`,
@@ -169,7 +192,7 @@ for (const [file, schema] of Object.entries(schemas)) {
 const entries = [
   {
     uri: VC_V2,
-    path: 'contexts/v1/vendor/credentials-v2.jsonld',
+    path: 'bindings/vendor/credentials-v2.jsonld',
     mediaType: 'application/ld+json',
     origin: 'W3C Verifiable Credentials Data Model v2.0 context, vendored copy already used by the repository loader',
     version: 'VCDM 2.0',
