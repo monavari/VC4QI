@@ -163,9 +163,8 @@
     "holderBinding": "unsupported-in-initial-slice"
   },
   "evidenceAndExclusions": {
-    "acceptanceLedger": "docs/plans/standards-first-acceptance.csv",
+    "acceptanceLedger": "docs/acceptance-ledger.csv",
     "testVectorRoots": ["testdata/regressions", "bindings/experimental/rm-v1/test-vectors"],
-    "implementationEvidence": "docs/plans/evidence.md",
     "unsupported": [
       "production-accreditation", "legal-effect", "physical-sample-truth",
       "public-example-namespace-resolution", "general-ontology-reasoning",

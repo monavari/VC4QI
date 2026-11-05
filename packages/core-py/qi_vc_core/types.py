@@ -18,7 +18,7 @@ class Ed25519KeyPair:
 @dataclass
 class DataIntegrityProof:
     type: Literal["DataIntegrityProof"] = "DataIntegrityProof"
-    cryptosuite: Literal["eddsa-rdfc-2022", "ecdsa-rdfc-2019"] = "eddsa-rdfc-2022"
+    cryptosuite: Literal["eddsa-rdfc-2022"] = "eddsa-rdfc-2022"
     proof_purpose: Literal["assertionMethod"] = "assertionMethod"
     verification_method: str = ""
     created: str = ""
@@ -44,45 +44,3 @@ class DataIntegrityProof:
             created=obj["created"],
             proof_value=obj["proofValue"],
         )
-
-
-@dataclass
-class BitstringStatusListEntry:
-    id: str
-    type: Literal["BitstringStatusListEntry"] = "BitstringStatusListEntry"
-    status_purpose: Literal["revocation", "suspension", "message"] = "revocation"
-    status_list_index: str = "0"
-    status_list_credential: str = ""
-
-
-@dataclass
-class TraceEntry:
-    id: str
-    level: Literal["credential", "assessment", "edge", "graph", "policy", "scope", "presentation"]
-    status: Literal["PASS", "FAIL", "SKIP", "WARN"]
-    code: str
-    detail: str
-    target: str | None = None
-    from_: str | None = None
-    to: str | None = None
-    relation: str | None = None
-    assessment_method: Literal["agent", "human", "hybrid"] | None = None
-    assessor_id: str | None = None
-    assessment_id: str | None = None
-
-
-@dataclass
-class VerificationSummary:
-    nodes_resolved: int
-    edges_evaluated: int
-    failures: int
-    warnings: int
-
-
-@dataclass
-class VerificationTrace:
-    verified: bool
-    profile: str
-    target: str
-    summary: VerificationSummary
-    results: list[TraceEntry]

@@ -1,6 +1,45 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — 2026-11-05
+
+- **Breaking: the v0.3 graph verifier and its material are removed.** The library's only
+  verifier is the standards-first reliance evaluator (`evaluateReliance`, Python
+  `evaluate_reliance`). Removed: the `legacy` namespace (`verifyCredentialGraph`,
+  `evaluateLegacyProfile`), presentation-query helpers, verifier assessments, the
+  `ecdsa-sd-2023` selective-disclosure path, the trust-registry credential, the v0.3
+  contexts, schemas, policies, examples and scenario fixtures, the legacy graph-explorer
+  demo, and the LIMS and verifier-service scaffolds. Tag `v0.3.0` keeps all of them.
+  A v0.3 credential under a v0.4 profile stops at the gate-0 carrier check (V02); the
+  explicit legacy-profile case V03 is excluded.
+- The vendored W3C contexts move to `bindings/vendor/`; binding catalogs are
+  regenerated with unchanged digests, and no signed fixture changes.
+- The demonstrator bundle builds from `apps/demonstrator` (`pnpm -C apps/demonstrator
+  build`); `site/demo/verifier.js` changes only in the embedded manifests' ledger path.
+- CI checks every generator's `--check` mode (`pnpm check:generated`) in place of the
+  v0.3 schema validator and scenario tests.
+- Project records are condensed: the reconciliation report, phase plans, evidence log,
+  handover, traceability tables, manuscript feedback and superseded ADRs are removed
+  (they remain in the history at commit `fc36bc6`). The acceptance ledger moves to
+  `docs/acceptance-ledger.csv`.
+- The repository carries no institutional affiliation; the RM example is named M375a.
+- GS binding: factory inspection is authorized by the certification body's certification
+  competence (`certifyProducts`) instead of a separately accredited `inspectFactories`
+  activity, which is removed; the GS fixtures are regenerated. Documentation names the
+  fictional accreditation body's DAkkS role, states that the product passports are
+  experimental manufacturer credentials outside today's GS scheme, and lists the expected
+  outcomes. A new negative case requires certification permission for the inspection.
+- The GS mark for a unit and the product passport are separate credentials. The former
+  `GsProductPassport` becomes `GsMarkCredential` (`GSM-1` to `GSM-6`, profile
+  `gs-verifier-mark-1`): the manufacturer's GS-mark claim for one unit, authorized through
+  the GS certificate; its marking must name its own model (`GSM-6` is contradicted). A new
+  `ProductPassport` (`DPP-1` to `DPP-3`, profile `gs-verifier-dpp-1`, route
+  `responsible-economic-operator`) is shaped after the EU DPP (ESPR): unique product
+  identifier, GTIN, commodity code, economic operator, facility, technical and
+  sustainability data and compliance information. Its GS-mark entry is supported by the
+  unit's GS-mark credential, which keeps its own route; only that entry is interpreted.
+  Demonstrator GS and DPP tabs, docs and tests in both languages follow.
+
+### Earlier unreleased changes, included in 0.4.0
 
 - The GS binding now follows the legacy GS examples: a GS mark on a product unit rests
   on a GS certificate, which needs the GS body's accreditation (competence), the
@@ -35,8 +74,8 @@
 
 - The demonstrator moves to `site/demo/` and covers four examples, chosen from a top bar:
   RM (M375a), DCC (direct accreditation, capability scope, NMI mandate, supported
-  test report), GS (toy accepted, household appliance rejected because the scheme
-  permission does not cover it) and an experimental product passport (DPP). Every tab
+  test report), GS (hair dryers accepted, a toy rejected because the scheme
+  permission does not cover toys) and an experimental product passport (DPP). Every tab
   runs the repository's own evaluator in the browser, with tamper and withhold controls
   and deep links (`#example/case`). `site/m375a/` redirects to the RM tab.
 
@@ -45,7 +84,7 @@
   authorized only through a typed reference to a GS certificate that names the passport
   issuer as manufacturer, certifies the passport's model, was in force when the unit was
   placed on the market and itself holds competence AND scheme permission. New fixtures:
-  manufacturer controller and status list, `GSC-2` (household appliance) and `DPP-1`/`DPP-2`.
+  manufacturer controller and status list and passports `DPP-1` to `DPP-5`.
   This is a research illustration, not EU DPP (ESPR) conformance. TypeScript and Python
   mirror it.
 

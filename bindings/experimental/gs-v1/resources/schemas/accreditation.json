@@ -79,8 +79,7 @@
           "items": {
             "enum": [
               "https://vc4qi.example/bindings/gs/1#certifyProducts",
-              "https://vc4qi.example/bindings/gs/1#testProducts",
-              "https://vc4qi.example/bindings/gs/1#inspectFactories"
+              "https://vc4qi.example/bindings/gs/1#testProducts"
             ]
           }
         },

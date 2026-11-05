@@ -40,11 +40,15 @@ const URI = {
   TR2: 'https://testlab-gs.vc4qi.example/credentials/TR-2',
   FI: 'https://gs-body.vc4qi.example/credentials/FI-1',
   TLA: 'https://nab.vc4qi.example/credentials/TL-A',
-  P3: 'https://maker.vc4qi.example/credentials/DPP-3',
-  P4: 'https://maker.vc4qi.example/credentials/DPP-4',
-  P5: 'https://clone.vc4qi.example/credentials/DPP-5',
-  P1: 'https://maker.vc4qi.example/credentials/DPP-1',
-  P2: 'https://maker.vc4qi.example/credentials/DPP-2',
+  P3: 'https://maker.vc4qi.example/credentials/GSM-3',
+  P4: 'https://maker.vc4qi.example/credentials/GSM-4',
+  P5: 'https://clone.vc4qi.example/credentials/GSM-5',
+  P1: 'https://maker.vc4qi.example/credentials/GSM-1',
+  P2: 'https://maker.vc4qi.example/credentials/GSM-2',
+  P6: 'https://maker.vc4qi.example/credentials/GSM-6',
+  DPP1: 'https://maker.vc4qi.example/credentials/DPP-1',
+  DPP2: 'https://maker.vc4qi.example/credentials/DPP-2',
+  DPP3: 'https://maker.vc4qi.example/credentials/DPP-3',
 } as const;
 const KEY: Record<string, string> = { [URI.NAB]: 'nab', [URI.SCHEME]: 'zls', [URI.TESTLAB]: 'gs-testlab', [URI.CLONE]: 'clone', [URI.BODY]: 'gs-body', [URI.MAKER]: 'maker' };
 const CERTIFICATION = '/credentialSubject/certification';
@@ -229,6 +233,14 @@ describe('GS studies (gate 6): type examination and factory inspection', () => {
     expect(result.decision).toBe('reject');
   });
 
+  it('a factory inspection needs an accreditation that permits certification; testing alone is not enough', async () => {
+    const result = await runCert(URI.C, await reissueChain([
+      [URI.A, d => { subject(d).permittedActivity = [`${GS}testProducts`]; }], [URI.FI], [URI.TR1], [URI.C],
+    ]));
+    expect(trace(result, 'support:factory-inspection:accreditation-permission')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
+  });
+
   it('a factory inspection of another manufacturer contradicts the support', async () => {
     const result = await runCert(URI.C, await reissueChain([
       [URI.FI, d => { subject(d).manufacturerIri = 'https://other-maker.vc4qi.example/controller'; }], [URI.C],
@@ -246,40 +258,40 @@ describe('GS studies (gate 6): type examination and factory inspection', () => {
   });
 });
 
-const dppProfile = loadRelianceProfile(JSON.parse(readFileSync(new URL('profiles/gs-verifier-dpp-1.json', dir), 'utf8')) as JsonObject);
-const runPassport = (overrides: Record<string, string | null> = {}, targetId: string = URI.P1) =>
-  evaluateGsSlice(request({ requestId: 'urn:uuid:gs-v1-dpp', targetId, selectedClaims: [{ id: 'mark', sourcePointer: '/credentialSubject/marking' }],
-    suppliedEvidence: [], profile: { id: dppProfile.id, version: dppProfile.version } }), catalogWith(overrides), manifest, dppProfile).then(e => e.result);
+const markProfile = loadRelianceProfile(JSON.parse(readFileSync(new URL('profiles/gs-verifier-mark-1.json', dir), 'utf8')) as JsonObject);
+const runMark = (overrides: Record<string, string | null> = {}, targetId: string = URI.P1) =>
+  evaluateGsSlice(request({ requestId: 'urn:uuid:gs-v1-mark', targetId, selectedClaims: [{ id: 'mark', sourcePointer: '/credentialSubject/marking' }],
+    suppliedEvidence: [], profile: { id: markProfile.id, version: markProfile.version } }), catalogWith(overrides), manifest, markProfile).then(e => e.result);
 const DPP_ROUTE = 'route:gs-certified-product';
 
-describe('experimental product passport (DPP): a GS-mark claim for one unit', () => {
-  it('accepts DPP-1 through a certificate for its model that names the manufacturer and holds its own route', async () => {
-    const result = await runPassport();
+describe('experimental GS-mark credential (GSM): the GS mark claimed for one unit', () => {
+  it('accepts GSM-1 through a certificate for its model that names the manufacturer and holds its own route', async () => {
+    const result = await runMark();
     expect(result.artifactVerification.every(v => v.state === 'established')).toBe(true);
     expect(trace(result, `${DPP_ROUTE}:manufacturer-binding`)).toMatchObject({ state: 'established' });
     expect(trace(result, `${DPP_ROUTE}:certificate:claim-coverage`)).toMatchObject({ state: 'established' });
     expect(result.authorization[0]?.routeWitnessIds).toEqual([DPP_ROUTE, URI.P1, URI.C, URI.A, URI.S, `record:${URI.C}`]);
     expect(result.support.map(s => s.state)).toEqual(['established', 'established']);
-    expect(result.limitations.join(' ')).toMatch(/not EU Digital Product Passport conformance/);
+    expect(result.limitations.join(' ')).toMatch(/no per-unit credential/);
     expect(result.decision).toBe('accept');
   });
 
-  it('DPP-2 is rejected: its certificate is not itself covered by the scheme permission', async () => {
-    const result = await runPassport({}, URI.P2);
+  it('GSM-2 is rejected: its certificate is not itself covered by the scheme permission', async () => {
+    const result = await runMark({}, URI.P2);
     expect(trace(result, `${DPP_ROUTE}:certificate:claim-coverage`)).toMatchObject({ state: 'contradicted' });
     expect(result.decision).toBe('reject');
   });
 
   it('a certificate for another manufacturer contradicts the claim', async () => {
-    const result = await runPassport(await reissueChain([
+    const result = await runMark(await reissueChain([
       [URI.C, d => { subject(d).manufacturerIri = 'https://other-maker.vc4qi.example/controller'; }], [URI.P1],
     ]));
     expect(trace(result, `${DPP_ROUTE}:manufacturer-binding`)).toMatchObject({ state: 'contradicted' });
     expect(result.decision).toBe('reject');
   });
 
-  it('a passport for another model is not covered by the certificate', async () => {
-    const result = await runPassport(await reissueChain([[URI.P1, d => {
+  it('a GS-mark credential for another model is not covered by the certificate', async () => {
+    const result = await runMark(await reissueChain([[URI.P1, d => {
       subject(d).productModelIri = 'urn:vc4qi-example:product:toy-999';
       (subject(d).marking as JsonObject).productModelIri = 'urn:vc4qi-example:product:toy-999';
     }]]));
@@ -288,33 +300,94 @@ describe('experimental product passport (DPP): a GS-mark claim for one unit', ()
   });
 
   it('a certificate issued after the unit was placed on the market cannot authorize it', async () => {
-    const result = await runPassport(await reissueChain([[URI.C, d => { d.validFrom = '2026-06-01T00:00:00Z'; }], [URI.P1]]));
+    const result = await runMark(await reissueChain([[URI.C, d => { d.validFrom = '2026-06-01T00:00:00Z'; }], [URI.P1]]));
     expect(trace(result, `${DPP_ROUTE}:certificate-in-force`)).toMatchObject({ state: 'not_established' });
     expect(result.decision).toBe('not_established');
   });
 
   it("the certificate's own route must be complete: without scheme permission it is not established", async () => {
-    const result = await runPassport(await reissueChain([[URI.C, withoutReference('GsSchemeAuthorization')], [URI.P1]]));
+    const result = await runMark(await reissueChain([[URI.C, withoutReference('GsSchemeAuthorization')], [URI.P1]]));
     expect(trace(result, `${DPP_ROUTE}:certificate:scheme-reference`)).toMatchObject({ state: 'not_established' });
     expect(result.decision).toBe('not_established');
   });
 
-  it('DPP-3 (external laboratory) is accepted; DPP-4, placed on the market before the certificate, is not', async () => {
-    expect((await runPassport({}, URI.P3)).decision).toBe('accept');
-    const early = await runPassport({}, URI.P4);
+  it('GSM-3 (external laboratory) is accepted; GSM-4, placed on the market before the certificate, is not', async () => {
+    expect((await runMark({}, URI.P3)).decision).toBe('accept');
+    const early = await runMark({}, URI.P4);
     expect(trace(early, `${DPP_ROUTE}:certificate-in-force`)?.state).not.toBe('established');
     expect(early.decision).not.toBe('accept');
   });
 
-  it('DPP-5, issued by another company citing GSC-1, is rejected by the manufacturer binding', async () => {
-    const result = await runPassport({}, URI.P5);
+  it('GSM-5, issued by another company citing GSC-1, is rejected by the manufacturer binding', async () => {
+    const result = await runMark({}, URI.P5);
     expect(trace(result, `${DPP_ROUTE}:manufacturer-binding`)).toMatchObject({ state: 'contradicted' });
     expect(result.decision).toBe('reject');
   });
 
+  it('GSM-6, an HD-02 unit whose marking names HD-01, is contradicted at mapping', async () => {
+    const result = await runMark({}, URI.P6);
+    expect(trace(result, 'claim-mapping:mark')).toMatchObject({ state: 'contradicted',
+      reason: expect.stringMatching(/claims the mark for model \S*hair-dryer-hd-01, but the credential is for model \S*hair-dryer-hd-02/) });
+    expect(result.authorization[0]?.state).toBe('contradicted');
+    expect(result.decision).toBe('reject');
+  });
+
   it('a withheld certificate leaves the claim not established', async () => {
-    const result = await runPassport({ [URI.C]: null });
+    const result = await runMark({ [URI.C]: null });
     expect(result.authorization[0]?.state).toBe('not_established');
+    expect(result.decision).toBe('not_established');
+  });
+});
+
+const dppProfile = loadRelianceProfile(JSON.parse(readFileSync(new URL('profiles/gs-verifier-dpp-1.json', dir), 'utf8')) as JsonObject);
+const GS_ENTRY = '/credentialSubject/complianceInformation/gsMark';
+const runPassport = (overrides: Record<string, string | null> = {}, targetId: string = URI.DPP1,
+  selectedClaims = [{ id: 'mark', sourcePointer: GS_ENTRY }]) =>
+  evaluateGsSlice(request({ requestId: 'urn:uuid:gs-v1-dpp', targetId, selectedClaims, suppliedEvidence: [],
+    profile: { id: dppProfile.id, version: dppProfile.version } }), catalogWith(overrides), manifest, dppProfile).then(e => e.result);
+
+describe('experimental product passport (DPP): its GS-mark entry, supported by the GS-mark credential', () => {
+  it('accepts DPP-1: issued by its economic operator, its GS-mark entry supported by its unit\'s GSM-1 and that credential\'s own route', async () => {
+    const result = await runPassport();
+    expect(trace(result, 'route:responsible-economic-operator:operator-is-issuer')).toMatchObject({ state: 'established' });
+    expect(result.authorization[0]).toMatchObject({ state: 'established', routeWitnessIds: ['route:responsible-economic-operator', URI.DPP1] });
+    expect(result.support.map(s => [s.obligationId, s.state])).toEqual([
+      ['gs-v1:gs-mark-credential', 'established'], ['gs-v1:type-examination', 'established'], ['gs-v1:factory-inspection', 'established']]);
+    expect(result.support[0]?.witnessIds).toEqual([URI.P1, URI.C, URI.A, URI.S]);
+    expect(result.limitations.join(' ')).toMatch(/shaped after the EU Digital Product Passport \(ESPR\), not ESPR conformance/);
+    expect(result.decision).toBe('accept');
+  });
+
+  it('DPP-2 (the early unit) is not established: its GSM-4 cannot be authorized by a later certificate', async () => {
+    const result = await runPassport({}, URI.DPP2);
+    expect(trace(result, 'support:gs-mark-credential:mark-credential:certificate-in-force')).toMatchObject({ state: 'not_established' });
+    expect(result.decision).toBe('not_established');
+  });
+
+  it('DPP-3 cites the GS-mark credential of another unit: the support is contradicted', async () => {
+    const result = await runPassport({}, URI.DPP3);
+    expect(trace(result, 'support:gs-mark-credential:same-unit')).toMatchObject({ state: 'contradicted' });
+    expect(trace(result, 'support:gs-mark-credential:same-model')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
+  });
+
+  it('a passport issued by someone other than the economic operator it names is contradicted', async () => {
+    const result = await runPassport(await reissueChain([[URI.DPP1, d => { subject(d).economicOperatorIri = 'https://other-maker.vc4qi.example/controller'; }]]));
+    expect(trace(result, 'route:responsible-economic-operator:operator-is-issuer')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
+  });
+
+  it('a withheld GS-mark credential leaves the entry not established', async () => {
+    const result = await runPassport({ [URI.P1]: null });
+    expect(result.support[0]).toMatchObject({ obligationId: 'gs-v1:gs-mark-credential', state: 'not_established' });
+    expect(result.decision).toBe('not_established');
+  });
+
+  it('only the GS-mark entry is interpreted: another passport section is not established, the entry still is', async () => {
+    const result = await runPassport({}, URI.DPP1,
+      [{ id: 'mark', sourcePointer: GS_ENTRY }, { id: 'spares', sourcePointer: '/credentialSubject/sustainability' }]);
+    expect(result.authorization.map(a => [a.claimId, a.state])).toEqual([['mark', 'established'], ['spares', 'not_established']]);
+    expect(result.authorization[1]?.reasons.join(' ')).toMatch(/interprets only the GS-mark entry/);
     expect(result.decision).toBe('not_established');
   });
 });

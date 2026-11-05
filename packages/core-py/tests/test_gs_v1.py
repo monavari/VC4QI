@@ -40,11 +40,15 @@ GS = "https://vc4qi.example/bindings/gs/1#"
 GS_A = "https://nab.vc4qi.example/credentials/GS-A"
 GS_S = "https://zls.vc4qi.example/credentials/GS-S"
 GSC = "https://gs-body.vc4qi.example/credentials/GSC-1"
+GSM1 = "https://maker.vc4qi.example/credentials/GSM-1"
+GSM2 = "https://maker.vc4qi.example/credentials/GSM-2"
+GSM3 = "https://maker.vc4qi.example/credentials/GSM-3"
+GSM4 = "https://maker.vc4qi.example/credentials/GSM-4"
+GSM5 = "https://clone.vc4qi.example/credentials/GSM-5"
+GSM6 = "https://maker.vc4qi.example/credentials/GSM-6"
 DPP1 = "https://maker.vc4qi.example/credentials/DPP-1"
 DPP2 = "https://maker.vc4qi.example/credentials/DPP-2"
 DPP3 = "https://maker.vc4qi.example/credentials/DPP-3"
-DPP4 = "https://maker.vc4qi.example/credentials/DPP-4"
-DPP5 = "https://clone.vc4qi.example/credentials/DPP-5"
 GSC2 = "https://gs-body.vc4qi.example/credentials/GSC-2"
 GSC3 = "https://gs-body.vc4qi.example/credentials/GSC-3"
 TR1 = "https://gs-body.vc4qi.example/credentials/TR-1"
@@ -285,55 +289,59 @@ def test_scheme_authorization_after_the_activity_cannot_authorize() -> None:
     assert result.decision == "not_established"
 
 
-DPP_PROFILE = load_reliance_profile(
-    json.loads((GS_V1_DIRECTORY / "profiles/gs-verifier-dpp-1.json").read_text())
+MARK_PROFILE = load_reliance_profile(
+    json.loads((GS_V1_DIRECTORY / "profiles/gs-verifier-mark-1.json").read_text())
 )
-DPP_ROUTE = "route:gs-certified-product"
+MARK_ROUTE = "route:gs-certified-product"
 
 
-def run_passport(
-    overrides: dict[str, str | None] | None = None, target: str = DPP1
+def run_mark(
+    overrides: dict[str, str | None] | None = None,
+    target: str = GSM1,
+    claims: tuple[SelectedClaim, ...] = (
+        SelectedClaim("mark", "/credentialSubject/marking"),
+    ),
 ) -> Any:
     base = request()
     req = create_reliance_request(
         RelianceRequest(
             **{
                 **base.__dict__,
-                "request_id": "urn:uuid:gs-v1-dpp",
+                "request_id": "urn:uuid:gs-v1-mark",
                 "target_id": target,
-                "selected_claims": (
-                    SelectedClaim("mark", "/credentialSubject/marking"),
-                ),
+                "selected_claims": claims,
                 "supplied_evidence": (),
-                "profile": VersionedIdentifier(DPP_PROFILE.id, DPP_PROFILE.version),
+                "profile": VersionedIdentifier(MARK_PROFILE.id, MARK_PROFILE.version),
             }
         )
     )
-    return evaluate_gs_slice(req, catalog_with(overrides), MANIFEST, DPP_PROFILE).result
+    return evaluate_gs_slice(
+        req, catalog_with(overrides), MANIFEST, MARK_PROFILE
+    ).result
 
 
-def test_passport_accepted_through_a_certificate_for_its_model() -> None:
-    result = run_passport()
+def test_mark_credential_accepted_through_a_certificate_for_its_model() -> None:
+    result = run_mark()
     assert all(v.state == "established" for v in result.artifact_verification)
-    assert entry(result, f"{DPP_ROUTE}:manufacturer-binding").state == "established"
-    assert entry(result, f"{DPP_ROUTE}:certificate:claim-coverage").state == (
+    assert entry(result, f"{MARK_ROUTE}:manufacturer-binding").state == "established"
+    assert entry(result, f"{MARK_ROUTE}:certificate:claim-coverage").state == (
         "established"
     )
     assert result.authorization[0].route_witness_ids == (
-        DPP_ROUTE,
-        DPP1,
+        MARK_ROUTE,
+        GSM1,
         GSC,
         GS_A,
         GS_S,
         f"record:{GSC}",
     )
-    assert "not EU Digital Product Passport conformance" in " ".join(result.limitations)
+    assert "no per-unit credential" in " ".join(result.limitations)
     assert result.decision == "accept"
 
 
-def test_passport_with_uncovered_certificate_rejects() -> None:
-    result = run_passport(None, DPP2)
-    assert entry(result, f"{DPP_ROUTE}:certificate:claim-coverage").state == (
+def test_mark_credential_with_uncovered_certificate_rejects() -> None:
+    result = run_mark(None, GSM2)
+    assert entry(result, f"{MARK_ROUTE}:certificate:claim-coverage").state == (
         "contradicted"
     )
     assert result.decision == "reject"
@@ -345,19 +353,19 @@ def test_certificate_for_another_manufacturer_rejects() -> None:
             "https://other-maker.vc4qi.example/controller"
         )
 
-    result = run_passport(reissue_chain([(GSC, edit), (DPP1, None)]))
-    assert entry(result, f"{DPP_ROUTE}:manufacturer-binding").state == ("contradicted")
+    result = run_mark(reissue_chain([(GSC, edit), (GSM1, None)]))
+    assert entry(result, f"{MARK_ROUTE}:manufacturer-binding").state == ("contradicted")
     assert result.decision == "reject"
 
 
-def test_passport_for_another_model_is_not_covered() -> None:
+def test_mark_credential_for_another_model_is_not_covered() -> None:
     def edit(d: dict[str, Any]) -> None:
         d["credentialSubject"]["productModelIri"] = "urn:vc4qi-example:product:toy-999"
         d["credentialSubject"]["marking"]["productModelIri"] = (
             "urn:vc4qi-example:product:toy-999"
         )
 
-    result = run_passport(reissue_chain([(DPP1, edit)]))
+    result = run_mark(reissue_chain([(GSM1, edit)]))
     assert entry(result, "claim-coverage:mark:gs-certified-product").state == (
         "contradicted"
     )
@@ -368,8 +376,8 @@ def test_certificate_after_placing_on_market_cannot_authorize() -> None:
     def edit(d: dict[str, Any]) -> None:
         d["validFrom"] = "2026-06-01T00:00:00Z"
 
-    result = run_passport(reissue_chain([(GSC, edit), (DPP1, None)]))
-    assert entry(result, f"{DPP_ROUTE}:certificate-in-force").state == (
+    result = run_mark(reissue_chain([(GSC, edit), (GSM1, None)]))
+    assert entry(result, f"{MARK_ROUTE}:certificate-in-force").state == (
         "not_established"
     )
     assert result.decision == "not_established"
@@ -377,15 +385,24 @@ def test_certificate_after_placing_on_market_cannot_authorize() -> None:
 
 def test_certificate_route_must_be_complete() -> None:
     edit = without_reference("GsSchemeAuthorization")
-    result = run_passport(reissue_chain([(GSC, edit), (DPP1, None)]))
-    assert entry(result, f"{DPP_ROUTE}:certificate:scheme-reference").state == (
+    result = run_mark(reissue_chain([(GSC, edit), (GSM1, None)]))
+    assert entry(result, f"{MARK_ROUTE}:certificate:scheme-reference").state == (
         "not_established"
     )
     assert result.decision == "not_established"
 
 
+def test_gsm6_marking_for_another_model_is_contradicted_at_mapping() -> None:
+    result = run_mark(target=GSM6)
+    mapping = entry(result, "claim-mapping:mark")
+    assert mapping.state == "contradicted"
+    assert "but the credential is for model" in mapping.reason
+    assert result.authorization[0].state == "contradicted"
+    assert result.decision == "reject"
+
+
 def test_withheld_certificate_is_not_established() -> None:
-    result = run_passport({GSC: None})
+    result = run_mark({GSC: None})
     assert result.authorization[0].state == "not_established"
     assert result.decision == "not_established"
 
@@ -449,6 +466,18 @@ def test_laboratory_accreditation_without_testing_does_not_authorize() -> None:
     assert result.decision == "reject"
 
 
+def test_factory_inspection_needs_certification_permission() -> None:
+    def testing_only(d: dict[str, Any]) -> None:
+        subject(d)["permittedActivity"] = [GS + "testProducts"]
+
+    result = run(
+        reissue_chain([(GS_A, testing_only), (FI1, None), (TR1, None), (GSC, None)])
+    )
+    permission = entry(result, "support:factory-inspection:accreditation-permission")
+    assert permission.state == "contradicted"
+    assert result.decision == "reject"
+
+
 def test_factory_inspection_of_another_manufacturer_contradicts() -> None:
     def other(d: dict[str, Any]) -> None:
         subject(d)["manufacturerIri"] = "https://other-maker.vc4qi.example/controller"
@@ -470,13 +499,114 @@ def test_study_after_the_certification_cannot_support_it() -> None:
     assert result.decision == "reject"
 
 
-def test_passports_external_lab_early_unit_and_other_company() -> None:
-    assert run_passport(target=DPP3).decision == "accept"
-    early = run_passport(target=DPP4)
+def test_mark_credentials_external_lab_early_unit_and_other_company() -> None:
+    assert run_mark(target=GSM3).decision == "accept"
+    early = run_mark(target=GSM4)
     in_force = entry(early, "route:gs-certified-product:certificate-in-force")
     assert in_force.state != "established"
     assert early.decision != "accept"
-    clone = run_passport(target=DPP5)
+    clone = run_mark(target=GSM5)
     binding = entry(clone, "route:gs-certified-product:manufacturer-binding")
     assert binding.state == "contradicted"
     assert clone.decision == "reject"
+
+
+# ---------------------------------------------------------------- product passports
+
+DPP_PROFILE = load_reliance_profile(
+    json.loads((GS_V1_DIRECTORY / "profiles/gs-verifier-dpp-1.json").read_text())
+)
+GS_ENTRY = "/credentialSubject/complianceInformation/gsMark"
+
+
+def run_passport(
+    overrides: dict[str, str | None] | None = None,
+    target: str = DPP1,
+    claims: tuple[SelectedClaim, ...] = (SelectedClaim("mark", GS_ENTRY),),
+) -> Any:
+    base = request()
+    req = create_reliance_request(
+        RelianceRequest(
+            **{
+                **base.__dict__,
+                "request_id": "urn:uuid:gs-v1-dpp",
+                "target_id": target,
+                "selected_claims": claims,
+                "supplied_evidence": (),
+                "profile": VersionedIdentifier(DPP_PROFILE.id, DPP_PROFILE.version),
+            }
+        )
+    )
+    return evaluate_gs_slice(req, catalog_with(overrides), MANIFEST, DPP_PROFILE).result
+
+
+def test_passport_accepted_with_its_units_gs_mark_credential() -> None:
+    result = run_passport()
+    operator = entry(result, "route:responsible-economic-operator:operator-is-issuer")
+    assert operator.state == "established"
+    assert result.authorization[0].route_witness_ids == (
+        "route:responsible-economic-operator",
+        DPP1,
+    )
+    assert [(s.obligation_id, s.state) for s in result.support] == [
+        ("gs-v1:gs-mark-credential", "established"),
+        ("gs-v1:type-examination", "established"),
+        ("gs-v1:factory-inspection", "established"),
+    ]
+    assert result.support[0].witness_ids == (GSM1, GSC, GS_A, GS_S)
+    assert "not ESPR conformance" in " ".join(result.limitations)
+    assert result.decision == "accept"
+
+
+def test_passport_of_the_early_unit_is_not_established() -> None:
+    result = run_passport(target=DPP2)
+    in_force = entry(
+        result, "support:gs-mark-credential:mark-credential:certificate-in-force"
+    )
+    assert in_force.state == "not_established"
+    assert result.decision == "not_established"
+
+
+def test_passport_citing_another_units_mark_credential_rejects() -> None:
+    result = run_passport(target=DPP3)
+    assert entry(result, "support:gs-mark-credential:same-unit").state == (
+        "contradicted"
+    )
+    assert entry(result, "support:gs-mark-credential:same-model").state == (
+        "contradicted"
+    )
+    assert result.decision == "reject"
+
+
+def test_passport_not_issued_by_its_named_operator_is_contradicted() -> None:
+    def other(d: dict[str, Any]) -> None:
+        subject(d)["economicOperatorIri"] = "https://other-maker.vc4qi.example/controller"
+
+    result = run_passport(reissue_chain([(DPP1, other)]))
+    operator = entry(result, "route:responsible-economic-operator:operator-is-issuer")
+    assert operator.state == "contradicted"
+    assert result.decision == "reject"
+
+
+def test_passport_with_withheld_mark_credential_is_not_established() -> None:
+    result = run_passport({GSM1: None})
+    assert result.support[0].obligation_id == "gs-v1:gs-mark-credential"
+    assert result.support[0].state == "not_established"
+    assert result.decision == "not_established"
+
+
+def test_only_the_gs_mark_entry_of_a_passport_is_interpreted() -> None:
+    result = run_passport(
+        claims=(
+            SelectedClaim("mark", GS_ENTRY),
+            SelectedClaim("spares", "/credentialSubject/sustainability"),
+        )
+    )
+    assert [(a.claim_id, a.state) for a in result.authorization] == [
+        ("mark", "established"),
+        ("spares", "not_established"),
+    ]
+    assert "interprets only the GS-mark entry" in " ".join(
+        result.authorization[1].reasons
+    )
+    assert result.decision == "not_established"

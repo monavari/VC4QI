@@ -2,14 +2,9 @@
 
 This page is the normative model of VC4QI: what a verifier must check before it relies
 on a Quality Infrastructure (QI) credential. The new evaluator implements it for the
-three experimental bindings (reference material, calibration and GS certification).
-It is the default public API since the switch in phase I5; see [API](api.md) and
-[status](status.md).
-
-The model summarizes the
-[standards-first requirements](plans/standards-first-handover-2026-09-21.txt), which
-resolve any ambiguity. The superseded manuscript-v2.1 model is kept in
-[history](history/README.md).
+three experimental bindings (reference material, calibration and GS certification);
+see [API](api.md) and [status](status.md). The superseded v0.3 graph model is at tag
+[`v0.3.0`](https://github.com/monavari/VC4QI/tree/v0.3.0).
 
 ## 1. Thesis
 
@@ -43,9 +38,9 @@ them for one domain; see [bindings](bindings.md).
 | `credentialStatus` | The selected status mechanism, with an authorized signer and freshness |
 
 A type named like a trust policy has no authority unless the binding interprets it.
-The core has no universal edge or basis vocabulary: the legacy `authorizedBy`,
-`derivedFrom`, `supportedBy`, `authorizationBasis.kind` and mandatory `scopeRef` belong
-to the legacy profile only. Provenance such as `prov:wasDerivedFrom` establishes
+The core has no universal edge or basis vocabulary: the v0.3 `authorizedBy`,
+`derivedFrom`, `supportedBy`, `authorizationBasis.kind` and mandatory `scopeRef` are not
+carriers. Provenance such as `prov:wasDerivedFrom` establishes
 neither permission nor containment.
 
 Every relation the verifier relies on needs a protected source pointer, or an
@@ -110,12 +105,12 @@ that use hold.
 | Gate | Obligation |
 | --- | --- |
 | 0 | Plan and structure: accepted purpose, profile and structure |
-| 1 | Identity: the exact representation and version, with no conflicting content |
+| 1 | Resolution and resource integrity: the exact representation and version, with no conflicting content |
 | 2 | Protection: a real proof by a key the issuer authorized |
-| 3 | Time: validity, status and freshness |
-| 4 | Meaning: supported identifiers, quantities and mappings |
+| 3 | Temporal and status: validity, status and freshness at the relevant time |
+| 4 | Mapping within the supported domain: supported identifiers, quantities and mappings |
 | 5 | Authority and scope: principal, rights, complete routes, containment, restrictions |
-| 6 | Support and decision: independent applicable support, then requested conformity |
+| 6 | Support and conformity: independent applicable support, then requested conformity |
 
 Parsing may precede protection, but discovering a candidate is not accepting it.
 Failed objects stay inert: they grant nothing, poison no cache and trigger no
@@ -194,7 +189,7 @@ requested batch, instrument, activity, method and time. A genuine report about a
 batch contradicts applicability; a missing one leaves it not established. Matching
 identifiers prove a digital match, not that a physical sample was not swapped.
 
-An authority-issued answer (planned for I6) can establish one specific predicate. Its
+An authority-issued answer (not implemented) can establish one specific predicate. Its
 content must be bound to the exact claim, grantee, activity, scope version, profile and
 time, and the signer's authority must be established independently. A point answer
 cannot prove that a whole scope is contained. The optional Recognized Entities adapter
@@ -212,7 +207,7 @@ restrictions, support or conformity.
   questions need historical evidence and are otherwise refused.
 - Evidence may be supplied as a flat bundle or retrieved within budgets; extra
   credentials confer nothing. Selective disclosure must keep every fact the request
-  needs. See [applications](applications.md).
+  needs: a valid disclosure proof that hides a required fact cannot establish reliance.
 
 ## 9. Boundaries
 

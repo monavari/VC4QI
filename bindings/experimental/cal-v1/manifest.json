@@ -130,9 +130,8 @@
     "holderBinding": "unsupported-in-initial-slice"
   },
   "evidenceAndExclusions": {
-    "acceptanceLedger": "docs/plans/standards-first-acceptance.csv",
+    "acceptanceLedger": "docs/acceptance-ledger.csv",
     "testVectorRoots": ["bindings/experimental/cal-v1/test-vectors"],
-    "implementationEvidence": "docs/plans/evidence.md",
     "unsupported": ["production-accreditation", "legal-effect", "real-statutory-designation", "native-dcc-xml", "public-example-namespace-resolution", "wallet-interoperability", "timestamp-service"]
   }
 }
