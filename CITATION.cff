@@ -12,6 +12,14 @@ license: Apache-2.0
 repository-code: "https://github.com/monavari/VC4QI"
 version: 0.4.0
 date-released: 2026-11-05
+doi: 10.5281/zenodo.23979553
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23979553
+    description: "Zenodo archive of version 0.4.0"
+  - type: doi
+    value: 10.5281/zenodo.20612364
+    description: "Zenodo concept DOI, resolving to the latest version"
 preferred-citation:
   type: article
   title: >-
