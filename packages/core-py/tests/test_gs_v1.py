@@ -45,6 +45,7 @@ DPP2 = "https://maker.vc4qi.example/credentials/DPP-2"
 DPP3 = "https://maker.vc4qi.example/credentials/DPP-3"
 DPP4 = "https://maker.vc4qi.example/credentials/DPP-4"
 DPP5 = "https://clone.vc4qi.example/credentials/DPP-5"
+DPP6 = "https://maker.vc4qi.example/credentials/DPP-6"
 GSC2 = "https://gs-body.vc4qi.example/credentials/GSC-2"
 GSC3 = "https://gs-body.vc4qi.example/credentials/GSC-3"
 TR1 = "https://gs-body.vc4qi.example/credentials/TR-1"
@@ -292,7 +293,11 @@ DPP_ROUTE = "route:gs-certified-product"
 
 
 def run_passport(
-    overrides: dict[str, str | None] | None = None, target: str = DPP1
+    overrides: dict[str, str | None] | None = None,
+    target: str = DPP1,
+    claims: tuple[SelectedClaim, ...] = (
+        SelectedClaim("mark", "/credentialSubject/marking"),
+    ),
 ) -> Any:
     base = request()
     req = create_reliance_request(
@@ -301,9 +306,7 @@ def run_passport(
                 **base.__dict__,
                 "request_id": "urn:uuid:gs-v1-dpp",
                 "target_id": target,
-                "selected_claims": (
-                    SelectedClaim("mark", "/credentialSubject/marking"),
-                ),
+                "selected_claims": claims,
                 "supplied_evidence": (),
                 "profile": VersionedIdentifier(DPP_PROFILE.id, DPP_PROFILE.version),
             }
@@ -380,6 +383,32 @@ def test_certificate_route_must_be_complete() -> None:
     result = run_passport(reissue_chain([(GSC, edit), (DPP1, None)]))
     assert entry(result, f"{DPP_ROUTE}:certificate:scheme-reference").state == (
         "not_established"
+    )
+    assert result.decision == "not_established"
+
+
+def test_dpp6_marking_for_another_model_is_contradicted_at_mapping() -> None:
+    result = run_passport(target=DPP6)
+    mapping = entry(result, "claim-mapping:mark")
+    assert mapping.state == "contradicted"
+    assert "but the passport is for model" in mapping.reason
+    assert result.authorization[0].state == "contradicted"
+    assert result.decision == "reject"
+
+
+def test_only_the_gs_mark_section_of_a_passport_is_interpreted() -> None:
+    result = run_passport(
+        claims=(
+            SelectedClaim("mark", "/credentialSubject/marking"),
+            SelectedClaim("spares", "/credentialSubject/sustainability"),
+        )
+    )
+    assert [(a.claim_id, a.state) for a in result.authorization] == [
+        ("mark", "established"),
+        ("spares", "not_established"),
+    ]
+    assert "interprets only the GS-mark section" in " ".join(
+        result.authorization[1].reasons
     )
     assert result.decision == "not_established"
 

@@ -10,7 +10,7 @@
   },
   "installation": {
     "status": "incomplete",
-    "reason": "Migrated GS certification binding for the gs-scheme-authorization use case, plus an experimental product passport (not EU DPP conformance). The gate 0-6 evaluators for the competence-and-scheme-permission and gs-certified-product routes, their coverage and the certificate's required studies (type examination and factory inspection) are implemented; statutory GS routes, application assessments and conformity rules are not.",
+    "reason": "Migrated GS certification binding for the gs-scheme-authorization use case, plus an experimental product passport shaped after the ESPR DPP whose GS-mark section is interpreted (not EU DPP conformance). The gate 0-6 evaluators for the competence-and-scheme-permission and gs-certified-product routes, their coverage and the certificate's required studies (type examination and factory inspection) are implemented; statutory GS routes, application assessments and conformity rules are not.",
     "pendingResources": []
   },
   "carrierAndSchema": {
@@ -22,7 +22,7 @@
       "https://vc4qi.example/bindings/gs/1#GsAccreditation",
       "https://vc4qi.example/bindings/gs/1#GsSchemeAuthorization",
       "https://vc4qi.example/bindings/gs/1#GsCertificate",
-      "https://vc4qi.example/bindings/gs/1#GsProductPassport",
+      "https://vc4qi.example/bindings/gs/1#ProductPassport",
       "https://vc4qi.example/bindings/gs/1#GsTestReport",
       "https://vc4qi.example/bindings/gs/1#GsInspectionReport",
       "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential"
@@ -50,6 +50,8 @@
     {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/bindings/gs/1#authorizationCredential"},
     {"fact": "activityTime", "nativePath": "/credentialSubject/activityTime", "expandedIri": "https://vc4qi.example/bindings/gs/1#activityTime"},
     {"fact": "certification", "nativePath": "/credentialSubject/certification", "expandedIri": "https://vc4qi.example/bindings/gs/1#certification"},
+    {"fact": "passportModel", "nativePath": "/credentialSubject/productModelIri", "expandedIri": "https://vc4qi.example/bindings/gs/1#productModel"},
+    {"fact": "marking", "nativePath": "/credentialSubject/marking", "expandedIri": "https://vc4qi.example/bindings/gs/1#marking"},
     {"fact": "requiredStudy", "nativePath": "/evidence/*/id", "expandedIri": "https://www.w3.org/2018/credentials#evidence"}
   ],
   "cardinality": {
@@ -57,7 +59,7 @@
     "scopeRecords": {"minimum": 1},
     "selectedAuthorizingPoliciesPerUse": {"minimum": 1, "maximum": 2},
     "authorizingReferenceSelection": "by-declared-reference-type-per-route-half; resolved credential type must match (else contradicted); several of one type not_established",
-    "selectedClaims": "the certification statement at /credentialSubject/certification",
+    "selectedClaims": "the certification statement at /credentialSubject/certification; for a product passport only the GS-mark section at /credentialSubject/marking (other passport sections have no interpretation in this binding)",
     "ambiguousSelection": "not_established"
   },
   "discoveryAndIntegrity": {
@@ -89,7 +91,7 @@
       "The accreditation issuer is anchored for accrediting certification bodies; the scheme authorization issuer for authorizing GS certification.",
       "Both grants were in force at the certificate's activity time.",
       "A certificate needs a type examination of its model covering its category and standards, and a factory inspection of its manufacturer; each passed, precedes the certification and is issued under an anchored accreditation of its issuer that permits the activity (type examination: testing, under an issuer anchored for accrediting testing laboratories; factory inspection: certification, which includes factory inspection, under an issuer anchored for accrediting certification bodies) and was in force at the study.",
-      "A product passport's GS-mark claim needs a GS certificate that names the passport issuer as manufacturer, certifies the passport's model, was in force when the unit was placed on the market and itself holds the complete route."
+      "A product passport's GS-mark claim must name the passport's own model, and needs a GS certificate that names the passport issuer as manufacturer, certifies that model, was in force when the unit was placed on the market and itself holds the complete route."
     ]
   },
   "scopeAndMapping": {
@@ -102,7 +104,7 @@
   "routesAndRestrictions": {
     "installedCertificateRoutes": {
       "competence-and-scheme-permission": ["A-referenced", "A-grantee-is-issuer", "A-permits-certification", "A-issuer-is-accreditation-anchor", "S-referenced", "S-grantee-is-issuer", "S-permits-GS-mark", "S-issuer-is-scheme-anchor", "A-and-S-in-force-at-activity", "claim-covered-by-A-and-S"],
-      "gs-certified-product": ["C-referenced", "C-names-passport-issuer-as-manufacturer", "C-in-force-at-passport-activity", "C-holds-competence-and-scheme-permission", "C-certification-covered", "C-certifies-the-passport-model"]
+      "gs-certified-product": ["C-referenced", "C-names-passport-issuer-as-manufacturer", "C-in-force-at-passport-activity", "C-holds-competence-and-scheme-permission", "C-certification-covered", "C-certifies-the-passport-model", "marking-names-the-passport-model"]
     },
     "globalRestrictions": [],
     "routeComposition": "AND-within-route-OR-between-complete-routes"

@@ -131,14 +131,15 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     ],
     note: 'Shaped like a GS certification chain: mark → GS certificate → accreditation (a fictional body in the DAkkS role), scheme authorization (ZLS role), type examination and factory inspection. A fictional profile, not a legal GS rule; all parties and keys are fictional.' },
   { id: 'dpp', tab: 'DPP', title: 'Product passport',
-    intro: 'Is this unit really covered by the GS certificate it cites?',
+    intro: 'This unit\'s product passport carries a GS-mark section. Is it covered by the GS certificate it cites?',
     caseLabel: 'Passport',
     cases: [
       markCase('unit', 'Unit sn-0042', 'on market after certification', 'https://maker.vc4qi.example/credentials/DPP-1', withholdCertificate(GS_URI.C1)),
       markCase('early', 'Unit sn-0001', 'on market before certification', 'https://maker.vc4qi.example/credentials/DPP-4', withholdCertificate(GS_URI.C1)),
       markCase('clone', 'Unit sn-9999', 'issued by another company', 'https://clone.vc4qi.example/credentials/DPP-5', withholdCertificate(GS_URI.C1)),
+      markCase('mismatch', 'Unit sn-0050', 'HD-02 unit, mark for HD-01', 'https://maker.vc4qi.example/credentials/DPP-6', withholdCertificate(GS_URI.C1)),
     ],
-    note: 'An experimental manufacturer product credential: today\'s GS scheme has no per-unit credential, and this is not EU Digital Product Passport (ESPR) conformance. All parties and keys are fictional.' },
+    note: 'An experimental product passport shaped after the EU Digital Product Passport (ESPR): identity, model, technical and sustainability sections and a GS-mark section. The GS binding evaluates only the GS-mark section. Not ESPR conformance; today\'s GS scheme has no per-unit credential. All parties and keys are fictional.' },
 ];
 
 // ---------------------------------------------------------------- the credential graph
@@ -159,7 +160,7 @@ const ROLE: Record<string, string> = {
   CalAccreditation: 'Accreditation', CalOperationalScope: 'Operational scope', CalLegalMandate: 'Statutory mandate',
   CalCertificate: 'Calibration certificate', CalTestReport: 'Test report',
   GsAccreditation: 'Accreditation', GsSchemeAuthorization: 'Scheme authorization', GsCertificate: 'GS certificate',
-  GsTestReport: 'Type examination', GsInspectionReport: 'Factory inspection', GsProductPassport: 'GS mark · product',
+  GsTestReport: 'Type examination', GsInspectionReport: 'Factory inspection', ProductPassport: 'Product passport',
 };
 export interface GraphNode {
   readonly uri: string; readonly name: string; readonly role: string; readonly parties: string;

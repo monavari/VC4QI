@@ -291,9 +291,16 @@ function claimHTML(D, selected) {
     }));
     return h + '</tbody></table>';
   }
-  if (type === 'GsProductPassport') {
-    return kv('Product unit', esc(short(s.id))) + kv('Model', esc(short(s.productModelIri))) + kv('Mark claimed', esc(short(s.marking?.markIri)) + ' for ' + esc(short(s.marking?.productModelIri)))
+  if (type === 'ProductPassport') {
+    const evaluated = selected.includes('/credentialSubject/marking');
+    h += kv('Product', esc(s.productName ?? '')) + kv('Unit', esc(short(s.id))) + kv('Model', esc(short(s.productModelIri)))
       + kv('Placed on market', date(s.activityTime)) + kv('Issued by', esc(D.issuer));
+    h += '<table><thead><tr><th>Passport section</th><th>Content</th><th>Evaluated</th></tr></thead><tbody>';
+    h += '<tr><td>Technical data</td><td>Rated power ' + esc(s.technicalData?.ratedPowerW) + ' W</td><td>no</td></tr>';
+    h += '<tr><td>Sustainability</td><td>Spare parts for ' + esc(s.sustainability?.sparePartsAvailabilityYears) + ' years</td><td>no</td></tr>';
+    h += "<tr class='" + (evaluated ? 'sel' : '') + "'><td>GS mark</td><td>" + esc(short(s.marking?.markIri)) + ' for model ' + esc(short(s.marking?.productModelIri))
+      + '</td><td>' + (evaluated ? 'yes' : 'no') + '</td></tr>';
+    return h + '</tbody></table>';
   }
   if (type === 'GsCertificate') {
     return kv('Model', esc(short(s.id))) + kv('Manufacturer', esc(s.manufacturerIri ?? '')) + kv('Category', esc(short(s.certification?.productCategoryIri)))

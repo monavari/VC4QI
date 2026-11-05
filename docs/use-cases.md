@@ -12,7 +12,7 @@ fictional.
 | nmi-legal-mandate | C | A national metrology institute authorized by a statutory mandate, with no accreditation root | Calibration v1, `cal-verifier-nmi-1` | same |
 | test-report-supported-dcc | F | A test report supported by its instrument's own authorized calibration | Calibration v1, `cal-verifier-test-report-1` | same |
 | gs-scheme-authorization | GS | A GS mark needing competence AND scheme permission, and a type examination and factory inspection | GS v1, `gs-verifier-1`, `gs-verifier-dpp-1` | `gs-v1.test.ts` / `test_gs_v1.py` |
-| gs-product-passport (experimental) | DPP | A manufacturer's product credential for one unit, bound to its GS certificate: same manufacturer, same model, placed on the market while the certificate was in force. Today's GS scheme has no per-unit credential; not EU DPP (ESPR) conformance | GS v1, `gs-verifier-dpp-1` | same |
+| gs-product-passport (experimental) | DPP | A unit's product passport, shaped after the EU DPP (ESPR), whose GS-mark section is bound to the GS certificate: same manufacturer, same model as the passport, placed on the market while the certificate was in force. Other passport sections are not interpreted. Not ESPR conformance; today's GS scheme has no per-unit credential | GS v1, `gs-verifier-dpp-1` | same |
 
 Labels (A–F, GS, DPP) are display names, not governed profile identifiers.
 

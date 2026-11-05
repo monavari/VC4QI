@@ -8,7 +8,7 @@
     "GsAccreditation": "gs:GsAccreditation",
     "GsSchemeAuthorization": "gs:GsSchemeAuthorization",
     "GsCertificate": "gs:GsCertificate",
-    "GsProductPassport": "gs:GsProductPassport",
+    "ProductPassport": "gs:ProductPassport",
     "GsTestReport": "gs:GsTestReport",
     "GsInspectionReport": "gs:GsInspectionReport",
     "GsTypeExaminationReference": "gs:GsTypeExaminationReference",
@@ -26,6 +26,11 @@
     "manufacturerIri": {"@id": "gs:manufacturer", "@type": "@id"},
     "productModelIri": {"@id": "gs:productModel", "@type": "@id"},
     "marking": "gs:marking",
+    "productName": "gs:productName",
+    "technicalData": "gs:technicalData",
+    "ratedPowerW": {"@id": "gs:ratedPowerW", "@type": "xsd:decimal"},
+    "sustainability": "gs:sustainability",
+    "sparePartsAvailabilityYears": {"@id": "gs:sparePartsAvailabilityYears", "@type": "xsd:decimal"},
     "markIri": {"@id": "gs:mark", "@type": "@id"},
     "outcomeIri": {"@id": "gs:outcome", "@type": "@id"}
   }
