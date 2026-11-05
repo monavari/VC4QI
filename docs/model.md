@@ -105,12 +105,12 @@ that use hold.
 | Gate | Obligation |
 | --- | --- |
 | 0 | Plan and structure: accepted purpose, profile and structure |
-| 1 | Identity: the exact representation and version, with no conflicting content |
+| 1 | Resolution and resource integrity: the exact representation and version, with no conflicting content |
 | 2 | Protection: a real proof by a key the issuer authorized |
-| 3 | Time: validity, status and freshness |
-| 4 | Meaning: supported identifiers, quantities and mappings |
+| 3 | Temporal and status: validity, status and freshness at the relevant time |
+| 4 | Mapping within the supported domain: supported identifiers, quantities and mappings |
 | 5 | Authority and scope: principal, rights, complete routes, containment, restrictions |
-| 6 | Support and decision: independent applicable support, then requested conformity |
+| 6 | Support and conformity: independent applicable support, then requested conformity |
 
 Parsing may precede protection, but discovering a candidate is not accepting it.
 Failed objects stay inert: they grant nothing, poison no cache and trigger no

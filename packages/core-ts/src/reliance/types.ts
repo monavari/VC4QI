@@ -10,14 +10,15 @@ export type ExecutionState = 'executed' | 'not_run';
 export type RelianceDecision = 'accept' | 'reject' | 'not_established';
 
 /**
- * Canonical gate numbers (docs/model.md, section 4), used in code, tests, docs and UI:
- * 0 plan and structure, 1 resource identity, 2 protection, 3 temporal
- * applicability, 4 meaning and mapping, 5 authority and scope, 6 support and decision.
+ * Canonical gate numbers (docs/model.md, section 4; the paper's Table 3), used in code,
+ * tests, docs and UI: 0 plan and structure, 1 resolution and resource integrity,
+ * 2 protection, 3 temporal and status, 4 mapping within the supported domain,
+ * 5 authority and scope, 6 support and conformity.
  */
 export type Gate = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export const GATE_NAMES = Object.freeze([
-  'plan-and-structure', 'resource-identity', 'protection', 'temporal-applicability',
-  'meaning-and-mapping', 'authority-and-scope', 'support-and-decision',
+  'plan-and-structure', 'resolution-and-resource-integrity', 'protection', 'temporal-and-status',
+  'mapping-within-supported-domain', 'authority-and-scope', 'support-and-conformity',
 ] as const);
 
 /** One evaluated predicate for one use of an artifact, with its input provenance. */
