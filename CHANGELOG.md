@@ -28,12 +28,16 @@
   fictional accreditation body's DAkkS role, states that the product passports are
   experimental manufacturer credentials outside today's GS scheme, and lists the expected
   outcomes. A new negative case requires certification permission for the inspection.
-- The experimental product passport becomes part of a broader unit passport shaped after
-  the EU DPP (ESPR): `GsProductPassport` is renamed `ProductPassport` and gains product
-  name, technical and sustainability sections next to its GS-mark section. The GS binding
-  interprets only the GS-mark section; any other selected section is not established. The
-  GS-mark section must name the passport's own model (contradicted otherwise; new fixture
-  `DPP-6` and a demonstrator case). TypeScript and Python.
+- The GS mark for a unit and the product passport are separate credentials. The former
+  `GsProductPassport` becomes `GsMarkCredential` (`GSM-1` to `GSM-6`, profile
+  `gs-verifier-mark-1`): the manufacturer's GS-mark claim for one unit, authorized through
+  the GS certificate; its marking must name its own model (`GSM-6` is contradicted). A new
+  `ProductPassport` (`DPP-1` to `DPP-3`, profile `gs-verifier-dpp-1`, route
+  `responsible-economic-operator`) is shaped after the EU DPP (ESPR): unique product
+  identifier, GTIN, commodity code, economic operator, facility, technical and
+  sustainability data and compliance information. Its GS-mark entry is supported by the
+  unit's GS-mark credential, which keeps its own route; only that entry is interpreted.
+  Demonstrator GS and DPP tabs, docs and tests in both languages follow.
 
 ### Earlier unreleased changes, included in 0.4.0
 

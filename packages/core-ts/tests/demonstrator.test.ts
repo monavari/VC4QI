@@ -49,26 +49,28 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     }
   });
 
-  it('GS: mark → certificate → accreditation, ZLS authorization and studies; the toy is outside the ZLS scope', async () => {
+  it('GS: GS-mark credential → certificate → accreditation, ZLS authorization and studies; the toy is outside the ZLS scope', async () => {
     for (const caseId of ['in-house', 'external']) {
       const r = await run('gs', caseId);
       expect([r.result.decision, answers(r).supported]).toEqual(['accept', 'established']);
     }
-    const toy = await run('gs', 'toy');
-    expect([toy.result.decision, answers(toy).authorized]).toEqual(['reject', 'contradicted']);
+    for (const caseId of ['toy', 'clone', 'mismatch']) {
+      const r = await run('gs', caseId);
+      expect([caseId, r.result.decision, answers(r).authorized]).toEqual([caseId, 'reject', 'contradicted']);
+    }
     // The graph is read from the credentials' references, not drawn by hand.
     const g = (await run('gs', 'in-house')).graph;
-    expect(g.nodes.map(n => [n.name, n.layer])).toEqual([['DPP-1', 0], ['GSC-1', 1], ['GS-A', 3], ['GS-S', 2], ['TR-1', 2], ['FI-1', 2]]);
+    expect(g.nodes.map(n => [n.name, n.layer])).toEqual([['GSM-1', 0], ['GSC-1', 1], ['GS-A', 3], ['GS-S', 2], ['TR-1', 2], ['FI-1', 2]]);
     expect(g.edges.filter(e => e.kind === 'support').map(e => e.to.split('/').pop())).toEqual(['TR-1', 'FI-1']);
   });
 
-  it('DPP: a valid unit is accepted; an early unit cannot be told; another company and a mark for another model are rejected', async () => {
-    expect((await run('dpp', 'unit')).result.decision).toBe('accept');
+  it('DPP: a passport whose GS-mark entry is backed by its unit\'s GS-mark credential is accepted; an early unit cannot be told; a borrowed credential is rejected', async () => {
+    const unit = await run('dpp', 'unit');
+    expect([unit.result.decision, answers(unit).supported]).toEqual(['accept', 'established']);
+    expect(unit.graph.edges.filter(e => e.kind === 'support').map(e => e.to.split('/').pop())).toContain('GSM-1');
     expect((await run('dpp', 'early')).result.decision).toBe('not_established');
-    const clone = await run('dpp', 'clone');
-    expect([clone.result.decision, answers(clone).authorized]).toEqual(['reject', 'contradicted']);
-    const mismatch = await run('dpp', 'mismatch');
-    expect([mismatch.result.decision, answers(mismatch).authorized]).toEqual(['reject', 'contradicted']);
+    const borrowed = await run('dpp', 'borrowed');
+    expect([borrowed.result.decision, answers(borrowed).supported]).toEqual(['reject', 'contradicted']);
   });
 
   it('RM: the credential graph marks a withheld study as not present', async () => {

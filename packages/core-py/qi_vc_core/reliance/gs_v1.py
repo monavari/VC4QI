@@ -71,6 +71,7 @@ GS_V1_SCHEMA_BASE = "https://vc4qi.example/schemas/gs/1/"
 GS_V1_DIRECTORY = REPO_ROOT / "bindings" / "experimental" / "gs-v1"
 SELECTED_CERTIFICATION = "/credentialSubject/certification"
 SELECTED_MARKING = "/credentialSubject/marking"
+SELECTED_PASSPORT_MARK = "/credentialSubject/complianceInformation/gsMark"
 GS_MARK = "https://vc4qi.example/bindings/gs/1#GsMark"
 ROUTE_ID = "competence-and-scheme-permission"
 
@@ -80,6 +81,7 @@ GS_V1_ARTIFACT_BINDING = ArtifactBinding(
         "GsAccreditation": f"{GS_V1_SCHEMA_BASE}accreditation.json",
         "GsSchemeAuthorization": f"{GS_V1_SCHEMA_BASE}scheme-authorization.json",
         "GsCertificate": f"{GS_V1_SCHEMA_BASE}certificate.json",
+        "GsMarkCredential": f"{GS_V1_SCHEMA_BASE}mark-credential.json",
         "ProductPassport": f"{GS_V1_SCHEMA_BASE}product-passport.json",
         "GsTestReport": f"{GS_V1_SCHEMA_BASE}test-report.json",
         "GsInspectionReport": f"{GS_V1_SCHEMA_BASE}inspection-report.json",
@@ -329,11 +331,11 @@ def route_scopes(
     return records(route.scope), records(scheme_uri)
 
 
-def map_marking(value: Any, pointer: str, passport_model: Any) -> GsOutcome:
-    """Gate 4 for a product passport: the claimed marking, for which model.
+def map_marking(value: Any, pointer: str, own_model: Any) -> GsOutcome:
+    """Gate 4 for a GS-mark credential or a passport's GS-mark entry.
 
-    The marking must name the passport's own model; a claim for another model is
-    contradicted.
+    The claimed mark, for which model. It must name the credential's own model; a
+    claim for another model is contradicted.
     """
     sources = (pointer,)
     if (
@@ -353,16 +355,16 @@ def map_marking(value: Any, pointer: str, passport_model: Any) -> GsOutcome:
             sources,
         )
     model_sources = (pointer, "/credentialSubject/productModelIri")
-    if not isinstance(passport_model, str):
+    if not isinstance(own_model, str):
         return GsOutcome(
-            "not_established", "The passport names no product model.", model_sources
+            "not_established", "The credential names no product model.", model_sources
         )
     claimed = value["productModelIri"]
-    if passport_model != claimed:
+    if own_model != claimed:
         return GsOutcome(
             "contradicted",
             f"The marking claims the mark for model {_short(claimed)}, "
-            f"but the passport is for model {_short(passport_model)}.",
+            f"but the credential is for model {_short(own_model)}.",
             model_sources,
         )
     return GsOutcome(
@@ -376,7 +378,7 @@ def map_marking(value: Any, pointer: str, passport_model: Any) -> GsOutcome:
 def marking_coverage(
     marking: MappedMarking, certificate: dict[str, Any] | None
 ) -> GsOutcome:
-    """Claim coverage for a passport: the certificate certifies exactly this model."""
+    """Claim coverage for a GS-mark credential: the certificate certifies this model."""
     sources = ("/credentialSubject/id",)
     if certificate is None:
         return GsOutcome("not_established", "No certificate was reached.", sources)
@@ -400,11 +402,11 @@ def marking_coverage(
 def gs_certified_product(
     target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
 ) -> RouteResult:
-    """Route for an experimental product passport (not EU DPP conformance).
+    """Route for an experimental GS-mark credential (no per-unit GS credential exists).
 
     The manufacturer may claim the GS mark for a unit only under a GS certificate that
-    names it, is in force at the passport's activity time and itself holds the complete
-    GS route with its certification covered ("certificate:" bases).
+    names it, is in force at the credential's activity time and itself holds the
+    complete GS route with its certification covered ("certificate:" bases).
     """
     assert target.document is not None
     p = target.document
@@ -747,9 +749,205 @@ def certificate_support(
     return tuple(_study(certificate, lookup, profile, spec) for spec in _STUDIES)
 
 
+# ---------------------------------------------------------------- product passports
+
+
+def responsible_economic_operator(
+    target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
+) -> RouteResult:
+    """Route for an experimental product passport (shaped after the EU DPP).
+
+    The passport is the declaration of the economic operator responsible for the unit,
+    so its issuer must be the operator it names; this is the profile's rule, as no
+    grant credential exists. The operator declares its own passport, so the passport is
+    the scope of its entries. The GS-mark entry is relied on only through the cited
+    GS-mark credential (gate 6, ``mark_credential_support``).
+    """
+    assert target.document is not None
+    p = target.document
+    operator = _subject(p).get("economicOperatorIri")
+    sources = ("/credentialSubject/economicOperatorIri", "/issuer")
+    basis = (
+        _unknown(
+            "operator-is-issuer",
+            "The passport names no responsible economic operator.",
+            sources,
+        )
+        if not isinstance(operator, str)
+        else _check(
+            "operator-is-issuer",
+            operator == p.get("issuer"),
+            f"The passport is issued by its responsible economic operator {operator}.",
+            f"The passport names {operator} as its responsible economic operator but "
+            f"is issued by {p.get('issuer')}.",
+            sources,
+        )
+    )
+    return _route(
+        "responsible-economic-operator", [basis], [target.uri], target.uri
+    )
+
+
+@dataclass(frozen=True)
+class GsMarkSupport:
+    support: GsSupportResult
+    certificate_uri: str | None = None
+
+
+def mark_credential_support(
+    passport: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
+) -> GsMarkSupport:
+    """Gate 6 for a product passport's GS-mark entry.
+
+    The passport cites exactly one GS-mark credential as typed evidence. It must be
+    usable, for the same unit, issued by the same economic operator, claim the mark
+    for the same model as the entry, and itself hold its complete route
+    (``gs-certified-product``, bases prefixed "mark-credential:") with the mark
+    covered by its certificate.
+    """
+    assert passport.document is not None
+    p_doc = passport.document
+    p = _subject(p_doc)
+    compliance = p.get("complianceInformation")
+    entry_raw = compliance.get("gsMark") if isinstance(compliance, dict) else None
+    entry = entry_raw if isinstance(entry_raw, dict) else {}
+    bases: list[BasisResult] = []
+
+    def done(
+        chain: tuple[str, ...], certificate_uri: str | None = None
+    ) -> GsMarkSupport:
+        state = semantic_and(tuple(b.state for b in bases))
+        failed = next(
+            (b for b in bases if b.state == state and state != "established"), None
+        )
+        reason = (
+            "The GS-mark credential applies to this unit and holds its own route."
+            if state == "established"
+            else "The GS-mark credential: "
+            f"{failed.reason if failed else 'not established'}"
+        )
+        return GsMarkSupport(
+            GsSupportResult("gs-mark-credential", state, reason, tuple(bases), chain),
+            certificate_uri,
+        )
+
+    cited = [
+        str(e.get("id"))
+        for e in _list(p_doc.get("evidence"))
+        if isinstance(e, dict) and e.get("type") == "GsMarkCredentialReference"
+    ]
+    if len(cited) != 1:
+        bases.append(
+            _unknown(
+                "reference",
+                "The passport cites no GS-mark credential."
+                if not cited
+                else "The passport cites several GS-mark credentials; none is chosen.",
+                ("/evidence",),
+            )
+        )
+        return done(())
+    uri = cited[0]
+    node = lookup(uri)
+    if node is None or node.usable != "established" or node.document is None:
+        reason = (
+            f"{_short(uri)} is unavailable."
+            if node is None
+            else f"{_short(uri)} is not usable: {node.reason}"
+        )
+        state: SemanticState = (
+            "contradicted"
+            if node is not None and node.usable == "contradicted"
+            else "not_established"
+        )
+        bases.append(BasisResult("reference", state, reason, ("/evidence", uri)))
+        return done(())
+    m_doc = node.document
+    m = _subject(m_doc)
+    bases.append(
+        _check(
+            "reference",
+            "GsMarkCredential" in _list(m_doc.get("type")),
+            f"Cites GS-mark credential {_short(uri)}.",
+            f"{_short(uri)} is not a GsMarkCredential.",
+            ("/evidence", uri),
+        )
+    )
+    bases.append(
+        _check(
+            "same-unit",
+            m.get("id") == p.get("id"),
+            f"{_short(uri)} is for this unit {_short(p.get('id'))}.",
+            f"{_short(uri)} is for unit {_short(m.get('id'))}, not this unit "
+            f"{_short(p.get('id'))}.",
+            ("/credentialSubject/id",),
+        )
+    )
+    bases.append(
+        _check(
+            "same-operator",
+            m_doc.get("issuer") == p_doc.get("issuer"),
+            f"{_short(uri)} is issued by the passport's issuer.",
+            f"{_short(uri)} is issued by {m_doc.get('issuer')}, not the passport's "
+            f"issuer {p_doc.get('issuer')}.",
+            ("/issuer",),
+        )
+    )
+    mark = map_marking(
+        m.get("marking"), "/credentialSubject/marking", m.get("productModelIri")
+    )
+    bases.append(
+        BasisResult("mark-credential:mapping", mark.state, mark.reason, mark.sources)
+    )
+    marked = mark.marking
+    bases.append(
+        _check(
+            "same-model",
+            None
+            if marked is None
+            else marked.product_model_iri == entry.get("productModelIri")
+            and m.get("productModelIri") == p.get("productModelIri"),
+            f"{_short(uri)} claims the mark for the passport's model "
+            f"{_short(p.get('productModelIri'))}.",
+            f"{_short(uri)} claims no mark for a model."
+            if marked is None
+            else f"{_short(uri)} claims the mark for model "
+            f"{_short(marked.product_model_iri)}, not the passport's model "
+            f"{_short(p.get('productModelIri'))}.",
+            (
+                "/credentialSubject/complianceInformation/gsMark/productModelIri",
+                "/credentialSubject/productModelIri",
+            ),
+        )
+    )
+    own = gs_certified_product(node, lookup, profile)
+    bases.extend(
+        BasisResult(f"mark-credential:{b.id}", b.state, b.reason, b.sources)
+        for b in own.bases
+    )
+    certificate_node = lookup(own.scope) if own.scope else None
+    covered = (
+        GsOutcome("not_established", "No mark was mapped.", ())
+        if marked is None
+        else marking_coverage(
+            marked, certificate_node.document if certificate_node else None
+        )
+    )
+    bases.append(
+        BasisResult(
+            "mark-credential:claim-coverage",
+            covered.state,
+            covered.reason,
+            covered.sources,
+        )
+    )
+    return done((uri, *own.chain[1:]), own.scope)
+
+
 GS_CERTIFICATE_ROUTES = {
     ROUTE_ID: gs_competence_and_scheme,
     "gs-certified-product": gs_certified_product,
+    "responsible-economic-operator": responsible_economic_operator,
 }
 
 
@@ -809,8 +1007,15 @@ def evaluate_gs_slice(
     winner = next((r for r in authority.routes if r.state == "established"), None)
 
     kinds = (target_document or {}).get("type")
-    is_passport = isinstance(kinds, list) and kinds[1:2] == ["ProductPassport"]
-    selectable = SELECTED_MARKING if is_passport else SELECTED_CERTIFICATION
+    second = kinds[1] if isinstance(kinds, list) and len(kinds) > 1 else None
+    kind = {"GsMarkCredential": "mark", "ProductPassport": "passport"}.get(
+        str(second), "certificate"
+    )
+    selectable = {
+        "certificate": SELECTED_CERTIFICATION,
+        "mark": SELECTED_MARKING,
+        "passport": SELECTED_PASSPORT_MARK,
+    }[kind]
     claims: list[tuple[Any, GsOutcome | None, dict[str, GsOutcome]]] = []
     authorization: list[ClaimAuthorizationResult] = []
     for claim in request.selected_claims:
@@ -823,16 +1028,17 @@ def evaluate_gs_slice(
         if selected is _MISSING:
             if target_document is None:
                 reason = "The target is not usable, so its claims are not read."
-            elif is_passport:
+            elif kind == "passport":
                 reason = (
-                    "This binding interprets only the GS-mark section "
-                    f"({SELECTED_MARKING}) of a product passport; "
+                    "This binding interprets only the GS-mark entry "
+                    f"({SELECTED_PASSPORT_MARK}) of a product passport; "
                     f"{claim.source_pointer} has no interpretation here."
                 )
             else:
+                what = "marking" if kind == "mark" else "certification statement"
                 reason = (
-                    f"Selected claim {claim.source_pointer} is not the "
-                    "certification statement of the usable target."
+                    f"Selected claim {claim.source_pointer} is not the {what} of the "
+                    "usable target."
                 )
             claims.append((claim, None, coverage))
             authorization.append(
@@ -853,7 +1059,7 @@ def evaluate_gs_slice(
                 claim.source_pointer,
                 passport_subject.get("productModelIri"),
             )
-            if is_passport
+            if kind != "certificate"
             else map_certification(selected, claim.source_pointer)
         )
         claims.append((claim, mapped, coverage))
@@ -875,7 +1081,15 @@ def evaluate_gs_slice(
             mapped: GsOutcome = mapped,
             coverage: dict[str, GsOutcome] = coverage,
         ) -> BasisResult:
-            if mapped.marking is not None:
+            if kind == "passport":
+                covered = GsOutcome(
+                    "established",
+                    "The entry is declared by the passport's responsible economic "
+                    "operator; it is relied on through the GS-mark credential it cites "
+                    "(gate 6).",
+                    (SELECTED_PASSPORT_MARK,),
+                )
+            elif mapped.marking is not None:
                 node = facts.get(route.scope) if route.scope else None
                 covered = marking_coverage(
                     mapped.marking, node.document if node else None
@@ -916,14 +1130,25 @@ def evaluate_gs_slice(
             )
         )
 
-    # Gate 6: the studies of the certificate (the target, or the one a passport cites).
-    certificate_uri = (
-        None
-        if target_document is None
-        else next((r.chain[1] for r in evaluated if len(r.chain) > 1), None)
-        if is_passport
-        else request.target_id
+    # Gate 6: for a passport, the GS-mark credential it cites; then the studies of the
+    # certificate (the target, the one a GS-mark credential cites, or the one reached
+    # through a passport's GS-mark credential).
+    mark_support = (
+        mark_credential_support(target_facts, facts.get, profile)
+        if kind == "passport" and target_document is not None
+        else None
     )
+    certificate_uri: str | None
+    if target_document is None:
+        certificate_uri = None
+    elif kind == "passport":
+        certificate_uri = mark_support.certificate_uri if mark_support else None
+    elif kind == "mark":
+        certificate_uri = next(
+            (r.chain[1] for r in evaluated if len(r.chain) > 1), None
+        )
+    else:
+        certificate_uri = request.target_id
     certificate_node = None if certificate_uri is None else facts.get(certificate_uri)
     studies: tuple[GsSupportResult, ...]
     if target_document is None:
@@ -946,6 +1171,7 @@ def evaluate_gs_slice(
             )
             for obligation in ("type-examination", "factory-inspection")
         )
+    obligations = (*((mark_support.support,) if mark_support else ()), *studies)
     support = tuple(
         SupportResult(
             state=s.state,
@@ -955,7 +1181,7 @@ def evaluate_gs_slice(
             obligation_id=f"gs-v1:{s.obligation_id}",
             witness_ids=s.chain if s.state == "established" else (),
         )
-        for s in studies
+        for s in obligations
     )
 
     conformity: ConformityResult
@@ -981,7 +1207,7 @@ def evaluate_gs_slice(
     decisive = {
         request.target_id,
         *(winner.chain if winner else ()),
-        *(u for s in studies if s.state == "established" for u in s.chain),
+        *(u for s in obligations if s.state == "established" for u in s.chain),
     }
     required: list[SemanticState] = [
         r.state
@@ -1082,7 +1308,7 @@ def evaluate_gs_slice(
                     basis.sources,
                 )
             )
-    for study in studies:
+    for study in obligations:
         for basis in study.bases:
             trace.append(
                 TraceEntry(
@@ -1138,10 +1364,19 @@ def evaluate_gs_slice(
                 "permission), not a universal GS or legal rule.",
                 *(
                     (
-                        "The product passport is an experimental credential in this "
-                        "binding, not EU Digital Product Passport conformance.",
+                        "The product passport is an experimental credential shaped "
+                        "after the EU Digital Product Passport (ESPR), not ESPR "
+                        "conformance; this binding interprets only its GS-mark entry.",
                     )
-                    if is_passport
+                    if kind == "passport"
+                    else ()
+                ),
+                *(
+                    (
+                        "The GS-mark credential is an experimental manufacturer "
+                        "credential; today's GS scheme has no per-unit credential.",
+                    )
+                    if kind == "mark"
                     else ()
                 ),
                 "Verification failures of credentials outside the selected route and "

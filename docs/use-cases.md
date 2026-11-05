@@ -12,7 +12,7 @@ fictional.
 | nmi-legal-mandate | C | A national metrology institute authorized by a statutory mandate, with no accreditation root | Calibration v1, `cal-verifier-nmi-1` | same |
 | test-report-supported-dcc | F | A test report supported by its instrument's own authorized calibration | Calibration v1, `cal-verifier-test-report-1` | same |
 | gs-scheme-authorization | GS | A GS mark needing competence AND scheme permission, and a type examination and factory inspection | GS v1, `gs-verifier-1`, `gs-verifier-dpp-1` | `gs-v1.test.ts` / `test_gs_v1.py` |
-| gs-product-passport (experimental) | DPP | A unit's product passport, shaped after the EU DPP (ESPR), whose GS-mark section is bound to the GS certificate: same manufacturer, same model as the passport, placed on the market while the certificate was in force. Other passport sections are not interpreted. Not ESPR conformance; today's GS scheme has no per-unit credential | GS v1, `gs-verifier-dpp-1` | same |
+| gs-product-passport (experimental) | DPP | A unit's product passport, shaped after the EU DPP (ESPR), whose compliance information lists the GS mark, supported by the unit's GS-mark credential (same unit, operator and model), which keeps its own route to the GS certificate. Other passport sections are not interpreted. Not ESPR conformance; today's GS scheme has no per-unit credential | GS v1, `gs-verifier-dpp-1` | same |
 
 Labels (A–F, GS, DPP) are display names, not governed profile identifiers.
 
@@ -68,7 +68,7 @@ are checked byte-for-byte across languages by the parity vector.
 - **Test report.** REPORT-1 is authorized by the testing accreditation CAL-T and
   requires DCC-1 as its instrument's calibration. DCC-1 must be for the same
   instrument, earlier than the test, valid at it and itself authorized for every group.
-- **GS mark.** The mark on a hair dryer (DPP-1) rests on
+- **GS mark.** The manufacturer's GS-mark credential for a hair dryer unit (GSM-1) rests on
   the certificate GSC-1. GSC-1 needs GS-A (the GS body's competence against EN 60335-1
   and -2-23, from a fictional accreditation body in the DAkkS role) and GS-S (the
   ZLS-role permission to award the mark for household appliances); either alone is
@@ -76,3 +76,7 @@ are checked byte-for-byte across languages by the parity vector.
   testing accreditation and a factory inspection FI-1 under the certification
   accreditation, which covers factory inspection. GSC-3 uses an external laboratory's examination (TR-2 under TL-A). A toy
   certificate (GSC-2) is rejected because GS-S does not cover toys.
+- **Product passport.** The passport DPP-1 of that unit lists the GS mark in its
+  compliance information and cites GSM-1 as evidence. The entry is relied on only if GSM-1
+  is for the same unit, operator and model and holds its own route; a passport citing
+  another unit's credential (DPP-3) is rejected.
