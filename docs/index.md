@@ -27,9 +27,11 @@ the design is as it is.
 ## Try it
 
 The [demonstrator](https://monavari.github.io/VC4QI/demo/) runs the repository's evaluators in your browser on
-signed test credentials. A top bar switches between four examples: a reference material
-(RM), calibration certificates (DCC), a GS certificate and an experimental product
-passport (DPP). The source is on
+signed test credentials. It opens on a guided story: a GS certification chain is built
+party by party up to a product passport, verified, manipulated, and judged by two
+verifiers with different trust anchors (selective disclosure is a placeholder). The top
+bar also offers four examples: a reference material (RM), calibration certificates (DCC),
+a GS certificate and an experimental product passport (DPP). The source is on
 [GitHub](https://github.com/monavari/VC4QI); contribution rules are in
 [CONTRIBUTING](../CONTRIBUTING.md).
 

@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+- The demonstrator opens on a guided **Story** for presenting: a GS certification chain
+  is built party by party, in issuance order, up to a product passport; it is then
+  verified, manipulated (tampering, a borrowed credential, a cited certificate of another
+  manufacturer, a toy outside the scheme permission, a withheld type examination) and
+  judged by two verifiers, one of which trusts the accreditation body only. Selective
+  disclosure is a labelled placeholder that evaluates nothing. Arrow keys and
+  PageUp/PageDown step through it. Every evaluated step runs the existing signed fixtures,
+  and the bundle test checks each step's decision; no fixture changes.
+- The DPP tab gains the same verifier choice ("Accreditation body only"), using a
+  demonstrator-only profile derived from `gs-verifier-dpp-1` without the scheme owner's
+  anchor. When a single question cannot be told, the verdict line now gives its first
+  reason.
+- The demonstrator page is redesigned for presenting: on wide screens the heading, verdict
+  and credential sit beside the chain; one colour per state (green holds, red fails,
+  amber cannot be told) runs through the verdict, the six questions, the chain's boxes
+  and lines; and headings, text and spacing follow one scale. Phones keep one column.
+
 ## 0.4.0 — 2026-11-05
 
 - **Breaking: the v0.3 graph verifier and its material are removed.** The library's only
