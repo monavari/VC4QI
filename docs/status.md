@@ -10,7 +10,7 @@ accreditation or external endorsement is claimed.
 | Area | State |
 | --- | --- |
 | Reliance evaluator (gates 0–6) | Implemented for the RM, calibration and GS bindings in both languages, with a committed RM parity vector |
-| Signed fixtures | Generated for RM (A, A2, O, D178/197/520, S, H), calibration (CAL-A, CAL-O, CAL-M, CAL-T, DCC-1, DCC-2, DCC-N, REPORT-1) and GS (GS-A, GS-S, GSC-1–3, TR-1–3, FI-1, TL-A, DPP-1–6), with controller documents and status lists |
+| Signed fixtures | Generated for RM (A, A2, O, D178/197/520, S, H), calibration (CAL-A, CAL-O, CAL-M, CAL-T, DCC-1, DCC-2, DCC-N, REPORT-1) and GS (GS-A, GS-S, GSC-1–3, TR-1–3, FI-1, TL-A, GSM-1–6, DPP-1–3), with controller documents and status lists |
 | Protection and time | `eddsa-rdfc-2022` over JSON-LD safe mode, keys authorized by signed controller documents, exact-byte integrity, Bitstring status with freshness, validity at the activity time |
 | Resolution | Offline, from a pinned catalog per binding; no network access and no trust registry (anchors are profile configuration) |
 | API | `evaluateReliance` (Python `evaluate_reliance`) over the installed binding; see [API](api.md) |
@@ -44,8 +44,8 @@ On 5 November 2026, for the 0.4.0 tree:
 | Check | Result |
 | --- | --- |
 | `pnpm -r build` and `pnpm -r --if-present lint` | Pass |
-| `pnpm -C packages/core-ts test` | 281 passed (19 files) |
-| `uv run --locked --all-packages --extra dev pytest packages/core-py/tests` | 262 passed |
+| `pnpm -C packages/core-ts test` | 286 passed (19 files) |
+| `uv run --locked --all-packages --extra dev pytest packages/core-py/tests` | 267 passed |
 | `pnpm check:generated` | All resources, signed fixtures and the parity vector up to date |
 | `pnpm docs:check` | All links valid |
 | Python Ruff / mypy | 23 / 30 recorded findings, all in pre-existing proof, canonicalization and utility code (down from 204 / 198 before the cleanup) |

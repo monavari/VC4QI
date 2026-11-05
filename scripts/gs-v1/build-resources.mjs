@@ -122,22 +122,38 @@ const schemas = {
     { termsOfUse: { type: 'array', minItems: 1, maxItems: 3, items: authorizationPolicy },
       evidence: { type: 'array', minItems: 1, maxItems: 4, items: supportReference }, relatedResource },
     ['termsOfUse', 'relatedResource']),
-  // An experimental product passport for one serialized unit, shaped after the ESPR Digital
-  // Product Passport (not EU DPP conformance): identity, model, technical and sustainability
-  // sections and a GS-mark section. This binding interprets only the GS-mark section, which
-  // is authorized through a GS certificate for the unit's model.
-  'product-passport.json': credentialSchema('product-passport.json', 'ProductPassport', 'Product passport (experimental)',
+  // An experimental GS-mark credential: the manufacturer's claim that one serialized unit
+  // carries the GS mark, authorized only through a GS certificate for the unit's model.
+  // Today's GS scheme has no per-unit credential.
+  'mark-credential.json': credentialSchema('mark-credential.json', 'GsMarkCredential', 'GS-mark credential (experimental)',
     closed({
       id: iri,
       activityTime: dateTime,
       productModelIri: iri,
-      productName: { type: 'string', minLength: 1 },
-      technicalData: closed({ ratedPowerW: decimal }),
-      sustainability: closed({ sparePartsAvailabilityYears: decimal }),
       marking: closed({ markIri: iri, productModelIri: iri }),
     }),
     { termsOfUse: { type: 'array', minItems: 1, maxItems: 1, items: authorizationPolicy }, relatedResource },
     ['termsOfUse', 'relatedResource']),
+  // An experimental product passport for one serialized unit, shaped after the EU Digital
+  // Product Passport of the ESPR (not ESPR conformance): product and operator identifiers,
+  // technical and sustainability data, and compliance information whose GS-mark entry is
+  // supported by the GS-mark credential cited as evidence. Only that entry is interpreted.
+  'product-passport.json': credentialSchema('product-passport.json', 'ProductPassport', 'Product passport (experimental)',
+    closed({
+      id: iri,
+      activityTime: dateTime,
+      productName: { type: 'string', minLength: 1 },
+      productModelIri: iri,
+      gtin: { type: 'string', pattern: '^[0-9]{13,14}$' },
+      commodityCode: { type: 'string', pattern: '^[0-9]{8}$' },
+      economicOperatorIri: iri,
+      facilityIri: iri,
+      technicalData: closed({ ratedPowerW: decimal }),
+      sustainability: closed({ sparePartsAvailabilityYears: decimal }),
+      complianceInformation: closed({ gsMark: closed({ markIri: iri, productModelIri: iri }) }),
+    }),
+    { evidence: { type: 'array', minItems: 1, maxItems: 1, items: closed({ id: iri, type: { const: 'GsMarkCredentialReference' } }) }, relatedResource },
+    ['evidence', 'relatedResource']),
   'status-list.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     $id: `${SCHEMA_BASE}status-list.json`,

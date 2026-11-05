@@ -95,14 +95,20 @@ const GS_URI = {
   C1: 'https://gs-body.vc4qi.example/credentials/GSC-1', C2: 'https://gs-body.vc4qi.example/credentials/GSC-2',
   C3: 'https://gs-body.vc4qi.example/credentials/GSC-3', TR1: 'https://gs-body.vc4qi.example/credentials/TR-1',
   TR2: 'https://testlab-gs.vc4qi.example/credentials/TR-2', TR3: 'https://gs-body.vc4qi.example/credentials/TR-3',
+  M1: 'https://maker.vc4qi.example/credentials/GSM-1', M4: 'https://maker.vc4qi.example/credentials/GSM-4',
 };
 const markCase = (id: string, label: string, sublabel: string, target: string, withhold: CaseSpec['withhold']): CaseSpec => ({
-  id, label, sublabel, binding: 'gs', profile: 'gs-verifier-dpp-1', target,
+  id, label, sublabel, binding: 'gs', profile: 'gs-verifier-mark-1', target,
   claims: [{ id: 'mark', sourcePointer: '/credentialSubject/marking' }], supplied: [],
   tamper: ['-sn-', '-sn-9'], withhold,
 });
+const passportCase = (id: string, label: string, sublabel: string, target: string, withhold: CaseSpec['withhold']): CaseSpec => ({
+  id, label, sublabel, binding: 'gs', profile: 'gs-verifier-dpp-1', target,
+  claims: [{ id: 'mark', sourcePointer: '/credentialSubject/complianceInformation/gsMark' }], supplied: [],
+  tamper: ['-sn-', '-sn-9'], withhold,
+});
 const withholdStudy = (uri: string) => ({ uri, label: 'Withhold the type examination' });
-const withholdCertificate = (uri: string) => ({ uri, label: 'Withhold the GS certificate' });
+const withholdMarkCredential = (uri: string) => ({ uri, label: 'Withhold the GS-mark credential' });
 
 export const EXAMPLES: readonly ExampleSpec[] = [
   { id: 'rm', tab: 'RM', title: 'Certified reference material',
@@ -125,21 +131,22 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     intro: 'May I rely on the GS mark on this product?',
     caseLabel: 'Product',
     cases: [
-      markCase('in-house', 'Hair dryer HD-01', 'GS body tested', 'https://maker.vc4qi.example/credentials/DPP-1', withholdStudy(GS_URI.TR1)),
-      markCase('external', 'Hair dryer HD-02', 'external lab tested', 'https://maker.vc4qi.example/credentials/DPP-3', withholdStudy(GS_URI.TR2)),
-      markCase('toy', 'Toy 001', 'outside ZLS scope', 'https://maker.vc4qi.example/credentials/DPP-2', withholdStudy(GS_URI.TR3)),
+      markCase('in-house', 'Hair dryer HD-01', 'GS body tested', 'https://maker.vc4qi.example/credentials/GSM-1', withholdStudy(GS_URI.TR1)),
+      markCase('external', 'Hair dryer HD-02', 'external lab tested', 'https://maker.vc4qi.example/credentials/GSM-3', withholdStudy(GS_URI.TR2)),
+      markCase('toy', 'Toy 001', 'outside ZLS scope', 'https://maker.vc4qi.example/credentials/GSM-2', withholdStudy(GS_URI.TR3)),
+      markCase('clone', 'Other company', 'cites the HD-01 certificate', 'https://clone.vc4qi.example/credentials/GSM-5', withholdStudy(GS_URI.TR1)),
+      markCase('mismatch', 'HD-02 unit', 'claims the HD-01 mark', 'https://maker.vc4qi.example/credentials/GSM-6', withholdStudy(GS_URI.TR1)),
     ],
     note: 'Shaped like a GS certification chain: mark → GS certificate → accreditation (a fictional body in the DAkkS role), scheme authorization (ZLS role), type examination and factory inspection. A fictional profile, not a legal GS rule; all parties and keys are fictional.' },
   { id: 'dpp', tab: 'DPP', title: 'Product passport',
-    intro: 'This unit\'s product passport carries a GS-mark section. Is it covered by the GS certificate it cites?',
+    intro: 'The product passport of this unit lists the GS mark in its compliance information. May I rely on that entry?',
     caseLabel: 'Passport',
     cases: [
-      markCase('unit', 'Unit sn-0042', 'on market after certification', 'https://maker.vc4qi.example/credentials/DPP-1', withholdCertificate(GS_URI.C1)),
-      markCase('early', 'Unit sn-0001', 'on market before certification', 'https://maker.vc4qi.example/credentials/DPP-4', withholdCertificate(GS_URI.C1)),
-      markCase('clone', 'Unit sn-9999', 'issued by another company', 'https://clone.vc4qi.example/credentials/DPP-5', withholdCertificate(GS_URI.C1)),
-      markCase('mismatch', 'Unit sn-0050', 'HD-02 unit, mark for HD-01', 'https://maker.vc4qi.example/credentials/DPP-6', withholdCertificate(GS_URI.C1)),
+      passportCase('unit', 'Unit sn-0042', 'its own GS-mark credential', 'https://maker.vc4qi.example/credentials/DPP-1', withholdMarkCredential(GS_URI.M1)),
+      passportCase('early', 'Unit sn-0001', 'on market before certification', 'https://maker.vc4qi.example/credentials/DPP-2', withholdMarkCredential(GS_URI.M4)),
+      passportCase('borrowed', 'Unit sn-0050', 'cites another unit\'s credential', 'https://maker.vc4qi.example/credentials/DPP-3', withholdMarkCredential(GS_URI.M1)),
     ],
-    note: 'An experimental product passport shaped after the EU Digital Product Passport (ESPR): identity, model, technical and sustainability sections and a GS-mark section. The GS binding evaluates only the GS-mark section. Not ESPR conformance; today\'s GS scheme has no per-unit credential. All parties and keys are fictional.' },
+    note: 'An experimental product passport shaped after the EU Digital Product Passport (ESPR): unique product identifier, GTIN, commodity code, economic operator and facility, technical and sustainability data, and compliance information. Its GS-mark entry is supported by the unit\'s GS-mark credential, which keeps its own authority route. The GS binding evaluates only that entry. Not ESPR conformance; identifiers are fictional, and today\'s GS scheme has no per-unit credential. All parties and keys are fictional.' },
 ];
 
 // ---------------------------------------------------------------- the credential graph
@@ -160,7 +167,7 @@ const ROLE: Record<string, string> = {
   CalAccreditation: 'Accreditation', CalOperationalScope: 'Operational scope', CalLegalMandate: 'Statutory mandate',
   CalCertificate: 'Calibration certificate', CalTestReport: 'Test report',
   GsAccreditation: 'Accreditation', GsSchemeAuthorization: 'Scheme authorization', GsCertificate: 'GS certificate',
-  GsTestReport: 'Type examination', GsInspectionReport: 'Factory inspection', ProductPassport: 'Product passport',
+  GsTestReport: 'Type examination', GsInspectionReport: 'Factory inspection', GsMarkCredential: 'GS-mark credential', ProductPassport: 'Product passport (DPP)',
 };
 export interface GraphNode {
   readonly uri: string; readonly name: string; readonly role: string; readonly parties: string;

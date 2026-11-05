@@ -15,6 +15,7 @@ export const GS_V1_ARTIFACT_BINDING: ArtifactBinding = Object.freeze({
     GsAccreditation: `${GS_V1_SCHEMA_BASE}accreditation.json`,
     GsSchemeAuthorization: `${GS_V1_SCHEMA_BASE}scheme-authorization.json`,
     GsCertificate: `${GS_V1_SCHEMA_BASE}certificate.json`,
+    GsMarkCredential: `${GS_V1_SCHEMA_BASE}mark-credential.json`,
     ProductPassport: `${GS_V1_SCHEMA_BASE}product-passport.json`,
     GsTestReport: `${GS_V1_SCHEMA_BASE}test-report.json`,
     GsInspectionReport: `${GS_V1_SCHEMA_BASE}inspection-report.json`,
