@@ -55,6 +55,11 @@ On 5 November 2026, for the 0.4.0 tree:
 - Two checks need network access: comparing the vendored VCDM 2.0 context with W3C's
   published bytes, and an independent proof-suite transformation vector. Until then the
   binding manifests stay `incomplete`.
+- Historical scope evidence is not implemented: an activity that predates the scope that
+  covers it today is `not_established` ("a later scope cannot authorize it"), never a
+  demonstrated rejection (case P14).
+- Resource budgets cover resources, depth, bytes, decompression and routes; there is no
+  wall-clock time budget.
 - PyLD has no JSON-LD safe mode; Python rejects undefined terms with a narrower sentinel
   expansion check.
 - The demonstrator covers a selection of cases per binding, not every fixture. UI
