@@ -12,7 +12,7 @@ fictional.
 | nmi-legal-mandate | C | A national metrology institute authorized by a statutory mandate, with no accreditation root | Calibration v1, `cal-verifier-nmi-1` | same |
 | test-report-supported-dcc | F | A test report supported by its instrument's own authorized calibration | Calibration v1, `cal-verifier-test-report-1` | same |
 | gs-scheme-authorization | GS | A GS mark needing competence AND scheme permission, and a type examination and factory inspection | GS v1, `gs-verifier-1`, `gs-verifier-dpp-1` | `gs-v1.test.ts` / `test_gs_v1.py` |
-| gs-product-passport (experimental) | DPP | A unit's passport bound to its GS certificate: same manufacturer, same model, placed on the market while the certificate was in force; not EU DPP (ESPR) conformance | GS v1, `gs-verifier-dpp-1` | same |
+| gs-product-passport (experimental) | DPP | A manufacturer's product credential for one unit, bound to its GS certificate: same manufacturer, same model, placed on the market while the certificate was in force. Today's GS scheme has no per-unit credential; not EU DPP (ESPR) conformance | GS v1, `gs-verifier-dpp-1` | same |
 
 Labels (A–F, GS, DPP) are display names, not governed profile identifiers.
 
@@ -70,8 +70,9 @@ are checked byte-for-byte across languages by the parity vector.
   instrument, earlier than the test, valid at it and itself authorized for every group.
 - **GS mark.** The mark on a hair dryer (DPP-1) rests on
   the certificate GSC-1. GSC-1 needs GS-A (the GS body's competence against EN 60335-1
-  and -2-23) and GS-S (the ZLS-role permission to award the mark for household
-  appliances); either alone is `not_established`. GSC-1 also needs its studies: a type
-  examination TR-1 and a factory inspection FI-1, each under an accreditation permitting
-  the activity. GSC-3 uses an external laboratory's examination (TR-2 under TL-A). A toy
+  and -2-23, from a fictional accreditation body in the DAkkS role) and GS-S (the
+  ZLS-role permission to award the mark for household appliances); either alone is
+  `not_established`. GSC-1 also needs its studies: a type examination TR-1 under a
+  testing accreditation and a factory inspection FI-1 under the certification
+  accreditation, which covers factory inspection. GSC-3 uses an external laboratory's examination (TR-2 under TL-A). A toy
   certificate (GSC-2) is rejected because GS-S does not cover toys.

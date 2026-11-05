@@ -481,7 +481,9 @@ _STUDIES = (
         "factory-inspection",
         "GsFactoryInspectionReference",
         "GsInspectionReport",
-        "inspectFactories",
+        # Part of the certification body's certification competence, not a separately
+        # accredited activity.
+        "certifyProducts",
         "accredit-certification-bodies",
         "factory inspection",
     ),

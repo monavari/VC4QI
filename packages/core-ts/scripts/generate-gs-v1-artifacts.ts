@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-// Generates the signed experimental GS certification v1 fixtures, shaped like the v0.3
-// GS application examples (gs-hair-dryer-*): a GS mark on a product
-// unit rests on a GS certificate for its model, which rests on the GS body's
+// Generates the signed experimental GS certification v1 fixtures, shaped like a GS
+// certification chain: a GS mark on a product unit rests on a GS certificate for its model, which rests on the GS body's
 // accreditation (competence), the ZLS-role scheme authorization, and two studies (a
 // type examination and a factory inspection). Controller documents and one Bitstring
 // Status List per fictional issuer are included:
-//   - GS-A: the NAB's accreditation of the GS body for certifying, testing and factory
-//     inspection of toys (EN 71-1, EN 71-2) and household appliances (EN 60335-1, -2-23);
+//   - GS-A: the accreditation, by a fictional body in the DAkkS role ("NAB"), of the GS
+//     body for certifying (including factory inspection) and testing toys (EN 71-1, EN 71-2)
+//     and household appliances (EN 60335-1, -2-23);
 //   - GS-S: the fictional ZLS-role authority's authorization of the same body to award
 //     the GS mark, for household appliances only;
 //   - TL-A: the NAB's accreditation of an external testing laboratory (household appliances);
@@ -15,7 +15,8 @@
 //     laboratory's type examination of hair dryer HD-02;
 //   - GSC-1 (HD-01, in-house), GSC-3 (HD-02, external laboratory) and GSC-2 (a toy, which
 //     GS-A covers but GS-S does not);
-//   - DPP-1..3: the manufacturer's product credentials (experimental passports) claiming
+//   - DPP-1..3: experimental manufacturer product credentials (not part of today's GS
+//     scheme, which has no per-unit credential) claiming
 //     the GS mark for one unit each through GSC-1..3; DPP-4 was placed on the market
 //     before GSC-1 was issued; DPP-5 is issued by another company citing GSC-1.
 //
@@ -148,10 +149,10 @@ async function main() {
 
   const aText = record(A_ID, 'credentials/GS-A.json', 'application/vc', serialize(await sign({
     ...envelope(A_ID, 'GsAccreditation', 'accreditation.json', NAB, '2024-01-01T00:00:00Z', '2029-01-01T00:00:00Z'),
-    name: 'Accreditation of the GS body (certification, testing, factory inspection)',
+    name: 'Accreditation of the GS body (certification including factory inspection, testing)',
     credentialSubject: {
       id: BODY,
-      permittedActivity: [gs('certifyProducts'), gs('testProducts'), gs('inspectFactories')],
+      permittedActivity: [gs('certifyProducts'), gs('testProducts')],
       scope: [
         { id: `${A_ID}#scope-toys`, productCategoryIri: gs('Toy'), standardIris: [gs('EN-71-1'), gs('EN-71-2')] },
         { id: `${A_ID}#scope-household`, productCategoryIri: gs('HouseholdAppliance'), standardIris: household },

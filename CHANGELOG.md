@@ -22,6 +22,12 @@
   (they remain in the history at commit `fc36bc6`). The acceptance ledger moves to
   `docs/acceptance-ledger.csv`.
 - The repository carries no institutional affiliation; the RM example is named M375a.
+- GS binding: factory inspection is authorized by the certification body's certification
+  competence (`certifyProducts`) instead of a separately accredited `inspectFactories`
+  activity, which is removed; the GS fixtures are regenerated. Documentation names the
+  fictional accreditation body's DAkkS role, states that the product passports are
+  experimental manufacturer credentials outside today's GS scheme, and lists the expected
+  outcomes. A new negative case requires certification permission for the inspection.
 
 ### Earlier unreleased changes, included in 0.4.0
 

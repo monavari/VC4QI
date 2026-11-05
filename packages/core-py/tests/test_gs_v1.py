@@ -449,6 +449,18 @@ def test_laboratory_accreditation_without_testing_does_not_authorize() -> None:
     assert result.decision == "reject"
 
 
+def test_factory_inspection_needs_certification_permission() -> None:
+    def testing_only(d: dict[str, Any]) -> None:
+        subject(d)["permittedActivity"] = [GS + "testProducts"]
+
+    result = run(
+        reissue_chain([(GS_A, testing_only), (FI1, None), (TR1, None), (GSC, None)])
+    )
+    permission = entry(result, "support:factory-inspection:accreditation-permission")
+    assert permission.state == "contradicted"
+    assert result.decision == "reject"
+
+
 def test_factory_inspection_of_another_manufacturer_contradicts() -> None:
     def other(d: dict[str, Any]) -> None:
         subject(d)["manufacturerIri"] = "https://other-maker.vc4qi.example/controller"

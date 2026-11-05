@@ -129,7 +129,7 @@ export const EXAMPLES: readonly ExampleSpec[] = [
       markCase('external', 'Hair dryer HD-02', 'external lab tested', 'https://maker.vc4qi.example/credentials/DPP-3', withholdStudy(GS_URI.TR2)),
       markCase('toy', 'Toy 001', 'outside ZLS scope', 'https://maker.vc4qi.example/credentials/DPP-2', withholdStudy(GS_URI.TR3)),
     ],
-    note: 'Shaped like a GS certification chain: mark → GS certificate → accreditation, ZLS-role scheme authorization, type examination and factory inspection. A fictional profile, not a legal GS rule; all parties and keys are fictional.' },
+    note: 'Shaped like a GS certification chain: mark → GS certificate → accreditation (a fictional body in the DAkkS role), scheme authorization (ZLS role), type examination and factory inspection. A fictional profile, not a legal GS rule; all parties and keys are fictional.' },
   { id: 'dpp', tab: 'DPP', title: 'Product passport',
     intro: 'Is this unit really covered by the GS certificate it cites?',
     caseLabel: 'Passport',
@@ -138,7 +138,7 @@ export const EXAMPLES: readonly ExampleSpec[] = [
       markCase('early', 'Unit sn-0001', 'on market before certification', 'https://maker.vc4qi.example/credentials/DPP-4', withholdCertificate(GS_URI.C1)),
       markCase('clone', 'Unit sn-9999', 'issued by another company', 'https://clone.vc4qi.example/credentials/DPP-5', withholdCertificate(GS_URI.C1)),
     ],
-    note: 'An experimental passport in the GS binding, not EU Digital Product Passport (ESPR) conformance. All parties and keys are fictional.' },
+    note: 'An experimental manufacturer product credential: today\'s GS scheme has no per-unit credential, and this is not EU Digital Product Passport (ESPR) conformance. All parties and keys are fictional.' },
 ];
 
 // ---------------------------------------------------------------- the credential graph

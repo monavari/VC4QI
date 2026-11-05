@@ -219,7 +219,9 @@ const STUDIES = [
   { obligationId: 'type-examination', reference: 'GsTypeExaminationReference', type: 'GsTestReport',
     activity: 'testProducts', purpose: 'accredit-testing-laboratories', what: 'type examination' },
   { obligationId: 'factory-inspection', reference: 'GsFactoryInspectionReference', type: 'GsInspectionReport',
-    activity: 'inspectFactories', purpose: 'accredit-certification-bodies', what: 'factory inspection' },
+    // Factory inspection is part of the certification body's certification competence, not a
+    // separately accredited activity.
+    activity: 'certifyProducts', purpose: 'accredit-certification-bodies', what: 'factory inspection' },
 ] as const;
 const check = (id: string, holds: boolean | undefined, yes: string, no: string, sources: string[]): BasisResult =>
   holds === undefined ? { id, state: 'not_established', reason: no, sources }
