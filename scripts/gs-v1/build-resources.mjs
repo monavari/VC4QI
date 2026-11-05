@@ -23,6 +23,8 @@ const SCHEMA_BASE = 'https://vc4qi.example/schemas/gs/1/';
 const ACT = 'https://vc4qi.example/bindings/gs/1#';
 
 const iri = { type: 'string', format: 'uri' };
+// A decimal as a string (typed xsd:decimal in the context), as in the RM binding.
+const decimal = { type: 'string', pattern: '^(0|[1-9][0-9]*)(\\.[0-9]+)?$' };
 const dateTime = {
   type: 'string',
   pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$',
@@ -120,13 +122,18 @@ const schemas = {
     { termsOfUse: { type: 'array', minItems: 1, maxItems: 3, items: authorizationPolicy },
       evidence: { type: 'array', minItems: 1, maxItems: 4, items: supportReference }, relatedResource },
     ['termsOfUse', 'relatedResource']),
-  // An experimental product passport for one serialized item; its GS-mark claim is
-  // authorized only through a GS certificate for the item's model (not EU DPP conformance).
-  'product-passport.json': credentialSchema('product-passport.json', 'GsProductPassport', 'Product passport (experimental)',
+  // An experimental product passport for one serialized unit, shaped after the ESPR Digital
+  // Product Passport (not EU DPP conformance): identity, model, technical and sustainability
+  // sections and a GS-mark section. This binding interprets only the GS-mark section, which
+  // is authorized through a GS certificate for the unit's model.
+  'product-passport.json': credentialSchema('product-passport.json', 'ProductPassport', 'Product passport (experimental)',
     closed({
       id: iri,
       activityTime: dateTime,
       productModelIri: iri,
+      productName: { type: 'string', minLength: 1 },
+      technicalData: closed({ ratedPowerW: decimal }),
+      sustainability: closed({ sparePartsAvailabilityYears: decimal }),
       marking: closed({ markIri: iri, productModelIri: iri }),
     }),
     { termsOfUse: { type: 'array', minItems: 1, maxItems: 1, items: authorizationPolicy }, relatedResource },

@@ -45,6 +45,7 @@ const URI = {
   P5: 'https://clone.vc4qi.example/credentials/DPP-5',
   P1: 'https://maker.vc4qi.example/credentials/DPP-1',
   P2: 'https://maker.vc4qi.example/credentials/DPP-2',
+  P6: 'https://maker.vc4qi.example/credentials/DPP-6',
 } as const;
 const KEY: Record<string, string> = { [URI.NAB]: 'nab', [URI.SCHEME]: 'zls', [URI.TESTLAB]: 'gs-testlab', [URI.CLONE]: 'clone', [URI.BODY]: 'gs-body', [URI.MAKER]: 'maker' };
 const CERTIFICATION = '/credentialSubject/certification';
@@ -260,7 +261,7 @@ const runPassport = (overrides: Record<string, string | null> = {}, targetId: st
     suppliedEvidence: [], profile: { id: dppProfile.id, version: dppProfile.version } }), catalogWith(overrides), manifest, dppProfile).then(e => e.result);
 const DPP_ROUTE = 'route:gs-certified-product';
 
-describe('experimental product passport (DPP): a GS-mark claim for one unit', () => {
+describe('experimental product passport (DPP): the GS-mark section of a unit passport', () => {
   it('accepts DPP-1 through a certificate for its model that names the manufacturer and holds its own route', async () => {
     const result = await runPassport();
     expect(result.artifactVerification.every(v => v.state === 'established')).toBe(true);
@@ -318,6 +319,23 @@ describe('experimental product passport (DPP): a GS-mark claim for one unit', ()
     const result = await runPassport({}, URI.P5);
     expect(trace(result, `${DPP_ROUTE}:manufacturer-binding`)).toMatchObject({ state: 'contradicted' });
     expect(result.decision).toBe('reject');
+  });
+
+  it('DPP-6, an HD-02 unit whose GS-mark section names HD-01, is contradicted at mapping', async () => {
+    const result = await runPassport({}, URI.P6);
+    expect(trace(result, 'claim-mapping:mark')).toMatchObject({ state: 'contradicted',
+      reason: expect.stringMatching(/claims the mark for model \S*hair-dryer-hd-01, but the passport is for model \S*hair-dryer-hd-02/) });
+    expect(result.authorization[0]?.state).toBe('contradicted');
+    expect(result.decision).toBe('reject');
+  });
+
+  it('only the GS-mark section is interpreted: another passport section is not established, the mark still is', async () => {
+    const { result } = await evaluateGsSlice(request({ requestId: 'urn:uuid:gs-v1-dpp-sections', targetId: URI.P1, suppliedEvidence: [],
+      selectedClaims: [{ id: 'mark', sourcePointer: '/credentialSubject/marking' }, { id: 'spares', sourcePointer: '/credentialSubject/sustainability' }],
+      profile: { id: dppProfile.id, version: dppProfile.version } }), catalogWith(), manifest, dppProfile);
+    expect(result.authorization.map(a => [a.claimId, a.state])).toEqual([['mark', 'established'], ['spares', 'not_established']]);
+    expect(result.authorization[1]?.reasons.join(' ')).toMatch(/interprets only the GS-mark section/);
+    expect(result.decision).toBe('not_established');
   });
 
   it('a withheld certificate leaves the claim not established', async () => {

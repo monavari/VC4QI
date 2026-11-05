@@ -80,7 +80,7 @@ GS_V1_ARTIFACT_BINDING = ArtifactBinding(
         "GsAccreditation": f"{GS_V1_SCHEMA_BASE}accreditation.json",
         "GsSchemeAuthorization": f"{GS_V1_SCHEMA_BASE}scheme-authorization.json",
         "GsCertificate": f"{GS_V1_SCHEMA_BASE}certificate.json",
-        "GsProductPassport": f"{GS_V1_SCHEMA_BASE}product-passport.json",
+        "ProductPassport": f"{GS_V1_SCHEMA_BASE}product-passport.json",
         "GsTestReport": f"{GS_V1_SCHEMA_BASE}test-report.json",
         "GsInspectionReport": f"{GS_V1_SCHEMA_BASE}inspection-report.json",
         "BitstringStatusListCredential": f"{GS_V1_SCHEMA_BASE}status-list.json",
@@ -329,8 +329,12 @@ def route_scopes(
     return records(route.scope), records(scheme_uri)
 
 
-def map_marking(value: Any, pointer: str) -> GsOutcome:
-    """Gate 4 for a product passport: the claimed marking, for which model."""
+def map_marking(value: Any, pointer: str, passport_model: Any) -> GsOutcome:
+    """Gate 4 for a product passport: the claimed marking, for which model.
+
+    The marking must name the passport's own model; a claim for another model is
+    contradicted.
+    """
     sources = (pointer,)
     if (
         not isinstance(value, dict)
@@ -347,6 +351,19 @@ def map_marking(value: Any, pointer: str) -> GsOutcome:
             "not_established",
             f"Mark {_short(value['markIri'])} has no interpretation in this binding.",
             sources,
+        )
+    model_sources = (pointer, "/credentialSubject/productModelIri")
+    if not isinstance(passport_model, str):
+        return GsOutcome(
+            "not_established", "The passport names no product model.", model_sources
+        )
+    claimed = value["productModelIri"]
+    if passport_model != claimed:
+        return GsOutcome(
+            "contradicted",
+            f"The marking claims the mark for model {_short(claimed)}, "
+            f"but the passport is for model {_short(passport_model)}.",
+            model_sources,
         )
     return GsOutcome(
         "established",
@@ -792,7 +809,7 @@ def evaluate_gs_slice(
     winner = next((r for r in authority.routes if r.state == "established"), None)
 
     kinds = (target_document or {}).get("type")
-    is_passport = isinstance(kinds, list) and kinds[1:2] == ["GsProductPassport"]
+    is_passport = isinstance(kinds, list) and kinds[1:2] == ["ProductPassport"]
     selectable = SELECTED_MARKING if is_passport else SELECTED_CERTIFICATION
     claims: list[tuple[Any, GsOutcome | None, dict[str, GsOutcome]]] = []
     authorization: list[ClaimAuthorizationResult] = []
@@ -804,13 +821,19 @@ def evaluate_gs_slice(
             else _MISSING
         )
         if selected is _MISSING:
-            reason = (
-                "The target is not usable, so its claims are not read."
-                if target_document is None
-                else f"Selected claim {claim.source_pointer} is not the "
-                f"{'marking' if is_passport else 'certification statement'} of the "
-                "usable target."
-            )
+            if target_document is None:
+                reason = "The target is not usable, so its claims are not read."
+            elif is_passport:
+                reason = (
+                    "This binding interprets only the GS-mark section "
+                    f"({SELECTED_MARKING}) of a product passport; "
+                    f"{claim.source_pointer} has no interpretation here."
+                )
+            else:
+                reason = (
+                    f"Selected claim {claim.source_pointer} is not the "
+                    "certification statement of the usable target."
+                )
             claims.append((claim, None, coverage))
             authorization.append(
                 ClaimAuthorizationResult(
@@ -823,8 +846,13 @@ def evaluate_gs_slice(
                 )
             )
             continue
+        passport_subject = (target_document or {}).get("credentialSubject") or {}
         mapped = (
-            map_marking(selected, claim.source_pointer)
+            map_marking(
+                selected,
+                claim.source_pointer,
+                passport_subject.get("productModelIri"),
+            )
             if is_passport
             else map_certification(selected, claim.source_pointer)
         )

@@ -21,6 +21,7 @@ import type { RelianceProfile } from './profile.js';
 import { nodeUseKey, predicate, resolvePointer, type RmArtifactVerification } from './rm-v1-artifacts.js';
 import { claimAuthority, composeAuthority, type NodeFacts, type RouteResult } from './rm-v1-authority.js';
 import type { RelianceRequest, RelianceResult, SemanticState, TraceEntry } from './types.js';
+import type { JsonObject } from '../types.js';
 
 export interface GsSliceEvaluation {
   readonly result: RelianceResult;
@@ -57,18 +58,19 @@ export async function evaluateGsSlice(
     : composeAuthority([], evaluated, ids.slice(profile.authority.maxRoutes));
   const winner = authority.routes.find(r => r.state === 'established');
 
-  const isPassport = Array.isArray(targetDocument?.type) && targetDocument.type[1] === 'GsProductPassport';
+  const isPassport = Array.isArray(targetDocument?.type) && targetDocument.type[1] === 'ProductPassport';
   const selectable = isPassport ? SELECTED_MARKING : SELECTED_CERTIFICATION;
   const claims = request.selectedClaims.map(claim => {
     const coverage = new Map<string, GsOutcome>();
     if (targetDocument === undefined || claim.sourcePointer !== selectable
         || resolvePointer(targetDocument, claim.sourcePointer) === undefined) {
       const reason = targetDocument === undefined ? 'The target is not usable, so its claims are not read.'
-        : `Selected claim ${claim.sourcePointer} is not the ${isPassport ? 'marking' : 'certification statement'} of the usable target.`;
+        : isPassport ? `This binding interprets only the GS-mark section (${SELECTED_MARKING}) of a product passport; ${claim.sourcePointer} has no interpretation here.`
+          : `Selected claim ${claim.sourcePointer} is not the certification statement of the usable target.`;
       return { claim, mapping: undefined, coverage, result: { claimId: claim.id, routeWitnessIds: [] as string[], ...predicate('not_established', [reason]) } };
     }
     const value = resolvePointer(targetDocument, claim.sourcePointer);
-    const markingMapping = isPassport ? mapMarking(value, claim.sourcePointer) : undefined;
+    const markingMapping = isPassport ? mapMarking(value, claim.sourcePointer, (targetDocument.credentialSubject as JsonObject | undefined)?.productModelIri) : undefined;
     const mapping = markingMapping ?? mapCertification(value, claim.sourcePointer);
     const marking = markingMapping?.marking;
     const certification = isPassport ? undefined : mapping.certification;

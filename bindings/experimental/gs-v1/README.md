@@ -30,10 +30,10 @@ gate 0–3 pipeline (`reliance/binding-chain.ts`) and adds GS gates 4–6
     type examination of hair dryer HD-02;
   - `GSC-1` (HD-01), `GSC-3` (HD-02, external laboratory) and `GSC-2` (a toy: GS-A covers
     it, GS-S does not), each citing its type examination and `FI-1` as `evidence`;
-  - `DPP-1` to `DPP-3`, experimental manufacturer product credentials claiming the GS
-    mark for one unit
-    through GSC-1 to GSC-3; `DPP-4`, a unit placed on the market before GSC-1 was issued;
-    and `DPP-5`, issued by another company citing GSC-1.
+  - `DPP-1` to `DPP-3`, experimental product passports for one unit each whose GS-mark
+    section claims the mark through GSC-1 to GSC-3; `DPP-4`, a unit placed on the market
+    before GSC-1 was issued; `DPP-5`, issued by another company citing GSC-1; and
+    `DPP-6`, an HD-02 unit whose GS-mark section claims the mark for HD-01.
 
 The GS mark is relied on only through the complete route: competence AND scheme
 permission. Each half needs its own typed reference, grantee, activity, anchor purpose
@@ -46,18 +46,30 @@ precede the certification, and be issued under an anchored accreditation of its 
 that permits the activity and was in force at the study: testing for a type
 examination, and certification for a factory inspection, which is part of the
 certification body's certification competence rather than a separately accredited
-activity. This is a fictional profile example, not a universal GS or legal rule. Keys, parties and grants are fictional and have no legal
-effect.
+activity. This is a fictional profile example, not a universal GS or legal rule. Keys,
+parties and grants are fictional and have no legal effect.
 
-**Experimental product passport.** Under `gs-verifier-dpp-1`, a passport's GS-mark claim
-(`/credentialSubject/marking`) is authorized only through the route `gs-certified-product`:
-a typed reference to a GS certificate that names the passport issuer as manufacturer,
-certifies the passport's model, was in force when the unit was placed on the market, and
-itself holds competence AND scheme permission with its certification covered. It is a
-research illustration of reliance on a product passport, not EU Digital Product Passport
-(ESPR) conformance. Today's GS scheme has no per-unit credential: the GS body issues the
-certificate and the manufacturer applies the mark. `DPP-1` to `DPP-5` model a
-manufacturer's digital claim that one serial-numbered unit is covered by a certificate.
+**Experimental product passport.** A `ProductPassport` is the manufacturer's passport for
+one serial-numbered unit, shaped after the EU Digital Product Passport of the Ecodesign
+for Sustainable Products Regulation (ESPR): the unit identifier, product name and model,
+when the unit was placed on the market, technical data (rated power), sustainability data
+(spare-part availability) and a GS-mark section. The GS binding interprets only the GS-mark
+section (`/credentialSubject/marking`); selecting any other section is `not_established`
+("no interpretation in this binding"), so a request is never accepted for passport content
+the verifier cannot evaluate. Other sections would need their own bindings.
+
+Under `gs-verifier-dpp-1` the GS-mark section is authorized only through the route
+`gs-certified-product`. It must name the passport's own model (otherwise it is
+contradicted), and it needs a typed reference to a GS certificate that names the passport
+issuer as manufacturer, certifies that model, was in force when the unit was placed on the
+market, and itself holds competence AND scheme permission with its certification
+covered. That the physical unit really is this model is the manufacturer's claim, which no
+credential check can establish.
+
+This is a research illustration, not ESPR conformance: no delegated act defines a passport
+for this product group here, and the section names are illustrative. Today's GS scheme has
+no per-unit credential; the GS body issues the certificate and the manufacturer applies
+the mark.
 
 ## Expected outcomes
 
@@ -72,6 +84,8 @@ Every credential below is correctly signed; the decisions follow from the profil
 | `DPP-2` | `gs-verifier-dpp-1` | reject | Its certificate GSC-2 is not covered by the scheme permission |
 | `DPP-4` | `gs-verifier-dpp-1` | not accepted | The unit was placed on the market (15 Feb 2026) before GSC-1 was valid (1 Mar 2026) |
 | `DPP-5` | `gs-verifier-dpp-1` | reject | Issued by another company; the certificate's manufacturer is not the passport issuer |
+| `DPP-6` | `gs-verifier-dpp-1` | reject | An HD-02 unit whose GS-mark section claims the mark for HD-01: contradicted at mapping |
+| `DPP-1`, GS-mark and sustainability sections selected | `gs-verifier-dpp-1` | not established | The GS mark is established; the sustainability section has no interpretation in this binding |
 
 A withheld type examination, factory inspection or certificate leaves the result
 `not_established`, not rejected.

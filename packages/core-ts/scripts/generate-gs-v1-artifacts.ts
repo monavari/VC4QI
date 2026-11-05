@@ -15,10 +15,12 @@
 //     laboratory's type examination of hair dryer HD-02;
 //   - GSC-1 (HD-01, in-house), GSC-3 (HD-02, external laboratory) and GSC-2 (a toy, which
 //     GS-A covers but GS-S does not);
-//   - DPP-1..3: experimental manufacturer product credentials (not part of today's GS
-//     scheme, which has no per-unit credential) claiming
-//     the GS mark for one unit each through GSC-1..3; DPP-4 was placed on the market
-//     before GSC-1 was issued; DPP-5 is issued by another company citing GSC-1.
+//   - DPP-1..3: experimental product passports for one unit each, shaped after the ESPR
+//     Digital Product Passport (identity, model, technical and sustainability sections and a
+//     GS-mark section; not EU DPP conformance, and today's GS scheme has no per-unit
+//     credential), whose GS-mark sections claim the mark through GSC-1..3; DPP-4 was placed
+//     on the market before GSC-1 was issued; DPP-5 is issued by another company citing
+//     GSC-1; DPP-6 is an HD-02 unit whose GS-mark section claims the mark for HD-01.
 //
 //   pnpm -C packages/core-ts exec tsx scripts/generate-gs-v1-artifacts.ts          # write
 //   pnpm -C packages/core-ts exec tsx scripts/generate-gs-v1-artifacts.ts --check  # fail if stale
@@ -64,6 +66,7 @@ const TR3_ID = 'https://gs-body.vc4qi.example/credentials/TR-3';
 const P3_ID = 'https://maker.vc4qi.example/credentials/DPP-3';
 const P4_ID = 'https://maker.vc4qi.example/credentials/DPP-4';
 const P5_ID = 'https://clone.vc4qi.example/credentials/DPP-5';
+const P6_ID = 'https://maker.vc4qi.example/credentials/DPP-6';
 const HD01 = 'urn:vc4qi-example:product:hair-dryer-hd-01';
 const HD02 = 'urn:vc4qi-example:product:hair-dryer-hd-02';
 const TOY = 'urn:vc4qi-example:product:toy-001';
@@ -79,7 +82,7 @@ const STATUS_ENTRY: Record<string, [string, number]> = {
   [A_ID]: [STATUS.nab, 0], [TLA_ID]: [STATUS.nab, 1], [S_ID]: [STATUS.scheme, 0],
   [C_ID]: [STATUS.body, 0], [C2_ID]: [STATUS.body, 1], [C3_ID]: [STATUS.body, 2],
   [FI_ID]: [STATUS.body, 3], [TR1_ID]: [STATUS.body, 4], [TR3_ID]: [STATUS.body, 5], [TR2_ID]: [STATUS.testlab, 0],
-  [P1_ID]: [STATUS.maker, 0], [P2_ID]: [STATUS.maker, 1], [P3_ID]: [STATUS.maker, 2], [P4_ID]: [STATUS.maker, 3],
+  [P1_ID]: [STATUS.maker, 0], [P2_ID]: [STATUS.maker, 1], [P3_ID]: [STATUS.maker, 2], [P4_ID]: [STATUS.maker, 3], [P6_ID]: [STATUS.maker, 4],
   [P5_ID]: [STATUS.clone, 0],
 };
 
@@ -223,27 +226,37 @@ async function main() {
   const c3Text = await certificate(C3_ID, 'credentials/GSC-3.json', HD02, gs('HouseholdAppliance'), household,
     '2026-02-28T10:00:00Z', '2026-03-02T00:00:00Z', [TR2_ID, tr2Text], 'GS certificate, hair dryer HD-02');
 
-  // The manufacturer's product credentials (experimental passports): each claims the GS
-  // mark for one unit of a certified model. Not EU Digital Product Passport conformance.
+  // Experimental product passports, one per unit, shaped after the ESPR Digital Product
+  // Passport: identity, model, technical and sustainability sections and a GS-mark section.
+  // The GS binding interprets only the GS-mark section. Not EU DPP conformance.
+  const NAMES: Record<string, [string, string, string]> = {
+    [HD01]: ['Hair dryer HD-01', '2000', '7'], [HD02]: ['Hair dryer HD-02', '2200', '7'], [TOY]: ['Toy 001', '0', '3'],
+  };
   const passport = async (id: string, file: string, issuer: Party, serial: string, model: string,
-    certId: string, certText: string, at: string) =>
-    record(id, file, 'application/vc', serialize(await sign({
-      ...envelope(id, 'GsProductPassport', 'product-passport.json', issuer.controller, at, '2036-01-01T00:00:00Z'),
-      name: `GS mark, ${model.split(':').pop()} unit ${serial.split('-sn-').pop()}`,
+    certId: string, certText: string, at: string, markModel: string = model) => {
+    const [productName, ratedPowerW, sparePartsAvailabilityYears] = NAMES[model]!;
+    return record(id, file, 'application/vc', serialize(await sign({
+      ...envelope(id, 'ProductPassport', 'product-passport.json', issuer.controller, at, '2036-01-01T00:00:00Z'),
+      name: `Product passport, ${productName}, unit ${serial.split('-sn-').pop()}`,
       credentialSubject: {
         id: serial,
         activityTime: at,
         productModelIri: model,
-        marking: { markIri: gs('GsMark'), productModelIri: model },
+        productName,
+        technicalData: { ratedPowerW },
+        sustainability: { sparePartsAvailabilityYears },
+        marking: { markIri: gs('GsMark'), productModelIri: markModel },
       },
       termsOfUse: [policy(certId, 'GsCertificate')],
       relatedResource: [{ id: certId, digestSRI: sri(certText) }],
     }, issuer, at)));
+  };
   await passport(P1_ID, 'credentials/DPP-1.json', maker, 'urn:vc4qi-example:unit:hd-01-sn-0042', HD01, C_ID, c1Text, '2026-05-10T00:00:00Z');
   await passport(P2_ID, 'credentials/DPP-2.json', maker, 'urn:vc4qi-example:unit:toy-001-sn-0007', TOY, C2_ID, c2Text, '2026-05-10T00:00:00Z');
   await passport(P3_ID, 'credentials/DPP-3.json', maker, 'urn:vc4qi-example:unit:hd-02-sn-0011', HD02, C3_ID, c3Text, '2026-05-12T00:00:00Z');
   await passport(P4_ID, 'credentials/DPP-4.json', maker, 'urn:vc4qi-example:unit:hd-01-sn-0001', HD01, C_ID, c1Text, '2026-02-15T00:00:00Z');
   await passport(P5_ID, 'credentials/DPP-5.json', clone, 'urn:vc4qi-example:unit:hd-01-sn-9999', HD01, C_ID, c1Text, '2026-05-10T00:00:00Z');
+  await passport(P6_ID, 'credentials/DPP-6.json', maker, 'urn:vc4qi-example:unit:hd-02-sn-0050', HD02, C_ID, c1Text, '2026-05-12T00:00:00Z', HD01);
 
   outputs.set('catalog.json', `${JSON.stringify({
     description: 'Signed GS certification v1 fixtures. digestSRI is SHA-384 over the exact file bytes. '

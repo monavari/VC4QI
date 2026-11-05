@@ -31,7 +31,7 @@
     "type": {
       "const": [
         "VerifiableCredential",
-        "GsProductPassport"
+        "ProductPassport"
       ]
     },
     "issuer": {
@@ -68,6 +68,9 @@
         "id",
         "activityTime",
         "productModelIri",
+        "productName",
+        "technicalData",
+        "sustainability",
         "marking"
       ],
       "properties": {
@@ -82,6 +85,36 @@
         "productModelIri": {
           "type": "string",
           "format": "uri"
+        },
+        "productName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "technicalData": {
+          "type": "object",
+          "required": [
+            "ratedPowerW"
+          ],
+          "properties": {
+            "ratedPowerW": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "sustainability": {
+          "type": "object",
+          "required": [
+            "sparePartsAvailabilityYears"
+          ],
+          "properties": {
+            "sparePartsAvailabilityYears": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+            }
+          },
+          "additionalProperties": false
         },
         "marking": {
           "type": "object",

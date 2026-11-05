@@ -145,14 +145,25 @@ export const GS_MARK = `${GS_V1_VOCAB}GsMark`;
 
 export interface MappedMarking { readonly markIri: string; readonly productModelIri: string }
 
-/** Gate 4 for a product passport: the claimed marking, for which model. */
-export function mapMarking(value: unknown, pointer: string): GsOutcome & { marking?: MappedMarking } {
+/**
+ * Gate 4 for a product passport: the claimed marking, for which model. The marking must
+ * name the passport's own model; a claim for another model is contradicted.
+ */
+export function mapMarking(value: unknown, pointer: string, passportModel: unknown): GsOutcome & { marking?: MappedMarking } {
   const sources = [pointer];
   if (!isObject(value) || typeof value.markIri !== 'string' || typeof value.productModelIri !== 'string') {
     return { state: 'not_established', reason: 'The selected marking names no mark or product model.', sources };
   }
   if (value.markIri !== GS_MARK) {
     return { state: 'not_established', reason: `Mark ${short(value.markIri)} has no interpretation in this binding.`, sources };
+  }
+  const modelSources = [pointer, '/credentialSubject/productModelIri'];
+  if (typeof passportModel !== 'string') {
+    return { state: 'not_established', reason: 'The passport names no product model.', sources: modelSources };
+  }
+  if (passportModel !== value.productModelIri) {
+    return { state: 'contradicted', reason: `The marking claims the mark for model ${short(value.productModelIri)}, but the passport is for model ${short(passportModel)}.`,
+      sources: modelSources };
   }
   return { state: 'established', reason: `Mapped a GS-mark claim for model ${short(value.productModelIri)}.`, sources,
     marking: { markIri: value.markIri, productModelIri: value.productModelIri } };

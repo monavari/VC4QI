@@ -62,11 +62,13 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     expect(g.edges.filter(e => e.kind === 'support').map(e => e.to.split('/').pop())).toEqual(['TR-1', 'FI-1']);
   });
 
-  it('DPP: a valid unit is accepted; an early unit cannot be told; another company is rejected', async () => {
+  it('DPP: a valid unit is accepted; an early unit cannot be told; another company and a mark for another model are rejected', async () => {
     expect((await run('dpp', 'unit')).result.decision).toBe('accept');
     expect((await run('dpp', 'early')).result.decision).toBe('not_established');
     const clone = await run('dpp', 'clone');
     expect([clone.result.decision, answers(clone).authorized]).toEqual(['reject', 'contradicted']);
+    const mismatch = await run('dpp', 'mismatch');
+    expect([mismatch.result.decision, answers(mismatch).authorized]).toEqual(['reject', 'contradicted']);
   });
 
   it('RM: the credential graph marks a withheld study as not present', async () => {
