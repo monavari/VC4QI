@@ -49,7 +49,8 @@ the parent never rescues the child.
 
 The [demonstrator](https://monavari.github.io/VC4QI/demo/#rm) runs exactly these cases
 in the browser with the same evaluator, and adds a tamper test and a withheld study. Its
-DCC, GS and DPP tabs do the same for the calibration and GS bindings. The
+DCC, GS and DPP tabs do the same for the calibration and GS bindings, and the
+[GS story](https://monavari.github.io/VC4QI/demo/gs/) puts the GS chain on an actor board. The
 [RM story](https://monavari.github.io/VC4QI/demo/rm/) puts this chain on an actor board
 and adds a suspended accreditation, a revoked study, a verifier that does not trust the
 accreditation body, and certificates you sign yourself.

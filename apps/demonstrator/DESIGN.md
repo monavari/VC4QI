@@ -1,7 +1,8 @@
 # Demonstrator design
 
-Rules for the demonstrator pages in `site/demo`: the guided stories, the example tabs
-and the actor board of the RM story. They apply to new work and to changes of existing
+Rules for the demonstrator pages in `site/demo`: the actor boards of the RM and GS
+stories (`rm/`, `gs/`, drawn by `board.js` and `board.css`), the GS walkthrough and the
+example tabs. They apply to new work and to changes of existing
 pages. Where a page does not follow them yet, the deviation is listed at the end.
 
 The pages are presented on projectors to quality-infrastructure audiences and read on
@@ -91,7 +92,8 @@ starts with one actor and the board fills as it goes; "Your turn" shows every ac
 Placeholders that concern one moment of the story (international recognition of the
 accreditation body) appear only in that moment.
 For the RM story: Accreditation body (AB), Laboratory (LAB), RM producer (RMP), Holder
-(H), Verifier (V).
+(H), Verifier (V). For the GS story: Accreditation body (AB), Scheme owner (SO), GS body
+(GSB), Manufacturer (MFR), Verifier (V).
 
 - The header carries the monogram, the name, one line on what the actor does, and what it
   publishes, as small chips: key, revocation list, suspension list.
@@ -124,7 +126,9 @@ hold it, and the credentials it cites.
 | dotted | cites as evidence (`evidence`) | the study |
 | dashed grey | handed over | the holder |
 
-Citation lines take the state of their link; handover lines are always grey.
+Citation lines take the state of their link: the claim's own links carry the answers to
+"authorized" and "supported", deeper links the verification of the credential they point
+to, so a wrong link shows on that link alone. Handover lines are always grey.
 
 ## Words
 
@@ -161,11 +165,13 @@ Citation lines take the state of their link; handover lines are always grey.
 
 ## Deviations in the current pages
 
-The RM story (`site/demo/rm/`) follows these rules. The GS story and the example tabs
-(`site/demo/`) do not yet:
+The RM and GS stories (`site/demo/rm/`, `site/demo/gs/`) follow these rules. The GS
+walkthrough and the example tabs (`site/demo/`) do not yet:
 
-- The selective-disclosure placeholder in the GS story is amber; it must use the grey
-  placeholder look.
+- The selective-disclosure placeholder in the GS walkthrough is amber; it must use the
+  grey placeholder look.
 - Cyan also marks the actor chip and the selected segment; only focus may keep it.
-- The GS story shows its acting parties in the small `.actor` chip and its chain boxes
-  name parties in a muted line; both break the actor-name rule.
+- The GS walkthrough shows its acting parties in the small `.actor` chip and its chain
+  boxes name parties in a muted line; both break the actor-name rule.
+- On a 1920×1080 screen the GS story, with three card rows, needs a short scroll to reach
+  the actors' buttons.
