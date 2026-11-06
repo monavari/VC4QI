@@ -18,6 +18,30 @@
   and credential sit beside the chain; one colour per state (green holds, red fails,
   amber cannot be told) runs through the verdict, the six questions, the chain's boxes
   and lines; and headings, text and spacing follow one scale. Phones keep one column.
+- A second demonstrator page, the **RM story** (`site/demo/rm/`), puts the
+  reference-material chain on an actor board: one column each for the accreditation
+  body, the laboratory, the RM producer, the customer lab (holder) and the verifier, with
+  every credential in its issuer's column and the citations drawn across them. Actors
+  join the board as the chain reaches them, starting with the accreditation body alone.
+  Sixteen steps build the chain, verify it, manipulate it (an edited value, a withheld study, a
+  value outside the accredited range, a suspended accreditation), let three verifiers
+  decide (guarded and simple acceptance of 197 ± 5, and one that does not trust the
+  accreditation body, where a placeholder marks international recognition as not
+  evaluated), and show a labelled presentation placeholder; the last step makes
+  every action live. Suspending, revoking and certifying a typed value sign new
+  documents in the browser (`apps/demonstrator/live-sign.ts`) with the same proof code
+  and public fixture keys as the generator; the bundle test checks that they verify like
+  the generated fixtures. The design rules are in `apps/demonstrator/DESIGN.md`.
+- The signed RM v1 accreditation `A` is now broad, shaped after a flexible-scope annex
+  row of an RM producer accreditation ("non-ferrous metals and alloys, element
+  contents"): As, Cu, Zn and Pb in the brass, methods M1 and M2, 0.1 mg/kg to 997 g/kg
+  (written as 997000 mg/kg; its record is now `A#scope-elements`). The producer's
+  operational scope `O` is unchanged (As, M1, 50–500 mg/kg) and is now visibly its own,
+  narrower list. Every decision of the worked example is unchanged: 520 mg/kg is still
+  outside the scope that the certificate draws on. Fixtures and the parity vector are
+  regenerated; S13 and two projection tests (TypeScript and Python) move their bounds to
+  A's new range. Matrices are still compared exactly, so the record names the brass, not
+  a material class.
 
 ## 0.4.0 — 2026-11-05
 

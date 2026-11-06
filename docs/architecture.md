@@ -57,7 +57,8 @@ arithmetic and gate 4–6 traces. Known differences:
 
 ## Demonstrator and website
 
-The demonstrator (`site/demo`, with a guided story and RM, DCC, GS and DPP tabs) runs entirely in the
+The demonstrator (`site/demo`, with a guided GS story and RM, DCC, GS and DPP tabs, and the
+RM actor board in `site/demo/rm`) runs entirely in the
 browser: `pnpm -C apps/demonstrator build` bundles the repository's RM, calibration and
 GS slice evaluators (all seven gates) with the pinned resources, signed fixtures and
 verifier profiles of all three bindings into `site/demo/verifier.js`, and CI checks the
@@ -69,4 +70,8 @@ server is needed; `packages/core-ts/tests/demonstrator.test.ts` runs the shipped
 through its scenarios. The page's credential chain is not drawn by hand: it follows each
 credential's `termsOfUse` and `evidence` references from the target, places credentials
 by their longest reference path, and colours nodes and edges with the evaluator's
-result.
+result. On the RM board, suspending, revoking and certifying a typed value sign new
+documents in the browser (`apps/demonstrator/live-sign.ts`) with the generator's proof
+code and public fixture keys; the evaluator treats them like any other input. The pages'
+design rules (principles, visual hierarchy, colour, shape and line
+vocabulary) are in [`apps/demonstrator/DESIGN.md`](../apps/demonstrator/DESIGN.md).

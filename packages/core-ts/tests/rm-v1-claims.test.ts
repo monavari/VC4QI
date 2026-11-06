@@ -176,7 +176,8 @@ describe('I4 complete records, identifiers and units (S09-S17, S22-S24)', () => 
 
   it('S13: a projected lower bound below the parent is rejected although the upper bound fits', async () => {
     const O = json(URI.O);
-    (subject(O).scope as JsonObject[])[0]!.range = { from: '40', to: '500', unit: 'mg/kg' };
+    // A's record starts at 0.1 mg/kg.
+    (subject(O).scope as JsonObject[])[0]!.range = { from: '0.05', to: '500', unit: 'mg/kg' };
     const result = await run(await reissue({ [URI.O]: O }));
     expect(trace(result, 'route:operational-scope:bounded-projection')).toMatchObject({ state: 'contradicted' });
   });

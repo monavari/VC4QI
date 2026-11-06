@@ -32,7 +32,8 @@ signatures on purpose.
 ## Walkthrough: the reference-material witness
 
 The RM binding carries the complete witness from the [model](model.md#6-scope-quantities-and-conformity):
-accreditation A ([50, 500] mg/kg, M1 and M2), operational scope O (M1 only), certificate
+accreditation A (As, Cu, Zn, Pb, 0.1 mg/kg to 997 g/kg, M1 and M2), operational scope O
+(As, [50, 500] mg/kg, M1 only), certificate
 D (CuZn39Pb3 brass, arsenic, U = 5 mg/kg, k = 2), study S and laboratory authority H.
 The verifier asks for `x + U <= 200 mg/kg` (`guarded-acceptance-expanded-u`).
 

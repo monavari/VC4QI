@@ -24,7 +24,7 @@ describe('I3 authority routes on the signed RM chain', () => {
       'maintenance-grant', 'accreditation-grantee', 'projection-permission', 'bounded-projection', 'trust-anchor']) {
       expect(basis(result, id), id).toMatchObject({ gate: 5, state: 'established' });
     }
-    expect(basis(result, 'bounded-projection')?.reason).toMatch(/scope-as-m1 ⊆ .*scope-as/);
+    expect(basis(result, 'bounded-projection')?.reason).toMatch(/scope-as-m1 ⊆ .*scope-elements/);
   });
 
   it('P06: an operational scope granted to another party is contradicted', async () => {
@@ -65,7 +65,8 @@ describe('I3 authority routes on the signed RM chain', () => {
 
   it('an operational scope wider than its accreditation is not a bounded projection', async () => {
     const O = json(URI.O);
-    ((subject(O).scope as JsonObject[])[0]!.range as JsonObject).to = '600';
+    // A's record ends at 997 g/kg (997000 mg/kg).
+    ((subject(O).scope as JsonObject[])[0]!.range as JsonObject).to = '998000';
     const result = await run(await reissue({ [URI.O]: O }));
     expect(basis(result, 'bounded-projection')).toMatchObject({ state: 'contradicted' });
     expect(result.decision).toBe('reject');
@@ -73,10 +74,11 @@ describe('I3 authority routes on the signed RM chain', () => {
 
   it('bounded projection compares exact quantities across mg/kg and kg/kg', async () => {
     const O = json(URI.O);
-    (subject(O).scope as JsonObject[])[0]!.range = { from: '0.00005', to: '0.0005', unit: 'kg/kg' };
+    // A's record is 0.1–997000 mg/kg, that is 0.0000001–0.997 kg/kg.
+    (subject(O).scope as JsonObject[])[0]!.range = { from: '0.0000001', to: '0.997', unit: 'kg/kg' };
     const result = await run(await reissue({ [URI.O]: O }));
     expect(basis(result, 'bounded-projection')).toMatchObject({ state: 'established' });
-    (subject(O).scope as JsonObject[])[0]!.range = { from: '0.00005', to: '0.0005000001', unit: 'kg/kg' };
+    (subject(O).scope as JsonObject[])[0]!.range = { from: '0.0000001', to: '0.9970000001', unit: 'kg/kg' };
     const wider = await run(await reissue({ [URI.O]: O }));
     expect(basis(wider, 'bounded-projection')).toMatchObject({ state: 'contradicted' });
   });

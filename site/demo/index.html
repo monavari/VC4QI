@@ -43,7 +43,7 @@ button{ font:inherit; color:inherit; }
 .topbar{ position:sticky; top:0; z-index:5; background:var(--paper); border-bottom:1px solid var(--line); }
 .topbar .in{ max-width:76rem; margin:0 auto; padding:var(--s2) 16px; display:flex; align-items:center; gap:var(--s4); }
 .brand{ font-size:.9rem; text-decoration:none; white-space:nowrap; } .brand strong{ color:var(--red); }
-.tabs{ display:flex; gap:var(--s1); margin-left:auto; }
+.tabs{ display:flex; flex-wrap:wrap; justify-content:flex-end; gap:var(--s1); margin-left:auto; }
 .tabs a{ text-decoration:none; font-weight:650; font-size:.9rem; padding:.35rem .8rem; border-radius:999px; color:var(--muted); }
 .tabs a:hover{ background:var(--wash); color:var(--ink); }
 .tabs a[aria-current="page"]{ background:var(--petrol); color:#fff; }
@@ -292,7 +292,7 @@ function writeHash() {
 }
 
 function renderTabs() {
-  $('tabs').innerHTML = [{ id: 'story', tab: 'Story' }, ...api.EXAMPLES]
+  $('tabs').innerHTML = "<a href='rm/'>RM story</a>" + [{ id: 'story', tab: 'GS story' }, ...api.EXAMPLES]
     .map(e => "<a href='#" + e.id + "'" + (e.id === state.example ? " aria-current='page'" : '') + '>' + esc(e.tab) + '</a>').join('');
 }
 

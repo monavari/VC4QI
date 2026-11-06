@@ -161,7 +161,8 @@ def test_c08_accreditation_without_maintenance_permission() -> None:
 
 def test_scope_wider_than_accreditation_is_not_a_bounded_projection() -> None:
     o = doc(URI["O"])
-    o["credentialSubject"]["scope"][0]["range"]["to"] = "600"
+    # A's record ends at 997 g/kg (997000 mg/kg).
+    o["credentialSubject"]["scope"][0]["range"]["to"] = "998000"
     result = run(reissue({URI["O"]: o}))
     assert basis(result, "bounded-projection").state == "contradicted"
 
@@ -169,14 +170,14 @@ def test_scope_wider_than_accreditation_is_not_a_bounded_projection() -> None:
 def test_bounded_projection_is_exact_across_units() -> None:
     o = doc(URI["O"])
     o["credentialSubject"]["scope"][0]["range"] = {
-        "from": "0.00005",
-        "to": "0.0005",
+        "from": "0.0000001",
+        "to": "0.997",
         "unit": "kg/kg",
     }
     assert (
         basis(run(reissue({URI["O"]: o})), "bounded-projection").state == "established"
     )
-    o["credentialSubject"]["scope"][0]["range"]["to"] = "0.0005000001"
+    o["credentialSubject"]["scope"][0]["range"]["to"] = "0.9970000001"
     assert (
         basis(run(reissue({URI["O"]: o})), "bounded-projection").state == "contradicted"
     )

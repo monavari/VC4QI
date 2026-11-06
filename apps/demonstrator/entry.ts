@@ -14,6 +14,8 @@ import {
 import { evaluateRmSlice } from '../../packages/core-ts/src/reliance/rm-v1-slice.js';
 import { evaluateCalSlice } from '../../packages/core-ts/src/reliance/cal-v1-slice.js';
 import { evaluateGsSlice } from '../../packages/core-ts/src/reliance/gs-v1-slice.js';
+import type { JsonObject } from '../../packages/core-ts/src/types.js';
+import { reissueStatusList, signAs } from './live-sign.js';
 
 /**
  * The fixed evaluation instant. Status lists carry a freshness window, so a static page
@@ -370,47 +372,69 @@ const all = (entries: readonly TraceEntry[]): SemanticState =>
   entries.length === 0 ? 'not_established' : semanticAnd(entries.map(e => e.state));
 const first = (entries: readonly TraceEntry[], state: SemanticState) => entries.find(e => e.state === state);
 
-export async function evaluateScenario(options: ScenarioOptions): Promise<ScenarioResult> {
-  const example = EXAMPLES.find(e => e.id === options.example) ?? EXAMPLES[0]!;
-  const spec = example.cases.find(c => c.id === options.caseId) ?? example.cases[0]!;
-  const bound = loaded[spec.binding];
-  const profileName = example.id === 'dcc' && options.choice === 'direct-only' ? 'cal-verifier-1'
-    : example.id === 'dpp' && options.choice === 'accreditation-only' ? ACCREDITATION_ONLY : spec.profile;
-  const profile = bound.profiles[profileName]!;
-  const conformity = example.id === 'rm' && options.choice !== 'authorized'
-    ? { requirementId: 'as-mass-fraction-max-200-mg-per-kg', decisionRuleId: 'guarded-acceptance-expanded-u' } : undefined;
-  const withheld = options.withholdUri ?? (options.withhold ? spec.withhold.uri : undefined);
+/** One evaluation: a target and its claims under one profile, on the binding's files. */
+interface Evaluation {
+  readonly binding: BindingKey;
+  readonly profileName: string;
+  readonly requestId: string;
+  readonly target: string;
+  readonly claims: CaseSpec['claims'];
+  readonly supplied: readonly string[];
+  readonly conformity?: { readonly requirementId: string; readonly decisionRuleId: string };
+  /** A credential the holder leaves out. */
+  readonly withheld?: string | undefined;
+  /** Documents that replace a file's text (a tampered or re-signed one) or are added (signed live), by URI. */
+  readonly texts?: Readonly<Record<string, string>>;
+  /** What "fit for use" says when the verifier asked no conformity question. */
+  readonly notAsked: string;
+}
+interface Evaluated {
+  readonly profile: string;
+  readonly result: RelianceResult;
+  readonly questions: readonly QuestionResult[];
+  readonly target: Record<string, unknown>;
+  readonly texts: Readonly<Record<string, string>>;
+  readonly graph: Graph;
+}
 
+async function evaluate(e: Evaluation): Promise<Evaluated> {
+  const bound = loaded[e.binding];
+  const profile = bound.profiles[e.profileName]!;
+  const replaced = e.texts ?? {};
+  const known = new Set(bound.files.map(file => file.uri));
+  const origin = bound.files.find(file => file.uri === e.target)?.origin ?? bound.files.at(-1)!.origin;
   const texts: Record<string, string> = {};
-  const inputs = bound.files
-    .filter(file => file.uri !== withheld)
-    .map(file => {
-      // Tamper test: change the decisive value without re-signing. The catalog pins what
-      // is served, so only the signature check can catch the change, and must.
-      const text = options.tamper && file.uri === spec.target ? file.text.replace(spec.tamper[0], spec.tamper[1]) : file.text;
-      const bytes = new TextEncoder().encode(text);
-      texts[file.uri] = text;
-      return { uri: file.uri, mediaType: file.mediaType, origin: file.origin, version: file.version,
-        bytes, digestSRI: text === file.text ? file.digestSRI : sha384SRI(bytes) };
-    });
+  const inputs = [
+    ...bound.files,
+    ...Object.entries(replaced).filter(([uri]) => !known.has(uri))
+      .map(([uri, text]) => ({ uri, mediaType: 'application/vc', origin, version: '1', text, digestSRI: undefined })),
+  ].filter(file => file.uri !== e.withheld).map(file => {
+    // A replaced text is served as it is: the catalog pins what is served, so only the
+    // signature check can tell a tampered document from a genuine one, and must.
+    const text = replaced[file.uri] ?? file.text;
+    const bytes = new TextEncoder().encode(text);
+    texts[file.uri] = text;
+    return { uri: file.uri, mediaType: file.mediaType, origin: file.origin, version: file.version,
+      bytes, digestSRI: text === file.text && file.digestSRI ? file.digestSRI : sha384SRI(bytes) };
+  });
   const request = createRelianceRequest({
-    requestId: `urn:vc4qi:demonstrator:${example.id}:${spec.id}`,
-    targetId: spec.target,
-    selectedClaims: spec.claims.map(c => ({ ...c })),
+    requestId: e.requestId,
+    targetId: e.target,
+    selectedClaims: e.claims.map(c => ({ ...c })),
     purpose: 'demonstrator',
     binding: { id: bound.manifest.id, version: bound.manifest.version },
     profile: { id: profile.id, version: profile.version },
     trustConfigId: 'https://vc4qi.example/trust/fixture-anchors',
     evaluationTime: EVALUATION_TIME,
     activityTime: EVALUATION_TIME,
-    suppliedEvidence: spec.supplied.filter(uri => uri !== withheld),
+    suppliedEvidence: e.supplied.filter(uri => uri !== e.withheld),
     resolverLimits: { maxResources: 64, maxDepth: 4, maxBytes: 5_000_000 },
-    ...(conformity ? { conformity } : {}),
+    ...(e.conformity ? { conformity: { ...e.conformity } } : {}),
   });
-  const { result } = await EVALUATORS[spec.binding](request, new StaticResourceCatalog(inputs), bound.manifest, profile);
+  const { result } = await EVALUATORS[e.binding](request, new StaticResourceCatalog(inputs), bound.manifest, profile);
 
-  const at = (gate: number, test: (e: TraceEntry) => boolean = () => true) =>
-    result.trace.filter(e => e.gate === gate && test(e));
+  const at = (gate: number, test: (entry: TraceEntry) => boolean = () => true) =>
+    result.trace.filter(entry => entry.gate === gate && test(entry));
   const protection = at(2);
   const authentic = [...protection, ...at(1)];
   const current = at(3);
@@ -425,10 +449,10 @@ export async function evaluateScenario(options: ScenarioOptions): Promise<Scenar
   const support = result.support;
   // No support obligation means "not required" only if the target was read: an unusable
   // target has not been checked for obligations at all.
-  const targetUsable = result.artifactVerification.find(a => a.artifactId === spec.target)?.state === 'established';
+  const targetUsable = result.artifactVerification.find(a => a.artifactId === e.target)?.state === 'established';
   const supportState: Answer = support.length > 0 ? semanticAnd(support.map(s => s.state))
     : targetUsable ? 'not_required' : 'not_established';
-  const conformityEntries = at(6, e => e.predicate.startsWith('conformity:'));
+  const conformityEntries = at(6, entry => entry.predicate.startsWith('conformity:'));
 
   const questions: QuestionResult[] = [
     { id: 'authentic', state: all(authentic), details: authentic,
@@ -441,25 +465,273 @@ export async function evaluateScenario(options: ScenarioOptions): Promise<Scenar
       ? { id: 'understood', state: all(at(0)) === 'contradicted' ? 'contradicted' : 'not_established', details: understood,
         summary: summarize(at(0), all(at(0)), 'The claim was not read, because its credential did not pass the earlier checks.') }
       : { id: 'understood', state: all(understood), details: understood,
-        summary: summarize(understood, all(understood), at(4).map(e => e.reason).join(' ')) },
+        summary: summarize(understood, all(understood), at(4).map(entry => entry.reason).join(' ')) },
     { id: 'authorized', state: authorizedState, summary: authorizedSummary,
-      details: at(5, e => e.predicate.startsWith('claim-') || e.predicate.startsWith('restriction:') || e.predicate.startsWith('route:')) },
+      details: at(5, entry => entry.predicate.startsWith('claim-') || entry.predicate.startsWith('restriction:') || entry.predicate.startsWith('route:')) },
     { id: 'supported', state: supportState,
       summary: support.length > 0 ? support.map(s => s.reasons.join(' ')).join(' ')
         : targetUsable ? 'This claim needs no supporting credential under the selected profile.'
           : 'Not evaluated: the credential did not pass the earlier checks.',
-      details: at(6, e => e.predicate.startsWith('support:') || support.some(s => s.obligationId === e.predicate)) },
+      details: at(6, entry => entry.predicate.startsWith('support:') || support.some(s => s.obligationId === entry.predicate)) },
     result.conformity.requested
       ? { id: 'fit', state: result.conformity.execution === 'not_run' ? 'not_asked' : result.conformity.state, details: conformityEntries,
         summary: result.conformity.reasons.join(' ') }
-      : { id: 'fit', state: 'not_asked', details: [],
-        summary: example.id === 'rm' ? 'The verifier asked only whether the value is authorized; no limit was applied.'
-          : 'This example asks only whether the claim is authorized; the binding installs no decision rule.' },
+      : { id: 'fit', state: 'not_asked', details: [], summary: e.notAsked },
   ];
 
-  const target = JSON.parse(texts[spec.target]!) as Record<string, unknown>;
-  const graph = buildGraph(spec.target, texts, result, authorizedState, supportState);
-  return { options, example, spec, profile: profileName, result, questions, target, texts, graph };
+  const target = JSON.parse(texts[e.target]!) as Record<string, unknown>;
+  const graph = buildGraph(e.target, texts, result, authorizedState, supportState);
+  return { profile: e.profileName, result, questions, target, texts, graph };
+}
+
+export async function evaluateScenario(options: ScenarioOptions): Promise<ScenarioResult> {
+  const example = EXAMPLES.find(e => e.id === options.example) ?? EXAMPLES[0]!;
+  const spec = example.cases.find(c => c.id === options.caseId) ?? example.cases[0]!;
+  const file = loaded[spec.binding].files.find(f => f.uri === spec.target)!;
+  // Tamper test: change the decisive value without re-signing.
+  const texts = options.tamper ? { [spec.target]: file.text.replace(spec.tamper[0], spec.tamper[1]) } : {};
+  const r = await evaluate({
+    binding: spec.binding,
+    profileName: example.id === 'dcc' && options.choice === 'direct-only' ? 'cal-verifier-1'
+      : example.id === 'dpp' && options.choice === 'accreditation-only' ? ACCREDITATION_ONLY : spec.profile,
+    requestId: `urn:vc4qi:demonstrator:${example.id}:${spec.id}`,
+    target: spec.target, claims: spec.claims, supplied: spec.supplied, texts,
+    withheld: options.withholdUri ?? (options.withhold ? spec.withhold.uri : undefined),
+    ...(example.id === 'rm' && options.choice !== 'authorized'
+      ? { conformity: { requirementId: 'as-mass-fraction-max-200-mg-per-kg', decisionRuleId: 'guarded-acceptance-expanded-u' } } : {}),
+    notAsked: example.id === 'rm' ? 'The verifier asked only whether the value is authorized; no limit was applied.'
+      : 'This example asks only whether the claim is authorized; the binding installs no decision rule.',
+  });
+  return { options, example, spec, ...r };
+}
+
+// ---------------------------------------------------------------- the RM actor board
+
+/**
+ * The RM story on an actor board: one column per actor, the credentials in their
+ * issuer's column, every action in the column of the actor who can take it. The board
+ * state is what those actions have done; `evaluateRmBoard` evaluates it with the RM
+ * slice evaluator. Suspending, revoking and a custom certificate are signed live
+ * (live-sign.ts); everything else is a generated fixture.
+ */
+export type RmActorId = 'ab' | 'lab' | 'rmp' | 'holder' | 'verifier';
+export interface RmActor {
+  readonly id: RmActorId; readonly mono: string; readonly name: string; readonly does: string;
+  /** What the actor publishes, by URI where it is a signed document. */
+  readonly publishes: readonly { readonly label: string; readonly uri?: string }[];
+}
+const RM_URI = {
+  NAB: 'https://nab.vc4qi.example/controller', PRODUCER: 'https://producer.vc4qi.example/controller', LAB: 'https://lab.vc4qi.example/controller',
+  A: 'https://nab.vc4qi.example/credentials/A', H: 'https://nab.vc4qi.example/credentials/H',
+  O: 'https://producer.vc4qi.example/credentials/O', S: 'https://lab.vc4qi.example/credentials/S',
+  LIVE: 'https://producer.vc4qi.example/credentials/D-live',
+  NAB_STATUS: 'https://nab.vc4qi.example/status/1', SUSPENSION: 'https://nab.vc4qi.example/status/suspension/1',
+  LAB_STATUS: 'https://lab.vc4qi.example/status/1', PRODUCER_STATUS: 'https://producer.vc4qi.example/status/1',
+} as const;
+export const RM_ACTORS: readonly RmActor[] = [
+  { id: 'ab', mono: 'AB', name: 'Accreditation body', does: 'Accredits the producer and recognises the laboratory. Can suspend.',
+    publishes: [{ label: 'Key', uri: RM_URI.NAB }, { label: 'Revocation list', uri: RM_URI.NAB_STATUS }, { label: 'Suspension list', uri: RM_URI.SUSPENSION }] },
+  { id: 'lab', mono: 'LAB', name: 'Laboratory', does: 'Studies the batch under its recognition. Can revoke its study.',
+    publishes: [{ label: 'Key', uri: RM_URI.LAB }, { label: 'Revocation list', uri: RM_URI.LAB_STATUS }] },
+  { id: 'rmp', mono: 'RMP', name: 'RM producer', does: 'Declares its scope, certifies the material and ships it.',
+    publishes: [{ label: 'Key', uri: RM_URI.PRODUCER }, { label: 'Revocation list', uri: RM_URI.PRODUCER_STATUS }] },
+  { id: 'holder', mono: 'H', name: 'Customer lab', does: 'Bought disc lot 1. Holds its certificate and shows it.',
+    publishes: [{ label: 'Wallet' }] },
+  { id: 'verifier', mono: 'V', name: 'Verifier', does: 'Relies on the certificate only as far as its own profile allows.',
+    publishes: [{ label: 'Profile' }] },
+];
+export interface RmAsset {
+  /** A, H, O, S, or D for the certificate (D178, D197, D520 or the live one). */
+  readonly code: 'A' | 'H' | 'O' | 'S' | 'D';
+  readonly label: string;
+  readonly kind: 'grant' | 'evidence' | 'claim';
+  /** The issuer's column, and the row the card sits in. */
+  readonly actor: RmActorId; readonly row: 1 | 2;
+  /** The actor the credential is about, or the batch. */
+  readonly about: RmActorId | 'batch';
+  readonly heldBy: RmActorId;
+}
+export const RM_ASSETS: readonly RmAsset[] = [
+  { code: 'A', label: 'Accreditation', kind: 'grant', actor: 'ab', row: 1, about: 'rmp', heldBy: 'rmp' },
+  { code: 'H', label: 'Laboratory recognition', kind: 'grant', actor: 'ab', row: 2, about: 'lab', heldBy: 'lab' },
+  { code: 'O', label: 'Operational scope', kind: 'grant', actor: 'rmp', row: 1, about: 'rmp', heldBy: 'rmp' },
+  { code: 'S', label: 'Homogeneity study', kind: 'evidence', actor: 'lab', row: 2, about: 'batch', heldBy: 'rmp' },
+  { code: 'D', label: 'RM certificate', kind: 'claim', actor: 'rmp', row: 2, about: 'batch', heldBy: 'holder' },
+];
+
+export interface RmBoardState {
+  /** The producer's certificate: a generated one, or one it signs live. */
+  readonly certificate: '178' | '197' | '520' | 'custom';
+  readonly value: string; readonly uncertainty: string; readonly method: 'M1' | 'M2';
+  readonly suspendA: boolean; readonly revokeS: boolean;
+  readonly tamper: boolean; readonly withholdS: boolean;
+  readonly trustAB: boolean; readonly ask: 'authorized' | 'fit'; readonly rule: 'guarded' | 'simple';
+}
+export const RM_DEFAULT: RmBoardState = {
+  certificate: '178', value: '178', uncertainty: '5', method: 'M1', suspendA: false, revokeS: false,
+  tamper: false, withholdS: false, trustAB: true, ask: 'fit', rule: 'guarded',
+};
+export type RmControl = 'suspend' | 'revoke' | 'certificate' | 'tamper' | 'withhold' | 'trust' | 'ask' | 'rule';
+export type RmPart = 'build' | 'verify' | 'manipulate' | 'decide' | 'present' | 'play';
+export const RM_PARTS: readonly { readonly id: RmPart; readonly label: string }[] = [
+  { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' }, { id: 'manipulate', label: 'Manipulate' },
+  { id: 'decide', label: 'The verifier decides' }, { id: 'present', label: 'Present' }, { id: 'play', label: 'Your turn' },
+];
+/**
+ * One step of the RM story. Actors join one by one as the chain reaches them. Build
+ * steps show the credentials issued so far and evaluate nothing; the others evaluate their state, and `expect` is the decision the tests
+ * require. `unlock` is the one action the step makes live; the last step makes all live.
+ * The presentation step is a placeholder: nothing in it is evaluated.
+ */
+export interface RmStep {
+  readonly id: string; readonly part: RmPart; readonly title: string; readonly text: string;
+  /** The acting columns: the one who acts first, then the one it acts towards. */
+  readonly acts: readonly RmActorId[];
+  /** Actors who join the board in this step; a column appears only once its actor has joined. */
+  readonly joins?: readonly RmActorId[];
+  readonly issues?: readonly RmAsset['code'][];
+  readonly state?: Partial<RmBoardState>;
+  readonly unlock?: readonly RmControl[];
+  readonly expect?: RelianceResult['decision'];
+  readonly presentation?: readonly { readonly credential: string; readonly reveal: string; readonly hide: string }[];
+}
+export const RM_STORY: readonly RmStep[] = [
+  { id: 'join', part: 'build', acts: ['ab'], joins: ['ab'],
+    title: 'The accreditation body is the first party',
+    text: 'Before anything is signed it publishes a key, so that anyone can check what it signs, and two status lists, so that it can later revoke or suspend what it issued.' },
+  { id: 'recognise', part: 'build', acts: ['ab', 'lab'], joins: ['lab'], issues: ['H'],
+    title: 'The accreditation body recognises the laboratory',
+    text: 'Recognition H permits the laboratory to run homogeneity studies on brass. The laboratory publishes its own key and status list.' },
+  { id: 'accredit', part: 'build', acts: ['ab', 'rmp'], joins: ['rmp'], issues: ['A'],
+    title: 'The accreditation body accredits the RM producer',
+    text: 'Accreditation A is broad, like a real annex row ("non-ferrous metals and alloys, element contents, 0.1 mg/kg – 997 g/kg"): here the element contents of this brass by methods M1 and M2. It is a flexible scope: the producer may add materials within it and keeps its own list. The body can suspend it.' },
+  { id: 'scope', part: 'build', acts: ['rmp'], issues: ['O'],
+    title: 'The producer declares its operational scope',
+    text: 'Scope O is the producer\'s own list within that flexible scope: arsenic in this brass, method M1, 50 to 500 mg/kg. It cites A, so it can be no wider than A.' },
+  { id: 'study', part: 'build', acts: ['lab', 'rmp'], issues: ['S'],
+    title: 'The laboratory studies disc lot 1',
+    text: 'Study S finds the batch homogeneous for arsenic. It is evidence: it supports a certificate and authorizes nothing.' },
+  { id: 'certify', part: 'build', acts: ['rmp', 'holder'], joins: ['holder'], issues: ['D'],
+    title: 'The producer certifies disc lot 1 and ships it',
+    text: 'Certificate D178: As = 178 ± 5 mg/kg (k = 2), method M1. It cites scope O for its authority and study S as evidence, and travels with the disc to the customer lab.' },
+
+  { id: 'verify', part: 'verify', acts: ['holder', 'verifier'], joins: ['verifier'], expect: 'accept',
+    title: 'The verifier checks the certificate',
+    text: 'It knows none of the parties in advance and trusts one root: the accreditation body. It follows every reference from D178 down to that root and answers six questions. The last is its own: is As + U at most 200 mg/kg? 178 + 5 = 183.' },
+
+  { id: 'tamper', part: 'manipulate', acts: ['holder', 'verifier'], state: { tamper: true }, unlock: ['tamper'], expect: 'reject',
+    title: 'Someone changes the value after signing',
+    text: '178 becomes 150 in the bytes. The signature no longer matches them; nothing else needs to be checked.' },
+  { id: 'withheld', part: 'manipulate', acts: ['holder', 'verifier'], state: { withholdS: true }, unlock: ['withhold'], expect: 'not_established',
+    title: 'The study is left out',
+    text: 'Nothing shown is false, but the evidence D178 cites is missing. The verifier cannot tell, and "cannot tell" is never accepted.' },
+  { id: 'range', part: 'manipulate', acts: ['rmp', 'verifier'], state: { certificate: '520' }, unlock: ['certificate'], expect: 'reject',
+    title: 'The producer certifies a value outside its scope',
+    text: 'Certificate D520 says 520 mg/kg and is correctly signed. The accreditation would allow it, but the producer\'s own scope ends at 500 mg/kg, and the certificate draws its authority from that scope, not from the accreditation directly.' },
+  { id: 'suspend', part: 'manipulate', acts: ['ab', 'verifier'], state: { suspendA: true }, unlock: ['suspend'], expect: 'reject',
+    title: 'The accreditation body suspends the accreditation',
+    text: 'It sets one bit in its suspension list and signs the list again, here in your browser. Nothing in D178 changes, yet the verifier may no longer rely on it.' },
+
+  { id: 'guarded', part: 'decide', acts: ['verifier'], state: { certificate: '197', rule: 'guarded' }, unlock: ['rule'], expect: 'reject',
+    title: 'Verifier 1 applies guarded acceptance',
+    text: 'Certificate D197: As = 197 ± 5 mg/kg. Under guarded acceptance the uncertainty counts against the value: 197 + 5 = 202 is above 200, so it is not fit for use.' },
+  { id: 'simple', part: 'decide', acts: ['verifier'], state: { certificate: '197', rule: 'simple' }, unlock: ['rule'], expect: 'accept',
+    title: 'Verifier 2 applies simple acceptance',
+    text: 'The same bytes and the same chain. Under simple acceptance only the value counts: 197 is at most 200. The verifier\'s rule decides, not the issuer.' },
+  { id: 'abroad', part: 'decide', acts: ['verifier'], state: { trustAB: false }, unlock: ['trust'], expect: 'not_established',
+    title: 'Verifier 3 does not know this accreditation body',
+    text: 'A verifier abroad has not configured this accreditation body as a trust anchor. Every signature is valid, but it cannot tell whether the authority behind them is real. Recognition through an international arrangement would be the bridge; it is not evaluated here.' },
+
+  { id: 'present', part: 'present', acts: ['holder', 'verifier'],
+    title: 'The holder presents what the verifier asks for',
+    text: 'Not evaluated yet. In a presentation the customer lab would sign a fresh envelope around the certificate, answering the verifier\'s challenge: proof of who presents, and that the presentation was made for this verifier now. It adds no trust to the certificate; the chain still decides. With selective disclosure it could reveal only what the question needs.',
+    presentation: [
+      { credential: 'Certificate D178', reveal: 'Issuer, batch, the arsenic result and its uncertainty', hide: 'The copper, zinc and lead results' },
+      { credential: 'Scope O, accreditation A', reveal: 'Everything the authority check reads', hide: 'Nothing: they are the authority' },
+      { credential: 'Study S', reveal: 'Issuer, batch, study type and outcome', hide: 'In a real study: the measurement data' },
+      { credential: 'The presentation', reveal: 'Holder, the verifier\'s challenge and domain', hide: '–' },
+    ] },
+
+  { id: 'play', part: 'play', acts: ['ab', 'lab', 'rmp', 'holder', 'verifier'],
+    unlock: ['suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'ask', 'rule'],
+    title: 'Your turn',
+    text: 'Every action is live. Certify another value, suspend or revoke, change or leave out a credential, or change what the verifier trusts and asks. Each change is evaluated at once.' },
+];
+
+const RM_PROFILE = 'rm-verifier-1';
+const RM_OTHER_ANCHOR = 'rm-verifier-other-anchor (demonstrator)';
+{
+  // A verifier abroad: rm-verifier-1 with another accreditation body as its only anchor.
+  const base = resources.rm.profiles[RM_PROFILE] as { trustAnchors: { id: string; purposes: string[] }[] };
+  loaded.rm.profiles[RM_OTHER_ANCHOR] = loadRelianceProfile({ ...base,
+    id: 'https://vc4qi.example/profiles/rm-verifier-other-anchor',
+    description: 'Demonstrator-only variant of rm-verifier-1 whose only trust anchor is another, fictional accreditation body.',
+    trustAnchors: base.trustAnchors.map(anchor => ({ ...anchor, id: 'https://other-ab.vc4qi.example/controller' })) });
+}
+const rmText = (uri: string) => loaded.rm.files.find(file => file.uri === uri)!.text;
+const rmCatalog = () => loaded.rm.files.map(file => ({ uri: file.uri, mediaType: file.mediaType, origin: file.origin,
+  version: file.version, bytes: new TextEncoder().encode(file.text), digestSRI: file.digestSRI as `sha384-${string}` }));
+const certificateUri = (state: RmBoardState) =>
+  state.certificate === 'custom' ? RM_URI.LIVE : `https://producer.vc4qi.example/credentials/D${state.certificate}`;
+
+/** Live-signed documents, by what they encode, so each is signed once. */
+const live = new Map<string, Promise<string>>();
+function liveOnce(key: string, make: () => Promise<string>) {
+  if (!live.has(key)) live.set(key, make());
+  return live.get(key)!;
+}
+/** The day the accreditation body or the laboratory re-signs its list. */
+const RESIGNED = '2026-09-20T00:00:00Z';
+/** The certificate the producer signs live: D178 with the typed As result, at status index 4. */
+function liveCertificate(state: RmBoardState) {
+  return liveOnce(`D:${state.value}:${state.uncertainty}:${state.method}`, () => {
+    const { proof: _proof, ...d178 } = JSON.parse(rmText('https://producer.vc4qi.example/credentials/D178')) as Record<string, any>;
+    const subject = structuredClone(d178.credentialSubject);
+    const as = subject.materialPropertiesList[0].results[0];
+    as.methodIri = as.methodIri.replace(/M1$/, state.method);
+    as.data.quantity.value = state.value;
+    as.data.quantity.uncertainty.expandedUncertainty = state.uncertainty;
+    const status = { ...d178.credentialStatus, id: `${RM_URI.PRODUCER_STATUS}#4`, statusListIndex: '4' };
+    return signAs({ ...d178, id: RM_URI.LIVE, name: 'Reference material certificate, CuZn39Pb3 disc lot 1 (signed in this browser)',
+      credentialSubject: subject, credentialStatus: status } as JsonObject,
+    'producer', RM_URI.PRODUCER, d178.validFrom, rmCatalog(), rmText(RM_URI.PRODUCER));
+  });
+}
+const resignedList = (uri: string, name: string, controller: string) => liveOnce(`list:${uri}`, () =>
+  signAs(reissueStatusList(rmText(uri), [0], RESIGNED), name, controller, RESIGNED, rmCatalog(), rmText(controller)));
+
+export interface RmBoardResult extends Evaluated {
+  readonly state: RmBoardState;
+  /** The certificate the verifier was shown. */
+  readonly certificate: string;
+  /** Documents signed in this browser for this state. */
+  readonly signedLive: readonly string[];
+}
+
+export async function evaluateRmBoard(over: Partial<RmBoardState> = {}): Promise<RmBoardResult> {
+  const state = { ...RM_DEFAULT, ...over };
+  const target = certificateUri(state);
+  const texts: Record<string, string> = {};
+  if (state.certificate === 'custom') texts[target] = await liveCertificate(state);
+  if (state.suspendA) texts[RM_URI.SUSPENSION] = await resignedList(RM_URI.SUSPENSION, 'nab', RM_URI.NAB);
+  if (state.revokeS) texts[RM_URI.LAB_STATUS] = await resignedList(RM_URI.LAB_STATUS, 'lab', RM_URI.LAB);
+  const signedLive = Object.keys(texts);
+  if (state.tamper) {
+    // Change the As value in the bytes the holder shows, without re-signing.
+    const text = texts[target] ?? rmText(target);
+    const shown = (JSON.parse(text) as any).credentialSubject.materialPropertiesList[0].results[0].data.quantity.value as string;
+    texts[target] = text.replace(`"value": "${shown}"`, `"value": "${shown === '150' ? '151' : '150'}"`);
+  }
+  const r = await evaluate({
+    binding: 'rm', profileName: state.trustAB ? RM_PROFILE : RM_OTHER_ANCHOR,
+    requestId: 'urn:vc4qi:demonstrator:rm-board', target,
+    claims: [{ id: 'as', sourcePointer: '/credentialSubject/materialPropertiesList/0/results/0' }], supplied: [], texts,
+    withheld: state.withholdS ? RM_URI.S : undefined,
+    ...(state.ask === 'fit' ? { conformity: { requirementId: 'as-mass-fraction-max-200-mg-per-kg',
+      decisionRuleId: state.rule === 'simple' ? 'simple-acceptance' : 'guarded-acceptance-expanded-u' } } : {}),
+    notAsked: 'The verifier asked only whether the value is authorized; no limit was applied.',
+  });
+  return { ...r, state, certificate: target, signedLive };
 }
 
 export const buildInfo = {
