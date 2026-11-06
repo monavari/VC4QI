@@ -17,7 +17,11 @@ type Api = {
   EXAMPLES: { id: string; cases: { id: string }[] }[];
   STORY: { id: string; part: string; issues?: string[]; scenario?: Record<string, unknown>; expect?: string }[];
   evaluateScenario: (o: Record<string, unknown>) => Promise<Result>;
+  RM_STORY: { id: string; part: string; issues?: string[]; state?: Record<string, unknown>; expect?: string }[];
+  RM_ASSETS: { code: string }[];
+  evaluateRmBoard: (o?: Record<string, unknown>) => Promise<Board>;
 };
+type Board = Result & { certificate: string; signedLive: string[] };
 const api = (await import(bundle)) as Api;
 const run = (example: string, caseId: string, over: Record<string, unknown> = {}) =>
   api.evaluateScenario({ example, caseId, tamper: false, withhold: false, ...over });
@@ -109,5 +113,35 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
         expect(withheld.result.decision).not.toBe('accept');
       }
     }
+  });
+  it('RM board: the build steps issue every asset once, in issuance order; every evaluated step reaches its decision', async () => {
+    const issued = api.RM_STORY.filter(s => s.part === 'build').flatMap(s => s.issues ?? []);
+    expect([...issued].sort()).toEqual(api.RM_ASSETS.map(a => a.code).sort());
+    const accepted = await api.evaluateRmBoard();
+    const uri = (code: string) => code === 'D' ? accepted.certificate : accepted.graph.nodes.find(n => n.name === code)!.uri;
+    const validFrom = issued.map(code => (JSON.parse(accepted.texts[uri(code)]!) as { validFrom: string }).validFrom);
+    expect(validFrom).toEqual([...validFrom].sort());
+    for (const s of api.RM_STORY.filter(x => x.expect !== undefined)) {
+      expect([s.id, (await api.evaluateRmBoard(s.state)).result.decision]).toEqual([s.id, s.expect]);
+    }
+    // Only the build steps, the presentation placeholder and "Your turn" have no expected decision.
+    expect([...new Set(api.RM_STORY.filter(s => s.expect === undefined).map(s => s.part))]).toEqual(['build', 'present', 'play']);
+  });
+
+  it('RM board: documents signed in the browser verify like the generated fixtures', async () => {
+    // The same value, signed live, is accepted exactly as D178 is.
+    const own = await api.evaluateRmBoard({ certificate: 'custom', value: '178', uncertainty: '5' });
+    expect([own.result.decision, own.signedLive]).toEqual(['accept', ['https://producer.vc4qi.example/credentials/D-live']]);
+    expect(answers(own)).toEqual(answers(await api.evaluateRmBoard()));
+    // Method M2 is accredited but outside the producer's operational scope (M1 only).
+    expect(answers(await api.evaluateRmBoard({ certificate: 'custom', value: '178', uncertainty: '5', method: 'M2' })).authorized).toBe('not_established');
+    expect(answers(await api.evaluateRmBoard({ certificate: 'custom', value: '40', uncertainty: '5' })).authorized).toBe('contradicted');
+    // A re-signed status list: a revoked study is not current and no longer supports the certificate.
+    const revoked = await api.evaluateRmBoard({ revokeS: true });
+    expect([revoked.result.decision, answers(revoked).current, answers(revoked).supported]).toEqual(['reject', 'contradicted', 'contradicted']);
+    const suspended = await api.evaluateRmBoard({ suspendA: true });
+    expect([suspended.result.decision, answers(suspended).authentic, answers(suspended).authorized]).toEqual(['reject', 'established', 'contradicted']);
+    // Editing a live-signed certificate breaks its signature like any other.
+    expect(answers(await api.evaluateRmBoard({ certificate: 'custom', value: '178', uncertainty: '5', tamper: true })).authentic).toBe('contradicted');
   });
 });

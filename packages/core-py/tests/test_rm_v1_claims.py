@@ -280,8 +280,9 @@ def test_s12_adjacent_parent_records_are_not_a_union() -> None:
 
 def test_s13_lower_bound_below_parent_is_rejected() -> None:
     o = doc(URI["O"])
+    # A's record starts at 0.1 mg/kg.
     o["credentialSubject"]["scope"][0]["range"] = {
-        "from": "40",
+        "from": "0.05",
         "to": "500",
         "unit": "mg/kg",
     }

@@ -167,9 +167,11 @@ The reference-material scope has no accreditation uncertainty ceiling. Asymmetri
 uncertainty is not silently averaged, and method succession (M1 to M2) needs an explicit
 profile rule, never an issuer's own mapping.
 
-**Worked example.** Fictional producer accreditation A covers [50, 500] mg/kg with
-methods M1 and M2. The producer's operational scope O covers the same range with M1
-only. Certificate D (CuZn39Pb3 brass, arsenic, M1, U = 5 mg/kg, k = 2) needs a
+**Worked example.** Fictional producer accreditation A covers the element contents of
+the brass (As, Cu, Zn, Pb) from 0.1 mg/kg to 997 g/kg with methods M1 and M2, shaped
+after a flexible-scope annex row ("non-ferrous metals and alloys, element contents"). The
+producer's operational scope O, its own list within that scope, covers arsenic from 50 to
+500 mg/kg with M1 only. Certificate D (CuZn39Pb3 brass, arsenic, M1, U = 5 mg/kg, k = 2) needs a
 same-batch study S by a laboratory with its own authority H. The verifier asks for
 `x + U <= 200 mg/kg`:
 
@@ -177,7 +179,7 @@ same-batch study S by a laboratory with its own authority H. The verifier asks f
 | --- | --- | --- | --- |
 | 178 | 50 ≤ 178 ≤ 500 | 183 ≤ 200 | accept |
 | 197 | in scope | 202 > 200 | reject for conformity (authorization established) |
-| 520 | 520 > 500 | not run | reject for scope |
+| 520 | 520 > 500 (O) | not run | reject for scope |
 
 195 + 5 = 200 passes the inclusive rule, and 500 is in scope. M2 cannot bypass O just
 because A admits it. These cases run on signed fixtures; see [use cases](use-cases.md).

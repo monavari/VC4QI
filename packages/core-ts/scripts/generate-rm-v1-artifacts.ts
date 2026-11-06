@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Generates the signed experimental RM v1 vertical-slice fixtures:
 //   controller documents for the fictional NAB, producer and laboratory, and
-//   signed credentials A (accreditation), A2 (a second, direct accreditation that
+//   signed credentials A (accreditation, shaped after a flexible-scope annex row: element
+//   contents of the brass, 0.1 mg/kg to 997 g/kg), A2 (a second, direct accreditation that
 //   D178 does not reference), H (lab authority), O (operational scope),
 //   S (homogeneity study) and D178 (RM certificate, x = 178 mg/kg, U = 5, k = 2, with the
 //   Cu, Zn and Pb values of the M375a DRMD transcription as further certified results),
@@ -137,14 +138,14 @@ function envelope(id: string, type: string, schemaFile: string, issuer: string,
 const policy = (id: string, type: string) => [{ type: 'RmAuthorizationPolicy', authorizationCredential: { id, type } }];
 const integrity = (...refs: [string, string][]) =>
   refs.map(([id, text]) => ({ id, digestSRI: sha384SRI(new TextEncoder().encode(text)) }));
-const scopeRecord = (id: string, methods: string[]) => ({
+const scopeRecord = (id: string, methods: string[], properties = ['As'], range = { from: '50', to: '500' }) => ({
   id,
   matrixIri: rm('CuZn39Pb3'),
   formIri: rm('Disc'),
-  allowedPropertyIris: [rm('As')],
+  allowedPropertyIris: properties.map(rm),
   allowedMethodIris: methods.map(rm),
   quantityKindIri: rm('MassFraction'),
-  range: { from: '50', to: '500', unit: 'mg/kg' },
+  range: { ...range, unit: 'mg/kg' },
 });
 
 async function main() {
@@ -191,7 +192,11 @@ async function main() {
     credentialSubject: {
       id: PRODUCER,
       permittedActivity: [rm('issueRmCertificate'), rm('maintainRmScope')],
-      scope: [scopeRecord(`${A_ID}#scope-as`, ['M1', 'M2'])],
+      // Shaped after an accreditation annex row such as "non-ferrous metals and alloys,
+      // element contents, 0.1 mg/kg – 997 g/kg" with a flexible scope: the producer keeps
+      // its own, narrower list (O). The binding compares matrices exactly, so the record
+      // names this brass rather than a material class; 997 g/kg is written in mg/kg.
+      scope: [scopeRecord(`${A_ID}#scope-elements`, ['M1', 'M2'], ['As', 'Cu', 'Zn', 'Pb'], { from: '0.1', to: '997000' })],
     },
   }, nab, '2025-01-01T00:00:00Z')), FIXTURE);
 

@@ -6,7 +6,9 @@
 
 - `controllers/{nab,producer,lab}.json`: fictional controller documents, each with one
   Ed25519 Multikey referenced from `assertionMethod`.
-- `credentials/A.json` (NAB accredits the producer, M1/M2, 50–500 mg/kg),
+- `credentials/A.json` (NAB accredits the producer for the element contents of the brass,
+  As, Cu, Zn and Pb, M1/M2, 0.1 mg/kg to 997 g/kg, written as 997000 mg/kg; shaped after
+  a flexible-scope annex row),
   `A2.json` (NAB accredits the producer to certify directly, M1; the second route,
   not referenced by D178),
   `H.json` (NAB recognizes the laboratory for homogeneity studies),
