@@ -2,19 +2,11 @@
 
 ## Unreleased
 
-- The demonstrator opens on a guided **Story** for presenting: a GS certification chain
-  is built party by party, in issuance order, up to a product passport; it is then
-  verified, manipulated (tampering, a borrowed credential, a cited certificate of another
-  manufacturer, a toy outside the scheme permission, a withheld type examination) and
-  judged by two verifiers, one of which trusts the accreditation body only. Selective
-  disclosure is a labelled placeholder that evaluates nothing. Arrow keys and
-  PageUp/PageDown step through it. Every evaluated step runs the existing signed fixtures,
-  and the bundle test checks each step's decision; no fixture changes.
 - The DPP tab gains the same verifier choice ("Accreditation body only"), using a
   demonstrator-only profile derived from `gs-verifier-dpp-1` without the scheme owner's
   anchor. When a single question cannot be told, the verdict line now gives its first
   reason.
-- The demonstrator page is redesigned for presenting: on wide screens the heading, verdict
+- The examples page (`site/demo/`) is redesigned for presenting: on wide screens the heading, verdict
   and credential sit beside the chain; one colour per state (green holds, red fails,
   amber cannot be told) runs through the verdict, the six questions, the chain's boxes
   and lines; and headings, text and spacing follow one scale. Phones keep one column.
@@ -41,7 +33,8 @@
   make every action live, including revoking the accreditation or the scheme permission.
   Both boards now share `site/demo/board.js` and `board.css`. In the credential graph a
   deeper link takes the verification of the credential it points to, so a borrowed link
-  is the only red line; the old page's guided story is renamed "GS walkthrough".
+  is the only red line. The examples page keeps its RM, DCC, GS and DPP tabs, links to
+  both stories and opens on the RM example.
 - The signed RM v1 accreditation `A` is now broad, shaped after a flexible-scope annex
   row of an RM producer accreditation ("non-ferrous metals and alloys, element
   contents"): As, Cu, Zn and Pb in the brass, methods M1 and M2, 0.1 mg/kg to 997 g/kg

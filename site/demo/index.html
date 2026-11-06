@@ -5,7 +5,7 @@
 <link rel="icon" href="data:,">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>VC4QI demonstrator</title>
-<meta name="description" content="Quality Infrastructure credentials verified in your browser by the VC4QI reliance evaluator: a guided story from accreditation to a product passport, and examples for a reference material, calibration certificates, a GS mark and a product passport.">
+<meta name="description" content="Quality Infrastructure credentials verified in your browser by the VC4QI reliance evaluator: examples for a reference material, calibration certificates, a GS mark and a product passport. The RM and GS stories are on their own pages.">
 <style>
 :root{
   --petrol:#00556E; --cyan:#00AFF0; --red:#D2001E;
@@ -56,22 +56,6 @@ h1{ margin:0 0 var(--s3); font-size:clamp(1.55rem, 1.2rem + .9vw, 2rem); line-he
 .controls{ display:grid; gap:var(--s3); margin-top:var(--s5); max-width:46rem; }
 .controls:empty{ display:none; }
 
-/* story navigation */
-.storynav{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s3); padding:var(--s4) 0; border-bottom:1px solid var(--line); }
-.parts{ display:flex; flex-wrap:wrap; gap:var(--s2); list-style:none; padding:0; margin:0; counter-reset:part; }
-.parts li{ counter-increment:part; }
-.parts button{ border:1px solid var(--line); background:var(--paper); color:var(--muted); font-size:.85rem; font-weight:600; padding:.3rem .8rem; border-radius:999px; cursor:pointer; }
-.parts button::before{ content:counter(part); margin-right:.45rem; color:var(--soft); font-variant-numeric:tabular-nums; }
-.parts button:hover{ border-color:var(--muted); color:var(--ink); }
-.parts button[aria-current="step"]{ background:var(--petrol); border-color:var(--petrol); color:#fff; }
-.parts button[aria-current="step"]::before{ color:#BFE3EE; }
-.stepper{ display:flex; align-items:center; gap:var(--s2); }
-.stepper span{ margin-right:var(--s2); font-size:.85rem; color:var(--muted); font-variant-numeric:tabular-nums; }
-.stepper button{ border:1px solid var(--line); background:var(--paper); border-radius:8px; padding:.45rem 1rem; font-weight:650; cursor:pointer; }
-.stepper #next{ background:var(--petrol); border-color:var(--petrol); color:#fff; }
-.stepper button:disabled{ opacity:.35; cursor:default; }
-.actor{ justify-self:start; margin:0; padding:var(--s2) var(--s4); font-size:.95rem; font-weight:600; border-radius:8px; border-left:4px solid var(--cyan); background:var(--tcyan); }
-
 /* example controls */
 .seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
 .seg button{ border:0; background:transparent; padding:var(--s2) var(--s2); font-size:.9rem; cursor:pointer; line-height:1.25; }
@@ -89,13 +73,10 @@ h1{ margin:0 0 var(--s3); font-size:clamp(1.55rem, 1.2rem + .9vw, 2rem); line-he
 .stage{ display:flex; flex-direction:column; gap:var(--s6); }
 .col{ display:contents; }
 .head{ order:-2; }
-body[data-mode="build"] #sec-g{ order:-1; }
 @media (min-width:64rem){
   .stage{ display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr); gap:var(--s7); align-items:start; }
-  body[data-mode="disclose"] .stage{ grid-template-columns:minmax(0, 1fr); }
   .col{ display:flex; flex-direction:column; gap:var(--s5); min-width:0; }
   .head{ order:0; }
-  body[data-mode="build"] #sec-g{ order:0; }
   #sec-g{ padding-top:var(--s5); }
 }
 section{ margin:0; }
@@ -142,15 +123,12 @@ h2{ margin:0 0 var(--s3); font-size:.78rem; font-weight:700; letter-spacing:.08e
 .node.n-contradicted{ border-color:var(--bad); background:var(--bad-wash); }
 .node.n-not_established{ border-color:var(--unk); background:var(--unk-wash); }
 .node.target{ box-shadow:0 0 0 3px var(--paper), 0 0 0 6px var(--cyan); }
-.node.fresh{ border-color:var(--cyan); box-shadow:0 0 0 4px var(--tcyan); }
 .node.missing{ background:transparent; border:2px dashed var(--unk); color:var(--muted); box-shadow:none; cursor:default; }
 .badge{ display:inline-block; margin-top:var(--s2); font-size:.7rem; font-weight:700; padding:.08rem .5rem; border-radius:999px; color:var(--on-state); background:var(--off); }
 .badge.b-established{ background:var(--ok); } .badge.b-contradicted{ background:var(--bad); } .badge.b-not_established{ background:var(--unk); }
-.badge.b-new{ background:var(--cyan); color:#00303F; }
 .edge{ fill:none; stroke-width:2.5; }
 .edge.support{ stroke-dasharray:5 5; }
 .e-established, .e-not_required{ stroke:var(--ok); } .e-contradicted{ stroke:var(--bad); stroke-width:3.5; } .e-not_established{ stroke:var(--unk); stroke-width:3; }
-.e-plain{ stroke:var(--soft); }
 
 /* credential card */
 .cards{ display:grid; gap:var(--s4); }
@@ -178,10 +156,6 @@ dialog::backdrop{ background:rgba(0,20,26,.45); }
 dialog h2{ font-size:1.05rem; letter-spacing:0; text-transform:none; color:var(--ink); }
 dialog .close{ float:right; border:1px solid var(--line); background:var(--paper); border-radius:8px; padding:.3rem .7rem; cursor:pointer; }
 
-/* selective-disclosure placeholder */
-.placeholder{ border:2px dashed var(--unk); border-radius:var(--radius); padding:var(--s4) var(--s5); background:var(--unk-wash); max-width:60rem; }
-.placeholder p{ margin:0 0 var(--s2); }
-
 footer{ margin-top:var(--s7); border-top:1px solid var(--line); padding-top:var(--s4); font-size:.82rem; color:var(--muted); }
 footer p{ margin:var(--s1) 0; max-width:60rem; }
 </style>
@@ -192,7 +166,6 @@ footer p{ margin:var(--s1) 0; max-width:60rem; }
   <nav class="tabs" id="tabs" aria-label="Examples"></nav>
 </div></header>
 <main>
-  <nav class="storynav" id="storynav" aria-label="Story" hidden></nav>
 
   <div class="stage" id="stage">
     <div class="col">
@@ -202,14 +175,6 @@ footer p{ margin:var(--s1) 0; max-width:60rem; }
         <p class="intro" id="intro"></p>
         <div class="controls" id="controls"></div>
       </div>
-
-      <section id="disclose" aria-labelledby="h-sd" hidden>
-        <h2 id="h-sd">Selective disclosure</h2>
-        <div class="placeholder">
-          <p><b>Placeholder: not implemented yet.</b> Nothing in this step is evaluated. The table sketches what the holder could reveal, and keep back, for the verifier's question about the GS mark.</p>
-          <table id="sdTable"></table>
-        </div>
-      </section>
 
       <div class="result" id="result">
         <div class="verdict busy" id="verdict" role="status" aria-live="polite">
@@ -253,10 +218,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const short = iri => String(iri ?? '').split('#').pop().split(/[/:]/).pop();
 const LABEL = { established: '✓ yes', contradicted: '✕ no', not_established: '? cannot tell', not_asked: 'not asked', not_required: 'not required' };
-const LEGEND = {
-  evaluate: 'Read from the credentials’ own references. Solid line: authority (termsOfUse); dashed: supporting study (evidence). Green holds, red fails, amber cannot be told. The ringed box is the credential being checked; click any box to open it.',
-  build: 'The chain as issued so far, read from the credentials’ own references. Solid line: authority (termsOfUse); dashed: supporting study (evidence). Outlined: issued in this step.',
-};
+const LEGEND = 'Read from the credentials’ own references. Solid line: authority (termsOfUse); dashed: supporting study (evidence). Green holds, red fails, amber cannot be told. The ringed box is the credential being checked; click any box to open it.';
 const QUESTIONS = { authentic: 'Authentic', current: 'Current', understood: 'Understood', authorized: 'Authorized', supported: 'Supported', fit: 'Fit for use' };
 const ORDER = ['authentic', 'current', 'understood', 'authorized', 'supported', 'fit'];
 
@@ -270,17 +232,12 @@ catch (error) { fail('This browser could not run the evaluator (' + error.messag
 $('evalTime').textContent = new Date(api.EVALUATION_TIME).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
 const DEFAULT_CHOICE = { rm: 'fit', dcc: 'own', dpp: 'both' };
-const state = { example: 'story', step: 0, caseId: undefined, choice: undefined, tamper: false, withhold: false };
+const state = { example: 'rm', caseId: undefined, choice: undefined, tamper: false, withhold: false };
 let seq = 0, current;
 const exampleOf = id => api.EXAMPLES.find(e => e.id === id) ?? api.EXAMPLES[0];
 
 function readHash() {
   const [ex, c] = location.hash.replace(/^#/, '').split('/');
-  if (!ex || ex === 'story') {
-    state.example = 'story';
-    state.step = Math.max(0, api.STORY.findIndex(s => s.id === c));
-    return;
-  }
   const example = exampleOf(ex);
   state.example = example.id;
   state.caseId = example.cases.some(x => x.id === c) ? c : example.cases[0].id;
@@ -288,74 +245,22 @@ function readHash() {
   state.tamper = false; state.withhold = false;
 }
 function writeHash() {
-  history.replaceState(null, '', '#' + state.example + '/' + (state.example === 'story' ? api.STORY[state.step].id : state.caseId));
+  history.replaceState(null, '', '#' + state.example + '/' + state.caseId);
 }
 
 function renderTabs() {
-  $('tabs').innerHTML = "<a href='rm/'>RM story</a><a href='gs/'>GS story</a>" + [{ id: 'story', tab: 'GS walkthrough' }, ...api.EXAMPLES]
+  $('tabs').innerHTML = "<a href='rm/'>RM story</a><a href='gs/'>GS story</a>" + api.EXAMPLES
     .map(e => "<a href='#" + e.id + "'" + (e.id === state.example ? " aria-current='page'" : '') + '>' + esc(e.tab) + '</a>').join('');
 }
 
-// ---------------------------------------------------------------- story
-
-function renderStory() {
-  const s = api.STORY[state.step], n = api.STORY.length;
-  const part = api.STORY_PARTS.findIndex(p => p.id === s.part);
-  $('kicker').textContent = 'Part ' + (part + 1) + ' · ' + api.STORY_PARTS[part].label;
-  $('title').textContent = s.title; $('intro').textContent = s.text;
-  $('exampleNote').textContent = 'A guided story through a GS certification chain to a product passport. Every party, key and grant is fictional, and so is the profile; per-unit GS-mark credentials and product passports are experimental and outside today\'s GS scheme.';
-  document.title = 'Story · VC4QI demonstrator';
-  $('storynav').hidden = false;
-  $('storynav').innerHTML = "<ol class='parts' aria-label='Parts'>" + api.STORY_PARTS.map(p => "<li><button type='button' data-part='" + p.id + "'"
-      + (p.id === s.part ? " aria-current='step'" : '') + '>' + esc(p.label) + '</button></li>').join('') + '</ol>'
-    + "<div class='stepper'><span>Step " + (state.step + 1) + ' of ' + n + '</span>'
-    + "<button type='button' id='prev'" + (state.step === 0 ? ' disabled' : '') + '>← Back</button>'
-    + "<button type='button' id='next'" + (state.step === n - 1 ? ' disabled' : '') + '>Next →</button></div>';
-  $('controls').innerHTML = "<p class='actor'>" + esc(s.actor) + '</p>';
-  $('storynav').querySelectorAll('[data-part]').forEach(b => b.addEventListener('click', () =>
-    goStep(api.STORY.findIndex(x => x.part === b.dataset.part))));
-  $('prev').addEventListener('click', () => goStep(state.step - 1));
-  $('next').addEventListener('click', () => goStep(state.step + 1));
-}
-function goStep(i) {
-  if (i < 0 || i >= api.STORY.length || i === state.step) return;
-  state.step = i; writeHash(); renderControls(); go();
-}
-// Arrow keys and presentation clickers (PageUp/PageDown) move through the story.
-document.addEventListener('keydown', e => {
-  if (state.example !== 'story' || e.altKey || e.ctrlKey || e.metaKey || $('sheet').open) return;
-  const d = e.key === 'ArrowRight' || e.key === 'PageDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'PageUp' ? -1 : 0;
-  if (d) { e.preventDefault(); goStep(state.step + d); }
-});
-
-// Build steps show the passport's chain as far as it has been issued, newest outlined.
-function renderBuild(R, s) {
-  const issued = new Set(api.STORY.slice(0, state.step + 1).flatMap(x => x.issues ?? []));
-  $('vc').innerHTML = s.issues.map(uri => cardHTML(JSON.parse(R.texts[uri]), [], false)).join('');
-  $('raw').textContent = s.issues.map(uri => R.texts[uri]).join('\n\n');
-  renderGraph(R, { only: issued, fresh: new Set(s.issues) });
-}
-function renderDisclosure(s) {
-  $('sdTable').innerHTML = '<thead><tr><th>Credential</th><th>Reveal</th><th>Could stay hidden</th></tr></thead><tbody>'
-    + s.disclosure.map(r => '<tr><td>' + esc(r.credential) + '</td><td>' + esc(r.reveal) + '</td><td>' + esc(r.hide) + '</td></tr>').join('') + '</tbody>';
-}
-// The stylesheet reads data-mode: on narrow screens a chain being built comes first.
-function showMode(mode) {
-  document.body.dataset.mode = mode;
-  $('result').hidden = mode !== 'evaluate';
-  $('sec-vc').hidden = $('side').hidden = mode === 'disclose';
-  $('disclose').hidden = mode !== 'disclose';
-  $('h-vc').textContent = mode === 'build' ? 'Issued in this step' : 'The credential';
-  $('legend').textContent = LEGEND[mode] ?? '';
-}
+$('legend').textContent = LEGEND;
 function segment(label, options, value, key, many) {
   return "<p class='label'>" + esc(label) + "</p><div class='seg" + (many ? ' many' : '') + "' role='group' aria-label='" + esc(label) + "' data-key='" + key + "'>"
     + options.map(o => "<button type='button' data-value='" + esc(o.id) + "' aria-pressed='" + (o.id === value) + "'>" + esc(o.label) + '<small>' + esc(o.sublabel) + '</small></button>').join('') + '</div>';
 }
 function renderControls() {
-  if (state.example === 'story') return renderStory();
   const ex = exampleOf(state.example), spec = ex.cases.find(c => c.id === state.caseId);
-  $('storynav').hidden = true; $('kicker').textContent = 'Example · ' + ex.tab;
+  $('kicker').textContent = 'Example · ' + ex.tab;
   $('title').textContent = ex.title; $('intro').textContent = ex.intro; $('exampleNote').textContent = ex.note;
   document.title = ex.title + ' · VC4QI demonstrator';
   let h = segment(ex.caseLabel, ex.cases, state.caseId, 'caseId', ex.cases.length > 3);
@@ -490,10 +395,9 @@ function renderVC(R) {
 
 // ---------------------------------------------------------------- graph
 
-// With a view ({ only, fresh }), only those credentials are drawn, as issued rather than verified.
-function renderGraph(R, view) {
+function renderGraph(R) {
   const g = $('graph'); g.innerHTML = '';
-  const nodes = R.graph.nodes.filter(n => !view || view.only.has(n.uri));
+  const nodes = R.graph.nodes;
   const depth = Math.max(...nodes.map(n => n.layer));
   const boxes = new Map();
   for (let l = depth; l >= 0; l--) {
@@ -502,9 +406,8 @@ function renderGraph(R, view) {
     const row = document.createElement('div'); row.className = 'layer';
     for (const n of layer) {
       const b = document.createElement('button'); b.type = 'button';
-      b.className = 'node' + (n.target ? ' target' : '') + (n.present ? (view ? '' : ' n-' + n.state) : ' missing') + (view?.fresh.has(n.uri) ? ' fresh' : '');
-      const badge = view ? "<span class='badge" + (view.fresh.has(n.uri) ? " b-new'>new" : "'>issued") + '</span>'
-        : n.present ? "<span class='badge b-" + n.state + "'>" + (n.state === 'established' ? 'verified ✓' : n.state === 'contradicted' ? 'invalid ✕' : 'not checked') + '</span>' : '';
+      b.className = 'node' + (n.target ? ' target' : '') + (n.present ? ' n-' + n.state : ' missing');
+      const badge = n.present ? "<span class='badge b-" + n.state + "'>" + (n.state === 'established' ? 'verified ✓' : n.state === 'contradicted' ? 'invalid ✕' : 'not checked') + '</span>' : '';
       b.innerHTML = '<b>' + esc(n.name) + '</b><small>' + esc(n.role) + '</small><small>' + esc(n.parties) + '</small>' + badge;
       if (n.present) b.addEventListener('click', () => openSheet(n, R)); else b.disabled = true;
       row.appendChild(b); boxes.set(n.uri, b);
@@ -520,7 +423,7 @@ function renderGraph(R, view) {
       if (!a || !b) return '';
       const x1 = a.left + a.width / 2 - base.left, y1 = a.top - base.top, x2 = b.left + b.width / 2 - base.left, y2 = b.bottom - base.top;
       const my = (y1 + y2) / 2;
-      return "<path class='edge " + e.kind + ' e-' + (view ? 'plain' : e.state) + "' d='M" + x1 + ' ' + y1 + ' C' + x1 + ' ' + my + ' ' + x2 + ' ' + my + ' ' + x2 + ' ' + y2 + "'/>";
+      return "<path class='edge " + e.kind + ' e-' + e.state + "' d='M" + x1 + ' ' + y1 + ' C' + x1 + ' ' + my + ' ' + x2 + ' ' + my + ' ' + x2 + ' ' + y2 + "'/>";
     }).join('');
   };
   draw();
@@ -540,15 +443,10 @@ $('sheet').addEventListener('click', function (e) { if (e.target === this && thi
 
 async function run() {
   const my = ++seq;
-  const story = state.example === 'story' ? api.STORY[state.step] : undefined;
-  const mode = story?.part === 'build' ? 'build' : story?.part === 'disclose' ? 'disclose' : 'evaluate';
-  showMode(mode);
   delete document.body.dataset.decision;
-  if (mode === 'disclose') return renderDisclosure(story);
   $('verdict').className = 'verdict busy'; $('mark').textContent = '…'; $('vTitle').textContent = 'Evaluating'; $('vSub').textContent = '';
-  const R = await api.evaluateScenario(story ? story.scenario : { ...state });
+  const R = await api.evaluateScenario({ ...state });
   if (my !== seq) return;
-  if (mode === 'build') return renderBuild(R, story);
   renderVerdict(R); renderQuestions(R); renderVC(R); renderGraph(R);
   document.body.dataset.decision = R.result.decision;
 }

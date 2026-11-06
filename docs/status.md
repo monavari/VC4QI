@@ -14,7 +14,7 @@ accreditation or external endorsement is claimed.
 | Protection and time | `eddsa-rdfc-2022` over JSON-LD safe mode, keys authorized by signed controller documents, exact-byte integrity, Bitstring status with freshness, validity at the activity time |
 | Resolution | Offline, from a pinned catalog per binding; no network access and no trust registry (anchors are profile configuration) |
 | API | `evaluateReliance` (Python `evaluate_reliance`) over the installed binding; see [API](api.md) |
-| Demonstrator | Runs the full evaluators (gates 0–6) in the browser for RM, DCC, GS and DPP examples, a GS walkthrough, and RM and GS actor boards that sign suspensions, revocations and typed certificates live with the fixture keys |
+| Demonstrator | Runs the full evaluators (gates 0–6) in the browser for RM, DCC, GS and DPP examples, and RM and GS actor boards that sign suspensions, revocations and typed certificates live with the fixture keys |
 | Not implemented | Authority-issued answers and Recognized Entities discovery, selective disclosure, historical status at a past time (returns `not_established`), a wallet, a verifier service |
 
 The v0.3 graph verifier, its fixtures, the selective-disclosure path and the legacy

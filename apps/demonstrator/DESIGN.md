@@ -1,8 +1,7 @@
 # Demonstrator design
 
 Rules for the demonstrator pages in `site/demo`: the actor boards of the RM and GS
-stories (`rm/`, `gs/`, drawn by `board.js` and `board.css`), the GS walkthrough and the
-example tabs. They apply to new work and to changes of existing
+stories (`rm/`, `gs/`, drawn by `board.js` and `board.css`) and the example tabs. They apply to new work and to changes of existing
 pages. Where a page does not follow them yet, the deviation is listed at the end.
 
 The pages are presented on projectors to quality-infrastructure audiences and read on
@@ -165,13 +164,10 @@ to, so a wrong link shows on that link alone. Handover lines are always grey.
 
 ## Deviations in the current pages
 
-The RM and GS stories (`site/demo/rm/`, `site/demo/gs/`) follow these rules. The GS
-walkthrough and the example tabs (`site/demo/`) do not yet:
+The RM and GS stories (`site/demo/rm/`, `site/demo/gs/`) follow these rules. The
+example tabs (`site/demo/`) do not yet:
 
-- The selective-disclosure placeholder in the GS walkthrough is amber; it must use the
-  grey placeholder look.
-- Cyan also marks the actor chip and the selected segment; only focus may keep it.
-- The GS walkthrough shows its acting parties in the small `.actor` chip and its chain
-  boxes name parties in a muted line; both break the actor-name rule.
+- Cyan also marks the selected segment; only focus may keep it.
+- The chain boxes name parties in a muted line, which breaks the actor-name rule.
 - On a 1920×1080 screen the GS story, with three card rows, needs a short scroll to reach
   the actors' buttons.
