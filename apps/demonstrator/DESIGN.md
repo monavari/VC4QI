@@ -130,7 +130,7 @@ Citation lines take the state of their link; handover lines are always grey.
 
 - Verdict titles are the decisions: **Accepted**, **Rejected: not *question***, **Not
   established**. The line underneath names the one decisive reason in plain words
-  ("520 is above the accredited range, 50–500").
+  ("520 is above the producer's own scope, 50–500 mg/kg").
 - Answers are **✓ yes**, **✕ no**, **? cannot tell**, **not asked**, **not required**.
 - Step text: the actor is the subject, present tense; one sentence for what happens, one
   for why it matters.

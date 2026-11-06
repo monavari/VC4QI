@@ -281,7 +281,7 @@ async function main() {
         materials: [{ matrixIri: rm('CuZn39Pb3'), formIri: rm('Disc'), name: 'Fictional CuZn39Pb3 brass disc' }],
         materialPropertiesList: [{
           isCertified: true,
-          // The certified set of the M375a DRMD transcription (examples/rm/source):
+          // The certified set of the M375a DRMD, as transcribed for the v0.3 example:
           // As first (the selected claim), then Cu, Zn and Pb, all with k = 2.
           results: [
             certified('As', value, 'mg/kg', '5'),

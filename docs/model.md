@@ -140,7 +140,9 @@ restriction (such as an accreditation suspension) applies outside the OR.
 
 A **bounded operational scope** (a projection) also needs permission to maintain the
 scope and containment within its parent. Independent grants are not automatically
-bounded by an accreditation.
+bounded by an accreditation. This is how a flexible accreditation scope works in
+practice: the accreditation names a broad field, and the producer or laboratory keeps
+its own, narrower list within it.
 
 ## 6. Scope, quantities and conformity
 
