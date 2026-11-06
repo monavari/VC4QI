@@ -32,6 +32,16 @@
   documents in the browser (`apps/demonstrator/live-sign.ts`) with the same proof code
   and public fixture keys as the generator; the bundle test checks that they verify like
   the generated fixtures. The design rules are in `apps/demonstrator/DESIGN.md`.
+- A **GS story** (`site/demo/gs/`) puts the GS chain on the same actor board: the
+  accreditation body, the scheme owner, the GS body, the manufacturer and the verifier.
+  Fifteen steps build the chain up to a product passport, verify it, manipulate it (an
+  edited serial, a borrowed mark credential, a withheld type examination, a certificate
+  withdrawn live by the GS body), let two verifiers decide (market surveillance, and a
+  buyer abroad who does not trust the scheme owner), show a presentation placeholder and
+  make every action live, including revoking the accreditation or the scheme permission.
+  Both boards now share `site/demo/board.js` and `board.css`. In the credential graph a
+  deeper link takes the verification of the credential it points to, so a borrowed link
+  is the only red line; the old page's guided story is renamed "GS walkthrough".
 - The signed RM v1 accreditation `A` is now broad, shaped after a flexible-scope annex
   row of an RM producer accreditation ("non-ferrous metals and alloys, element
   contents"): As, Cu, Zn and Pb in the brass, methods M1 and M2, 0.1 mg/kg to 997 g/kg

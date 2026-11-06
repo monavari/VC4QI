@@ -6,244 +6,13 @@
 <title>RM story · VC4QI demonstrator</title>
 <meta name="description" content="A reference-material certificate on an actor board: an accreditation body, a laboratory, an RM producer, a customer lab and a verifier. Build the chain, verify it, manipulate it, and see how the verifier's own profile decides. Evaluated in the browser on signed test credentials.">
 <link rel="icon" href="data:,">
-<style>
-/* Design rules: apps/demonstrator/DESIGN.md. Colour is state, position is actor,
-   shape is the kind of asset, line style is the relation. */
-:root{
-  --petrol:#00556E; --cyan:#00AFF0; --red:#D2001E;
-  --paper:#FFFFFF; --raise:#FFFFFF; --wash:#F3F5F6; --wallet:#F4F7F2; --line:#DADEE1;
-  --ink:#14232A; --muted:#56656D; --soft:#8A979E;
-  --ok:#1B7A47; --ok-wash:#E7F4EC; --bad:#C8102E; --bad-wash:#FCEBEE;
-  --unk:#9A5B00; --unk-wash:#FFF3DC; --off:#8A979E; --off-wash:#F3F5F6; --on-petrol:#FFFFFF;
-  --v-ok:#1B7A47; --v-bad:#C8102E; --v-unk:#8A5300; --v-busy:#56656D;
-  --hatch:repeating-linear-gradient(135deg, transparent 0 7px, rgba(86,101,109,.09) 7px 14px);
-  --s1:.25rem; --s2:.5rem; --s3:.75rem; --s4:1rem; --s5:1.5rem; --s6:2rem; --s7:3rem;
-  --radius:10px;
-  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){ --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --wallet:#15261F; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --petrol:#0A6A86;
-    --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D;
-    --hatch:repeating-linear-gradient(135deg, transparent 0 7px, rgba(163,178,184,.10) 7px 14px); }
-}
-:root[data-theme="dark"]{ --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --wallet:#15261F; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --petrol:#0A6A86;
-  --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D;
-  --hatch:repeating-linear-gradient(135deg, transparent 0 7px, rgba(163,178,184,.10) 7px 14px); }
-:root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
-*,*::before,*::after{ box-sizing:inherit; }
-html{ font-size:16px; -webkit-text-size-adjust:100%; }
-@media (min-width:64rem){ html{ font-size:17px; } }
-@media (min-width:110rem){ html{ font-size:18px; } }
-body{ margin:0; background:var(--paper); color:var(--ink); font:1rem/1.5 var(--sans); }
-main{ max-width:92rem; margin:0 auto; padding:0 16px var(--s7); }
-a{ color:inherit; text-underline-offset:3px; }
-button, input, select{ font:inherit; color:inherit; }
-:focus-visible{ outline:3px solid var(--cyan); outline-offset:2px; border-radius:4px; }
-[hidden]{ display:none !important; }
-.mono{ font-family:var(--mono); }
-
-/* top bar */
-.topbar{ border-bottom:1px solid var(--line); background:var(--paper); }
-.topbar .in{ max-width:92rem; margin:0 auto; padding:var(--s2) 16px; display:flex; align-items:center; gap:var(--s4); }
-.brand{ font-size:.9rem; text-decoration:none; white-space:nowrap; } .brand strong{ color:var(--red); }
-.links{ display:flex; gap:var(--s1); margin-left:auto; flex-wrap:wrap; }
-.links a{ text-decoration:none; font-weight:650; font-size:.9rem; padding:.35rem .8rem; border-radius:999px; color:var(--muted); }
-.links a:hover{ background:var(--wash); color:var(--ink); }
-.links a[aria-current="page"]{ background:var(--petrol); color:var(--on-petrol); }
-
-/* story navigation */
-.storynav{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s3); padding:var(--s3) 0; border-bottom:1px solid var(--line); }
-.parts{ display:flex; flex-wrap:wrap; gap:var(--s2); list-style:none; padding:0; margin:0; counter-reset:part; }
-.parts li{ counter-increment:part; }
-.parts button{ border:1px solid var(--line); background:var(--paper); color:var(--muted); font-size:.85rem; font-weight:600; padding:.3rem .8rem; border-radius:999px; cursor:pointer; }
-.parts button::before{ content:counter(part); margin-right:.45rem; color:var(--soft); font-variant-numeric:tabular-nums; }
-.parts button:hover{ border-color:var(--muted); color:var(--ink); }
-.parts button[aria-current="step"]{ background:var(--petrol); border-color:var(--petrol); color:var(--on-petrol); }
-.parts button[aria-current="step"]::before{ color:#BFE3EE; }
-.stepper{ display:flex; align-items:center; gap:var(--s2); }
-.stepper span{ margin-right:var(--s2); font-size:.85rem; color:var(--muted); font-variant-numeric:tabular-nums; }
-.stepper button{ border:1px solid var(--line); background:var(--paper); border-radius:8px; padding:.45rem 1rem; font-weight:650; cursor:pointer; }
-.stepper #next{ background:var(--petrol); border-color:var(--petrol); color:var(--on-petrol); }
-.stepper button:disabled{ opacity:.35; cursor:default; }
-
-/* step header: level 2 title, level 3 acting actors, level 5 lead */
-.stephead{ padding:var(--s3) 0; display:grid; gap:var(--s2); }
-.kicker{ margin:0; font-size:.82rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--petrol); }
-h1{ margin:0; font-size:clamp(1.5rem, 1.15rem + .9vw, 2rem); line-height:1.2; font-weight:750; letter-spacing:-.01em; }
-.acts{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2) var(--s3); margin:0; font-size:1.05rem; font-weight:650; }
-.acts .arrow{ color:var(--muted); font-weight:400; }
-.acts .who{ display:inline-flex; align-items:center; gap:var(--s2); }
-.lead{ margin:0; font-size:1.12rem; line-height:1.5; color:var(--muted); max-width:46rem; }
-@media (min-width:64rem){
-  /* Title and actors on the left, the explanation beside them: the board starts higher. */
-  .stephead{ grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); column-gap:var(--s6); align-items:end; }
-  .stephead > *{ grid-column:1; }
-  .stephead .lead{ grid-column:2; grid-row:1 / span 3; align-self:center; }
-}
-
-/* monograms: level 3 */
-.mono-badge{ flex:none; display:inline-grid; place-items:center; width:2.25rem; height:2.25rem; border-radius:50%; border:2px solid var(--ink); font:750 .82rem/1 var(--sans); letter-spacing:.02em; color:var(--ink); background:var(--paper); }
-.mono-badge.sm{ width:1.7rem; height:1.7rem; font-size:.7rem; border-width:1.5px; }
-.who-inline{ display:inline-flex; align-items:center; gap:.3rem; font-weight:700; color:var(--ink); }
-
-/* placeholders: grey, dashed, hatched, never a state colour */
-.placeholder{ border:2px dashed var(--soft); border-radius:var(--radius); background:var(--hatch), var(--wash); color:var(--ink); }
-.placeholder .tag{ display:inline-block; font-size:.82rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
-.band{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--s1) var(--s3); padding:.3rem var(--s4); margin:0 0 var(--s3); font-size:.88rem; }
-.band b{ font-weight:650; }
-#presentation{ padding:var(--s4) var(--s5); margin:var(--s2) 0 var(--s4); }
-#presentation p{ margin:0 0 var(--s2); max-width:60rem; }
-table{ width:100%; border-collapse:collapse; font-size:.92rem; margin:var(--s2) 0 0; }
-th{ text-align:left; font-size:.82rem; font-weight:700; color:var(--muted); border-bottom:1px solid var(--line); padding:var(--s1) var(--s2); }
-td{ padding:var(--s2); border-bottom:1px solid var(--line); vertical-align:top; }
-
-/* the board: one column per actor; rows line up across columns (subgrid) */
-.board{ position:relative; display:grid; gap:var(--s4); }
-.board > svg{ display:none; }
-.col{ position:relative; min-width:0; display:flex; flex-direction:column; gap:var(--s2); padding:var(--s3); border:1px solid var(--line); border-radius:12px; background:var(--paper); }
-.col[data-actor="holder"]{ background:var(--wallet); }
-.col[data-actor="verifier"]{ order:-1; }
-.col.acting{ border-color:var(--petrol); box-shadow:0 0 0 2px var(--petrol); }
-.col.dim > .actions{ opacity:.42; }
-.col.absent{ display:none; }
-body[data-mode="build"] .col.dim > .slot{ opacity:.42; }
-.colhead{ display:grid; gap:.4rem; align-content:start; }
-.colhead .name{ display:flex; align-items:center; gap:var(--s2); }
-.colhead h2{ margin:0; font-size:1.15rem; line-height:1.2; font-weight:700; color:var(--ink); }
-.colhead .does{ margin:0; font-size:.82rem; line-height:1.4; color:var(--muted); }
-.pubs{ display:flex; flex-wrap:wrap; gap:var(--s1); }
-.pub{ font-size:.82rem; line-height:1.2; padding:.15rem .5rem; border-radius:6px; border:1px solid var(--line); color:var(--muted); background:var(--paper); }
-.pub.changed{ border-color:var(--petrol); color:var(--petrol); font-weight:650; }
-.roles{ display:flex; flex-wrap:wrap; gap:var(--s1); min-height:0; }
-.role{ font-size:.82rem; font-weight:700; padding:.1rem .5rem; border-radius:999px; background:var(--petrol); color:var(--on-petrol); }
-.slot{ display:grid; gap:var(--s3); align-content:start; min-height:0; }
-.slot:empty{ display:none; }
-.actions{ display:flex; flex-wrap:wrap; gap:var(--s2); align-content:start; }
-.actions:empty{ display:none; }
-@media (min-width:64rem){
-  .board{ grid-template-columns:repeat(4, minmax(0, 1fr)) minmax(0, 1.5fr); grid-template-rows:auto auto auto auto; column-gap:var(--s4); row-gap:var(--s2); }
-  .board > svg{ display:block; position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:1; }
-  .col{ display:grid; grid-row:1 / span 4; grid-template-rows:subgrid; order:0 !important; }
-  .col[data-actor="verifier"]{ order:0; }
-  .slot:empty{ display:grid; }
-  .actions:empty{ display:flex; }
-  .slot.r1{ grid-row:2; } .slot.r2{ grid-row:3; } .actions{ grid-row:4; }
-  /* Room for a citation between two credentials of the same actor (D → O). */
-  .slot.r2{ margin-top:2.25rem; }
-  .col.absent{ display:grid; visibility:hidden; }
-  /* On the board the lines show what a credential cites. */
-  .card .cites{ display:none; }
-  /* The verifier does not hold credentials: its verdict and settings flow on their own. */
-  .col[data-actor="verifier"]{ display:flex; flex-direction:column; }
-  .col[data-actor="verifier"] .slot{ grid-row:auto; }
-}
-
-/* assets: level 4. Grants standard, evidence tagged, the claim thicker. State is the border. */
-.card{ position:relative; z-index:2; display:block; width:100%; text-align:left; background:var(--raise); color:var(--ink); border:2px solid var(--line); border-radius:var(--radius); padding:var(--s2) var(--s3); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.07); }
-.card:hover{ border-color:var(--muted); }
-.card.claim{ border-width:3.5px; }
-.card .top{ display:flex; align-items:center; gap:var(--s2); }
-.code{ white-space:nowrap; font:700 .9rem/1 var(--mono); padding:.2rem .4rem; border-radius:5px; background:var(--wash); border:1px solid var(--line); }
-.card .kind{ font-size:1rem; font-weight:650; line-height:1.25; }
-.card .icon{ margin-left:auto; font-weight:800; font-size:1rem; }
-.card .fact{ display:block; margin-top:var(--s1); font-size:.95rem; line-height:1.35; overflow-wrap:anywhere; }
-.card .fact + .fact{ margin-top:0; }
-.card .foot{ display:flex; flex-wrap:wrap; align-items:center; gap:.2rem .4rem; margin-top:var(--s2); padding-top:var(--s1); border-top:1px solid var(--line); font-size:.82rem; color:var(--muted); }
-.tags{ display:flex; flex-wrap:wrap; gap:var(--s1); margin-top:var(--s1); }
-.tag{ font-size:.82rem; font-weight:700; padding:.05rem .45rem; border-radius:999px; border:1px solid var(--line); color:var(--muted); }
-.tag.t-bad{ border-color:var(--bad); color:var(--bad); }
-.tag.t-new{ border-color:var(--petrol); background:var(--petrol); color:var(--on-petrol); }
-.tag.t-live{ border-color:var(--petrol); color:var(--petrol); }
-.card.s-established{ border-color:var(--ok); } .card.s-established .icon{ color:var(--ok); }
-.card.s-contradicted{ border-color:var(--bad); background:var(--bad-wash); } .card.s-contradicted .icon{ color:var(--bad); }
-.card.s-not_established{ border-color:var(--unk); background:var(--unk-wash); } .card.s-not_established .icon{ color:var(--unk); }
-.card.missing{ border-style:dashed; box-shadow:none; }
-.card.fresh{ border-color:var(--petrol); box-shadow:0 0 0 3px var(--petrol); }
-.card.cited{ box-shadow:0 0 0 3px var(--paper), 0 0 0 5px var(--petrol); }
-.card.empty{ cursor:default; border-style:dashed; color:var(--muted); background:transparent; box-shadow:none; }
-@media (prefers-reduced-motion: no-preference){ .card.handover{ animation:handover .3s ease-out; } }
-@keyframes handover{ from{ transform:translateX(-24px); opacity:0; } to{ transform:none; opacity:1; } }
-
-/* the wallet: what the holder has */
-.wallet{ display:grid; gap:var(--s2); }
-.object{ display:inline-flex; align-items:center; gap:var(--s2); justify-self:start; padding:.3rem .8rem; border-radius:999px; border:1.5px solid var(--muted); background:var(--paper); font-size:.95rem; font-weight:650; }
-.object::before{ content:"◼"; color:var(--muted); }
-.wallet .refs{ margin:0; font-size:.82rem; color:var(--muted); }
-.wallet .refs s{ color:var(--unk); }
-
-/* actions: buttons in the actor's own column */
-.act{ border:1.5px solid var(--ink); background:var(--paper); color:var(--ink); border-radius:8px; padding:.4rem .75rem; font-size:.9rem; font-weight:650; cursor:pointer; }
-.act[aria-pressed="true"]{ background:var(--ink); color:var(--paper); }
-.act:disabled{ opacity:.45; cursor:not-allowed; border-style:dashed; }
-.seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; border:1px solid var(--line); border-radius:8px; overflow:hidden; width:100%; }
-.seg button{ border:0; background:var(--paper); padding:.35rem .4rem; font-size:.88rem; cursor:pointer; line-height:1.2; }
-.seg button small{ display:block; font-size:.82rem; color:var(--muted); }
-.seg button[aria-pressed="true"]{ background:var(--ink); color:var(--paper); font-weight:650; }
-.seg button[aria-pressed="true"] small{ color:var(--paper); opacity:.85; }
-.seg button + button{ border-left:1px solid var(--line); }
-.seg button:disabled{ cursor:not-allowed; }
-.seg.locked{ opacity:.45; border-style:dashed; }
-.field{ display:grid; gap:.2rem; width:100%; }
-.field > span{ font-size:.82rem; font-weight:700; color:var(--muted); }
-.custom{ display:grid; grid-template-columns:1fr 1fr; gap:var(--s2); width:100%; }
-.custom label{ display:grid; gap:.15rem; font-size:.82rem; font-weight:700; color:var(--muted); }
-.custom input, .custom select{ width:100%; padding:.3rem .4rem; border:1px solid var(--line); border-radius:6px; background:var(--paper); font:.95rem var(--mono); color:var(--ink); }
-.custom .act{ align-self:end; }
-.limit{ margin:0; font-size:.82rem; color:var(--muted); }
-.limit b{ color:var(--ink); }
-
-/* verdict: level 1. The six questions: level 6. */
-.verdict{ display:flex; gap:var(--s3); align-items:center; border-radius:var(--radius); padding:var(--s3) var(--s4); color:#fff; background:var(--v-ok); }
-.verdict.reject{ background:var(--v-bad); } .verdict.unknown{ background:var(--v-unk); } .verdict.busy{ background:var(--v-busy); }
-.verdict.idle{ background:var(--hatch), var(--wash); color:var(--ink); border:2px dashed var(--soft); }
-.verdict .mark{ flex:none; width:2.4rem; height:2.4rem; border-radius:50%; background:#fff; display:grid; place-items:center; font-size:1.2rem; font-weight:800; color:var(--v-ok); }
-.verdict.reject .mark{ color:var(--v-bad); } .verdict.unknown .mark{ color:var(--v-unk); } .verdict.busy .mark{ color:var(--v-busy); }
-.verdict.idle .mark{ color:var(--muted); background:var(--paper); border:1.5px solid var(--soft); }
-.verdict b{ display:block; font-size:1.5rem; line-height:1.2; font-weight:750; }
-.verdict small{ display:block; margin-top:var(--s1); font-size:1rem; line-height:1.35; overflow-wrap:anywhere; }
-.questions{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:var(--s2); }
-.q{ border-radius:8px; background:var(--off-wash); border-left:5px solid var(--off); }
-.q.s-established{ background:var(--ok-wash); border-left-color:var(--ok); }
-.q.s-contradicted{ background:var(--bad-wash); border-left-color:var(--bad); }
-.q.s-not_established{ background:var(--unk-wash); border-left-color:var(--unk); }
-.q summary{ list-style:none; cursor:pointer; padding:.35rem var(--s3); display:flex; flex-wrap:wrap; justify-content:space-between; gap:0 var(--s2); }
-.q summary::-webkit-details-marker{ display:none; }
-.q summary b{ font-size:.9rem; font-weight:650; }
-.q[open]{ grid-column:1 / -1; }
-.state{ font-size:.9rem; font-weight:700; white-space:nowrap; }
-.st-established{ color:var(--ok); } .st-contradicted{ color:var(--bad); } .st-not_established{ color:var(--unk); }
-.st-not_asked, .st-not_required{ color:var(--muted); }
-.why{ margin:0 var(--s3) var(--s2); font-size:.9rem; overflow-wrap:anywhere; }
-
-/* lines: solid = authority, dotted = evidence, dashed grey = handed over */
-.edge{ fill:none; stroke-width:2.5; }
-.edge.support{ stroke-dasharray:2 5; stroke-linecap:round; stroke-width:3; }
-.edge.handover{ stroke:var(--soft); stroke-dasharray:8 6; stroke-width:2; }
-.e-established, .e-not_required{ stroke:var(--ok); } .e-contradicted{ stroke:var(--bad); stroke-width:3.5; } .e-not_established{ stroke:var(--unk); stroke-width:3; }
-.e-plain{ stroke:var(--soft); }
-.legend{ margin:var(--s3) 0 0; font-size:.82rem; color:var(--muted); }
-.legend i{ display:inline-block; width:2rem; height:0; vertical-align:middle; margin:0 .35rem 0 .6rem; border-top:3px solid var(--soft); }
-.legend i.dot{ border-top-style:dotted; } .legend i.dash{ border-top:2px dashed var(--soft); }
-
-dialog{ border:0; border-radius:14px; width:min(46rem, 100%); padding:var(--s4) var(--s5) var(--s5); background:var(--paper); color:var(--ink); max-height:86vh; }
-dialog::backdrop{ background:rgba(0,20,26,.45); }
-dialog h2{ margin:0 0 var(--s3); font-size:1.15rem; }
-dialog .close{ float:right; border:1px solid var(--line); background:var(--paper); border-radius:8px; padding:.3rem .7rem; cursor:pointer; }
-.map{ display:grid; grid-template-columns:8.5rem 1fr; gap:var(--s1) var(--s3); margin:0 0 var(--s3); font-size:.95rem; }
-.map dt{ color:var(--muted); font-size:.85rem; padding-top:.15rem; } .map dd{ margin:0; overflow-wrap:anywhere; }
-details.raw summary{ cursor:pointer; font-weight:600; padding:var(--s2) 0; font-size:.9rem; }
-pre{ font:.78rem/1.45 var(--mono); background:var(--wash); padding:var(--s4); border-radius:8px; overflow-x:auto; max-height:24rem; margin:0; }
-
-footer{ margin-top:var(--s6); border-top:1px solid var(--line); padding-top:var(--s4); font-size:.82rem; color:var(--muted); }
-footer p{ margin:var(--s1) 0; max-width:60rem; }
-</style>
+<link rel="stylesheet" href="../board.css">
 </head>
 <body>
 <header class="topbar"><div class="in">
   <a class="brand" href="../../"><strong>VC4QI</strong> demonstrator</a>
   <nav class="links" aria-label="Demonstrator">
-    <a href="./" aria-current="page">RM story</a><a href="../#story">GS story</a><a href="../#rm">Examples</a>
+    <a href="./" aria-current="page">RM story</a><a href="../gs/">GS story</a><a href="../#rm">Examples</a>
   </nav>
 </div></header>
 <main>
@@ -285,358 +54,68 @@ footer p{ margin:var(--s1) 0; max-width:60rem; }
 </dialog>
 
 <script type="module">
-const $ = id => document.getElementById(id);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const short = iri => String(iri ?? '').split('#').pop().split(/[/:]/).pop();
-const LABEL = { established: '✓ yes', contradicted: '✕ no', not_established: '? cannot tell', not_asked: 'not asked', not_required: 'not required' };
-const ICON = { established: '✓', contradicted: '✕', not_established: '?' };
-const QUESTIONS = { authentic: 'Authentic', current: 'Current', understood: 'Understood', authorized: 'Authorized', supported: 'Supported', fit: 'Fit for use' };
-const ORDER = ['authentic', 'current', 'understood', 'authorized', 'supported', 'fit'];
-
-function fail(message) {
-  $('board').innerHTML = "<div class='verdict unknown'><div class='mark'>?</div><div><b>Not established</b><small>" + esc(message) + '</small></div></div>';
-}
-let api;
-try { api = await import('../verifier.js'); }
-catch (error) { fail('This browser could not run the evaluator (' + error.message + ').'); throw error; }
-$('evalTime').textContent = new Date(api.EVALUATION_TIME).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
-
-const STORY = api.RM_STORY, ACTORS = api.RM_ACTORS, ASSETS = api.RM_ASSETS;
-const actor = id => ACTORS.find(a => a.id === id);
-const CERTIFY = STORY.findIndex(s => s.id === 'certify');
-// Plain words first: a party's controller becomes its name, a credential its code.
-const plain = text => String(text ?? '')
-  .replace(/https:\/\/(nab|lab|producer|other-ab)\.vc4qi\.example\/controller/g, (_, h) =>
-    ({ nab: 'the accreditation body', lab: 'the laboratory', producer: 'the RM producer', 'other-ab': 'another accreditation body' }[h]))
-  .replace(/https:\/\/[a-z-]+\.vc4qi\.example\/credentials\/([A-Za-z0-9-]+)/g, '$1')
-  .replace(/https:\/\/[a-z-]+\.vc4qi\.example\/status\/(suspension\/)?1/g, (_, x) => x ? 'its suspension list' : 'its status list')
-  .replace(/^the /, 'The ');
-let step = 0, overrides = {}, seq = 0, redraw;
-
-// ---------------------------------------------------------------- state and address
-
-const STATE_KEYS = Object.keys(api.RM_DEFAULT);
-const stateOf = s => ({ ...api.RM_DEFAULT, ...(s.state ?? {}), ...overrides });
-const live = control => (STORY[step].unlock ?? []).includes(control);
-function readHash() {
-  const [id, query] = location.hash.replace(/^#/, '').split('/');
-  step = Math.max(0, STORY.findIndex(s => s.id === id));
-  overrides = {};
-  if (STORY[step].part === 'play' && query) {
-    for (const [k, v] of new URLSearchParams(query)) if (STATE_KEYS.includes(k)) overrides[k] = v === 'true' ? true : v === 'false' ? false : v;
-  }
-}
-function writeHash() {
-  const s = STORY[step];
-  const query = s.part === 'play' ? new URLSearchParams(Object.entries(overrides).map(([k, v]) => [k, String(v)])).toString() : '';
-  history.replaceState(null, '', '#' + s.id + (query ? '/' + query : ''));
-}
-function goStep(i) {
-  if (i < 0 || i >= STORY.length || i === step) return;
-  // "Your turn" starts from the step before it; every other step starts from its own state.
-  overrides = STORY[i].part === 'play' ? { ...(STORY[step].state ?? {}), ...overrides } : {};
-  step = i; writeHash(); render();
-}
-function set(key, value) { overrides = { ...overrides, [key]: value }; writeHash(); render(); }
-document.addEventListener('keydown', e => {
-  if (e.altKey || e.ctrlKey || e.metaKey || $('sheet').open || /INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName)) return;
-  const d = e.key === 'ArrowRight' || e.key === 'PageDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'PageUp' ? -1 : 0;
-  if (d) { e.preventDefault(); goStep(step + d); }
-});
-window.addEventListener('hashchange', () => { readHash(); render(); });
-
-// ---------------------------------------------------------------- navigation and header
-
-function renderNav() {
-  const s = STORY[step];
-  $('storynav').innerHTML = "<ol class='parts' aria-label='Parts'>" + api.RM_PARTS.map(p => "<li><button type='button' data-part='" + p.id + "'"
-      + (p.id === s.part ? " aria-current='step'" : '') + '>' + esc(p.label) + '</button></li>').join('') + '</ol>'
-    + "<div class='stepper'><span>Step " + (step + 1) + ' of ' + STORY.length + '</span>'
-    + "<button type='button' id='prev'" + (step === 0 ? ' disabled' : '') + '>← Back</button>'
-    + "<button type='button' id='next'" + (step === STORY.length - 1 ? ' disabled' : '') + '>Next →</button></div>';
-  $('storynav').querySelectorAll('[data-part]').forEach(b => b.addEventListener('click', () => goStep(STORY.findIndex(x => x.part === b.dataset.part))));
-  $('prev').addEventListener('click', () => goStep(step - 1));
-  $('next').addEventListener('click', () => goStep(step + 1));
-  const part = api.RM_PARTS.findIndex(p => p.id === s.part);
-  $('kicker').textContent = 'Part ' + (part + 1) + ' · ' + api.RM_PARTS[part].label;
-  $('title').textContent = s.title; $('lead').textContent = s.text;
-  document.title = s.title + ' · RM story · VC4QI';
-  const who = id => "<span class='who'><span class='mono-badge sm'>" + esc(actor(id).mono) + '</span>' + esc(actor(id).name) + '</span>';
-  $('acts').innerHTML = s.part === 'play' ? '' : s.acts.map(who).join("<span class='arrow' aria-label='to'>→</span>");
-  $('acts').hidden = s.part === 'play';
-  $('presentation').hidden = !s.presentation;
-  if (s.presentation) {
-    $('presentTable').innerHTML = '<thead><tr><th>Credential</th><th>Reveal</th><th>Could stay hidden</th></tr></thead><tbody>'
-      + s.presentation.map(r => '<tr><td>' + esc(r.credential) + '</td><td>' + esc(r.reveal) + '</td><td>' + esc(r.hide) + '</td></tr>').join('') + '</tbody>';
-  }
-}
-
-// ---------------------------------------------------------------- reading the credentials
+import { fail, mountBoard, short } from '../board.js';
 
 // 997000 mg/kg reads as 997 g/kg, the way an annex writes it.
 const amount = (v, unit) => unit === 'mg/kg' && Number(v) >= 1000 ? Number(v) / 1000 + ' g/kg' : v + ' ' + unit;
 const range = r => !r ? '' : Number(r.to) >= 1000 && r.unit === 'mg/kg' ? amount(r.from, r.unit) + ' – ' + amount(r.to, r.unit) : r.from + '–' + r.to + ' ' + r.unit;
 const matrix = r => short(r.matrixIri) + (r.formIri ? ' ' + short(r.formIri).toLowerCase() + 's' : '');
+const list = a => (a ?? []).map(short).join(', ');
 function facts(code, d) {
   const s = d.credentialSubject ?? {}, r = (s.scope ?? [])[0] ?? {};
-  if (code === 'A') return [(r.allowedPropertyIris ?? []).map(short).join(', ') + ' in ' + matrix(r), range(r.range) + ' · methods ' + (r.allowedMethodIris ?? []).map(short).join(', ')];
-  if (code === 'H') return [(r.studyTypeIris ?? []).map(short).join(', ') + ' studies', short(r.allowedPropertyIris?.[0]) + ' in ' + short(r.matrixIri)];
-  if (code === 'O') return [(r.allowedPropertyIris ?? []).map(short).join(', ') + ' only · ' + range(r.range), 'Method ' + (r.allowedMethodIris ?? []).map(short).join(', ') + ' only'];
+  if (code === 'A') return [list(r.allowedPropertyIris) + ' in ' + matrix(r), range(r.range) + ' · methods ' + list(r.allowedMethodIris)];
+  if (code === 'H') return [list(r.studyTypeIris) + ' studies', list(r.allowedPropertyIris) + ' in ' + short(r.matrixIri)];
+  if (code === 'O') return [list(r.allowedPropertyIris) + ' only · ' + range(r.range), 'Method ' + list(r.allowedMethodIris) + ' only'];
   if (code === 'S') return ['Disc lot 1: ' + short(s.outcomeIri).toLowerCase(), short(s.studyTypeIri) + ' of ' + short(s.propertyIri)];
   const res = s.materialPropertiesList?.[0]?.results?.[0] ?? {}, q = res.data?.quantity ?? {};
   return [short(res.propertyIri) + ' = ' + q.value + ' ± ' + q.uncertainty?.expandedUncertainty + ' ' + (q.unit?.ucumCode ?? ''), 'k = ' + q.uncertainty?.coverageFactor + ' · method ' + short(res.methodIri)];
 }
-const cites = d => [...(d.termsOfUse ?? []).map(t => short(t.authorizationCredential?.id)), ...(d.evidence ?? []).map(e => short(e.id) + ' (evidence)')];
-const discAt = () => step >= CERTIFY ? 'holder' : 'rmp';
-const aboutOf = a => a.about === 'batch' ? discAt() : a.about;
-const uriOf = (a, R) => a.code === 'D' ? R.certificate : R.graph.nodes.find(n => short(n.uri) === a.code)?.uri
-  ?? Object.keys(R.texts).find(u => short(u) === a.code);
 
-// ---------------------------------------------------------------- the board
-
-const evaluated = s => s.part !== 'build' && s.part !== 'present';
-function issuedSoFar() { return new Set(STORY.slice(0, step + 1).flatMap(s => s.issues ?? [])); }
-// An actor's column appears once the chain reaches it; "Your turn" shows everyone.
-const joined = id => STORY[step].part === 'play' || STORY.slice(0, step + 1).some(s => (s.joins ?? []).includes(id));
-
-function cardHTML(a, R, mode) {
-  const s = STORY[step], st = stateOf(s), uri = uriOf(a, R), node = R.graph.nodes.find(n => n.uri === uri);
-  const fresh = mode === 'build' && (s.issues ?? []).includes(a.code);
-  const missing = a.code === 'S' && st.withholdS && mode === 'evaluate';
-  const text = R.texts[uri] ?? (missing ? null : undefined);
-  const d = text ? JSON.parse(text) : null;
-  const state = mode === 'evaluate' ? (missing ? 'not_established' : node?.state ?? 'not_established') : '';
-  const tags = [];
-  if (fresh) tags.push("<span class='tag t-new'>new</span>");
-  if (a.code === 'A' && st.suspendA && mode === 'evaluate') tags.push("<span class='tag t-bad'>suspended</span>");
-  if (a.code === 'S' && st.revokeS && mode === 'evaluate') tags.push("<span class='tag t-bad'>revoked</span>");
-  if (missing) tags.push("<span class='tag'>not shown</span>");
-  if (a.code === 'D' && st.tamper && mode === 'evaluate') tags.push("<span class='tag t-bad'>edited after signing</span>");
-  if (a.code === 'D' && R.signedLive.includes(uri)) tags.push("<span class='tag t-live'>signed in this browser</span>");
-  if (a.kind === 'evidence') tags.unshift("<span class='tag'>evidence</span>");
-  const code = a.code === 'D' ? short(uri) : a.code;
-  const lines = d ? facts(a.code, d) : [];
-  const foot = "<span class='foot'>signed by <span class='who-inline'>" + esc(actor(a.actor).mono) + '</span> · about '
-    + (a.about === 'batch' ? '<b>disc lot 1</b>' : "<span class='who-inline'>" + esc(actor(a.about).mono) + '</span>')
-    + (d && cites(d).length ? "<span class='cites'>· cites " + esc(cites(d).join(', ')) + '</span>' : '') + '</span>';
-  return "<button type='button' class='card " + a.kind + (state ? ' s-' + state : '') + (missing ? ' missing' : '') + (fresh ? ' fresh' : '')
-    + (fresh && a.code === 'D' ? ' handover' : '') + "' data-code='" + a.code + "' data-uri='" + esc(uri) + "'>"
-    + "<span class='top'><span class='code'>" + esc(code) + "</span><span class='kind'>" + esc(a.label) + '</span>'
-    + (state ? "<span class='icon' aria-label='" + esc(LABEL[state]) + "'>" + ICON[state] + '</span>' : '') + '</span>'
-    + lines.map(l => "<span class='fact'>" + esc(l) + '</span>').join('')
-    + (tags.length ? "<span class='tags'>" + tags.join('') + '</span>' : '') + foot + '</button>';
-}
-
-function walletHTML(R, mode) {
-  if (step < CERTIFY) return "<div class='card empty'><span class='kind'>Nothing yet</span><span class='fact'>The disc and its certificate arrive when the producer ships them.</span></div>";
-  const st = stateOf(STORY[step]);
-  const refs = ['O', 'A', st.withholdS && mode === 'evaluate' ? '<s>S (left out)</s>' : 'S', 'H'];
-  return "<div class='wallet' id='wallet'><span class='object'>Disc lot 1 · CuZn39Pb3</span>"
-    + "<p class='refs'>Holds certificate <b class='mono'>" + esc(short(R.certificate)) + '</b>' + (st.tamper && mode === 'evaluate' ? ', edited' : '')
-    + ', and shows the chain it cites: ' + refs.join(', ') + '.</p></div>';
-}
-
-function seg(key, label, options, value, control) {
-  const on = live(control);
-  return "<div class='field'><span>" + esc(label) + "</span><div class='seg" + (on ? '' : ' locked') + "' role='group' aria-label='" + esc(label) + "'"
-    + (on ? '' : " title='Available in Your turn'") + '>'
-    + options.map(o => "<button type='button' data-key='" + key + "' data-value='" + esc(o.id) + "' aria-pressed='" + (String(o.id) === String(value)) + "'"
-      + (on ? '' : ' disabled') + '>' + esc(o.label) + (o.sub ? '<small>' + esc(o.sub) + '</small>' : '') + '</button>').join('') + '</div></div>';
-}
-function toggle(key, label, value, control) {
-  const on = live(control);
-  return "<button type='button' class='act' data-key='" + key + "' data-value='" + !value + "' aria-pressed='" + value + "'"
-    + (on ? '' : " disabled title='Available in Your turn'") + '>' + esc(label) + '</button>';
-}
-function actionsHTML(id, st) {
-  if (id === 'ab') return toggle('suspendA', 'Suspend A', st.suspendA, 'suspend');
-  if (id === 'lab') return toggle('revokeS', 'Revoke S', st.revokeS, 'revoke');
-  if (id === 'holder') return toggle('tamper', 'Edit a value', st.tamper, 'tamper') + toggle('withholdS', 'Leave out S', st.withholdS, 'withhold');
-  if (id === 'rmp') {
-    let h = seg('certificate', 'Certificate', [{ id: '178', label: '178' }, { id: '197', label: '197' }, { id: '520', label: '520' }, { id: 'custom', label: 'Own' }], st.certificate, 'certificate');
-    if (st.certificate === 'custom' && live('certificate')) {
-      h += "<form class='custom' id='custom'><label>As, mg/kg<input name='value' inputmode='decimal' pattern='[0-9]+(\\.[0-9]+)?' required value='" + esc(st.value) + "'></label>"
-        + "<label>U (k = 2)<input name='uncertainty' inputmode='decimal' pattern='[0-9]+(\\.[0-9]+)?' required value='" + esc(st.uncertainty) + "'></label>"
-        + "<label>Method<select name='method'><option" + (st.method === 'M1' ? ' selected' : '') + '>M1</option><option' + (st.method === 'M2' ? ' selected' : '') + '>M2</option></select></label>'
-        + "<button class='act' type='submit'>Sign and ship</button></form>";
-    }
-    return h;
-  }
-  return '';
-}
-function settingsHTML(st) {
-  return seg('trustAB', 'Trusts', [{ id: true, label: 'This accreditation body', sub: 'AB' }, { id: false, label: 'Another body', sub: 'abroad' }], st.trustAB, 'trust')
-    + seg('ask', 'Asks', [{ id: 'authorized', label: 'Authorized?' }, { id: 'fit', label: 'Fit for use?' }], st.ask, 'ask')
-    + (st.ask === 'fit' ? seg('rule', 'Decision rule', [{ id: 'guarded', label: 'Guarded', sub: 'As + U ≤ 200' }, { id: 'simple', label: 'Simple', sub: 'As ≤ 200' }], st.rule, 'rule') : '')
-    + "<p class='limit'>Its requirement: <b>As at most 200 mg/kg</b>, from its own profile.</p>";
-}
-
-// The decisive reason, in the evaluator's words: a restriction or anchor before the summary.
-function reason(R) {
-  const q = Object.fromEntries(R.questions.map(x => [x.id, x]));
-  const entry = (id, state, test) => q[id].details.find(e => e.state === state && test(e.predicate));
-  const first = s => String(s).split(/(?<=\.) /)[0];
-  if (R.result.decision === 'reject') {
-    const failed = ORDER.find(k => q[k].state === 'contradicted');
-    if (failed === 'authentic') return [failed, 'The signature no longer matches the bytes.'];
-    if (failed === 'authorized') {
-      const e = entry('authorized', 'contradicted', p => p.startsWith('restriction:')) ?? entry('authorized', 'contradicted', p => p.startsWith('claim-coverage:') || /^route:[^:]+:/.test(p));
-      if (e) return [failed, e.predicate.startsWith('restriction:') ? first(e.reason) : (e.reason.split(/(?<=\.) /).find(x => /No single|not in the/.test(x)) ?? e.reason)];
-      const sentence = q.authorized.summary.split(/(?<=\.) /).find(x => /No single/.test(x));
-      if (sentence) return [failed, sentence];
-    }
-    return [failed, first(q[failed].summary)];
-  }
-  const open = ORDER.filter(k => q[k].state === 'not_established');
-  const anchor = entry('authorized', 'not_established', p => /:trust-anchor$/.test(p));
-  if (anchor) return [null, anchor.reason];
-  const gone = q.authentic.details.find(e => e.state === 'not_established' && /unavailable/.test(e.reason));
-  if (gone) return [null, short(gone.reason.split(':').slice(0, 2).join(':')) + ', which the certificate cites, was not shown.'];
-  return [null, open.length === 1 ? first(q[open[0]].summary) : 'Cannot tell whether it is ' + open.map(k => QUESTIONS[k].toLowerCase()).join(' or ') + '.'];
-}
-function verdictHTML(R, mode) {
-  if (mode === 'build') return "<div class='verdict idle'><div class='mark'>–</div><div><b>Nothing to decide yet</b><small>The chain is being built. The verifier checks it in the next part.</small></div></div>";
-  if (mode === 'present') return "<div class='verdict idle'><div class='mark'>–</div><div><b>Not evaluated</b><small>Presentations are a placeholder.</small></div></div>";
-  const d = R.result.decision, [failed, why] = reason(R);
-  const [cls, mark, title] = d === 'accept' ? ['', '✓', 'Accepted'] : d === 'reject' ? ['reject', '✕', 'Rejected: not ' + (QUESTIONS[failed] ?? '').toLowerCase()] : ['unknown', '?', 'Not established'];
-  const q = Object.fromEntries(R.questions.map(x => [x.id, x]));
-  const ok = q.fit.state === 'established' ? 'Authorized and fit for use under its rule.' : 'Authentic, current, authorized and supported.';
-  return "<div class='verdict " + cls + "' role='status'><div class='mark'>" + mark + '</div><div><b>' + esc(title) + '</b><small>' + esc(d === 'accept' ? ok : plain(why)) + '</small></div></div>'
-    + "<div class='questions'>" + R.questions.map(x => "<details class='q s-" + x.state + "'><summary><b>" + QUESTIONS[x.id] + "</b><span class='state st-" + x.state + "'>"
-      + LABEL[x.state] + "</span></summary><p class='why'>" + esc(plain(x.summary)) + '</p></details>').join('') + '</div>';
-}
-
-function colHTML(a, R, mode) {
-  if (!joined(a.id)) return "<section class='col absent' data-actor='" + a.id + "' aria-hidden='true'></section>";
-  const s = STORY[step], st = stateOf(s), play = s.part === 'play';
-  const acting = !play && s.acts.includes(a.id), dim = !play && !acting;
-  const pubs = a.publishes.map(p => {
-    const changed = (p.uri?.endsWith('/status/suspension/1') && st.suspendA || p.uri === 'https://lab.vc4qi.example/status/1' && st.revokeS) && mode === 'evaluate';
-    return "<span class='pub" + (changed ? ' changed' : '') + "'>" + esc(p.label) + (changed ? ' · re-signed in this browser' : '') + '</span>';
-  }).join('');
-  const issued = issuedSoFar();
-  const cards = row => ASSETS.filter(x => x.actor === a.id && x.row === row && (mode !== 'build' || issued.has(x.code))).map(x => cardHTML(x, R, mode)).join('');
-  let r1 = cards(1), r2 = cards(2);
-  if (a.id === 'holder') r2 = walletHTML(R, mode);
-  if (a.id === 'verifier') { r1 = verdictHTML(R, mode); r2 = settingsHTML(st); }
-  return "<section class='col" + (acting ? ' acting' : '') + (dim ? ' dim' : '') + "' data-actor='" + a.id + "' aria-label='" + esc(a.name) + "'>"
-    + "<div class='colhead'><div class='name'><span class='mono-badge'>" + esc(a.mono) + '</span><h2>' + esc(a.name) + '</h2></div>'
-    + "<p class='does'>" + esc(a.does) + "</p><div class='pubs'>" + pubs + "</div><div class='roles'></div></div>"
-    + "<div class='slot r1'>" + r1 + "</div><div class='slot r2'>" + r2 + "</div><div class='actions'>" + (a.id === 'verifier' ? '' : actionsHTML(a.id, st)) + '</div></section>';
-}
-
-// ---------------------------------------------------------------- lines between the columns
-
-function drawLines(R, mode) {
-  const board = $('board'), svg = board.querySelector('svg');
-  if (!svg || getComputedStyle(svg).display === 'none') return;
-  const base = board.getBoundingClientRect();
-  const box = uri => board.querySelector(".card[data-uri='" + CSS.escape(uri) + "']");
-  const path = (from, to, cls, marker) => {
-    if (!from || !to) return '';
-    const a = from.getBoundingClientRect(), b = to.getBoundingClientRect();
-    let x1, y1, x2, y2, d;
-    if (a.left >= b.right || b.left >= a.right) {
-      const right = a.left >= b.right;
-      x1 = (right ? a.left : a.right) - base.left; y1 = a.top + a.height / 2 - base.top;
-      x2 = (right ? b.right : b.left) - base.left; y2 = b.top + Math.min(b.height / 2, 40) - base.top;
-      const mx = (x1 + x2) / 2;
-      d = 'M' + x1 + ' ' + y1 + ' C' + mx + ' ' + y1 + ' ' + mx + ' ' + y2 + ' ' + x2 + ' ' + y2;
-    } else {
-      const down = b.top >= a.bottom;
-      x1 = a.left + a.width / 2 - base.left; y1 = (down ? a.bottom : a.top) - base.top;
-      x2 = b.left + b.width / 2 - base.left; y2 = (down ? b.top : b.bottom) - base.top;
-      const my = (y1 + y2) / 2;
-      d = 'M' + x1 + ' ' + y1 + ' C' + x1 + ' ' + my + ' ' + x2 + ' ' + my + ' ' + x2 + ' ' + y2;
-    }
-    return "<path class='edge " + cls + "' d='" + d + "' marker-end='url(#m-" + marker + ")'/>";
-  };
-  const colour = v => ({ established: 'var(--ok)', not_required: 'var(--ok)', contradicted: 'var(--bad)', not_established: 'var(--unk)', plain: 'var(--soft)' }[v]);
-  const markers = ['established', 'not_required', 'contradicted', 'not_established', 'plain'].map(k => "<marker id='m-" + k
-    + "' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0 0 L10 5 L0 10 z' fill='" + colour(k) + "'/></marker>").join('');
-  const edges = R.graph.edges.map(e => {
-    const state = mode === 'evaluate' ? e.state : 'plain';
-    return path(box(e.from), box(e.to), e.kind + ' e-' + state, state);
-  });
-  const handovers = [];
-  if (step >= CERTIFY) handovers.push(path(box(R.certificate), $('wallet'), 'handover', 'plain'));
-  if ((mode === 'evaluate' || mode === 'present') && joined('verifier')) handovers.push(path($('wallet'), board.querySelector('.col[data-actor="verifier"] .verdict'), 'handover', 'plain'));
-  svg.innerHTML = '<defs>' + markers + '</defs>' + edges.join('') + handovers.join('');
-}
-
-// ---------------------------------------------------------------- selecting a credential
-
-function mapping(a, uri, R) {
-  const d = R.texts[uri] ? JSON.parse(R.texts[uri]) : null;
-  const name = id => actor(id).name;
-  const rows = [['Signed by', name(a.actor)], ['Is about', a.about === 'batch' ? 'Disc lot 1 (the batch)' : name(a.about)], ['Held by', name(a.heldBy)]];
-  if (d) {
-    rows.push(['Cites', cites(d).join(', ') || 'nothing']);
-    rows.push(['Valid', String(d.validFrom).slice(0, 10) + ' – ' + String(d.validUntil).slice(0, 10)]);
-    const status = [d.credentialStatus].flat().filter(Boolean).map(x => x.statusPurpose + ' #' + x.statusListIndex).join(', ');
-    if (status) rows.push(['Status entries', status]);
-    rows.push(['Proof', d.proof.cryptosuite + ', key ' + short(d.proof.verificationMethod.split('#')[0]) + '#' + d.proof.verificationMethod.split('#')[1]]);
-  }
-  return rows;
-}
-function labelRoles(a) {
-  const tags = {};
-  const add = (id, t) => (tags[id] ??= []).push(t);
-  add(a.actor, 'signs'); add(aboutOf(a), 'is about'); add(a.heldBy, 'holds');
-  document.querySelectorAll('.col').forEach(c => { c.querySelector('.roles').innerHTML = (tags[c.dataset.actor] ?? []).map(t => "<span class='role'>" + t + '</span>').join(''); });
-}
-function clearRoles() { document.querySelectorAll('.roles').forEach(r => { r.innerHTML = ''; }); }
-function wireCards(R) {
-  document.querySelectorAll('.card[data-code]').forEach(el => {
-    const a = ASSETS.find(x => x.code === el.dataset.code);
-    el.addEventListener('mouseenter', () => labelRoles(a)); el.addEventListener('focus', () => labelRoles(a));
-    el.addEventListener('mouseleave', clearRoles); el.addEventListener('blur', clearRoles);
-    el.addEventListener('click', () => {
-      const rows = mapping(a, el.dataset.uri, R);
-      $('sheetTitle').textContent = el.querySelector('.code').textContent + ' · ' + a.label;
-      $('sheetMap').innerHTML = rows.map(([k, v]) => '<dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd>').join('');
-      $('sheetBody').textContent = R.texts[el.dataset.uri] ?? 'Not shown to the verifier.';
-      const s = $('sheet'); if (s.showModal) s.showModal(); else s.setAttribute('open', '');
-    });
-  });
-}
-$('sheetClose').addEventListener('click', () => { const s = $('sheet'); if (s.close) s.close(); else s.removeAttribute('open'); });
-$('sheet').addEventListener('click', function (e) { if (e.target === this && this.close) this.close(); });
-
-// ---------------------------------------------------------------- render
-
-function wireActions() {
-  document.querySelectorAll('#board [data-key]').forEach(b => b.addEventListener('click', () => {
-    const v = b.dataset.value;
-    set(b.dataset.key, v === 'true' ? true : v === 'false' ? false : v);
-  }));
-  $('custom')?.addEventListener('submit', e => {
-    e.preventDefault();
-    const f = new FormData(e.target);
-    overrides = { ...overrides, value: String(f.get('value')), uncertainty: String(f.get('uncertainty')), method: String(f.get('method')) };
-    writeHash(); render();
-  });
-}
-let defaultResult;
-async function render() {
-  const my = ++seq, s = STORY[step];
-  const mode = s.part === 'build' ? 'build' : s.part === 'present' ? 'present' : 'evaluate';
-  renderNav();
-  document.body.dataset.mode = mode;
-  $('band').hidden = !(mode === 'evaluate' && stateOf(s).trustAB === false);
-  const busy = $('board').querySelector('.col[data-actor="verifier"] .slot.r1');
-  if (busy && mode === 'evaluate') busy.innerHTML = "<div class='verdict busy'><div class='mark'>…</div><div><b>Evaluating</b><small>Signing and checking in your browser.</small></div></div>";
-  // Build and presentation steps evaluate nothing; they read the generated credentials.
-  const R = evaluated(s) ? await api.evaluateRmBoard(stateOf(s)) : (defaultResult ??= await api.evaluateRmBoard({}));
-  if (my !== seq) return;
-  $('board').innerHTML = "<svg aria-hidden='true'></svg>" + ACTORS.map(a => colHTML(a, R, mode)).join('');
-  wireCards(R); wireActions();
-  redraw = () => drawLines(R, mode);
-  requestAnimationFrame(redraw);
-}
-window.addEventListener('resize', () => redraw?.());
-readHash();
-render().catch(e => fail('The evaluator could not run: ' + e.message));
+let api;
+try { api = await import('../verifier.js'); }
+catch (error) { fail('This browser could not run the evaluator (' + error.message + ').'); throw error; }
+await mountBoard(api, {
+  name: 'RM story', story: api.RM_STORY, actors: api.RM_ACTORS, assets: api.RM_ASSETS, defaults: api.RM_DEFAULT,
+  parts: api.BOARD_PARTS, evaluate: state => api.evaluateRmBoard(state), rows: 2,
+  hosts: { nab: 'the accreditation body', lab: 'the laboratory', producer: 'the RM producer', 'other-ab': 'another accreditation body' },
+  facts,
+  actions: {
+    ab: [{ type: 'toggle', key: 'suspendA', label: 'Suspend A', control: 'suspend' }],
+    lab: [{ type: 'toggle', key: 'revokeS', label: 'Revoke S', control: 'revoke' }],
+    rmp: [
+      { type: 'seg', key: 'certificate', label: 'Certificate', control: 'certificate',
+        options: [{ id: '178', label: '178' }, { id: '197', label: '197' }, { id: '520', label: '520' }, { id: 'custom', label: 'Own' }] },
+      { type: 'form', control: 'certificate', when: st => st.certificate === 'custom', submit: 'Sign and ship',
+        fields: [{ key: 'value', label: 'As, mg/kg' }, { key: 'uncertainty', label: 'U (k = 2)' }, { key: 'method', label: 'Method', options: ['M1', 'M2'] }] },
+    ],
+    holder: [{ type: 'toggle', key: 'tamper', label: 'Edit a value', control: 'tamper' }, { type: 'toggle', key: 'withholdS', label: 'Leave out S', control: 'withhold' }],
+  },
+  settings: [
+    { type: 'seg', key: 'trustAB', label: 'Trusts', control: 'trust', options: [{ id: true, label: 'This accreditation body', sub: 'AB' }, { id: false, label: 'Another body', sub: 'abroad' }] },
+    { type: 'seg', key: 'ask', label: 'Asks', control: 'ask', options: [{ id: 'authorized', label: 'Authorized?' }, { id: 'fit', label: 'Fit for use?' }] },
+    { type: 'seg', key: 'rule', label: 'Decision rule', control: 'rule', when: st => st.ask === 'fit',
+      options: [{ id: 'guarded', label: 'Guarded', sub: 'As + U ≤ 200' }, { id: 'simple', label: 'Simple', sub: 'As ≤ 200' }] },
+  ],
+  note: 'Its requirement: <b>As at most 200 mg/kg</b>, from its own profile.',
+  tags: (code, st) => [
+    ...(code === 'A' && st.suspendA ? [{ text: 'suspended', bad: true }] : []),
+    ...(code === 'S' && st.revokeS ? [{ text: 'revoked', bad: true }] : []),
+    ...(code === 'D' && st.tamper ? [{ text: 'edited after signing', bad: true }] : []),
+  ],
+  withheld: st => st.withholdS ? 'S' : undefined,
+  changedList: (uri, st) => uri.endsWith('/status/suspension/1') && st.suspendA || uri === 'https://lab.vc4qi.example/status/1' && st.revokeS,
+  extras: { holder: { row: 2, html: ({ st, R, mode, reached, esc }) => !reached('certify')
+    ? "<div class='card empty'><span class='kind'>Nothing yet</span><span class='fact'>The disc and its certificate arrive when the producer ships them.</span></div>"
+    : "<div class='wallet' id='wallet'><span class='object'>Disc lot 1 · CuZn39Pb3</span><p class='refs'>Holds certificate <b class='mono'>" + esc(short(R.certificate)) + '</b>'
+      + (st.tamper && mode === 'evaluate' ? ', edited' : '') + ', and shows the chain it cites: O, A, '
+      + (st.withholdS && mode === 'evaluate' ? '<s>S (left out)</s>' : 'S') + ', H.</p></div>' } },
+  handovers: ({ mode, reached }) => [
+    ...(reached('certify') ? [['code:D', '#wallet']] : []),
+    ...(mode !== 'build' ? [['#wallet', 'verdict']] : []),
+  ],
+  objectAt: ({ reached }) => reached('certify') ? 'holder' : 'rmp',
+  band: st => st.trustAB === false,
+}).catch(e => fail('The evaluator could not run: ' + e.message));
 </script>
 </body>
 </html>

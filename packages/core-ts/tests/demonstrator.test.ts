@@ -20,8 +20,11 @@ type Api = {
   RM_STORY: { id: string; part: string; issues?: string[]; state?: Record<string, unknown>; expect?: string }[];
   RM_ASSETS: { code: string }[];
   evaluateRmBoard: (o?: Record<string, unknown>) => Promise<Board>;
+  GS_STORY: { id: string; part: string; issues?: string[]; state?: Record<string, unknown>; expect?: string }[];
+  GS_ASSETS: { code: string }[];
+  evaluateGsBoard: (o?: Record<string, unknown>) => Promise<Board>;
 };
-type Board = Result & { certificate: string; signedLive: string[] };
+type Board = Result & { certificate: string; uris: Record<string, string>; signedLive: string[] };
 const api = (await import(bundle)) as Api;
 const run = (example: string, caseId: string, over: Record<string, unknown> = {}) =>
   api.evaluateScenario({ example, caseId, tamper: false, withhold: false, ...over });
@@ -143,5 +146,31 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     expect([suspended.result.decision, answers(suspended).authentic, answers(suspended).authorized]).toEqual(['reject', 'established', 'contradicted']);
     // Editing a live-signed certificate breaks its signature like any other.
     expect(answers(await api.evaluateRmBoard({ certificate: 'custom', value: '178', uncertainty: '5', tamper: true })).authentic).toBe('contradicted');
+  });
+  it('GS board: the build steps issue every asset once, in issuance order; every evaluated step reaches its decision', async () => {
+    const issued = api.GS_STORY.filter(s => s.part === 'build').flatMap(s => s.issues ?? []);
+    expect([...issued].sort()).toEqual(api.GS_ASSETS.map(a => a.code).sort());
+    const accepted = await api.evaluateGsBoard();
+    expect(Object.keys(accepted.uris).sort()).toEqual(api.GS_ASSETS.map(a => a.code).sort());
+    const validFrom = issued.map(code => (JSON.parse(accepted.texts[accepted.uris[code]!]!) as { validFrom: string }).validFrom);
+    expect(validFrom).toEqual([...validFrom].sort());
+    for (const s of api.GS_STORY.filter(x => x.expect !== undefined)) {
+      expect([s.id, (await api.evaluateGsBoard(s.state)).result.decision]).toEqual([s.id, s.expect]);
+    }
+    expect([...new Set(api.GS_STORY.filter(s => s.expect === undefined).map(s => s.part))]).toEqual(['build', 'present', 'play']);
+  });
+
+  it('GS board: status lists re-signed in the browser revoke exactly what they name', async () => {
+    for (const [over, list] of [[{ revokeA: true }, 'https://nab.vc4qi.example/status/gs/1'],
+      [{ revokeS: true }, 'https://zls.vc4qi.example/status/gs/1'], [{ revokeC: true }, 'https://gs-body.vc4qi.example/status/gs/1']] as const) {
+      const r = await api.evaluateGsBoard(over);
+      expect([r.result.decision, answers(r).authentic, answers(r).supported, r.signedLive]).toEqual(['reject', 'established', 'contradicted', [list]]);
+    }
+    // A unit placed on the market before its certificate cannot be told.
+    expect((await api.evaluateGsBoard({ unit: 'sn-0001' })).result.decision).toBe('not_established');
+    // Only the borrowed link fails: every credential in the chain still verifies.
+    const borrowed = await api.evaluateGsBoard({ unit: 'sn-0050' });
+    const states = borrowed.graph.edges.filter(e => e.from !== borrowed.certificate).map(e => (e as { state?: string }).state);
+    expect(states.every(s => s === 'established')).toBe(true);
   });
 });

@@ -292,7 +292,7 @@ function writeHash() {
 }
 
 function renderTabs() {
-  $('tabs').innerHTML = "<a href='rm/'>RM story</a>" + [{ id: 'story', tab: 'GS story' }, ...api.EXAMPLES]
+  $('tabs').innerHTML = "<a href='rm/'>RM story</a><a href='gs/'>GS story</a>" + [{ id: 'story', tab: 'GS walkthrough' }, ...api.EXAMPLES]
     .map(e => "<a href='#" + e.id + "'" + (e.id === state.example ? " aria-current='page'" : '') + '>' + esc(e.tab) + '</a>').join('');
 }
 

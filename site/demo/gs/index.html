@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GS story · VC4QI demonstrator</title>
+<meta name="description" content="A GS certification chain on an actor board: an accreditation body, a scheme owner, a GS body, a manufacturer and a verifier. Build the chain up to a product passport, verify it, manipulate it, and see how the verifier's own profile decides. Evaluated in the browser on signed test credentials.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../board.css">
+</head>
+<body>
+<header class="topbar"><div class="in">
+  <a class="brand" href="../../"><strong>VC4QI</strong> demonstrator</a>
+  <nav class="links" aria-label="Demonstrator">
+    <a href="../rm/">RM story</a><a href="./" aria-current="page">GS story</a><a href="../#rm">Examples</a>
+  </nav>
+</div></header>
+<main>
+  <nav class="storynav" id="storynav" aria-label="Story"></nav>
+  <div class="stephead">
+    <p class="kicker" id="kicker"></p>
+    <h1 id="title">GS certification on an actor board</h1>
+    <p class="acts" id="acts"></p>
+    <p class="lead" id="lead"></p>
+  </div>
+
+  <section class="placeholder" id="presentation" aria-labelledby="h-present" hidden>
+    <span class="tag" id="h-present">Not evaluated · placeholder</span>
+    <p>Nothing in this step is evaluated. The table sketches what the manufacturer could reveal, and keep back, when it presents the product passport to the verifier.</p>
+    <table id="presentTable"></table>
+  </section>
+
+  <div class="band placeholder" id="band" hidden>
+    <span class="tag">Not evaluated</span>
+    <b>Recognition of the scheme owner</b>
+    <span>(for example through an international arrangement) would tell this verifier who may permit the GS mark. Today each verifier configures its trust anchors itself.</span>
+  </div>
+
+  <div class="board" id="board" aria-live="polite"></div>
+  <p class="legend">Lines read the credentials' own references:<i></i>cites as authority<i class="dot"></i>cites as evidence<i class="dash"></i>handed over. Green holds, red fails, amber cannot be told; grey is not evaluated. Select a credential to see who signs it, what it is about and who holds it.</p>
+
+  <footer>
+    <p>Evaluated in your browser by the repository's GS evaluator, as of <span id="evalTime">25 September 2026</span> (status lists expire). Nothing is fetched.</p>
+    <p>Shaped like a GS certification chain: a fictional accreditation body in the role DAkkS has, a scheme owner in the role ZLS has, a GS body, a manufacturer and its product passport (shaped after the EU Digital Product Passport). Per-unit GS-mark credentials and passports are experimental and outside today's GS scheme. All parties, grants and keys are fictional. Documents marked "signed in this browser" are signed with the same public, insecure fixture keys as the generated test credentials.</p>
+    <p><a href="../../">Project</a> · <a href="../../docs/use-cases.html">How it works</a> · <a href="https://github.com/monavari/VC4QI">Code</a> · Mehran Monavari</p>
+  </footer>
+</main>
+
+<dialog id="sheet" aria-labelledby="sheetTitle">
+  <button class="close" type="button" id="sheetClose">Close</button>
+  <h2 id="sheetTitle"></h2>
+  <dl class="map" id="sheetMap"></dl>
+  <details class="raw"><summary>Signed bytes</summary><pre id="sheetBody"></pre></details>
+</dialog>
+
+<script type="module">
+import { fail, mountBoard, short } from '../board.js';
+
+// EN-60335-1, EN-60335-2-23 reads as "EN 60335-1, -2-23".
+function standards(iris) {
+  const parts = (iris ?? []).map(short).map(x => /^EN-(\d+)-(.+)$/.exec(x)).filter(Boolean);
+  return parts.map(([, base, rest], i) => (i > 0 && base === parts[0][1] ? '-' : 'EN ' + base + '-') + rest).join(', ');
+}
+const words = iri => short(iri).replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+const model = iri => short(iri).replace(/^hair-dryer-/, '').toUpperCase();
+const unit = iri => short(iri).replace(/^hd-\d+-/, '');
+const capital = s => s.charAt(0).toUpperCase() + s.slice(1);
+function facts(code, d) {
+  const s = d.credentialSubject ?? {};
+  if (code === 'GS-A') return [capital((s.scope ?? []).map(r => words(r.productCategoryIri) + 's').join(', ')), 'Testing and certifying'];
+  if (code === 'GS-S') return ['Award the GS mark', capital((s.scope ?? []).map(r => words(r.productCategoryIri) + 's').join(', ')) + ' only'];
+  if (code === 'TR-1') return ['Model ' + model(s.productModelIri) + ': ' + words(s.outcomeIri)];
+  if (code === 'FI-1') return ['Plant ' + short(s.id) + ': ' + words(s.outcomeIri)];
+  if (code === 'GSC-1') return ['Model ' + model(s.id) + ', ' + words(s.certification?.productCategoryIri), standards(s.certification?.standardIris)];
+  if (code === 'GSM') return ['Unit ' + unit(s.id) + ': GS mark for ' + model(s.marking?.productModelIri)];
+  return [(s.productName ?? '') + ', unit ' + unit(s.id), 'Lists the GS mark for ' + model(s.complianceInformation?.gsMark?.productModelIri)];
+}
+
+let api;
+try { api = await import('../verifier.js'); }
+catch (error) { fail('This browser could not run the evaluator (' + error.message + ').'); throw error; }
+await mountBoard(api, {
+  name: 'GS story', story: api.GS_STORY, actors: api.GS_ACTORS, assets: api.GS_ASSETS, defaults: api.GS_DEFAULT,
+  parts: api.BOARD_PARTS, evaluate: state => api.evaluateGsBoard(state), rows: 3,
+  hosts: { nab: 'the accreditation body', zls: 'the scheme owner', 'gs-body': 'the GS body', maker: 'the manufacturer' },
+  facts,
+  actions: {
+    ab: [{ type: 'toggle', key: 'revokeA', label: 'Revoke GS-A', control: 'revokeA' }],
+    so: [{ type: 'toggle', key: 'revokeS', label: 'Revoke GS-S', control: 'revokeS' }],
+    gsb: [{ type: 'toggle', key: 'revokeC', label: 'Withdraw GSC-1', control: 'revokeC' }],
+    mfr: [
+      { type: 'seg', key: 'unit', label: 'Passport shown', control: 'unit', options: [
+        { id: 'sn-0042', label: 'sn-0042', sub: 'its own' }, { id: 'sn-0050', label: 'sn-0050', sub: 'borrowed' }, { id: 'sn-0001', label: 'sn-0001', sub: 'too early' }] },
+      { type: 'toggle', key: 'tamper', label: 'Edit the serial', control: 'tamper' },
+      { type: 'toggle', key: 'withholdTR', label: 'Leave out TR-1', control: 'withhold' },
+    ],
+  },
+  settings: [
+    { type: 'seg', key: 'trust', label: 'Trusts', control: 'trust', options: [
+      { id: 'both', label: 'Both authorities', sub: 'AB and SO' }, { id: 'accreditation-only', label: 'Accreditation only', sub: 'abroad' }] },
+  ],
+  note: 'Its question: may it rely on the <b>GS mark</b> in the passport\'s compliance information?',
+  tags: (code, st) => [
+    ...(code === 'GS-A' && st.revokeA ? [{ text: 'revoked', bad: true }] : []),
+    ...(code === 'GS-S' && st.revokeS ? [{ text: 'revoked', bad: true }] : []),
+    ...(code === 'GSC-1' && st.revokeC ? [{ text: 'withdrawn', bad: true }] : []),
+    ...(code === 'DPP' && st.tamper ? [{ text: 'edited after signing', bad: true }] : []),
+  ],
+  withheld: st => st.withholdTR ? 'TR-1' : undefined,
+  changedList: (uri, st) => uri === 'https://nab.vc4qi.example/status/gs/1' && st.revokeA
+    || uri === 'https://zls.vc4qi.example/status/gs/1' && st.revokeS || uri === 'https://gs-body.vc4qi.example/status/gs/1' && st.revokeC,
+  extras: { mfr: { row: 1, html: ({ st, reached }) => reached('mark')
+    ? "<span class='object' id='unit'>Hair dryer · unit " + (st.unit ?? 'sn-0042') + '</span>'
+    : "<span class='object' id='unit'>Hair dryer HD-01</span>" } },
+  handovers: ({ mode }) => mode !== 'build' ? [['code:DPP', 'verdict']] : [],
+  objectAt: () => 'mfr',
+  band: st => st.trust === 'accreditation-only',
+}).catch(e => fail('The evaluator could not run: ' + e.message));
+</script>
+</body>
+</html>

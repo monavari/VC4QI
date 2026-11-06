@@ -294,9 +294,10 @@ export interface Graph { readonly nodes: readonly GraphNode[]; readonly edges: r
  * The graph is read from the credentials themselves: from the target, every
  * termsOfUse authorizationCredential (authority) and evidence entry (support) is
  * followed. Layers are the longest reference path from the target. Node states are the
- * evaluator's per-artifact verification. The target's authority links take the answer
- * to "authorized", links below a study the answer to "supported", and other links the
- * verification of the credential they point to.
+ * evaluator's per-artifact verification. The target's own authority links take the
+ * answer to "authorized", its evidence links the answer to "supported", and deeper links
+ * the verification of the credential they point to, so a wrong link shows on that link
+ * alone.
  */
 function buildGraph(target: string, texts: Record<string, string>, result: RelianceResult,
   authorized: SemanticState, supported: SemanticState | 'not_required'): Graph {
@@ -321,10 +322,10 @@ function buildGraph(target: string, texts: Record<string, string>, result: Relia
       const support = viaSupport || kind === 'support';
       if (!seenEdge.has(key)) {
         seenEdge.add(key);
-        // The target's own authority links carry the answer to "authorized"; deeper links
-        // show their credential's verification; links below a study carry "supported".
+        // The target's own links carry the answers to "authorized" and "supported";
+        // deeper links show the verification of the credential they point to.
         edges.push({ from: uri, to, kind,
-          state: support ? supported : uri === target ? authorized : verification.get(to) ?? 'not_established' });
+          state: uri === target ? (kind === 'support' ? supported : authorized) : verification.get(to) ?? 'not_established' });
       }
       const depth = (layer.get(uri) ?? 0) + 1;
       if ((layer.get(to) ?? -1) < depth && depth < 8) { layer.set(to, depth); queue.push([to, support]); }
@@ -505,21 +506,89 @@ export async function evaluateScenario(options: ScenarioOptions): Promise<Scenar
   return { options, example, spec, ...r };
 }
 
-// ---------------------------------------------------------------- the RM actor board
+// ---------------------------------------------------------------- actor boards
 
 /**
- * The RM story on an actor board: one column per actor, the credentials in their
- * issuer's column, every action in the column of the actor who can take it. The board
- * state is what those actions have done; `evaluateRmBoard` evaluates it with the RM
- * slice evaluator. Suspending, revoking and a custom certificate are signed live
- * (live-sign.ts); everything else is a generated fixture.
+ * A story on an actor board (site/demo/board.js): one column per actor, the credentials
+ * in their issuer's column, every action in the column of the actor who can take it.
+ * The board state is what those actions have done; `evaluateRmBoard` and
+ * `evaluateGsBoard` evaluate it with the binding's slice evaluator. Revoking,
+ * suspending and a typed certificate are signed live (live-sign.ts); everything else is
+ * a generated fixture.
  */
-export type RmActorId = 'ab' | 'lab' | 'rmp' | 'holder' | 'verifier';
-export interface RmActor {
-  readonly id: RmActorId; readonly mono: string; readonly name: string; readonly does: string;
+export interface BoardActor {
+  readonly id: string; readonly mono: string; readonly name: string; readonly does: string;
   /** What the actor publishes, by URI where it is a signed document. */
   readonly publishes: readonly { readonly label: string; readonly uri?: string }[];
 }
+export interface BoardAsset {
+  /** The code on the card; the board result maps it to the credential shown. */
+  readonly code: string;
+  readonly label: string;
+  readonly kind: 'grant' | 'evidence' | 'claim';
+  /** The issuer's column, and the row the card sits in. */
+  readonly actor: string; readonly row: 1 | 2 | 3;
+  /** The actor the credential is about, or `object` for a thing (with `aboutLabel`). */
+  readonly about: string; readonly aboutLabel?: string;
+  readonly heldBy: string;
+}
+export type BoardPart = 'build' | 'verify' | 'manipulate' | 'decide' | 'present' | 'play';
+export const BOARD_PARTS: readonly { readonly id: BoardPart; readonly label: string }[] = [
+  { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' }, { id: 'manipulate', label: 'Manipulate' },
+  { id: 'decide', label: 'The verifier decides' }, { id: 'present', label: 'Present' }, { id: 'play', label: 'Your turn' },
+];
+/**
+ * One step of a board story. Actors join one by one as the chain reaches them. Build
+ * steps show the credentials issued so far and evaluate nothing; the others evaluate
+ * their state, and `expect` is the decision the tests require. `unlock` is the one
+ * action the step makes live; the last step makes all live. The presentation step is a
+ * placeholder: nothing in it is evaluated.
+ */
+export interface BoardStep<S> {
+  readonly id: string; readonly part: BoardPart; readonly title: string; readonly text: string;
+  /** The acting columns: the one who acts first, then the one it acts towards. */
+  readonly acts: readonly string[];
+  /** Actors who join the board in this step; a column appears only once its actor has joined. */
+  readonly joins?: readonly string[];
+  readonly issues?: readonly string[];
+  readonly state?: Partial<S>;
+  readonly unlock?: readonly string[];
+  readonly expect?: RelianceResult['decision'];
+  readonly presentation?: readonly { readonly credential: string; readonly reveal: string; readonly hide: string }[];
+}
+export interface BoardResult<S> extends Evaluated {
+  readonly state: S;
+  /** The credential the verifier was shown. */
+  readonly certificate: string;
+  /** Each asset code's credential URI in this state. */
+  readonly uris: Readonly<Record<string, string>>;
+  /** Documents signed in this browser for this state. */
+  readonly signedLive: readonly string[];
+}
+/** Live-signed documents, by what they encode, so each is signed once. */
+const live = new Map<string, Promise<string>>();
+function liveOnce(key: string, make: () => Promise<string>) {
+  if (!live.has(key)) live.set(key, make());
+  return live.get(key)!;
+}
+/** The day an issuer re-signs its status list to revoke or suspend. */
+const RESIGNED = '2026-09-20T00:00:00Z';
+const textOf = (binding: BindingKey, uri: string) => loaded[binding].files.find(file => file.uri === uri)!.text;
+const catalogOf = (binding: BindingKey) => loaded[binding].files.map(file => ({ uri: file.uri, mediaType: file.mediaType,
+  origin: file.origin, version: file.version, bytes: new TextEncoder().encode(file.text), digestSRI: file.digestSRI as `sha384-${string}` }));
+/** `list` re-signed by its issuer `name` (`controller`) with bit 0 set. */
+const resignedList = (binding: BindingKey, list: string, name: string, controller: string) => liveOnce(`${binding}:list:${list}`, () =>
+  signAs(reissueStatusList(textOf(binding, list), [0], RESIGNED), name, controller, RESIGNED, catalogOf(binding), textOf(binding, controller)));
+/** Change `from` to `to` in a document's bytes without re-signing. */
+const edited = (text: string, from: string, to: string) => text.replace(from, to);
+
+// ---------------------------------------------------------------- the RM board
+
+export type RmActor = BoardActor;
+export type RmAsset = BoardAsset;
+export type RmStep = BoardStep<RmBoardState>;
+export type RmBoardResult = BoardResult<RmBoardState>;
+export const RM_PARTS = BOARD_PARTS;
 const RM_URI = {
   NAB: 'https://nab.vc4qi.example/controller', PRODUCER: 'https://producer.vc4qi.example/controller', LAB: 'https://lab.vc4qi.example/controller',
   A: 'https://nab.vc4qi.example/credentials/A', H: 'https://nab.vc4qi.example/credentials/H',
@@ -528,7 +597,7 @@ const RM_URI = {
   NAB_STATUS: 'https://nab.vc4qi.example/status/1', SUSPENSION: 'https://nab.vc4qi.example/status/suspension/1',
   LAB_STATUS: 'https://lab.vc4qi.example/status/1', PRODUCER_STATUS: 'https://producer.vc4qi.example/status/1',
 } as const;
-export const RM_ACTORS: readonly RmActor[] = [
+export const RM_ACTORS: readonly BoardActor[] = [
   { id: 'ab', mono: 'AB', name: 'Accreditation body', does: 'Accredits the producer and recognises the laboratory. Can suspend.',
     publishes: [{ label: 'Key', uri: RM_URI.NAB }, { label: 'Revocation list', uri: RM_URI.NAB_STATUS }, { label: 'Suspension list', uri: RM_URI.SUSPENSION }] },
   { id: 'lab', mono: 'LAB', name: 'Laboratory', does: 'Studies the batch under its recognition. Can revoke its study.',
@@ -540,23 +609,13 @@ export const RM_ACTORS: readonly RmActor[] = [
   { id: 'verifier', mono: 'V', name: 'Verifier', does: 'Relies on the certificate only as far as its own profile allows.',
     publishes: [{ label: 'Profile' }] },
 ];
-export interface RmAsset {
-  /** A, H, O, S, or D for the certificate (D178, D197, D520 or the live one). */
-  readonly code: 'A' | 'H' | 'O' | 'S' | 'D';
-  readonly label: string;
-  readonly kind: 'grant' | 'evidence' | 'claim';
-  /** The issuer's column, and the row the card sits in. */
-  readonly actor: RmActorId; readonly row: 1 | 2;
-  /** The actor the credential is about, or the batch. */
-  readonly about: RmActorId | 'batch';
-  readonly heldBy: RmActorId;
-}
-export const RM_ASSETS: readonly RmAsset[] = [
+/** D is the certificate shown: D178, D197, D520 or the one signed live. */
+export const RM_ASSETS: readonly BoardAsset[] = [
   { code: 'A', label: 'Accreditation', kind: 'grant', actor: 'ab', row: 1, about: 'rmp', heldBy: 'rmp' },
   { code: 'H', label: 'Laboratory recognition', kind: 'grant', actor: 'ab', row: 2, about: 'lab', heldBy: 'lab' },
   { code: 'O', label: 'Operational scope', kind: 'grant', actor: 'rmp', row: 1, about: 'rmp', heldBy: 'rmp' },
-  { code: 'S', label: 'Homogeneity study', kind: 'evidence', actor: 'lab', row: 2, about: 'batch', heldBy: 'rmp' },
-  { code: 'D', label: 'RM certificate', kind: 'claim', actor: 'rmp', row: 2, about: 'batch', heldBy: 'holder' },
+  { code: 'S', label: 'Homogeneity study', kind: 'evidence', actor: 'lab', row: 2, about: 'object', aboutLabel: 'disc lot 1', heldBy: 'rmp' },
+  { code: 'D', label: 'RM certificate', kind: 'claim', actor: 'rmp', row: 2, about: 'object', aboutLabel: 'disc lot 1', heldBy: 'holder' },
 ];
 
 export interface RmBoardState {
@@ -571,31 +630,7 @@ export const RM_DEFAULT: RmBoardState = {
   certificate: '178', value: '178', uncertainty: '5', method: 'M1', suspendA: false, revokeS: false,
   tamper: false, withholdS: false, trustAB: true, ask: 'fit', rule: 'guarded',
 };
-export type RmControl = 'suspend' | 'revoke' | 'certificate' | 'tamper' | 'withhold' | 'trust' | 'ask' | 'rule';
-export type RmPart = 'build' | 'verify' | 'manipulate' | 'decide' | 'present' | 'play';
-export const RM_PARTS: readonly { readonly id: RmPart; readonly label: string }[] = [
-  { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' }, { id: 'manipulate', label: 'Manipulate' },
-  { id: 'decide', label: 'The verifier decides' }, { id: 'present', label: 'Present' }, { id: 'play', label: 'Your turn' },
-];
-/**
- * One step of the RM story. Actors join one by one as the chain reaches them. Build
- * steps show the credentials issued so far and evaluate nothing; the others evaluate their state, and `expect` is the decision the tests
- * require. `unlock` is the one action the step makes live; the last step makes all live.
- * The presentation step is a placeholder: nothing in it is evaluated.
- */
-export interface RmStep {
-  readonly id: string; readonly part: RmPart; readonly title: string; readonly text: string;
-  /** The acting columns: the one who acts first, then the one it acts towards. */
-  readonly acts: readonly RmActorId[];
-  /** Actors who join the board in this step; a column appears only once its actor has joined. */
-  readonly joins?: readonly RmActorId[];
-  readonly issues?: readonly RmAsset['code'][];
-  readonly state?: Partial<RmBoardState>;
-  readonly unlock?: readonly RmControl[];
-  readonly expect?: RelianceResult['decision'];
-  readonly presentation?: readonly { readonly credential: string; readonly reveal: string; readonly hide: string }[];
-}
-export const RM_STORY: readonly RmStep[] = [
+export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
   { id: 'join', part: 'build', acts: ['ab'], joins: ['ab'],
     title: 'The accreditation body is the first party',
     text: 'Before anything is signed it publishes a key, so that anyone can check what it signs, and two status lists, so that it can later revoke or suspend what it issued.' },
@@ -668,23 +703,13 @@ const RM_OTHER_ANCHOR = 'rm-verifier-other-anchor (demonstrator)';
     description: 'Demonstrator-only variant of rm-verifier-1 whose only trust anchor is another, fictional accreditation body.',
     trustAnchors: base.trustAnchors.map(anchor => ({ ...anchor, id: 'https://other-ab.vc4qi.example/controller' })) });
 }
-const rmText = (uri: string) => loaded.rm.files.find(file => file.uri === uri)!.text;
-const rmCatalog = () => loaded.rm.files.map(file => ({ uri: file.uri, mediaType: file.mediaType, origin: file.origin,
-  version: file.version, bytes: new TextEncoder().encode(file.text), digestSRI: file.digestSRI as `sha384-${string}` }));
+const rmText = (uri: string) => textOf('rm', uri);
 const certificateUri = (state: RmBoardState) =>
   state.certificate === 'custom' ? RM_URI.LIVE : `https://producer.vc4qi.example/credentials/D${state.certificate}`;
 
-/** Live-signed documents, by what they encode, so each is signed once. */
-const live = new Map<string, Promise<string>>();
-function liveOnce(key: string, make: () => Promise<string>) {
-  if (!live.has(key)) live.set(key, make());
-  return live.get(key)!;
-}
-/** The day the accreditation body or the laboratory re-signs its list. */
-const RESIGNED = '2026-09-20T00:00:00Z';
 /** The certificate the producer signs live: D178 with the typed As result, at status index 4. */
 function liveCertificate(state: RmBoardState) {
-  return liveOnce(`D:${state.value}:${state.uncertainty}:${state.method}`, () => {
+  return liveOnce(`rm:D:${state.value}:${state.uncertainty}:${state.method}`, () => {
     const { proof: _proof, ...d178 } = JSON.parse(rmText('https://producer.vc4qi.example/credentials/D178')) as Record<string, any>;
     const subject = structuredClone(d178.credentialSubject);
     const as = subject.materialPropertiesList[0].results[0];
@@ -694,33 +719,23 @@ function liveCertificate(state: RmBoardState) {
     const status = { ...d178.credentialStatus, id: `${RM_URI.PRODUCER_STATUS}#4`, statusListIndex: '4' };
     return signAs({ ...d178, id: RM_URI.LIVE, name: 'Reference material certificate, CuZn39Pb3 disc lot 1 (signed in this browser)',
       credentialSubject: subject, credentialStatus: status } as JsonObject,
-    'producer', RM_URI.PRODUCER, d178.validFrom, rmCatalog(), rmText(RM_URI.PRODUCER));
+    'producer', RM_URI.PRODUCER, d178.validFrom, catalogOf('rm'), rmText(RM_URI.PRODUCER));
   });
 }
-const resignedList = (uri: string, name: string, controller: string) => liveOnce(`list:${uri}`, () =>
-  signAs(reissueStatusList(rmText(uri), [0], RESIGNED), name, controller, RESIGNED, rmCatalog(), rmText(controller)));
 
-export interface RmBoardResult extends Evaluated {
-  readonly state: RmBoardState;
-  /** The certificate the verifier was shown. */
-  readonly certificate: string;
-  /** Documents signed in this browser for this state. */
-  readonly signedLive: readonly string[];
-}
-
-export async function evaluateRmBoard(over: Partial<RmBoardState> = {}): Promise<RmBoardResult> {
+export async function evaluateRmBoard(over: Partial<RmBoardState> = {}): Promise<BoardResult<RmBoardState>> {
   const state = { ...RM_DEFAULT, ...over };
   const target = certificateUri(state);
   const texts: Record<string, string> = {};
   if (state.certificate === 'custom') texts[target] = await liveCertificate(state);
-  if (state.suspendA) texts[RM_URI.SUSPENSION] = await resignedList(RM_URI.SUSPENSION, 'nab', RM_URI.NAB);
-  if (state.revokeS) texts[RM_URI.LAB_STATUS] = await resignedList(RM_URI.LAB_STATUS, 'lab', RM_URI.LAB);
+  if (state.suspendA) texts[RM_URI.SUSPENSION] = await resignedList('rm', RM_URI.SUSPENSION, 'nab', RM_URI.NAB);
+  if (state.revokeS) texts[RM_URI.LAB_STATUS] = await resignedList('rm', RM_URI.LAB_STATUS, 'lab', RM_URI.LAB);
   const signedLive = Object.keys(texts);
   if (state.tamper) {
     // Change the As value in the bytes the holder shows, without re-signing.
     const text = texts[target] ?? rmText(target);
     const shown = (JSON.parse(text) as any).credentialSubject.materialPropertiesList[0].results[0].data.quantity.value as string;
-    texts[target] = text.replace(`"value": "${shown}"`, `"value": "${shown === '150' ? '151' : '150'}"`);
+    texts[target] = edited(text, `"value": "${shown}"`, `"value": "${shown === '150' ? '151' : '150'}"`);
   }
   const r = await evaluate({
     binding: 'rm', profileName: state.trustAB ? RM_PROFILE : RM_OTHER_ANCHOR,
@@ -731,7 +746,138 @@ export async function evaluateRmBoard(over: Partial<RmBoardState> = {}): Promise
       decisionRuleId: state.rule === 'simple' ? 'simple-acceptance' : 'guarded-acceptance-expanded-u' } } : {}),
     notAsked: 'The verifier asked only whether the value is authorized; no limit was applied.',
   });
-  return { ...r, state, certificate: target, signedLive };
+  const uris = { A: RM_URI.A, H: RM_URI.H, O: RM_URI.O, S: RM_URI.S, D: target };
+  return { ...r, state, certificate: target, uris, signedLive };
+}
+
+// ---------------------------------------------------------------- the GS board
+
+const GS_BOARD_URI = {
+  NAB: 'https://nab.vc4qi.example/controller', ZLS: 'https://zls.vc4qi.example/controller',
+  BODY: 'https://gs-body.vc4qi.example/controller', MAKER: 'https://maker.vc4qi.example/controller',
+  NAB_STATUS: 'https://nab.vc4qi.example/status/gs/1', ZLS_STATUS: 'https://zls.vc4qi.example/status/gs/1',
+  BODY_STATUS: 'https://gs-body.vc4qi.example/status/gs/1', MAKER_STATUS: 'https://maker.vc4qi.example/status/gs/1',
+  A: 'https://nab.vc4qi.example/credentials/GS-A', S: 'https://zls.vc4qi.example/credentials/GS-S',
+  TR: GS_URI.TR1, FI: 'https://gs-body.vc4qi.example/credentials/FI-1', C: GS_URI.C1,
+} as const;
+export const GS_ACTORS: readonly BoardActor[] = [
+  { id: 'ab', mono: 'AB', name: 'Accreditation body', does: 'Accredits the GS body for testing and certifying. Can revoke.',
+    publishes: [{ label: 'Key', uri: GS_BOARD_URI.NAB }, { label: 'Revocation list', uri: GS_BOARD_URI.NAB_STATUS }] },
+  { id: 'so', mono: 'SO', name: 'Scheme owner', does: 'Permits a body to award the GS mark, in the role ZLS has. Can revoke.',
+    publishes: [{ label: 'Key', uri: GS_BOARD_URI.ZLS }, { label: 'Revocation list', uri: GS_BOARD_URI.ZLS_STATUS }] },
+  { id: 'gsb', mono: 'GSB', name: 'GS body', does: 'Examines, inspects and certifies. Can withdraw a certificate.',
+    publishes: [{ label: 'Key', uri: GS_BOARD_URI.BODY }, { label: 'Revocation list', uri: GS_BOARD_URI.BODY_STATUS }] },
+  { id: 'mfr', mono: 'MFR', name: 'Manufacturer', does: 'Makes hair dryer HD-01, marks each unit and issues its passport.',
+    publishes: [{ label: 'Key', uri: GS_BOARD_URI.MAKER }, { label: 'Revocation list', uri: GS_BOARD_URI.MAKER_STATUS }] },
+  { id: 'verifier', mono: 'V', name: 'Verifier', does: 'Relies on the passport\'s GS mark only as far as its own profile allows.',
+    publishes: [{ label: 'Profile' }] },
+];
+/** GSM is the GS-mark credential the passport cites; DPP is the passport shown. */
+export const GS_ASSETS: readonly BoardAsset[] = [
+  { code: 'GS-A', label: 'Accreditation', kind: 'grant', actor: 'ab', row: 1, about: 'gsb', heldBy: 'gsb' },
+  { code: 'GS-S', label: 'Scheme permission', kind: 'grant', actor: 'so', row: 3, about: 'gsb', heldBy: 'gsb' },
+  { code: 'TR-1', label: 'Type examination', kind: 'evidence', actor: 'gsb', row: 1, about: 'object', aboutLabel: 'model HD-01', heldBy: 'mfr' },
+  { code: 'GSC-1', label: 'GS certificate', kind: 'grant', actor: 'gsb', row: 2, about: 'object', aboutLabel: 'model HD-01', heldBy: 'mfr' },
+  { code: 'FI-1', label: 'Factory inspection', kind: 'evidence', actor: 'gsb', row: 3, about: 'mfr', heldBy: 'mfr' },
+  { code: 'GSM', label: 'GS-mark credential', kind: 'evidence', actor: 'mfr', row: 2, about: 'object', aboutLabel: 'the unit', heldBy: 'mfr' },
+  { code: 'DPP', label: 'Product passport', kind: 'claim', actor: 'mfr', row: 3, about: 'object', aboutLabel: 'the unit', heldBy: 'mfr' },
+];
+export interface GsBoardState {
+  /** The unit whose passport is shown: its own (sn-0042), a borrowed credential (sn-0050) or placed early (sn-0001). */
+  readonly unit: 'sn-0042' | 'sn-0050' | 'sn-0001';
+  readonly revokeA: boolean; readonly revokeS: boolean; readonly revokeC: boolean;
+  readonly tamper: boolean; readonly withholdTR: boolean;
+  readonly trust: 'both' | 'accreditation-only';
+}
+export const GS_DEFAULT: GsBoardState = {
+  unit: 'sn-0042', revokeA: false, revokeS: false, revokeC: false, tamper: false, withholdTR: false, trust: 'both',
+};
+const GS_PASSPORT: Record<GsBoardState['unit'], string> = {
+  'sn-0042': 'https://maker.vc4qi.example/credentials/DPP-1',
+  'sn-0050': 'https://maker.vc4qi.example/credentials/DPP-3',
+  'sn-0001': 'https://maker.vc4qi.example/credentials/DPP-2',
+};
+export const GS_STORY: readonly BoardStep<GsBoardState>[] = [
+  { id: 'join', part: 'build', acts: ['ab'], joins: ['ab'],
+    title: 'The accreditation body is the first party',
+    text: 'Before anything is signed it publishes a key, so that anyone can check what it signs, and a status list, so that it can later revoke what it issued.' },
+  { id: 'accredit', part: 'build', acts: ['ab', 'gsb'], joins: ['gsb'], issues: ['GS-A'],
+    title: 'The accreditation body accredits the GS body',
+    text: 'Accreditation GS-A attests competence: testing and certifying toys and household appliances against named standards. Competence is not yet permission to award the GS mark.' },
+  { id: 'authorize', part: 'build', acts: ['so', 'gsb'], joins: ['so'], issues: ['GS-S'],
+    title: 'The scheme owner permits the GS body to award the mark',
+    text: 'A second authority, in the role ZLS has for the GS mark, grants that permission, for household appliances only. Toys are not included, although the accreditation covers them.' },
+  { id: 'examine', part: 'build', acts: ['gsb', 'mfr'], joins: ['mfr'], issues: ['FI-1', 'TR-1'],
+    title: 'The GS body inspects the factory and examines the type',
+    text: 'Factory inspection FI-1 of the manufacturer\'s plant and type examination TR-1 of hair dryer HD-01. Each is signed under the GS body\'s accreditation. They support the certificate; they grant nothing.' },
+  { id: 'certify', part: 'build', acts: ['gsb', 'mfr'], issues: ['GSC-1'],
+    title: 'The GS body certifies model HD-01',
+    text: 'Certificate GSC-1 cites both of its authorities, the accreditation and the scheme permission, and both studies. Every link is a reference inside a signed credential.' },
+  { id: 'mark', part: 'build', acts: ['mfr'], issues: ['GSM', 'DPP'],
+    title: 'The manufacturer marks unit sn-0042 and issues its passport',
+    text: 'A GS-mark credential for this unit, citing the certificate, and a product passport whose compliance information lists the GS mark. Per-unit credentials are the experimental part: today\'s GS scheme has none.' },
+
+  { id: 'verify', part: 'verify', acts: ['mfr', 'verifier'], joins: ['verifier'], expect: 'accept',
+    title: 'Market surveillance checks the passport',
+    text: 'It knows none of the parties in advance and trusts two roots: the accreditation body and the scheme owner. It follows every reference from the passport down to them before it relies on the GS mark.' },
+
+  { id: 'tamper', part: 'manipulate', acts: ['mfr', 'verifier'], state: { tamper: true }, unlock: ['tamper'], expect: 'reject',
+    title: 'Someone edits the passport',
+    text: 'The serial number is changed after signing. The signature no longer matches the bytes; this is the only manipulation a signature check alone would catch.' },
+  { id: 'borrowed', part: 'manipulate', acts: ['mfr', 'verifier'], state: { unit: 'sn-0050' }, unlock: ['unit'], expect: 'reject',
+    title: 'A passport borrows another unit\'s credential',
+    text: 'Unit sn-0050 is an HD-02, but its passport cites the GS-mark credential of unit sn-0042. Every credential is genuine and correctly signed; the link between them is not.' },
+  { id: 'withheld', part: 'manipulate', acts: ['mfr', 'verifier'], state: { withholdTR: true }, unlock: ['withhold'], expect: 'not_established',
+    title: 'The type examination is left out',
+    text: 'Nothing shown is false, but the study the certificate rests on is missing. The verifier cannot tell, and "cannot tell" is never accepted.' },
+  { id: 'withdraw', part: 'manipulate', acts: ['gsb', 'verifier'], state: { revokeC: true }, unlock: ['revokeC'], expect: 'reject',
+    title: 'The GS body withdraws the certificate',
+    text: 'It sets one bit in its revocation list and signs the list again, here in your browser. The passport and the mark credential are unchanged, yet the mark no longer holds.' },
+
+  { id: 'surveillance', part: 'decide', acts: ['verifier'], expect: 'accept',
+    title: 'Verifier 1: market surveillance',
+    text: 'Its profile recognises the accreditation body and the scheme owner, so both halves of the authority, competence and permission, reach a root it trusts.' },
+  { id: 'abroad', part: 'decide', acts: ['verifier'], state: { trust: 'accreditation-only' }, unlock: ['trust'], expect: 'not_established',
+    title: 'Verifier 2: a buyer abroad',
+    text: 'The same passport and the same bytes. This verifier recognises the accreditation body but not the scheme owner, so it cannot tell whether the mark was permitted. The verifier\'s policy decides, not the issuer\'s.' },
+
+  { id: 'present', part: 'present', acts: ['mfr', 'verifier'],
+    title: 'Show what the question needs, and no more',
+    text: 'Not evaluated yet. In a presentation the manufacturer would sign a fresh envelope around the passport for the verifier\'s challenge. With selective disclosure it could reveal only the fields the question needs, each signature still checkable.',
+    presentation: [
+      { credential: 'Product passport DPP-1', reveal: 'Unit, model and the GS-mark entry', hide: 'Facility, technical and sustainability data' },
+      { credential: 'Type examination TR-1', reveal: 'Issuer, model, standards and the outcome', hide: 'In a real report: measurements and design details' },
+      { credential: 'Factory inspection FI-1', reveal: 'Issuer, date and the outcome', hide: 'The site identifier' },
+      { credential: 'GS certificate GSC-1', reveal: 'Everything: it is the public claim', hide: 'Nothing' },
+    ] },
+
+  { id: 'play', part: 'play', acts: ['ab', 'so', 'gsb', 'mfr', 'verifier'],
+    unlock: ['revokeA', 'revokeS', 'revokeC', 'unit', 'tamper', 'withhold', 'trust'],
+    title: 'Your turn',
+    text: 'Every action is live. Revoke the accreditation, the scheme permission or the certificate, show another unit\'s passport, edit or leave out a credential, or change whom the verifier trusts. Each change is evaluated at once.' },
+];
+
+export async function evaluateGsBoard(over: Partial<GsBoardState> = {}): Promise<BoardResult<GsBoardState>> {
+  const state = { ...GS_DEFAULT, ...over };
+  const target = GS_PASSPORT[state.unit];
+  const U = GS_BOARD_URI;
+  const texts: Record<string, string> = {};
+  if (state.revokeA) texts[U.NAB_STATUS] = await resignedList('gs', U.NAB_STATUS, 'nab', U.NAB);
+  if (state.revokeS) texts[U.ZLS_STATUS] = await resignedList('gs', U.ZLS_STATUS, 'zls', U.ZLS);
+  if (state.revokeC) texts[U.BODY_STATUS] = await resignedList('gs', U.BODY_STATUS, 'gs-body', U.BODY);
+  const signedLive = Object.keys(texts);
+  // Tamper: change the serial number in the passport's bytes without re-signing.
+  if (state.tamper) texts[target] = edited(textOf('gs', target), '-sn-', '-sn-9');
+  const r = await evaluate({
+    binding: 'gs', profileName: state.trust === 'both' ? 'gs-verifier-dpp-1' : ACCREDITATION_ONLY,
+    requestId: 'urn:vc4qi:demonstrator:gs-board', target,
+    claims: [{ id: 'mark', sourcePointer: '/credentialSubject/complianceInformation/gsMark' }], supplied: [], texts,
+    withheld: state.withholdTR ? U.TR : undefined,
+    notAsked: 'The verifier asks only whether the GS-mark entry is authorized; the binding installs no decision rule.',
+  });
+  const mark = (JSON.parse(textOf('gs', target)) as { evidence: { id: string }[] }).evidence[0]!.id;
+  const uris = { 'GS-A': U.A, 'GS-S': U.S, 'TR-1': U.TR, 'FI-1': U.FI, 'GSC-1': U.C, GSM: mark, DPP: target };
+  return { ...r, state, certificate: target, uris, signedLive };
 }
 
 export const buildInfo = {

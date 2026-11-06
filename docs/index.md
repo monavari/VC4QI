@@ -32,10 +32,10 @@ party by party up to a product passport, verified, manipulated, and judged by tw
 verifiers with different trust anchors (selective disclosure is a placeholder). The top
 bar also offers four examples: a reference material (RM), calibration certificates (DCC),
 a GS certificate and an experimental product passport (DPP). The
-[RM story](https://monavari.github.io/VC4QI/demo/rm/) puts a reference-material
-certificate on an actor board, one column per party, where the accreditation body can
-suspend, the producer can certify a value you type, and the verifier's own profile
-decides. The source is on
+[RM story](https://monavari.github.io/VC4QI/demo/rm/) and the
+[GS story](https://monavari.github.io/VC4QI/demo/gs/) put a chain on an actor board, one
+column per party, where accreditation bodies can suspend or revoke, the RM producer can
+certify a value you type, and the verifier's own profile decides. The source is on
 [GitHub](https://github.com/monavari/VC4QI); contribution rules are in
 [CONTRIBUTING](../CONTRIBUTING.md).
 
