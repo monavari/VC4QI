@@ -32,12 +32,15 @@ KEY = {
     "https://nab.vc4qi.example/controller": "nab",
     URI["PRODUCER"]: "producer",
     URI["LAB"]: "lab",
+    URI["GACI"]: "global-aci",
 }
 PROFILE_JSON = json.loads((RM_V1_DIRECTORY / "profiles/rm-verifier-1.json").read_text())
 
 
 def sign(document: dict[str, Any]) -> str:
+    """Sign with the fixture key of the issuer (a string, or an object's id)."""
     issuer = document["issuer"]
+    issuer = issuer["id"] if isinstance(issuer, dict) else issuer
     return resign(document, KEY[issuer], f"{issuer}#key-1")
 
 
@@ -46,7 +49,7 @@ def reissue(
 ) -> dict[str, str | None]:
     """Re-sign changed credentials and every credential pinning them by digest."""
     overrides: dict[str, str | None] = {}
-    for uri in (URI["A"], URI["H"], URI["O"], URI["S"], URI["D"]):
+    for uri in (URI["R"], URI["A"], URI["A2"], URI["H"], URI["O"], URI["S"], URI["D"]):
         document = changed.get(uri) or doc(uri)
         dirty = uri in changed
         if uri == URI["D"] and edit_d is not None:

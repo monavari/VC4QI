@@ -21,7 +21,7 @@ export const profile = loadRelianceProfile(profileJson());
 /** The fictional two-route profile: (operational scope within A) OR (direct accreditation). */
 export const twoRouteProfile = loadRelianceProfile(
   JSON.parse(readFileSync(new URL('profiles/rm-verifier-two-routes-1.json', rmDir), 'utf8')) as JsonObject);
-/** The fictional verifier abroad: Global ACI stand-in as only anchor, NAB recognized through its signatory list. */
+/** The fictional verifier abroad: Global ACI stand-in as only anchor; the NAB is recognized through R, which A and H point up to. */
 export const globalAciProfileJson = (): JsonObject =>
   JSON.parse(readFileSync(new URL('profiles/rm-verifier-global-aci-1.json', rmDir), 'utf8')) as JsonObject;
 export const globalAciProfile = loadRelianceProfile(globalAciProfileJson());
@@ -41,7 +41,7 @@ export const URI = {
   PRODUCER: 'https://producer.vc4qi.example/controller',
   LAB: 'https://lab.vc4qi.example/controller',
   GACI: 'https://global-aci.vc4qi.example/controller',
-  SIGNATORIES: 'https://global-aci.vc4qi.example/credentials/MRA-2026',
+  R: 'https://global-aci.vc4qi.example/credentials/R',
   GACI_STATUS: 'https://global-aci.vc4qi.example/status/1',
   GACI_SUSPENSION: 'https://global-aci.vc4qi.example/status/suspension/1',
 } as const;
@@ -101,15 +101,15 @@ export async function statusListWith(uri: string, setBits: number[]): Promise<st
 }
 
 /**
- * Re-issue the chain after changing credentials: walk A, H, O, S, D in dependency
- * order, re-sign each changed credential, and re-sign every credential whose
- * relatedResource digest pins a changed one. `editD` changes D itself.
+ * Re-issue the chain after changing credentials: walk R, A, A2, H, O, S, D in
+ * dependency order, re-sign each changed credential, and re-sign every credential
+ * whose relatedResource digest pins a changed one. `editD` changes D itself.
  */
 export async function reissue(
   changed: Record<string, JsonObject>, editD?: (d: JsonObject) => void,
 ): Promise<Record<string, string | null>> {
   const overrides: Record<string, string | null> = {};
-  for (const uri of [URI.A, URI.H, URI.O, URI.S, URI.D]) {
+  for (const uri of [URI.R, URI.A, URI.A2, URI.H, URI.O, URI.S, URI.D]) {
     const document = changed[uri] ?? json(uri);
     let dirty = uri in changed;
     if (uri === URI.D && editD) { editD(document); dirty = true; }

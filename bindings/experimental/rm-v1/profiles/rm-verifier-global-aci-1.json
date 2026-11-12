@@ -2,7 +2,7 @@
   "id": "https://vc4qi.example/profiles/rm-verifier-global-aci",
   "version": "1",
   "status": "experimental",
-  "description": "Fictional verifier abroad: its only trust anchor is a fictional stand-in for an arrangement anchor (Global ACI role), not the accreditation body. The accreditation body is accepted through the anchor's signatory list, a W3C Recognized Entities credential (Working Draft of 4 November 2026), for the main scope each grant requires. Otherwise identical to rm-verifier-1; not an external standard.",
+  "description": "Fictional verifier abroad: its only trust anchor is a fictional stand-in for an arrangement anchor (Global ACI role), not the accreditation body. It accepts the accreditation body when an accreditation points up (termsOfUse) to that anchor's recognition of its issuer, a W3C Recognized Entities credential (Working Draft of 4 November 2026) with one subject, for the main scope each grant requires. It names no recognition itself. Otherwise identical to rm-verifier-1; not an external standard.",
   "binding": {"id": "https://vc4qi.example/bindings/rm/1", "version": "1"},
   "trustAnchors": [
     {
@@ -39,8 +39,7 @@
   },
   "bindingRules": {
     "recognition": {
-      "lists": ["https://global-aci.vc4qi.example/credentials/MRA-2026"],
-      "listPurpose": "recognize-accreditation-bodies",
+      "recognizerPurpose": "recognize-accreditation-bodies",
       "action": "accredit",
       "purposes": {
         "accredit-rm-producers": {"activity": "Reference material production", "standardId": "urn:iso:std:iso:17034:ed-1"},

@@ -7,8 +7,9 @@
 //   S (homogeneity study) and D178 (RM certificate, x = 178 mg/kg, U = 5, k = 2, with the
 //   Cu, Zn and Pb values of the M375a DRMD transcription as further certified results),
 //   plus D197 and D520, hypothetical reissues with the same inputs and x = 197 / 520,
-//   and a fictional Global ACI signatory list (a W3C Recognized Entities credential,
-//   Working Draft of 4 November 2026) naming the NAB for RM production and testing.
+//   and R, a fictional Global ACI stand-in's recognition of the NAB for RM production and
+//   testing (a W3C Recognized Entities credential, Working Draft of 4 November 2026, with
+//   one subject), which A, A2 and H point up to.
 //
 //   pnpm -C packages/core-ts exec tsx scripts/generate-rm-v1-artifacts.ts          # write files
 //   pnpm -C packages/core-ts exec tsx scripts/generate-rm-v1-artifacts.ts --check  # fail if stale
@@ -44,7 +45,8 @@ const LAB = 'https://lab.vc4qi.example/controller';
 // A fictional stand-in for an arrangement anchor; not Global Accreditation Cooperation
 // Incorporated, and nothing here represents it.
 const GACI = 'https://global-aci.vc4qi.example/controller';
-const SIGNATORIES = 'https://global-aci.vc4qi.example/credentials/MRA-2026';
+// One recognition per recognized body: Global ACI's recognition of the NAB.
+const RECOGNITION = 'https://global-aci.vc4qi.example/credentials/R';
 const BATCH = 'urn:vc4qi-example:batch:cuzn39pb3-disc-lot-1';
 
 // Revocation status: one Bitstring Status List per issuer, all bits clear. The NAB
@@ -57,7 +59,7 @@ const STATUS_LIST = {
   gaci: 'https://global-aci.vc4qi.example/status/1',
 } as const;
 const SUSPENSION_LIST = 'https://nab.vc4qi.example/status/suspension/1';
-// The arrangement anchor can suspend its signatory list as a whole.
+// The arrangement anchor can suspend its recognition of one body without touching others.
 const GACI_SUSPENSION_LIST = 'https://global-aci.vc4qi.example/status/suspension/1';
 type Entry = [list: string, index: number, purpose: 'revocation' | 'suspension'];
 const STATUS_ENTRY: Record<string, Entry[]> = {
@@ -69,7 +71,7 @@ const STATUS_ENTRY: Record<string, Entry[]> = {
   'https://producer.vc4qi.example/credentials/D197': [[STATUS_LIST.producer, 2, 'revocation']],
   'https://producer.vc4qi.example/credentials/D520': [[STATUS_LIST.producer, 3, 'revocation']],
   'https://lab.vc4qi.example/credentials/S': [[STATUS_LIST.lab, 0, 'revocation']],
-  [SIGNATORIES]: [[STATUS_LIST.gaci, 0, 'revocation'], [GACI_SUSPENSION_LIST, 0, 'suspension']],
+  [RECOGNITION]: [[STATUS_LIST.gaci, 0, 'revocation'], [GACI_SUSPENSION_LIST, 0, 'suspension']],
 };
 
 interface Party { name: string; controller: string; seed: Uint8Array; publicKey: Uint8Array }
@@ -147,6 +149,11 @@ function envelope(id: string, type: string, schemaFile: string, issuer: string,
 }
 
 const policy = (id: string, type: string) => [{ type: 'RmAuthorizationPolicy', authorizationCredential: { id, type } }];
+// A grant issued by the NAB points up to the NAB's recognition, pinned by digest.
+const underRecognition = (rText: string) => ({
+  termsOfUse: policy(RECOGNITION, 'RecognizedEntityCredential'),
+  relatedResource: integrity([RECOGNITION, rText]),
+});
 const integrity = (...refs: [string, string][]) =>
   refs.map(([id, text]) => ({ id, digestSRI: sha384SRI(new TextEncoder().encode(text)) }));
 const scopeRecord = (id: string, methods: string[], properties = ['As'], range = { from: '50', to: '500' }) => ({
@@ -199,6 +206,41 @@ async function main() {
     }, p, '2026-09-01T00:00:00Z')), FIXTURE);
   }
 
+  // R: Global ACI's recognition of the NAB, one credential for one recognized body
+  // (the shape of a W3C Recognized Entities credential, Working Draft of 4 November
+  // 2026). The NAB is recognized to accredit for two main scopes (activity and
+  // normative document, as RFC 5141 ISO URNs) for the recognition period; Global ACI
+  // can suspend or revoke it through its own status entries. QI scope stays with the
+  // grants: recognition says what the NAB may accredit for, not what it accredited.
+  const mainScope = (activity: string, id: string, name: string) => ({ activity, standard: { id, name } });
+  const recognized = (scope: ReturnType<typeof mainScope>) => ({
+    type: 'RecognizedAction',
+    action: 'accredit',
+    recognizedBy: GACI,
+    mainScope: scope,
+  });
+  const rText = record(RECOGNITION, 'credentials/R.json', 'application/vc', serialize(await sign({
+    '@context': [VC_V2_CONTEXT, RECOGNIZED_ENTITIES_DRAFT_CONTEXT],
+    id: RECOGNITION,
+    type: ['VerifiableCredential', 'RecognizedEntityCredential'],
+    issuer: { id: GACI, type: 'RecognizedIssuer', name: 'Global ACI (fictional stand-in)' },
+    validFrom: '2024-01-01T00:00:00Z',
+    validUntil: '2028-01-01T00:00:00Z',
+    credentialSchema: { id: `${RM_V1_SCHEMA_BASE}recognized-entity.json`, type: 'JsonSchema' },
+    name: 'Recognition of the national accreditation body (fictional fixture)',
+    description: 'Fictional fixture in the shape of a W3C Recognized Entities credential. Not issued or endorsed by '
+      + 'Global Accreditation Cooperation Incorporated or any accreditation body.',
+    credentialSubject: {
+      id: NAB,
+      type: 'RecognizedEntity',
+      name: 'Fictional national accreditation body',
+      recognizedTo: [
+        recognized(mainScope('Reference material production', 'urn:iso:std:iso:17034:ed-1', 'ISO 17034:2016')),
+        recognized(mainScope('Testing', 'urn:iso:std:iso-iec:17025:ed-3', 'ISO/IEC 17025:2017')),
+      ],
+    },
+  }, gaci, '2024-01-01T00:00:00Z')), FIXTURE);
+
   const A_ID = 'https://nab.vc4qi.example/credentials/A';
   const aText = record(A_ID, 'credentials/A.json', 'application/vc', serialize(await sign({
     ...envelope(A_ID, 'RmAccreditation', 'accreditation.json', NAB,
@@ -212,6 +254,7 @@ async function main() {
       // names this brass rather than a material class; 997 g/kg is written in mg/kg.
       scope: [scopeRecord(`${A_ID}#scope-elements`, ['M1', 'M2'], ['As', 'Cu', 'Zn', 'Pb'], { from: '0.1', to: '997000' })],
     },
+    ...underRecognition(rText),
   }, nab, '2025-01-01T00:00:00Z')), FIXTURE);
 
   // A2: a second accreditation granting the producer RM certification directly
@@ -225,6 +268,7 @@ async function main() {
       permittedActivity: [rm('issueRmCertificate')],
       scope: [scopeRecord(`${A2_ID}#scope-as`, ['M1'])],
     },
+    ...underRecognition(rText),
   }, nab, '2025-01-01T00:00:00Z')), FIXTURE);
 
   const H_ID = 'https://nab.vc4qi.example/credentials/H';
@@ -241,6 +285,7 @@ async function main() {
         studyTypeIris: [rm('Homogeneity')],
       }],
     },
+    ...underRecognition(rText),
   }, nab, '2025-01-01T00:00:00Z')), FIXTURE);
 
   const O_ID = 'https://producer.vc4qi.example/credentials/O';
@@ -311,40 +356,6 @@ async function main() {
     }, producer, '2026-02-01T00:00:00Z')), FIXTURE);
   }
 
-  // The arrangement anchor's signatory list: the NAB is recognized to accredit for two
-  // main scopes (activity and normative document, as RFC 5141 ISO URNs), from the
-  // arrangement's start. A verifier abroad that trusts only the arrangement anchor
-  // reaches the NAB's grants through it; QI scope stays with the grants themselves.
-  const mainScope = (activity: string, id: string, name: string) => ({ activity, standard: { id, name } });
-  const recognized = (scope: ReturnType<typeof mainScope>) => ({
-    type: 'RecognizedAction',
-    action: 'accredit',
-    recognizedBy: GACI,
-    mainScope: scope,
-    validFrom: '2026-01-01T00:00:00Z',
-    validUntil: '2027-12-31T23:59:59Z',
-  });
-  record(SIGNATORIES, 'credentials/MRA-2026.json', 'application/vc', serialize(await sign({
-    '@context': [VC_V2_CONTEXT, RECOGNIZED_ENTITIES_DRAFT_CONTEXT],
-    id: SIGNATORIES,
-    type: ['VerifiableCredential', 'RecognizedEntityCredential'],
-    issuer: { id: GACI, type: 'RecognizedIssuer', name: 'Global ACI (fictional stand-in)' },
-    validFrom: '2026-01-01T00:00:00Z',
-    validUntil: '2027-12-31T23:59:59Z',
-    credentialSchema: { id: `${RM_V1_SCHEMA_BASE}recognized-entity.json`, type: 'JsonSchema' },
-    name: 'Signatories of the arrangement (fictional fixture)',
-    description: 'Fictional fixture in the shape of a W3C Recognized Entities credential. Not issued or endorsed by '
-      + 'Global Accreditation Cooperation Incorporated or any accreditation body.',
-    credentialSubject: [{
-      id: NAB,
-      type: 'RecognizedEntity',
-      name: 'Fictional national accreditation body',
-      recognizedTo: [
-        recognized(mainScope('Reference material production', 'urn:iso:std:iso:17034:ed-1', 'ISO 17034:2016')),
-        recognized(mainScope('Testing', 'urn:iso:std:iso-iec:17025:ed-3', 'ISO/IEC 17025:2017')),
-      ],
-    }],
-  }, gaci, '2026-01-01T00:00:00Z')), FIXTURE);
 
   outputs.set('catalog.json', `${JSON.stringify({
     description: 'Signed RM v1 vertical-slice fixtures. digestSRI is SHA-384 over the exact file bytes. '

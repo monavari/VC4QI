@@ -122,11 +122,14 @@ export async function evaluateRmSlice(
   // Only the target and the credentials on the selected witness paths decide the
   // request; a failed credential on an unused alternative is diagnostic (C03, C07).
   // Failures on those alternatives still reach the decision through the route and
-  // support states when no complete route or support is established.
+  // support states when no complete route or support is established. The same holds
+  // for a decisive credential's digest pin on a reference off those paths, such as an
+  // accreditation's pin on a recognition that a verifier anchoring the body never uses.
   const decisive = new Set<string>([request.targetId, ...(winner?.chain ?? []),
     ...(supported.state === 'established' ? supported.chain : [])]);
   const required: SemanticState[] = [
-    ...artifacts.filter(a => decisive.has(a.artifactId)).flatMap(verificationOf).map(result => result.state),
+    ...artifacts.filter(a => decisive.has(a.artifactId)).flatMap(verificationOf)
+      .filter(result => decisive.has(result.artifactId)).map(result => result.state),
     ...authorization.map(result => result.state),
     ...support.map(result => result.state),
     ...(conformity.requested ? [conformity.state] : []),

@@ -1,15 +1,21 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Recognition through an arrangement's signatory list (mirrors recognized-entities.ts).
+"""Recognition of an accreditation body (mirrors recognized-entities.ts).
 
-The signatory list is a W3C Recognized Entities credential (Working Draft of
-4 November 2026). The verifier's profile names the lists it accepts
-(bindingRules.recognition), as it names its anchors; a list a holder supplies or a
-credential points to is not used. A list establishes that a grant's issuer is
-recognized only when it is usable and not suspended, its issuer is a configured anchor
-for the list purpose, it names the grant's issuer with stated actions, one action is
-the required action for the required main scope recognized by the list's issuer, and
-that action was in force at the activity time. A main scope the list does not grant
-contradicts; a missing list, entry or time is not established.
+One credential per recognized body: a W3C Recognized Entities credential (Working
+Draft of 4 November 2026) with a single subject. The grant points up: its termsOfUse
+references the recognition of its own issuer (an RmAuthorizationPolicy whose
+authorizationCredential has type RecognizedEntityCredential), pinned by digest like
+every other link. The verifier's profile names no recognition; it names the
+recognizer as an anchor for the recognizer purpose and the action and main scope it
+requires. A recognition that nothing in the chain references confers nothing.
+
+A referenced recognition establishes that the grant's issuer is recognized only when
+it is usable and not suspended, its issuer is a configured anchor for the recognizer
+purpose, its subject is the grant's issuer with stated actions, one action is the
+required action for the required main scope recognized by its issuer, and that
+action was in force at the activity time. A recognition of another body, or for
+another main scope, contradicts; a missing recognition, entry or time is not
+established.
 """
 
 from __future__ import annotations
@@ -27,6 +33,8 @@ if TYPE_CHECKING:
 
 Doc = dict[str, Any]
 
+RECOGNITION_TYPE = "RecognizedEntityCredential"
+
 
 @dataclass(frozen=True)
 class MainScopeRule:
@@ -36,8 +44,7 @@ class MainScopeRule:
 
 @dataclass(frozen=True)
 class RecognitionRules:
-    lists: tuple[str, ...]
-    list_purpose: str
+    recognizer_purpose: str
     action: str
     purposes: Mapping[str, MainScopeRule]
 
@@ -70,10 +77,7 @@ def recognition_rules(
         return None
     if (
         not isinstance(raw, dict)
-        or not isinstance(raw.get("lists"), list)
-        or not raw["lists"]
-        or not all(_nonempty(u) for u in raw["lists"])
-        or not _nonempty(raw.get("listPurpose"))
+        or not _nonempty(raw.get("recognizerPurpose"))
         or not _nonempty(raw.get("action"))
         or not isinstance(raw.get("purposes"), dict)
     ):
@@ -87,15 +91,27 @@ def recognition_rules(
         ):
             return "invalid"
         purposes[purpose] = MainScopeRule(rule["activity"], rule["standardId"])
-    return RecognitionRules(
-        tuple(raw["lists"]), raw["listPurpose"], raw["action"], purposes
-    )
+    return RecognitionRules(raw["recognizerPurpose"], raw["action"], purposes)
 
 
-def recognition_lists(profile: RelianceProfile) -> tuple[str, ...]:
-    """Lists the chain verification must resolve and verify (gates 0-3)."""
-    rules = recognition_rules(profile)
-    return () if rules is None or rules == "invalid" else rules.lists
+def recognition_references(grant: Doc) -> list[str]:
+    """Recognitions a grant points up to: termsOfUse policies referencing a
+    RecognizedEntityCredential."""
+    references: list[str] = []
+    for policy in _list(grant.get("termsOfUse")):
+        if (
+            not isinstance(policy, dict)
+            or policy.get("type") != "RmAuthorizationPolicy"
+        ):
+            continue
+        ref = policy.get("authorizationCredential")
+        if (
+            isinstance(ref, dict)
+            and ref.get("type") == RECOGNITION_TYPE
+            and _nonempty(ref.get("id"))
+        ):
+            references.append(str(ref["id"]))
+    return references
 
 
 def _basis(
@@ -118,7 +134,8 @@ def _js(value: Any) -> str:
 def _label(scope: Any) -> str:
     if not isinstance(scope, dict):
         return "no main scope"
-    standard = scope.get("standard") if isinstance(scope.get("standard"), dict) else {}
+    raw = scope.get("standard")
+    standard: dict[str, Any] = raw if isinstance(raw, dict) else {}
     name = standard.get("name")
     shown = name if name is not None else standard.get("id")
     return f"{_js(scope.get('activity'))} under {_js(shown)}"
@@ -135,7 +152,7 @@ def _time(value: Any) -> datetime | None:
         return None
 
 
-def _from_list(
+def _from_recognition(
     basis_id: str,
     uri: str,
     entity: str,
@@ -145,38 +162,32 @@ def _from_list(
     lookup: NodeLookup,
     profile: RelianceProfile,
 ) -> BasisResult:
-    sources = ("/issuer", uri)
+    sources = ("/termsOfUse", uri)
     node = lookup(uri)
     if node is None:
         return _basis(
-            basis_id,
-            "not_established",
-            f"Signatory list {uri} is unavailable.",
-            sources,
+            basis_id, "not_established", f"Recognition {uri} is unavailable.", sources
         )
     if node.usable != "established" or node.document is None:
         return _basis(
             basis_id,
             "contradicted" if node.usable == "contradicted" else "not_established",
-            f"Signatory list {uri} is not usable: {node.reason}",
+            f"Recognition {uri} is not usable: {node.reason}",
             sources,
         )
     doc = node.document
-    if "RecognizedEntityCredential" not in _list(doc.get("type")):
+    if RECOGNITION_TYPE not in _list(doc.get("type")):
         return _basis(
-            basis_id,
-            "contradicted",
-            f"{uri} is not a RecognizedEntityCredential.",
-            sources,
+            basis_id, "contradicted", f"{uri} is not a {RECOGNITION_TYPE}.", sources
         )
-    list_issuer = issuer_id(doc.get("issuer"))
-    anchored = next((a for a in profile.trust_anchors if a.id == list_issuer), None)
-    if anchored is None or rules.list_purpose not in anchored.purposes:
+    recognizer = issuer_id(doc.get("issuer"))
+    anchored = next((a for a in profile.trust_anchors if a.id == recognizer), None)
+    if anchored is None or rules.recognizer_purpose not in anchored.purposes:
         return _basis(
             basis_id,
             "not_established",
-            f"{_js(list_issuer)}, issuer of {uri}, is not a configured anchor for "
-            f"{rules.list_purpose}.",
+            f"{_js(recognizer)}, issuer of {uri}, is not a configured anchor for "
+            f"{rules.recognizer_purpose}.",
             sources,
         )
     if node.suspension is not None and node.suspension[0] != "established":
@@ -184,30 +195,28 @@ def _from_list(
         return _basis(
             basis_id,
             state,
-            f"{_js(list_issuer)} has suspended its signatory list {uri}. {reason}"
+            f"{_js(recognizer)} has suspended its recognition {uri}. {reason}"
             if state == "contradicted"
             else f"The suspension status of {uri} is not established: {reason}",
             sources,
         )
-    listed = next(
-        (
-            e
-            for e in _list(doc.get("credentialSubject"))
-            if isinstance(e, dict) and e.get("id") == entity
-        ),
-        None,
-    )
-    if listed is None:
+    subjects = [e for e in _list(doc.get("credentialSubject")) if isinstance(e, dict)]
+    subject = next((e for e in subjects if e.get("id") == entity), None)
+    if subject is None:
+        named = ", ".join(_js(e.get("id")) for e in subjects) or "no subject"
         return _basis(
-            basis_id, "not_established", f"{uri} does not list {entity}.", sources
+            basis_id,
+            "contradicted",
+            f"{uri} recognizes {named}, not {entity}, the grant's issuer.",
+            sources,
         )
-    actions = [a for a in _list(listed.get("recognizedTo")) if isinstance(a, dict)]
+    actions = [a for a in _list(subject.get("recognizedTo")) if isinstance(a, dict)]
     if not actions:
         return _basis(
             basis_id,
             "not_established",
-            f"{uri} lists {entity} without recognized actions; this profile does not "
-            "accept recognition without stated actions.",
+            f"{uri} recognizes {entity} without recognized actions; this profile does "
+            "not accept recognition without stated actions.",
             sources,
         )
     wanted_label = f"{wanted.activity} under {wanted.standard_id}"
@@ -237,14 +246,14 @@ def _from_list(
     by_issuer = [
         a
         for a in matching
-        if "recognizedBy" not in a or a["recognizedBy"] == list_issuer
+        if "recognizedBy" not in a or a["recognizedBy"] == recognizer
     ]
     if not by_issuer:
         return _basis(
             basis_id,
             "contradicted",
-            f"The matching action in {uri} names another recognizer than the list's "
-            f"issuer {_js(list_issuer)}.",
+            f"The matching action in {uri} names another recognizer than its issuer "
+            f"{_js(recognizer)}.",
             sources,
         )
     activity = _time(at)
@@ -267,15 +276,15 @@ def _from_list(
         return _basis(
             basis_id,
             "not_established",
-            f"{_js(list_issuer)} did not recognize {entity} for {wanted_label} at the "
+            f"{_js(recognizer)} did not recognize {entity} for {wanted_label} at the "
             f"activity time {at}.",
             sources,
         )
     return _basis(
         basis_id,
         "established",
-        f"{entity} is recognized by {_js(list_issuer)} (a configured anchor for "
-        f"{rules.list_purpose}) to {rules.action} for "
+        f"{entity} is recognized by {_js(recognizer)} (a configured anchor for "
+        f"{rules.recognizer_purpose}) to {rules.action} for "
         f"{_label(chosen.get('mainScope'))}, in force at {at}, in {uri}.",
         sources,
     )
@@ -289,9 +298,10 @@ def grant_issuer_standing(
     lookup: NodeLookup,
     at: Any,
 ) -> tuple[BasisResult, str | None]:
-    """Configured anchor for `purpose`, or recognized through a profile-named list.
+    """Configured anchor for `purpose`, or recognized through a recognition the grant
+    itself points up to.
 
-    Returns the basis and the deciding list, so routes can name it as a witness.
+    Returns the basis and the deciding recognition, so routes can name it as a witness.
     """
     issuer = issuer_id(grant.get("issuer"))
     configured = next((a for a in profile.trust_anchors if a.id == issuer), None)
@@ -334,9 +344,26 @@ def grant_issuer_standing(
             ),
             None,
         )
+    references = recognition_references(grant)
+    if not references:
+        return (
+            _basis(
+                basis_id,
+                "not_established",
+                f"{direct} The grant points up to no {RECOGNITION_TYPE} in its "
+                "termsOfUse.",
+                ("/issuer", "/termsOfUse"),
+            ),
+            None,
+        )
     answers = [
-        (uri, _from_list(basis_id, uri, issuer, wanted, rules, at, lookup, profile))
-        for uri in rules.lists
+        (
+            uri,
+            _from_recognition(
+                basis_id, uri, issuer, wanted, rules, at, lookup, profile
+            ),
+        )
+        for uri in references
     ]
     for uri, result in answers:
         if result.state == "established":
@@ -347,7 +374,7 @@ def grant_issuer_standing(
             basis_id,
             state,
             f"{direct} " + " ".join(result.reason for _, result in answers),
-            ("/issuer", *(uri for uri, _ in answers)),
+            ("/issuer", "/termsOfUse", *(uri for uri, _ in answers)),
         ),
         None,
     )

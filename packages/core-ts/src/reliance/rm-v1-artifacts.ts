@@ -41,7 +41,7 @@ export const RM_V1_ARTIFACT_SCHEMAS: Readonly<Record<string, string>> = Object.f
 
 /**
  * Exact context list each recognized type must use: status lists use VCDM 2.0 only,
- * an arrangement's signatory list the Recognized Entities stand-in context.
+ * a recognition credential the Recognized Entities stand-in context.
  */
 function expectedContexts(type: unknown): readonly string[] {
   if (type === 'BitstringStatusListCredential') return [VC_V2_CONTEXT];

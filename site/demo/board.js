@@ -31,7 +31,8 @@ export function fail(message) {
  *   extras: { actorId: { row, html(ctx) } } a wallet or an object in a column,
  *   handovers(ctx) -> [[from, to]]     dashed lines: 'code:X', '#id' or 'verdict',
  *   objectAt(ctx) -> actorId           the column the physical object sits in,
- *   band(st) -> bool                   show the international-recognition placeholder,
+ *   band(st) -> bool                   show the international-recognition note,
+ *   panels: { name: ctx -> html }      pages drawn instead of the board (a step's `panel`),
  * }
  */
 export async function mountBoard(api, cfg) {
@@ -135,7 +136,7 @@ export async function mountBoard(api, cfg) {
     return "<button type='button' class='card " + a.kind + (state ? ' s-' + state : '') + (missing ? ' missing' : '') + (fresh ? ' fresh' : '')
       + (fresh && a.kind === 'claim' ? ' handover' : '') + "' data-code='" + esc(a.code) + "' data-uri='" + esc(uri) + "'>"
       + "<span class='top'><span class='code'>" + esc(short(uri) || a.code) + "</span><span class='kind'>" + esc(a.label)
-      + (a.kind === 'evidence' ? " <span class='tag'>evidence</span>" : '') + '</span>'
+      + (a.kind === 'evidence' ? " <span class='tag'>evidence</span>" : '') + (a.tag ? " <span class='tag'>" + esc(a.tag) + '</span>' : '') + '</span>'
       + (state ? "<span class='icon' aria-label='" + esc(LABEL[state]) + "'>" + ICON[state] + '</span>' : '') + '</span>'
       + (d ? cfg.facts(a.code, d).map(l => "<span class='fact'>" + esc(l) + '</span>').join('') : '')
       + (tags.length ? "<span class='tags'>" + tags.join('') + '</span>' : '') + foot + '</button>';
@@ -174,7 +175,14 @@ export async function mountBoard(api, cfg) {
       if (failed === 'authorized') {
         const e = q.authorized.details.find(x => x.state === 'contradicted' && x.predicate.startsWith('restriction:'))
           ?? q.authorized.details.find(x => x.state === 'contradicted' && (x.predicate.startsWith('claim-coverage:') || /^route:[^:]+:/.test(x.predicate)));
-        if (e) return [failed, e.predicate.startsWith('restriction:') ? first(e.reason) : (e.reason.split(/(?<=\.) /).find(x => /No single|not in the|≠/.test(x)) ?? e.reason)];
+        if (e) {
+          if (e.predicate.startsWith('restriction:')) return [failed, first(e.reason)];
+          // A failed recognition says first that the body is not the verifier's own root;
+          // the verdict leads with why the recognition failed.
+          const sentences = e.reason.split(/(?<=\.) /);
+          const beyondRoot = sentences.filter(x => !/is not a configured trust anchor\.$/.test(x));
+          return [failed, sentences.find(x => /No single|not in the|≠/.test(x)) ?? (beyondRoot.length ? first(beyondRoot.join(' ')) : e.reason)];
+        }
         const sentence = q.authorized.summary.split(/(?<=\.) /).find(x => /No single|≠/.test(x));
         if (sentence) return [failed, sentence];
       }
@@ -254,7 +262,7 @@ export async function mountBoard(api, cfg) {
     const markers = ['established', 'not_required', 'contradicted', 'not_established', 'plain'].map(k => "<marker id='m-" + k
       + "' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0 0 L10 5 L0 10 z' fill='" + colour(k) + "'/></marker>").join('');
     const edges = R.graph.edges.map(e => {
-      const state = mode === 'evaluate' ? e.state : 'plain';
+      const state = mode === 'evaluate' && e.state !== 'unused' ? e.state : 'plain';
       return path(box(e.from), box(e.to), e.kind + ' e-' + state, state);
     });
     const handovers = cfg.handovers(ctxOf(R, mode)).filter(([, to]) => to !== 'verdict' || joined('verifier'))
@@ -312,11 +320,28 @@ export async function mountBoard(api, cfg) {
 
   async function render() {
     const my = ++seq, s = STORY[step];
-    const mode = s.part === 'build' ? 'build' : s.part === 'present' ? 'present' : 'evaluate';
+    const mode = s.panel ? 'panel' : s.part === 'build' ? 'build' : s.part === 'present' ? 'present' : 'evaluate';
     renderNav();
     document.body.dataset.mode = mode;
     $('band').hidden = !(mode === 'evaluate' && cfg.band(stateOf(s)));
     $('board').classList.toggle('rows-3', cfg.rows === 3);
+    // One grid column per actor (the verifier's column is wider).
+    const actorColumns = ACTORS.filter(a => a.id !== 'verifier').length;
+    $('board').style.setProperty('--actors', String(actorColumns));
+    $('board').classList.toggle('many', actorColumns > 4);
+    // A panel step draws a page instead of the board: it reads the generated credentials
+    // and evaluates nothing.
+    const panel = $('panel');
+    if (panel) panel.hidden = mode !== 'panel';
+    $('board').hidden = mode === 'panel';
+    if ($('legend')) $('legend').hidden = mode === 'panel';
+    if (mode === 'panel') {
+      const R = defaultResult ??= await cfg.evaluate({});
+      if (my !== seq) return;
+      panel.innerHTML = cfg.panels[s.panel](ctxOf(R, mode));
+      redraw = undefined;
+      return;
+    }
     const busy = $('board').querySelector('.col[data-actor="verifier"] .slot.r1');
     if (busy && mode === 'evaluate') busy.innerHTML = "<div class='verdict busy'><div class='mark'>…</div><div><b>Evaluating</b><small>Signing and checking in your browser.</small></div></div>";
     // Build and presentation steps evaluate nothing; they read the generated credentials.
