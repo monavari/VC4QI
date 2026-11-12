@@ -208,7 +208,10 @@ describe('RM v1 signed vertical slice (I1)', () => {
     });
 
     it('P09: a stale or unavailable list is not established, never contradicted', async () => {
-      const stale = await evaluateRmSlice(request({ evaluationTime: '2026-11-15T00:00:00Z' }), catalogWith(), manifest, profile);
+      // Asked about now (activity time = evaluation time): the September list is too old.
+      // Asked about an earlier time, freshness is judged at that time (rm-v1-claims P13).
+      const later = '2026-11-15T00:00:00Z';
+      const stale = await evaluateRmSlice(request({ evaluationTime: later, activityTime: later }), catalogWith(), manifest, profile);
       expect(statusOf(stale.result, URI.D)?.reason).toMatch(/freshness/);
       expect(stale.result.decision).toBe('not_established');
       const missing = await evaluateRmSlice(request(), catalogWith({ [URI.PRODUCER_STATUS]: null }), manifest, profile);

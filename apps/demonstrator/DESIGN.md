@@ -17,8 +17,9 @@ fixtures, or is marked as not evaluated.
    shape shows the kind of asset, line style shows the relation. No channel carries a
    second meaning. Actors therefore have no colours of their own.
 3. **Never colour alone.** Every state also has an icon and a word.
-4. **One step, one action, one consequence.** In a guided story the acting columns are
-   outlined, and only that step's action is live. In build steps the other columns'
+4. **One step, one question.** In a guided story the acting columns are outlined, and
+   only that step's actions are live. A "try it" step may make several actions live
+   when they answer one question ("can it be broken?"). In build steps the other columns'
    credentials are dimmed; in evaluated steps they keep full strength, because they are
    what the verifier reads.
 5. **Actions belong to the actor who can take them.** Suspending sits with the
@@ -136,8 +137,9 @@ is the accreditation body). Handover lines are always grey.
 
 ### Pages instead of the board
 
-A step may draw a page instead of the board: in the RM story, the anatomy of one
-credential at the start and the recognition proposal before the presentation. A page
+A step may draw a page instead of the board: in the RM story, the start page (D178
+drawn with what each link points to, beside the eight design rules) and the recognition
+proposal. A page
 reads the generated credentials and evaluates nothing, says so in a tag above it, and
 uses no state colour: direction is arrow shape (↑ up to authority, ↓ down to the
 subject, → sideways to evidence), state is a drawn switch, the seal a solid diamond.
@@ -171,8 +173,14 @@ Plain words lead and the terms follow in mono, each with where it comes from.
 ## Interaction
 
 - Verifier settings are segmented controls; actor actions are buttons in their column.
-- In a guided story, locked actions stay visible, faded, marked "available in *Your
-  turn*". The last step unlocks every action.
+  A citation line can be clicked to leave its credential out (the holder's choice); the
+  same choice is a segmented control in the holder's column for keyboards.
+- So that a step fits the screen, a guided step shows its live controls, plus any whose
+  value it changed (faded, marked "available in *Your turn*"), and the verifier's root.
+  The last step shows and unlocks every action.
+- What each actor does is shown while the chain is built; in evaluated steps that room
+  goes to the credentials.
+- Step text is one or two sentences under the title.
 - Every change re-evaluates immediately. The URL hash holds the whole state, so a link
   reproduces a slide. Arrow keys and Page Up/Down move between steps.
 

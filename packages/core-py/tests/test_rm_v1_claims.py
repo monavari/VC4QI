@@ -3,10 +3,13 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import pytest
 from qi_vc_core.reliance import load_reliance_profile
+from qi_vc_core.reliance.rm_v1 import RM_V1_DIRECTORY
+from qi_vc_core.reliance.status_list import MIN_STATUS_BITS, encode_status_list
 from qi_vc_core.reliance.types import ConformityRequest, SelectedClaim
 
 from .test_rm_v1_authority import PROFILE_JSON, reissue, run, sign
@@ -440,6 +443,75 @@ def test_p13_historical_question_needs_historical_status() -> None:
     assert "historical status is unavailable" in status.reason
     assert historical.decision == "not_established"
     assert run().decision == "accept"
+
+
+ARCHIVE = RM_V1_DIRECTORY / "test-vectors/signed/status-archive/2026-01/catalog.json"
+ACTIVITY = "2026-01-20T00:00:00Z"
+REPO = RM_V1_DIRECTORY.parents[2]
+
+
+def _january() -> dict[str, str | None]:
+    """The issuers' status lists as signed and kept in January 2026."""
+    resources = json.loads(ARCHIVE.read_text())["resources"]
+    return {r["uri"]: (REPO / r["path"]).read_text() for r in resources}
+
+
+def _status(result: Any, uri: str) -> Any:
+    return next(
+        t
+        for t in result.trace
+        if t.node_use.startswith(uri + " |") and t.predicate == "credential-status"
+    )
+
+
+def _suspended_now() -> dict[str, str | None]:
+    bits = bytearray(MIN_STATUS_BITS // 8)
+    bits[0] = 0x80
+    current = doc(URI["NAB_SUSPENSION"])
+    current["credentialSubject"]["encodedList"] = encode_status_list(bytes(bits))
+    return {URI["NAB_SUSPENSION"]: sign(current)}
+
+
+def test_p13_january_lists_answer_status_on_the_activity_day() -> None:
+    result = run(_january(), req=request(activity_time=ACTIVITY))
+    for key in ("D", "O", "A", "S", "H"):
+        assert _status(result, URI[key]).state == "established", key
+    assert result.decision == "accept"
+
+
+def test_p13_suspended_in_september_three_answers() -> None:
+    suspended = _suspended_now()
+    assert run(suspended).decision == "reject"
+    assert run(suspended, req=request(activity_time=ACTIVITY)).decision == (
+        "not_established"
+    )
+    both = {**suspended, **_january()}
+    assert run(both, req=request(activity_time=ACTIVITY)).decision == "accept"
+
+
+def test_p13_january_list_with_bit_set_shows_suspension_then() -> None:
+    lists = _january()
+    kept = json.loads(lists[URI["NAB_SUSPENSION"]] or "{}")
+    bits = bytearray(MIN_STATUS_BITS // 8)
+    bits[0] = 0x80
+    kept["credentialSubject"]["encodedList"] = encode_status_list(bytes(bits))
+    result = run(
+        {**lists, URI["NAB_SUSPENSION"]: sign(kept)},
+        req=request(activity_time=ACTIVITY),
+    )
+    assert entry(result, "restriction:accreditation-suspension").state == (
+        "contradicted"
+    )
+    assert result.decision == "reject"
+
+
+def test_p13_kept_list_outside_its_window_establishes_nothing() -> None:
+    result = run(_january(), req=request(activity_time="2026-03-15T00:00:00Z"))
+    assert (
+        "in force until 2026-03-01T00:00:00Z cannot establish status"
+        in _status(result, URI["D"]).reason
+    )
+    assert result.decision == "not_established"
 
 
 def test_p14_later_scope_cannot_authorize_an_earlier_activity() -> None:

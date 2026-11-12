@@ -6,13 +6,14 @@
 // bindings/experimental (exact file text, with the index's SHA-384 digests), so the
 // page evaluates the same bytes as the repository tests and fetches nothing.
 // node:zlib becomes a bounded gunzip shim for status lists.
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 
 const r = (p: string) => resolve(__dirname, p);
 const ROOT = r('../..');
 const BINDINGS = { rm: 'rm-v1', cal: 'cal-v1', gs: 'gs-v1' } as const;
+const ARCHIVE = 'test-vectors/signed/status-archive/2026-01/catalog.json';
 
 function pinnedFiles(index: string) {
   const { resources } = JSON.parse(readFileSync(index, 'utf8')) as {
@@ -29,6 +30,8 @@ function binding(dir: string) {
     manifest: JSON.parse(readFileSync(resolve(base, 'manifest.json'), 'utf8')),
     profiles,
     files: [...pinnedFiles(resolve(base, 'catalog.json')), ...pinnedFiles(resolve(base, 'test-vectors/signed/catalog.json'))],
+    // Status lists as their issuers signed and kept them in January 2026 (RM only).
+    ...(existsSync(resolve(base, ARCHIVE)) ? { archive: pinnedFiles(resolve(base, ARCHIVE)) } : {}),
   };
 }
 

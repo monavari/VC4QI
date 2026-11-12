@@ -19,6 +19,24 @@
   recognized and still rejected. Status lists compare issuer identifiers, so an issuer
   object with an `id` is accepted. This replaces the profile-named signatory list
   `MRA-2026` of the same unreleased branch.
+- **Valid when it was issued? (RM, status at the activity time).** A request asks about
+  its activity time; status at that time is established only by a list of the same
+  issuer in force and fresh then. A list signed later still cannot say what held earlier
+  (P13: not established); a list the issuer signed and kept from that time answers it.
+  The generator writes the issuers' January 2026 lists to their own archive catalog
+  (`test-vectors/signed/status-archive/2026-01`). Freshness is judged at the time asked
+  about; for current questions nothing changes. W3C Recognized Entities (draft of
+  4 November 2026) evaluates validity windows at a past date but not status at that date.
+- **RM story, ten steps.** Opens with D178 drawn with what each link points to (up,
+  down, sideways, beside) next to eight design rules; builds the chain in two steps
+  (R, A and H; then O, S and D); one "Try to break it" step with every manipulation
+  live, including clicking a citation line to leave that credential out; one decision
+  step where the verifier's rule and its limit (180, 200 or 250 mg/kg) can be changed;
+  the verifier abroad; and "Was it valid when it was issued?" (today, at issuance with
+  today's lists, at issuance with the lists kept from January). Steps carry one or two
+  sentences, guided steps hide locked controls whose value they did not change, actor
+  descriptions show while the chain is built, and the board fits 1920×1080. The
+  presentation placeholder is removed from the RM story.
 - **Accreditations name sets (RM).** A now reads like its annex row: non-ferrous metals
   and alloys, element contents, solid forms, 0.1 mg/kg – 997 g/kg, methods M1 and M2;
   H covers homogeneity studies of element contents in non-ferrous metals and alloys. The

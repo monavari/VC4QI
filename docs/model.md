@@ -239,8 +239,16 @@ terms expand to the draft vocabulary.
 - Resolution is bounded (origin, redirects, media type, size, decompression, time).
   Static resources are pinned by digest; status observations keep their time.
 - Evaluation, activity, issuance, validity, proof and status times are distinct.
-  `validFrom` is not issuance time. The baseline answers current reliance; historical
-  questions need historical evidence and are otherwise refused.
+  `validFrom` is not issuance time. A request asks about its activity time, which is
+  the evaluation time for current reliance. Grants must be in force at that time, and
+  status at that time is established only by a status list of the same issuer that was
+  in force then and fresh then: a list signed later cannot say what held earlier, so a
+  question about the past with only current lists is not established, and a list the
+  issuer signed and kept from that time answers it. Status lists are dated credentials;
+  keeping them is what makes "was it valid when it was issued?" answerable. Finding a
+  kept list is the resolver's job (the RM fixtures keep January 2026 lists in their own
+  archive catalog); an issuer-written activity time can still be backdated without a
+  trusted timestamp.
 - Evidence may be supplied as a flat bundle or retrieved within budgets; extra
   credentials confer nothing. Selective disclosure must keep every fact the request
   needs: a valid disclosure proof that hides a required fact cannot establish reliance.

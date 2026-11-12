@@ -112,10 +112,10 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     for (const s of api.RM_STORY.filter(x => x.expect !== undefined)) {
       expect([s.id, (await api.evaluateRmBoard(s.state)).result.decision]).toEqual([s.id, s.expect]);
     }
-    // Only the anatomy page, the build steps, the proposal page, the presentation
-    // placeholder and "Your turn" have no expected decision.
+    // Only the design-rules page, the build steps, the proposal page and "Your turn"
+    // have no expected decision.
     expect([...new Set(api.RM_STORY.filter(s => s.expect === undefined).map(s => s.part))])
-      .toEqual(['anatomy', 'build', 'proposal', 'present', 'play']);
+      .toEqual(['rules', 'build', 'proposal', 'play']);
   });
 
   it('RM board: documents signed in the browser verify like the generated fixtures', async () => {
@@ -141,6 +141,22 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
       .toEqual(['https://global-aci.vc4qi.example/status/suspension/1']);
     // R is on the chain the graph reads: A and H point up to it.
     expect((await api.evaluateRmBoard()).graph.edges.filter(e => e.to.endsWith('/credentials/R')).map(e => e.from.split('/').pop()).sort()).toEqual(['A', 'H']);
+    // Any credential of the chain left out: cannot tell, never accepted.
+    for (const code of ['O', 'A', 'S', 'H']) {
+      expect([code, (await api.evaluateRmBoard({ withhold: code })).result.decision]).toEqual([code, 'not_established']);
+    }
+    expect((await api.evaluateRmBoard({ withhold: 'R' })).result.decision).toBe('accept');
+    expect((await api.evaluateRmBoard({ trust: 'global-aci', withhold: 'R' })).result.decision).toBe('not_established');
+    // The verifier's own limit: D197 passes guarded acceptance under 250, fails 200; D178 fails 180.
+    expect((await api.evaluateRmBoard({ certificate: '197', limit: '250' })).result.decision).toBe('accept');
+    expect((await api.evaluateRmBoard({ limit: '180' })).result.decision).toBe('reject');
+    expect((await api.evaluateRmBoard({ trust: 'global-aci', certificate: '197', limit: '250' })).result.decision).toBe('accept');
+    // At issuance: A suspended in September. Today: reject. January asked with today's lists:
+    // cannot tell. With the lists kept from January: accept.
+    expect((await api.evaluateRmBoard({ suspendA: true })).result.decision).toBe('reject');
+    expect((await api.evaluateRmBoard({ suspendA: true, asOf: 'issuance' })).result.decision).toBe('not_established');
+    expect((await api.evaluateRmBoard({ suspendA: true, asOf: 'issuance', archive: true })).result.decision).toBe('accept');
+    expect((await api.evaluateRmBoard({ suspendA: true, asOf: 'issuance', archive: true })).signedLive).toEqual([]);
     // Editing a live-signed certificate breaks its signature like any other.
     expect(answers(await api.evaluateRmBoard({ certificate: 'custom', value: '178', uncertainty: '5', tamper: true })).authentic).toBe('contradicted');
   });

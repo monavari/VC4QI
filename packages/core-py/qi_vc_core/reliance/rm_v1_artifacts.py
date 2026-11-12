@@ -803,6 +803,12 @@ def verify_chain(
     lists: dict[str, RmArtifactVerification] = {}
     status: dict[str, StatusOutcome | None] = {}
 
+    asked, now = (
+        _parse_time(request.activity_time),
+        _parse_time(request.evaluation_time),
+    )
+    historical = asked is not None and now is not None and asked < now
+
     def status_for(
         artifact_id: str, document: dict[str, Any], policy: StatusPolicy
     ) -> StatusOutcome:
@@ -835,8 +841,14 @@ def verify_chain(
                 and checked.protection.state == "established"
             ):
                 status_list = read(list_uri)
-                list_state = semantic_and(
-                    (checked.protection.state, checked.validity.state)
+                # Asked about an earlier time, the list must have been in force then
+                # (checked by evaluate_status); asked about now, it must be valid now.
+                list_state = (
+                    checked.protection.state
+                    if historical
+                    else semantic_and(
+                        (checked.protection.state, checked.validity.state)
+                    )
                 )
             elif checked.digest_sri is not None:
                 # Resolved but not protected: its contents are never read.
