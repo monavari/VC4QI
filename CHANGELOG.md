@@ -27,6 +27,21 @@
   (`test-vectors/signed/status-archive/2026-01`). Freshness is judged at the time asked
   about; for current questions nothing changes. W3C Recognized Entities (draft of
   4 November 2026) evaluates validity windows at a past date but not status at that date.
+- **The demonstrator explains its links (RM, GS).** Every card shows its credential
+  type (`RmAccreditation`, `RecognizedEntityCredential`, …). The key sits above the board
+  and reads the lines in plain words: *acts under* (`termsOfUse`) and *is backed by*
+  (`evidence`). In build steps each new line carries its field's name. Clicking a
+  credential explains it: what its type is, who signed it about whom, what it points to
+  and what points to it, and every check that touched it. Clicking a line explains the
+  link: the field, the pinning digest, the link as signed, what a verifier checks on it,
+  and the checks run here. A *Terms* button lists the vocabulary. Lines leave and enter
+  on facing sides, share a side without overlapping, and their heads point along the
+  visible end of the line. The RM build steps say which field each link is.
+- **RM story, top to bottom.** `demo/rm/vertical.html` draws the RM story in lanes of
+  authority, with an explainer beside them: what a step adds, the verifier's policy check
+  with the checks behind each question, or the credential or link selected. Both RM
+  layouts share one configuration (`site/demo/rm/config.js`) and switch while keeping the
+  step.
 - **The actor board holds still.** Stepping through the RM and GS stories no longer moves
   the board: the header keeps room for a two-line title and the acting parties,
   credentials not yet issued and columns not yet reached hold their place invisibly,

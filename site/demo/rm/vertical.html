@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RM story, vertical · VC4QI demonstrator</title>
+<meta name="description" content="A reference-material certificate, its chain drawn top to bottom by authority with an explainer beside it: Global ACI, an accreditation body, a laboratory, an RM producer, a customer lab and a verifier. Read one credential, build the chain, verify it, manipulate it, and see how the verifier's own profile decides. Evaluated in the browser on signed test credentials.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../board.css">
+</head>
+<body>
+<header class="topbar"><div class="in">
+  <a class="brand" href="../../"><strong>VC4QI</strong> demonstrator</a>
+  <nav class="links" aria-label="Demonstrator">
+    <a href="./" data-keep-hash>RM board</a><a href="vertical.html" aria-current="page">RM vertical</a><a href="../gs/">GS story</a><a href="../#rm">Examples</a>
+  </nav>
+</div></header>
+<main>
+  <nav class="storynav" id="storynav" aria-label="Story"></nav>
+  <div class="stephead">
+    <p class="kicker" id="kicker"></p>
+    <h1 id="title">Reference material, top to bottom</h1>
+    <p class="acts" id="acts"></p>
+    <p class="lead" id="lead"></p>
+  </div>
+
+  <section class="placeholder" id="presentation" aria-labelledby="h-present" hidden>
+    <span class="tag" id="h-present">Not evaluated · placeholder</span>
+    <p>Nothing in this step is evaluated. The table sketches what the customer lab could reveal, and keep back, when it presents the certificate to the verifier.</p>
+    <table id="presentTable"></table>
+  </section>
+
+  <section class="panel" id="panel" aria-live="polite" hidden></section>
+  <p class="legend" id="legend"><b>Reading the lines:</b> each line is a field of the credential it starts from.<i></i><b>acts under</b> <code>termsOfUse</code>, the authority it names, pinned by digest<i class="dot"></i><b>backed by</b> <code>evidence</code>, supports a claim and grants nothing<i class="dash"></i>handed over. Green holds, red fails, amber cannot be told, grey is not evaluated. Click a credential or a line to learn more.</p>
+  <div class="board" id="board" aria-live="polite"></div>
+  <div class="band" id="band" hidden>
+    <span class="tag">Evaluated · proposal</span>
+    <b>Recognized through R</b>
+    <span>A and H point up to Global ACI's recognition of this body (W3C Recognized Entities, draft). It says who may accredit for what; each claim is still decided by the producer's own scope.</span>
+  </div>
+
+  <footer>
+    <p>Evaluated in your browser by the repository's RM evaluator, as of <span id="evalTime">25 September 2026</span> (status lists expire). Nothing is fetched.</p>
+    <p>Certified values and material from the M375a DRMD transcription; D197 and D520 are hypothetical reissues. The accreditation body, laboratory, producer, customer, scopes, methods and keys are fictional. Documents marked "signed in this browser" are signed with the same public, insecure fixture keys as the generated test credentials.</p>
+    <p><a href="../../">Project</a> · <a href="../../docs/use-cases.html">How it works</a> · <a href="https://github.com/monavari/VC4QI">Code</a> · Mehran Monavari</p>
+  </footer>
+</main>
+
+<dialog id="sheet" aria-labelledby="sheetTitle">
+  <button class="close" type="button" id="sheetClose">Close</button>
+  <h2 id="sheetTitle"></h2>
+  <div id="sheetContent"></div>
+</dialog>
+
+<script type="module">
+import { fail, mountBoard } from '../board.js';
+import { rmConfig } from './config.js';
+
+let api;
+try { api = await import('../verifier.js'); }
+catch (error) { fail('This browser could not run the evaluator (' + error.message + ').'); throw error; }
+await mountBoard(api, { ...rmConfig(api), layout: 'vertical' }).catch(e => fail('The evaluator could not run: ' + e.message));
+</script>
+</body>
+</html>

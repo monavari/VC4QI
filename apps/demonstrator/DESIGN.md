@@ -128,15 +128,52 @@ hold it, and the credentials it cites.
 
 | Line | Means | Points to |
 | --- | --- | --- |
-| solid | cites as authority (`termsOfUse`) | the cited credential, towards the root |
-| dotted | cites as evidence (`evidence`) | the study |
+| solid | *acts under* (`termsOfUse`) | the cited credential, towards the root |
+| dotted | *is backed by* (`evidence`) | the study |
 | dashed grey | handed over | the holder |
+
+The key above the board says this in plain words first, the field second. In a build
+step each new line carries its field's name (`termsOfUse`, `evidence`) at its middle, in a
+layer above the cards. A line leaves and enters on the sides facing each other; lines that
+meet on one side of a card share it, spread in the order of where they come from. The
+head is drawn along the line's own last stretch and the line stops at its base, so the
+head points the way the visible line runs.
 
 Citation lines take the state of their link: the claim's own links carry the answers to
 "authorized" and "supported", deeper links the verification of the credential they point
 to, so a wrong link shows on that link alone. Once a request is accepted, a link to a
 credential the verifier verified but did not rely on is grey (R for a verifier whose root
 is the accreditation body). Handover lines are always grey.
+
+### What a card shows
+
+The code, the plain label, and under it the credential's own type in mono (the last entry
+of `type`, for example `RmAccreditation`), then what it says, its tags and who signed it
+about whom.
+
+### Explaining a credential or a link
+
+Clicking a credential or a line explains it; on the board in a sheet, in the vertical
+layout beside the lanes. A credential: its type and what that type is, who signed it,
+about whom, who holds it, its validity, status entries and proof, what it points to and
+what points to it, and in evaluated steps every check that touched it, in the evaluator's
+words with the gate and predicate underneath. A link: the plain sentence (*D178 acts
+under O*), the field, the pinning digest, the link as it stands in the signed bytes, what a
+verifier checks on such a link, and in evaluated steps the checks that read its target.
+A link the verifier verified but did not rely on says so. The *Terms* button lists the
+vocabulary in one line each.
+
+### The vertical layout
+
+`rm/vertical.html` draws the same story top to bottom: one lane per level of authority
+(recognizes, accredits, acts under its accreditation, certifies, holds and shows), the
+credentials in two columns so that each sits under what it acts under, and beside the
+lanes an explainer that stays in view: in a build step what the step adds and the links
+it creates, in an evaluated step the verifier's policy check (verdict, the six questions
+opening to their checks, and the verifier's settings), or the credential or link
+selected. Actions sit with their actor in the lane head. Lanes not yet reached and
+credentials not yet issued hold their place invisibly, as on the board. A link in the top
+bar switches layouts and keeps the step and its state.
 
 ### Pages instead of the board
 

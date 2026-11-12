@@ -32,7 +32,10 @@ certificates (DCC), a GS certificate and an experimental product passport (DPP).
 [RM story](https://monavari.github.io/VC4QI/demo/rm/) and the
 [GS story](https://monavari.github.io/VC4QI/demo/gs/) put a chain on an actor board, one
 column per party, where accreditation bodies can suspend or revoke, the RM producer can
-certify a value you type, and the verifier's own profile decides. The source is on
+certify a value you type, and the verifier's own profile decides. The
+[RM story top to bottom](https://monavari.github.io/VC4QI/demo/rm/vertical.html) draws the
+same chain in lanes of authority, with an explainer for each credential, link and check
+beside it. The source is on
 [GitHub](https://github.com/monavari/VC4QI); contribution rules are in
 [CONTRIBUTING](../CONTRIBUTING.md).
 
