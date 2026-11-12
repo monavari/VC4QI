@@ -153,7 +153,16 @@ erases an earlier failure. A missing governed method cannot bypass a method
 restriction.
 
 Compare governed identifiers or accepted equivalences, never display labels: As and
-Ash, or CuZn39Pb3 and CuZn40Pb2, are distinct. Validate quantity kind, unit, finite
+Ash, or CuZn39Pb3 and CuZn40Pb2, are distinct. An accreditation names sets, as its
+annex does: in RM, A says non-ferrous metals and alloys, element contents, solid forms,
+and H homogeneity studies of element contents in non-ferrous metals and alloys. A set
+covers exactly the concepts the binding's governed hierarchy places under it
+(`scopeAndMapping.broader` in the manifest, `skos:broader` applied transitively:
+CuZn39Pb3 under copper alloys under non-ferrous metals and alloys, discs under solid
+forms, As, Cu, Zn and Pb under element contents). The hierarchy applies to matrix,
+form and property in containment, claim coverage and study scope, never runs
+downward, and without it a set contains nothing but itself; methods and quantity kinds
+stay exact. Validate quantity kind, unit, finite
 ordered bounds and uncertainty before comparing, and use exact decimal arithmetic in
 both languages with no hidden tolerance. Unsupported conversions yield
 `not_established`; proven violations are `contradicted`.

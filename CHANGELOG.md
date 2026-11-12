@@ -19,6 +19,16 @@
   recognized and still rejected. Status lists compare issuer identifiers, so an issuer
   object with an `id` is accepted. This replaces the profile-named signatory list
   `MRA-2026` of the same unreleased branch.
+- **Accreditations name sets (RM).** A now reads like its annex row: non-ferrous metals
+  and alloys, element contents, solid forms, 0.1 mg/kg – 997 g/kg, methods M1 and M2;
+  H covers homogeneity studies of element contents in non-ferrous metals and alloys. The
+  manifest's `scopeAndMapping.broader` holds the binding's governed hierarchy
+  (`skos:broader`: CuZn39Pb3 under copper alloys under non-ferrous metals and alloys,
+  discs under solid forms, As, Cu, Zn and Pb under element contents), applied
+  transitively to matrix, form and property in containment, claim coverage and study
+  scope, in TypeScript and Python. It never runs downward, malformed entries are
+  ignored, and labels are still never compared. The chain is re-signed and the parity
+  vector regenerated (record identifiers in reasons).
 - The laboratory anchor purpose `recognize-rm-laboratories` is renamed
   `accredit-rm-laboratories`, since "recognize" now means Recognized Entities
   recognition; the RM parity vector changes only in that string.

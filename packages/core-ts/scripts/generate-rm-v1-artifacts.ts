@@ -2,7 +2,7 @@
 // Generates the signed experimental RM v1 vertical-slice fixtures:
 //   controller documents for the fictional NAB, producer and laboratory, and
 //   signed credentials A (accreditation, shaped after a flexible-scope annex row: element
-//   contents of the brass, 0.1 mg/kg to 997 g/kg), A2 (a second, direct accreditation that
+//   contents of non-ferrous metals and alloys, 0.1 mg/kg to 997 g/kg), A2 (a second, direct accreditation that
 //   D178 does not reference), H (lab authority), O (operational scope),
 //   S (homogeneity study) and D178 (RM certificate, x = 178 mg/kg, U = 5, k = 2, with the
 //   Cu, Zn and Pb values of the M375a DRMD transcription as further certified results),
@@ -10,6 +10,9 @@
 //   and R, a fictional Global ACI stand-in's recognition of the NAB for RM production and
 //   testing (a W3C Recognized Entities credential, Working Draft of 4 November 2026, with
 //   one subject), which A, A2 and H point up to.
+//
+//   A and H name sets (non-ferrous metals and alloys, element contents, solid forms), as
+//   an accreditation annex does; O, S and D name members.
 //
 //   pnpm -C packages/core-ts exec tsx scripts/generate-rm-v1-artifacts.ts          # write files
 //   pnpm -C packages/core-ts exec tsx scripts/generate-rm-v1-artifacts.ts --check  # fail if stale
@@ -156,10 +159,11 @@ const underRecognition = (rText: string) => ({
 });
 const integrity = (...refs: [string, string][]) =>
   refs.map(([id, text]) => ({ id, digestSRI: sha384SRI(new TextEncoder().encode(text)) }));
-const scopeRecord = (id: string, methods: string[], properties = ['As'], range = { from: '50', to: '500' }) => ({
+const scopeRecord = (id: string, methods: string[], properties = ['As'], range = { from: '50', to: '500' },
+  matrix = 'CuZn39Pb3', form = 'Disc') => ({
   id,
-  matrixIri: rm('CuZn39Pb3'),
-  formIri: rm('Disc'),
+  matrixIri: rm(matrix),
+  formIri: rm(form),
   allowedPropertyIris: properties.map(rm),
   allowedMethodIris: methods.map(rm),
   quantityKindIri: rm('MassFraction'),
@@ -248,11 +252,13 @@ async function main() {
     credentialSubject: {
       id: PRODUCER,
       permittedActivity: [rm('issueRmCertificate'), rm('maintainRmScope')],
-      // Shaped after an accreditation annex row such as "non-ferrous metals and alloys,
-      // element contents, 0.1 mg/kg – 997 g/kg" with a flexible scope: the producer keeps
-      // its own, narrower list (O). The binding compares matrices exactly, so the record
-      // names this brass rather than a material class; 997 g/kg is written in mg/kg.
-      scope: [scopeRecord(`${A_ID}#scope-elements`, ['M1', 'M2'], ['As', 'Cu', 'Zn', 'Pb'], { from: '0.1', to: '997000' })],
+      // An accreditation annex row names sets, not members: "non-ferrous metals and
+      // alloys, element contents, 0.1 mg/kg – 997 g/kg", in solid forms, with a flexible
+      // scope: the producer keeps its own, narrower list (O). The binding's governed
+      // hierarchy (manifest scopeAndMapping.broader, skos:broader) places CuZn39Pb3,
+      // discs and arsenic under these sets; 997 g/kg is written in mg/kg.
+      scope: [scopeRecord(`${A_ID}#scope-non-ferrous`, ['M1', 'M2'], ['ElementContents'], { from: '0.1', to: '997000' },
+        'NonFerrousMetalsAndAlloys', 'SolidForms')],
     },
     ...underRecognition(rText),
   }, nab, '2025-01-01T00:00:00Z')), FIXTURE);
@@ -278,10 +284,11 @@ async function main() {
     credentialSubject: {
       id: LAB,
       permittedActivity: [rm('issueRmStudy')],
+      // Also a set: homogeneity studies of element contents in non-ferrous metals and alloys.
       scope: [{
         id: `${H_ID}#scope-homogeneity`,
-        matrixIri: rm('CuZn39Pb3'),
-        allowedPropertyIris: [rm('As')],
+        matrixIri: rm('NonFerrousMetalsAndAlloys'),
+        allowedPropertyIris: [rm('ElementContents')],
         studyTypeIris: [rm('Homogeneity')],
       }],
     },

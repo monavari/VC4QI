@@ -62,14 +62,18 @@ const amount = (v, unit) => unit === 'mg/kg' && Number(v) >= 1000 ? Number(v) / 
 const range = r => !r ? '' : Number(r.to) >= 1000 && r.unit === 'mg/kg' ? amount(r.from, r.unit) + ' – ' + amount(r.to, r.unit) : r.from + '–' + r.to + ' ' + r.unit;
 const matrix = r => short(r.matrixIri) + (r.formIri ? ' ' + short(r.formIri).toLowerCase() + 's' : '');
 const list = a => (a ?? []).map(short).join(', ');
+// The sets an accreditation names (the binding's governed concepts), in words.
+const SETS = { NonFerrousMetalsAndAlloys: 'non-ferrous metals and alloys', ElementContents: 'element contents', SolidForms: 'solid forms', CopperAlloys: 'copper alloys' };
+const words = iri => SETS[short(iri)] ?? short(iri);
+const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
 function facts(code, d) {
   const s = d.credentialSubject ?? {}, r = (s.scope ?? [])[0] ?? {};
   // What the body may accredit for: activity and standard of each recognized action.
   if (code === 'R') return (s.recognizedTo ?? []).map(a => String(a.mainScope?.activity).replace('Reference material production', 'RM production')
     + ' · ' + String(a.mainScope?.standard?.name ?? short(a.mainScope?.standard?.id)).replace(/:\d{4}$/, ''));
-  if (code === 'A') return [list(r.allowedPropertyIris) + ' in ' + matrix(r), range(r.range) + ' · methods ' + list(r.allowedMethodIris)];
-  if (code === 'H') return [list(r.studyTypeIris) + ' studies', list(r.allowedPropertyIris) + ' in ' + short(r.matrixIri)];
-  if (code === 'O') return [list(r.allowedPropertyIris) + ' only · ' + range(r.range), 'Method ' + list(r.allowedMethodIris) + ' only'];
+  if (code === 'A') return [cap(words(r.matrixIri)), cap((r.allowedPropertyIris ?? []).map(words).join(', ')) + ', ' + range(r.range), 'Methods ' + list(r.allowedMethodIris)];
+  if (code === 'H') return [list(r.studyTypeIris) + ' studies of ' + (r.allowedPropertyIris ?? []).map(words).join(', '), cap(words(r.matrixIri))];
+  if (code === 'O') return [list(r.allowedPropertyIris) + ' in ' + matrix(r) + ' · ' + range(r.range), 'Method ' + list(r.allowedMethodIris) + ' only'];
   if (code === 'S') return ['Disc lot 1: ' + short(s.outcomeIri).toLowerCase(), short(s.studyTypeIri) + ' of ' + short(s.propertyIri)];
   const res = s.materialPropertiesList?.[0]?.results?.[0] ?? {}, q = res.data?.quantity ?? {};
   return [short(res.propertyIri) + ' = ' + q.value + ' ± ' + q.uncertainty?.expandedUncertainty + ' ' + (q.unit?.ucumCode ?? ''), 'k = ' + q.uncertainty?.coverageFactor + ' · method ' + short(res.methodIri)];

@@ -6,7 +6,11 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from qi_vc_core.reliance import load_reliance_profile, sha384_sri
+from qi_vc_core.reliance import (
+    load_binding_manifest,
+    load_reliance_profile,
+    sha384_sri,
+)
 from qi_vc_core.reliance.rm_v1 import RM_V1_DIRECTORY
 from qi_vc_core.reliance.rm_v1_artifacts import evaluate_rm_slice
 from qi_vc_core.reliance.rm_v1_authority import (
@@ -615,3 +619,67 @@ def test_v06_provenance_only_credential_establishes_no_authority() -> None:
     assert entry(result, "authority").state == "not_established"
     assert result.authorization[0].state != "established"
     assert result.authorization[0].route_witness_ids == ()
+
+
+# Accreditations name sets: the binding's governed hierarchy (skos:broader).
+RM = "https://vc4qi.example/bindings/rm/1#"
+
+
+def _under(broader: Any, overrides: dict[str, str | None] | None = None) -> Any:
+    manifest = json.loads((RM_V1_DIRECTORY / "manifest.json").read_text())
+    manifest["scopeAndMapping"]["broader"] = broader
+    return evaluate_rm_slice(
+        request(), catalog_with(overrides), load_binding_manifest(manifest), PROFILE
+    ).result
+
+
+def test_a_names_sets_and_o_lies_within_them() -> None:
+    record = doc(URI["A"])["credentialSubject"]["scope"][0]
+    assert (record["matrixIri"], record["formIri"], record["allowedPropertyIris"]) == (
+        f"{RM}NonFerrousMetalsAndAlloys",
+        f"{RM}SolidForms",
+        [f"{RM}ElementContents"],
+    )
+    result = run()
+    assert basis(result, "bounded-projection").state == "established"
+    assert "scope-non-ferrous" in basis(result, "bounded-projection").reason
+    assert support(result, "study-scope").state == "established"
+    assert result.decision == "accept"
+
+
+def test_without_the_hierarchy_a_set_does_not_contain_its_members() -> None:
+    result = _under([])
+    assert basis(result, "bounded-projection").state == "contradicted"
+    assert support(result, "study-scope").state == "contradicted"
+    assert result.decision == "reject"
+
+
+def test_malformed_hierarchy_entries_never_widen_a_scope() -> None:
+    result = _under(
+        [
+            {"narrower": f"{RM}CuZn39Pb3"},
+            {"narrower": 7, "broader": f"{RM}NonFerrousMetalsAndAlloys"},
+            "x",
+        ]
+    )
+    assert basis(result, "bounded-projection").state == "contradicted"
+
+
+def test_the_hierarchy_never_runs_downward() -> None:
+    accreditation, scope = doc(URI["A"]), doc(URI["O"])
+    accreditation["credentialSubject"]["scope"][0]["matrixIri"] = f"{RM}CuZn39Pb3"
+    scope["credentialSubject"]["scope"][0]["matrixIri"] = (
+        f"{RM}NonFerrousMetalsAndAlloys"
+    )
+    result = run(reissue({URI["A"]: accreditation, URI["O"]: scope}))
+    assert basis(result, "bounded-projection").state == "contradicted"
+
+
+def test_a_set_the_member_does_not_belong_to_contains_nothing_of_it() -> None:
+    accreditation, lab = doc(URI["A"]), doc(URI["H"])
+    accreditation["credentialSubject"]["scope"][0]["matrixIri"] = f"{RM}FerrousMetals"
+    lab["credentialSubject"]["scope"][0]["matrixIri"] = f"{RM}FerrousMetals"
+    result = run(reissue({URI["A"]: accreditation, URI["H"]: lab}))
+    assert basis(result, "bounded-projection").state == "contradicted"
+    assert support(result, "study-scope").state == "contradicted"
+    assert result.decision == "reject"

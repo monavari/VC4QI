@@ -9,7 +9,10 @@
 // question, asked only after the claim is authorized, under a verifier-selected
 // requirement and decision rule.
 import { semanticOr } from './index.js';
-import { compareDecimal, addDecimal, formatDecimal, parseDecimal, recordInterval, RM_UNIT_EXPONENTS, toKgPerKg, type Decimal } from './rm-scope.js';
+import {
+  compareDecimal, addDecimal, EXACT_CONCEPTS, formatDecimal, parseDecimal, recordInterval, RM_UNIT_EXPONENTS, toKgPerKg,
+  type Concepts, type Decimal,
+} from './rm-scope.js';
 import type { SemanticState } from './types.js';
 
 type Doc = Record<string, unknown>;
@@ -102,6 +105,7 @@ function methodCovered(
  */
 export function claimCoverage(
   claim: ClaimCoordinates, records: readonly Doc[], revisions: readonly MethodRevision[], succession: MethodSuccession,
+  concepts: Concepts = EXACT_CONCEPTS,
 ): Outcome & { record?: string } {
   if (records.length === 0) return { state: 'not_established', reason: 'The scope has no records.', sources: ['/credentialSubject/scope'] };
   const outcomes = records.map(record => {
@@ -111,10 +115,10 @@ export function claimCoverage(
       return { id, state: (/reversed/.test(interval) ? 'contradicted' : 'not_established') as SemanticState, reason: `${short(id)}: ${interval}` };
     }
     const failures: string[] = [];
-    if (record.matrixIri !== claim.matrixIri) failures.push(`matrix ${short(claim.matrixIri)} ≠ ${short(record.matrixIri)}`);
-    if (record.formIri !== claim.formIri) failures.push(`form ${short(claim.formIri)} ≠ ${short(record.formIri)}`);
+    if (!concepts.within(claim.matrixIri, record.matrixIri)) failures.push(`matrix ${short(claim.matrixIri)} ≠ ${short(record.matrixIri)}`);
+    if (!concepts.within(claim.formIri, record.formIri)) failures.push(`form ${short(claim.formIri)} ≠ ${short(record.formIri)}`);
     if (record.quantityKindIri !== claim.quantityKindIri) failures.push(`quantity kind ${short(claim.quantityKindIri)} ≠ ${short(record.quantityKindIri)}`);
-    if (!strings(record.allowedPropertyIris).includes(claim.propertyIri)) failures.push(`property ${short(claim.propertyIri)} is not allowed`);
+    if (!strings(record.allowedPropertyIris).some(set => concepts.within(claim.propertyIri, set))) failures.push(`property ${short(claim.propertyIri)} is not allowed`);
     if (compareDecimal(claim.value, interval.low) < 0) failures.push('value is below the range');
     if (compareDecimal(claim.value, interval.high) > 0) failures.push('value is above the range');
     const method = methodCovered(claim.methodIri, strings(record.allowedMethodIris), revisions, succession);
