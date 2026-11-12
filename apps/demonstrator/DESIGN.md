@@ -90,9 +90,10 @@ An actor's column appears when the chain first reaches it, in its fixed place, s
 starts with one actor and the board fills as it goes; "Your turn" shows every actor.
 A band that concerns one moment of the story appears only in that moment: in the RM
 story, the evaluated note that a verifier abroad reaches the accreditation body through
-Global ACI's signatory list (a fictional stand-in, W3C Recognized Entities draft).
-For the RM story: Accreditation body (AB), Laboratory (LAB), RM producer (RMP), Holder
-(H), Verifier (V). For the GS story: Accreditation body (AB), Scheme owner (SO), GS body
+R, Global ACI's recognition of it (a fictional stand-in, W3C Recognized Entities draft).
+For the RM story: Global ACI (ACI), Accreditation body (AB), Laboratory (LAB), RM
+producer (RMP), Holder (H), Verifier (V). With more than four actor columns the
+verifier's column narrows and a name may drop below its monogram; it never truncates. For the GS story: Accreditation body (AB), Scheme owner (SO), GS body
 (GSB), Manufacturer (MFR), Verifier (V).
 
 - The header carries the monogram, the name, one line on what the actor does, and what it
@@ -106,7 +107,7 @@ For the RM story: Accreditation body (AB), Laboratory (LAB), RM producer (RMP), 
 
 | Kind | Look | RM example |
 | --- | --- | --- |
-| Grant: gives authority | card, standard border | A, H, O |
+| Grant: gives authority | card, standard border | R, A, H, O |
 | Evidence: supports, grants nothing | card with an "evidence" tag | S |
 | Claim: what the verifier relies on | card with a thicker border | D178 |
 | Physical object | rounded pill with ◼; never state-coloured | disc lot 1 |
@@ -114,7 +115,8 @@ For the RM story: Accreditation body (AB), Laboratory (LAB), RM producer (RMP), 
 | Presentation | envelope around credentials; placeholder look until evaluated | holder to verifier |
 
 A card shows its code badge, its kind in words, one key fact and a footer "signed by … ·
-about …". Its state is its border colour and a corner icon. A credential sits in its
+about …". What the binding proposes rather than reuses carries a "proposal" tag beside
+its kind (R). Its state is its border colour and a corner icon. A credential sits in its
 issuer's column; selecting it labels the columns that sign it, that it is about, that
 hold it, and the credentials it cites.
 
@@ -128,7 +130,18 @@ hold it, and the credentials it cites.
 
 Citation lines take the state of their link: the claim's own links carry the answers to
 "authorized" and "supported", deeper links the verification of the credential they point
-to, so a wrong link shows on that link alone. Handover lines are always grey.
+to, so a wrong link shows on that link alone. Once a request is accepted, a link to a
+credential the verifier verified but did not rely on is grey (R for a verifier whose root
+is the accreditation body). Handover lines are always grey.
+
+### Pages instead of the board
+
+A step may draw a page instead of the board: in the RM story, the anatomy of one
+credential at the start and the recognition proposal before the presentation. A page
+reads the generated credentials and evaluates nothing, says so in a tag above it, and
+uses no state colour: direction is arrow shape (↑ up to authority, ↓ down to the
+subject, → sideways to evidence), state is a drawn switch, the seal a solid diamond.
+Plain words lead and the terms follow in mono, each with where it comes from.
 
 ## Words
 

@@ -38,7 +38,6 @@ from .catalog import (
 from .key_authorization import KeyAuthorization, authorize_assertion_method
 from .manifest import RM_V1_BINDING_ID, BindingManifest
 from .profile import RelianceProfile
-from .recognized_entities import recognition_lists
 from .rm_v1 import (
     RECOGNIZED_ENTITIES_DRAFT_CONTEXT,
     RM_V1_CONTEXT,
@@ -99,7 +98,7 @@ RM_V1_ARTIFACT_SCHEMAS: dict[str, str] = {
 
 def _expected_contexts(declared_type: Any) -> list[str]:
     """Exact context list each recognized type must use: status lists use VCDM 2.0
-    only, an arrangement's signatory list the Recognized Entities stand-in context."""
+    only, a recognition credential the Recognized Entities stand-in context."""
     if declared_type == "BitstringStatusListCredential":
         return [VC_V2_CONTEXT]
     if declared_type == "RecognizedEntityCredential":
@@ -740,20 +739,10 @@ def verify_chain(
                 uri, session, manifest, request.evaluation_time, static, binding
             )
         )
-    # Signatory lists named by the verifier's profile are trust configuration:
-    # verified like any credential (gates 0-3), never chosen by the holder or chain.
-    recognition = recognition_lists(profile)
-    for uri in recognition:
-        if uri in depth:
-            continue
-        depth[uri] = 1
-        artifacts.append(
-            verify_rm_artifact(
-                uri, session, manifest, request.evaluation_time, static, binding
-            )
-        )
     # Follow the chain's own references (termsOfUse, evidence) from protected
     # credentials, within maxDepth; supplied-but-unreferenced credentials stay inert.
+    # A grant's termsOfUse may point up to its issuer's recognition; it is followed
+    # like any other link and decides only for a verifier whose route uses it.
     index = 0
     while index < len(artifacts):
         current = artifacts[index]
@@ -978,13 +967,7 @@ def verify_chain(
     trace: list[TraceEntry] = []
     resources: list[ResourceObservation] = []
     for index, artifact in enumerate(artifacts):
-        role = (
-            "target"
-            if index == 0
-            else "recognition-list"
-            if artifact.artifact_id in recognition
-            else "supplied-evidence"
-        )
+        role = "target" if index == 0 else "supplied-evidence"
         use = node_use_key(artifact.artifact_id, artifact.digest_sri, role, request)
         for check in artifact.checks:
             trace.append(
@@ -1302,6 +1285,9 @@ def evaluate_rm_slice(
 
     # Only the target and the credentials on the selected witness paths decide the
     # request; a failed credential on an unused alternative is diagnostic (C03, C07).
+    # The same holds for a decisive credential's digest pin on a reference off those
+    # paths, such as an accreditation's pin on a recognition that a verifier anchoring
+    # the body never uses.
     decisive = {
         request.target_id,
         *(winner.chain if winner else ()),
@@ -1312,6 +1298,7 @@ def evaluate_rm_slice(
         for a in artifacts
         if a.artifact_id in decisive
         for r in verification_of(a)
+        if r.artifact_id in decisive
     ]
     required += [r.state for r in authorization] + [r.state for r in support]
     if isinstance(conformity, ConformityRequestedResult):

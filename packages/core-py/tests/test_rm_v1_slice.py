@@ -63,6 +63,10 @@ URI = {
     "A2": "https://nab.vc4qi.example/credentials/A2",
     "NAB_STATUS": "https://nab.vc4qi.example/status/1",
     "NAB_SUSPENSION": "https://nab.vc4qi.example/status/suspension/1",
+    "R": "https://global-aci.vc4qi.example/credentials/R",
+    "GACI": "https://global-aci.vc4qi.example/controller",
+    "GACI_STATUS": "https://global-aci.vc4qi.example/status/1",
+    "GACI_SUSPENSION": "https://global-aci.vc4qi.example/status/suspension/1",
 }
 NOW = "2026-09-25T12:00:00Z"
 BUDGET = CatalogBudget(max_resources=256, max_bytes=5_000_000)
@@ -433,8 +437,10 @@ def test_gate_numbered_trace_and_resources() -> None:
     assert by["route:operational-scope:bounded-projection"].state == "established"
     assert by["support:same-batch"].state == "established"
     assert by["conformity:as-mass-fraction-max-200-mg-per-kg"].gate == 6
+    # A and H point up to R, so the chain resolves it for every verifier; it decides
+    # only for a verifier whose route uses it (test_rm_v1_recognition.py).
     assert sorted(r.uri for r in result.resources if r.kind == "artifact") == sorted(
-        URI[k] for k in ("A", "D", "H", "O", "S")
+        URI[k] for k in ("A", "D", "H", "O", "R", "S")
     )
 
 
@@ -465,15 +471,19 @@ def _producer_list(
 
 def test_status_established_for_the_whole_chain() -> None:
     result = evaluate_rm_slice(request(), catalog_with(), MANIFEST, PROFILE).result
-    for key in ("D", "A", "O", "S", "H"):
+    for key in ("D", "A", "O", "S", "H", "R"):
         entry = _status_of(result, URI[key])
         assert (entry.gate, entry.state) == (3, "established"), key
-    assert sorted(r.uri for r in result.resources if r.kind == "status") == [
-        "https://lab.vc4qi.example/status/1",
-        "https://nab.vc4qi.example/status/1",
-        "https://nab.vc4qi.example/status/suspension/1",
-        URI["PRODUCER_STATUS"],
-    ]
+    assert sorted(r.uri for r in result.resources if r.kind == "status") == sorted(
+        [
+            URI["GACI_STATUS"],
+            URI["GACI_SUSPENSION"],
+            "https://lab.vc4qi.example/status/1",
+            "https://nab.vc4qi.example/status/1",
+            "https://nab.vc4qi.example/status/suspension/1",
+            URI["PRODUCER_STATUS"],
+        ]
+    )
 
 
 def test_p09_revoked_target_is_contradicted() -> None:

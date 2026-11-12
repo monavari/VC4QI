@@ -199,18 +199,28 @@ time, and the signer's authority must be established independently. A point answ
 cannot prove that a whole scope is contained.
 
 Recognition (RM, experimental) answers who stands behind a grant's issuer, nothing
-more. A profile may name an arrangement's signatory list, a W3C Recognized Entities
-credential (Working Draft of 4 November 2026), in `bindingRules.recognition`. When the
-issuer of A or H is not a configured anchor for the purpose, the list establishes it
-only if the list is usable and not suspended, its issuer is an anchor for the list
-purpose, it names that issuer with stated actions, and one action is the required
-action for the grant's main scope (activity and normative document, compared exactly),
-recognized by the list's issuer and in force at the activity time. A main scope the list
-does not grant contradicts; a missing list, entry or time is not established. The list
-joins the witness path. Recognition does not replace QI scope, containment,
-restrictions, support or conformity: D520 is recognized and still out of scope. A list
-supplied by the holder or reached through `issuer.recognizedIn` is not used, and the
-draft's own context is not yet published, so the binding pins a stand-in context whose
+more. Each recognition is its own credential: R, issued by an arrangement anchor (a
+fictional Global ACI stand-in) about one accreditation body, in the shape of a W3C
+Recognized Entities credential (Working Draft of 4 November 2026) with a single subject
+and its own revocation and suspension entries. The grants point up to it like every
+other link: A and H carry a `termsOfUse` policy whose `authorizationCredential` has type
+`RecognizedEntityCredential`, pinned by digest in `relatedResource`. A verifier whose
+profile anchors the accreditation body stops there, and R never decides for it. A
+verifier whose profile instead anchors the recognizer for the recognizer purpose
+(`bindingRules.recognition`: recognizer purpose, required action and the main scope per
+grant purpose) follows the link: R establishes the grant's issuer only if it is usable
+and not suspended, its issuer is an anchor for the recognizer purpose, its subject is
+the grant's issuer with stated actions, and one action is the required action for the
+grant's main scope (activity and normative document, compared exactly), recognized by
+its issuer and in force at the activity time. A recognition of another body, or for
+another main scope, contradicts; a missing recognition, entry or time is not
+established. R then joins the witness path. The profile names no recognition, and a
+recognition that nothing in the chain references confers nothing. Recognition does not
+replace QI scope, containment, restrictions, support or conformity: D520 is recognized
+and still out of scope. Suspending one body's recognition is one status bit; nothing is
+re-issued. The per-recognition shape and the `termsOfUse` link are this binding's
+proposal; the draft's own up-pointer is `issuer.recognizedIn`, which is not used, and
+the draft's context is not yet published, so the binding pins a stand-in context whose
 terms expand to the draft vocabulary.
 
 ## 8. Security, time and disclosure

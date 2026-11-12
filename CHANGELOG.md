@@ -2,27 +2,37 @@
 
 ## Unreleased
 
-- **Recognition through an arrangement's signatory list (RM, experimental).** A verifier
-  profile can name a signatory list, a W3C Recognized Entities credential (Working Draft
-  of 4 November 2026), in `bindingRules.recognition`. An accreditation body that is not
-  itself an anchor is then accepted for a grant when the list's issuer is an anchor for
-  the list purpose and the list names the body, with a stated action, for the grant's main
-  scope at the activity time. New fixtures: a fictional Global ACI stand-in controller,
-  its revocation and suspension lists, and signatory list `MRA-2026`; new profile
-  `rm-verifier-global-aci-1`; new schema `recognized-entity.json` and a stand-in context
-  for the unpublished Recognized Entities context. Ledger E01–E03 and the new E16–E20
-  pass in TypeScript and Python. Recognition never widens QI scope: D520 is recognized
-  and still rejected. Status lists now compare issuer identifiers, so an issuer object
-  with an `id` is accepted.
+- **One recognition credential per accreditation body (RM, experimental).** A fictional
+  Global ACI stand-in issues R, a W3C Recognized Entities credential (Working Draft of
+  4 November 2026) with one subject, the NAB, recognized to accredit for RM production
+  (ISO 17034) and testing (ISO/IEC 17025), with its own revocation and suspension
+  entries. A, A2 and H point up to R through `termsOfUse` (`authorizationCredential` of
+  type `RecognizedEntityCredential`), pinned by digest; their schemas accept it, the RM
+  context defines the type, and the chain below them is re-signed. A verifier whose
+  profile anchors the recognizer (`rm-verifier-global-aci-1`; `bindingRules.recognition`
+  names the recognizer purpose, action and main scopes, and no recognition) accepts the
+  NAB through R; one that anchors the NAB never relies on R, not even when R is
+  unavailable, because a decisive credential's digest pin on a reference off the witness
+  paths no longer decides. A recognition of another body contradicts; one that nothing
+  references, or that the body issued itself, establishes nothing. Ledger E01–E03 and
+  E16–E20 pass in TypeScript and Python. Recognition never widens QI scope: D520 is
+  recognized and still rejected. Status lists compare issuer identifiers, so an issuer
+  object with an `id` is accepted. This replaces the profile-named signatory list
+  `MRA-2026` of the same unreleased branch.
 - The laboratory anchor purpose `recognize-rm-laboratories` is renamed
   `accredit-rm-laboratories`, since "recognize" now means Recognized Entities
   recognition; the RM parity vector changes only in that string.
-- RM story: credential H is the laboratory's accreditation, not a "recognition". The
-  verifier's root is now one of three (this accreditation body, the Global ACI stand-in,
-  another body); step 14 is evaluated through the signatory list instead of a placeholder,
-  and two steps are added (D520 recognized and still out of scope; Global ACI suspends its
-  list, which stops the verifier abroad but not one that trusts the accreditation body).
-  The GS story says a verifier "trusts" its roots.
+- RM story: it opens with one credential read by where it points (D178 itself: up,
+  down, sideways, state, shape and seal, and where each word comes from), adds Global ACI
+  as a column and R as the first credential built (marked as a proposal), and closes
+  the decision part with a proposal page comparing a list of recognized bodies with one
+  credential per recognition. Credential H is the laboratory's accreditation, not a
+  "recognition". The verifier's root is one of three (this accreditation body, the
+  Global ACI stand-in, another body); two steps show D520 recognized and still out of
+  scope, and Global ACI suspending R, which stops the verifier abroad but not one that
+  trusts the accreditation body. Suspending R sits in Global ACI's column; links to R are
+  grey, and R is tagged, when the verifier accepted without relying on it. The board
+  takes any number of actor columns. The GS story says a verifier "trusts" its roots.
 - The DPP tab gains the same verifier choice ("Accreditation body only"), using a
   demonstrator-only profile derived from `gs-verifier-dpp-1` without the scheme owner's
   anchor. When a single question cannot be told, the verdict line now gives its first

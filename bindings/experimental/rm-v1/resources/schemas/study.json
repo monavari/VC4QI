@@ -128,7 +128,8 @@
                 "enum": [
                   "RmAccreditation",
                   "RmOperationalScope",
-                  "RmLabAuthority"
+                  "RmLabAuthority",
+                  "RecognizedEntityCredential"
                 ]
               }
             },

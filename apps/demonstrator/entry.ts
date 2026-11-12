@@ -174,15 +174,17 @@ export const EXAMPLES: readonly ExampleSpec[] = [
 const PARTY: Record<string, string> = {
   nab: 'Accreditation body', producer: 'RM producer', lab: 'Laboratory', ministry: 'Ministry', nmi: 'NMI',
   testlab: 'Test laboratory', zls: 'ZLS role', 'gs-body': 'GS body', maker: 'Manufacturer',
-  'testlab-gs': 'Test laboratory', clone: 'Other company',
+  'testlab-gs': 'Test laboratory', clone: 'Other company', 'global-aci': 'Global ACI (stand-in)',
 };
-const party = (iri: unknown) => {
+const party = (value: unknown) => {
+  // VCDM 2.0 issuer: a string, or an object with an id.
+  const iri = value !== null && typeof value === 'object' ? (value as { id?: unknown }).id : value;
   const host = /^https:\/\/([^./]+)\./.exec(String(iri))?.[1];
   return host === undefined ? String(iri).split('#')[0]!.split(':').pop()! : PARTY[host] ?? host;
 };
 const ROLE: Record<string, string> = {
   RmAccreditation: 'Accreditation', RmLabAuthority: 'Laboratory authority', RmOperationalScope: 'Operational scope',
-  RmStudy: 'Homogeneity study', RmCertificate: 'RM certificate (DRMD)',
+  RmStudy: 'Homogeneity study', RmCertificate: 'RM certificate (DRMD)', RecognizedEntityCredential: 'Recognition',
   CalAccreditation: 'Accreditation', CalOperationalScope: 'Operational scope', CalLegalMandate: 'Statutory mandate',
   CalCertificate: 'Calibration certificate', CalTestReport: 'Test report',
   GsAccreditation: 'Accreditation', GsSchemeAuthorization: 'Scheme authorization', GsCertificate: 'GS certificate',
@@ -192,7 +194,8 @@ export interface GraphNode {
   readonly uri: string; readonly name: string; readonly role: string; readonly parties: string;
   readonly layer: number; readonly present: boolean; readonly state: SemanticState; readonly target: boolean;
 }
-export interface GraphEdge { readonly from: string; readonly to: string; readonly kind: 'authority' | 'support'; readonly state: SemanticState | 'not_required' }
+/** `unused`: a link to a credential the verifier verified but did not rely on, such as R for a verifier whose root is the accreditation body. */
+export interface GraphEdge { readonly from: string; readonly to: string; readonly kind: 'authority' | 'support'; readonly state: SemanticState | 'not_required' | 'unused' }
 export interface Graph { readonly nodes: readonly GraphNode[]; readonly edges: readonly GraphEdge[] }
 
 /**
@@ -202,7 +205,8 @@ export interface Graph { readonly nodes: readonly GraphNode[]; readonly edges: r
  * evaluator's per-artifact verification. The target's own authority links take the
  * answer to "authorized", its evidence links the answer to "supported", and deeper links
  * the verification of the credential they point to, so a wrong link shows on that link
- * alone.
+ * alone. Once the request is accepted, a deeper link to a credential on no witness path
+ * is `unused`: verified, not relied on.
  */
 function buildGraph(target: string, texts: Record<string, string>, result: RelianceResult,
   authorized: SemanticState, supported: SemanticState | 'not_required'): Graph {
@@ -215,6 +219,8 @@ function buildGraph(target: string, texts: Record<string, string>, result: Relia
       .map(to => ({ to, kind: 'support' as const })),
   ];
   const verification = new Map(result.artifactVerification.map(a => [a.artifactId, a.state]));
+  const witnesses = result.decision === 'accept'
+    ? new Set([...result.authorization.flatMap(a => a.routeWitnessIds), ...result.support.flatMap(s => s.witnessIds)]) : undefined;
   const layer = new Map<string, number>([[target, 0]]);
   const underSupport = new Set<string>();
   const edges: GraphEdge[] = [];
@@ -230,7 +236,8 @@ function buildGraph(target: string, texts: Record<string, string>, result: Relia
         // The target's own links carry the answers to "authorized" and "supported";
         // deeper links show the verification of the credential they point to.
         edges.push({ from: uri, to, kind,
-          state: uri === target ? (kind === 'support' ? supported : authorized) : verification.get(to) ?? 'not_established' });
+          state: uri === target ? (kind === 'support' ? supported : authorized)
+            : witnesses && !witnesses.has(to) ? 'unused' : verification.get(to) ?? 'not_established' });
       }
       const depth = (layer.get(uri) ?? 0) + 1;
       if ((layer.get(to) ?? -1) < depth && depth < 8) { layer.set(to, depth); queue.push([to, support]); }
@@ -434,8 +441,10 @@ export interface BoardAsset {
   /** The actor the credential is about, or `object` for a thing (with `aboutLabel`). */
   readonly about: string; readonly aboutLabel?: string;
   readonly heldBy: string;
+  /** A short tag beside the kind, e.g. "proposal" for what the binding proposes rather than reuses. */
+  readonly tag?: string;
 }
-export type BoardPart = 'build' | 'verify' | 'manipulate' | 'decide' | 'present' | 'play';
+export type BoardPart = 'anatomy' | 'build' | 'verify' | 'manipulate' | 'decide' | 'proposal' | 'present' | 'play';
 export const BOARD_PARTS: readonly { readonly id: BoardPart; readonly label: string }[] = [
   { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' }, { id: 'manipulate', label: 'Manipulate' },
   { id: 'decide', label: 'The verifier decides' }, { id: 'present', label: 'Present' }, { id: 'play', label: 'Your turn' },
@@ -458,6 +467,8 @@ export interface BoardStep<S> {
   readonly unlock?: readonly string[];
   readonly expect?: RelianceResult['decision'];
   readonly presentation?: readonly { readonly credential: string; readonly reveal: string; readonly hide: string }[];
+  /** A page drawn instead of the board (the page's `panels[panel]`); nothing in it is evaluated. */
+  readonly panel?: string;
 }
 export interface BoardResult<S> extends Evaluated {
   readonly state: S;
@@ -491,7 +502,10 @@ export type RmActor = BoardActor;
 export type RmAsset = BoardAsset;
 export type RmStep = BoardStep<RmBoardState>;
 export type RmBoardResult = BoardResult<RmBoardState>;
-export const RM_PARTS = BOARD_PARTS;
+/** The RM story opens with the anatomy of one credential and closes with the recognition proposal. */
+export const RM_PARTS: readonly { readonly id: BoardPart; readonly label: string }[] = [
+  { id: 'anatomy', label: 'A credential' }, ...BOARD_PARTS.slice(0, 4), { id: 'proposal', label: 'Proposal' }, ...BOARD_PARTS.slice(4),
+];
 const RM_URI = {
   NAB: 'https://nab.vc4qi.example/controller', PRODUCER: 'https://producer.vc4qi.example/controller', LAB: 'https://lab.vc4qi.example/controller',
   A: 'https://nab.vc4qi.example/credentials/A', H: 'https://nab.vc4qi.example/credentials/H',
@@ -500,8 +514,11 @@ const RM_URI = {
   NAB_STATUS: 'https://nab.vc4qi.example/status/1', SUSPENSION: 'https://nab.vc4qi.example/status/suspension/1',
   LAB_STATUS: 'https://lab.vc4qi.example/status/1', PRODUCER_STATUS: 'https://producer.vc4qi.example/status/1',
   GACI: 'https://global-aci.vc4qi.example/controller', GACI_SUSPENSION: 'https://global-aci.vc4qi.example/status/suspension/1',
+  GACI_STATUS: 'https://global-aci.vc4qi.example/status/1', R: 'https://global-aci.vc4qi.example/credentials/R',
 } as const;
 export const RM_ACTORS: readonly BoardActor[] = [
+  { id: 'gaci', mono: 'ACI', name: 'Global ACI', does: 'Recognizes accreditation bodies after peer evaluation. Can suspend one recognition. A fictional stand-in.',
+    publishes: [{ label: 'Key', uri: RM_URI.GACI }, { label: 'Revocation list', uri: RM_URI.GACI_STATUS }, { label: 'Suspension list', uri: RM_URI.GACI_SUSPENSION }] },
   { id: 'ab', mono: 'AB', name: 'Accreditation body', does: 'Accredits the producer and the laboratory. Can suspend.',
     publishes: [{ label: 'Key', uri: RM_URI.NAB }, { label: 'Revocation list', uri: RM_URI.NAB_STATUS }, { label: 'Suspension list', uri: RM_URI.SUSPENSION }] },
   { id: 'lab', mono: 'LAB', name: 'Laboratory', does: 'Studies the batch under its accreditation. Can revoke its study.',
@@ -515,6 +532,7 @@ export const RM_ACTORS: readonly BoardActor[] = [
 ];
 /** D is the certificate shown: D178, D197, D520 or the one signed live. */
 export const RM_ASSETS: readonly BoardAsset[] = [
+  { code: 'R', label: 'Recognition', tag: 'proposal', kind: 'grant', actor: 'gaci', row: 1, about: 'ab', heldBy: 'ab' },
   { code: 'A', label: 'Accreditation', kind: 'grant', actor: 'ab', row: 1, about: 'rmp', heldBy: 'rmp' },
   { code: 'H', label: 'Laboratory accreditation', kind: 'grant', actor: 'ab', row: 2, about: 'lab', heldBy: 'lab' },
   { code: 'O', label: 'Operational scope', kind: 'grant', actor: 'rmp', row: 1, about: 'rmp', heldBy: 'rmp' },
@@ -537,15 +555,19 @@ export const RM_DEFAULT: RmBoardState = {
   tamper: false, withholdS: false, trust: 'ab', suspendGaci: false, ask: 'fit', rule: 'guarded',
 };
 export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
-  { id: 'join', part: 'build', acts: ['ab'], joins: ['ab'],
-    title: 'The accreditation body is the first party',
-    text: 'Before anything is signed it publishes a key, so that anyone can check what it signs, and two status lists, so that it can later revoke or suspend what it issued.' },
+  { id: 'anatomy', part: 'anatomy', acts: ['rmp'], panel: 'anatomy',
+    title: 'One credential, read by where it points',
+    text: 'Certificate D178 itself. The envelope is W3C Verifiable Credentials 2.0; only its content and a few link words are ours. Up points to the authority it acts under, down to what it is about, sideways to its evidence; status says whether it still holds, and the proof seals it. A chain is these links: issued downward, checked upward.' },
+
+  { id: 'recognize', part: 'build', acts: ['gaci', 'ab'], joins: ['gaci', 'ab'], issues: ['R'],
+    title: 'Global ACI recognizes the accreditation body',
+    text: 'Our proposal: one credential per recognized body. R is about this accreditation body only: it may accredit reference material producers (ISO 17034) and laboratories (ISO/IEC 17025). Global ACI can suspend R without touching any other body. Both publish a key and status lists first, so anyone can check what they sign.' },
   { id: 'accredit-lab', part: 'build', acts: ['ab', 'lab'], joins: ['lab'], issues: ['H'],
     title: 'The accreditation body accredits the laboratory',
-    text: 'Accreditation H permits the laboratory to run homogeneity studies on brass. The laboratory publishes its own key and status list.' },
+    text: 'Accreditation H permits the laboratory to run homogeneity studies on brass. It points up to R, pinned by digest: the body acts under its recognition. The laboratory publishes its own key and status list.' },
   { id: 'accredit', part: 'build', acts: ['ab', 'rmp'], joins: ['rmp'], issues: ['A'],
     title: 'The accreditation body accredits the RM producer',
-    text: 'Accreditation A is broad, like a real annex row ("non-ferrous metals and alloys, element contents, 0.1 mg/kg – 997 g/kg"): here the element contents of this brass by methods M1 and M2. It is a flexible scope: the producer may add materials within it and keeps its own list. The body can suspend it.' },
+    text: 'Accreditation A is broad, like a real annex row ("non-ferrous metals and alloys, element contents, 0.1 mg/kg – 997 g/kg"): here the element contents of this brass by methods M1 and M2. It is a flexible scope: the producer may add materials within it and keeps its own list. A points up to R; the body can suspend A.' },
   { id: 'scope', part: 'build', acts: ['rmp'], issues: ['O'],
     title: 'The producer declares its operational scope',
     text: 'Scope O is the producer\'s own list within that flexible scope: arsenic in this brass, method M1, 50 to 500 mg/kg. It cites A, so it can be no wider than A.' },
@@ -558,7 +580,7 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
 
   { id: 'verify', part: 'verify', acts: ['holder', 'verifier'], joins: ['verifier'], expect: 'accept',
     title: 'The verifier checks the certificate',
-    text: 'It knows none of the parties in advance and trusts one root: the accreditation body. It follows every reference from D178 down to that root and answers six questions. The last is its own: is As + U at most 200 mg/kg? 178 + 5 = 183.' },
+    text: 'It knows none of the parties in advance and trusts one root: the accreditation body. It follows every reference from D178 up to that root and answers six questions; R lies beyond its root and does not decide for it. The last question is its own: is As + U at most 200 mg/kg? 178 + 5 = 183.' },
 
   { id: 'tamper', part: 'manipulate', acts: ['holder', 'verifier'], state: { tamper: true }, unlock: ['tamper'], expect: 'reject',
     title: 'Someone changes the value after signing',
@@ -581,13 +603,17 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
     text: 'The same bytes and the same chain. Under simple acceptance only the value counts: 197 is at most 200. The verifier\'s rule decides, not the issuer.' },
   { id: 'abroad', part: 'decide', acts: ['verifier'], state: { trust: 'global-aci' }, unlock: ['trust'], expect: 'accept',
     title: 'Verifier 3 trusts Global ACI, not this accreditation body',
-    text: 'A verifier abroad has configured only Global ACI as its root. Global ACI\'s signatory list, a W3C Recognized Entities credential, names this accreditation body for reference material production under ISO 17034 and for testing under ISO/IEC 17025. The verifier checks the list like any credential, then follows the same chain as Verifier 1.' },
+    text: 'A verifier abroad has configured only Global ACI as its root. It follows the same chain up to A and H, then one link further: both point up to R, Global ACI\'s recognition of this accreditation body for reference material production under ISO 17034 and for testing under ISO/IEC 17025. R is checked like any credential.' },
   { id: 'abroad-range', part: 'decide', acts: ['rmp', 'verifier'], state: { trust: 'global-aci', certificate: '520' }, unlock: ['certificate'], expect: 'reject',
     title: 'Recognized, and still out of scope',
     text: 'The same verifier abroad, certificate D520. Global ACI recognizes the accreditation body, the accreditation body accredits the producer, and 520 mg/kg is still outside the producer\'s own scope. Recognition says who may accredit; it does not say whether this claim is covered.' },
   { id: 'aci-suspend', part: 'decide', acts: ['verifier'], state: { trust: 'global-aci', suspendGaci: true }, unlock: ['suspendGaci'], expect: 'reject',
-    title: 'Global ACI suspends its signatory list',
-    text: 'It sets one bit in its suspension list and signs the list again, here in your browser. Verifier 3 may no longer rely on the chain. A verifier that trusts the accreditation body directly is not affected: which root a verifier trusts is its own policy.' },
+    title: 'Global ACI suspends its recognition of this body',
+    text: 'It sets the one bit for R in its suspension list and signs the list again, here in your browser. No other recognized body is touched, and nothing below R is re-issued. Verifier 3 may no longer rely on the chain; a verifier that trusts the accreditation body directly is not affected: which root a verifier trusts is its own policy.' },
+
+  { id: 'proposal', part: 'proposal', acts: ['gaci', 'ab'], panel: 'proposal',
+    title: 'Proposal: from recognized body to accreditation',
+    text: 'How we propose to use Recognized Entities in quality infrastructure: one recognition credential per body, which the body\'s accreditations point up to. It uses the Recognized Entities vocabulary as drafted; the per-recognition shape and the termsOfUse link are our proposal, for discussion.' },
 
   { id: 'present', part: 'present', acts: ['holder', 'verifier'],
     title: 'The holder presents what the verifier asks for',
@@ -600,7 +626,7 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
     ] },
 
   { id: 'play', part: 'play', acts: ['ab', 'lab', 'rmp', 'holder', 'verifier'],
-    unlock: ['suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'suspendGaci', 'ask', 'rule'],
+    unlock: ['suspendGaci', 'suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'ask', 'rule'],
     title: 'Your turn',
     text: 'Every action is live. Certify another value, suspend or revoke, change or leave out a credential, or change what the verifier trusts and asks. Each change is evaluated at once.' },
 ];
@@ -663,7 +689,7 @@ export async function evaluateRmBoard(over: Partial<RmBoardState> = {}): Promise
       decisionRuleId: state.rule === 'simple' ? 'simple-acceptance' : 'guarded-acceptance-expanded-u' } } : {}),
     notAsked: 'The verifier asked only whether the value is authorized; no limit was applied.',
   });
-  const uris = { A: RM_URI.A, H: RM_URI.H, O: RM_URI.O, S: RM_URI.S, D: target };
+  const uris = { R: RM_URI.R, A: RM_URI.A, H: RM_URI.H, O: RM_URI.O, S: RM_URI.S, D: target };
   return { ...r, state, certificate: target, uris, signedLive };
 }
 

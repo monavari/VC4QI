@@ -13,7 +13,7 @@ accreditation or external endorsement is claimed.
 | Signed fixtures | Generated for RM (A, A2, O, D178/197/520, S, H), calibration (CAL-A, CAL-O, CAL-M, CAL-T, DCC-1, DCC-2, DCC-N, REPORT-1) and GS (GS-A, GS-S, GSC-1–3, TR-1–3, FI-1, TL-A, GSM-1–6, DPP-1–3), with controller documents and status lists |
 | Protection and time | `eddsa-rdfc-2022` over JSON-LD safe mode, keys authorized by signed controller documents, exact-byte integrity, Bitstring status with freshness, validity at the activity time |
 | Resolution | Offline, from a pinned catalog per binding; no network access and no trust registry (anchors are profile configuration) |
-| Recognition (RM, experimental) | A profile can name an arrangement's signatory list, a W3C Recognized Entities credential (Working Draft of 4 November 2026), through which an accreditation body that is not itself an anchor is accepted for the main scope each grant requires (`rm-verifier-global-aci-1`, fictional Global ACI stand-in). Discovery through `issuer.recognizedIn` or identifiers is not implemented |
+| Recognition (RM, experimental) | One recognition credential per body: A and H point up (`termsOfUse`, pinned by digest) to R, a single-subject W3C Recognized Entities credential (Working Draft of 4 November 2026) from a fictional Global ACI stand-in. A verifier that anchors the recognizer (`rm-verifier-global-aci-1`) accepts the accreditation body for the main scope each grant requires; one that anchors the body never relies on R. Discovery through `issuer.recognizedIn` or identifiers is not implemented |
 | API | `evaluateReliance` (Python `evaluate_reliance`) over the installed binding; see [API](api.md) |
 | Demonstrator | Runs the full evaluators (gates 0–6) in the browser for RM, DCC, GS and DPP examples, and RM and GS actor boards that sign suspensions, revocations and typed certificates live with the fixture keys |
 | Not implemented | Authority-issued answers, Recognized Entities discovery (`recognizedIn`, identifier-based), selective disclosure, historical status at a past time (returns `not_established`), a wallet, a verifier service |
@@ -31,7 +31,7 @@ and evidence: **73 passing, 3 excluded as unsupported, 12 not implemented**.
   configuration), V08 (grants discovered outside the credential chain) and V03 (the
   explicit legacy profile, removed in 0.4.0).
 - Passing since 0.4.0: E01–E03 and E16–E20, recognition of the accreditation body
-  through a profile-named signatory list (unreleased, branch
+  through the recognition credential its grants point up to (unreleased, branch
   `feat/global-aci-recognition`).
 - Not implemented: E04–E15 (Recognized Entities discovery, authority answers, selective
   disclosure, compiled-graph UI interaction tests and an offline reproducibility
