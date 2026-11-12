@@ -113,7 +113,7 @@ describe('I3 authority routes on the signed RM chain', () => {
   });
 
   it('an unconfigured anchor for the accreditation purpose leaves authority not established', async () => {
-    const p = loadRelianceProfile({ ...profileJson(), trustAnchors: [{ id: URI.NAB, purposes: ['recognize-rm-laboratories'] }] });
+    const p = loadRelianceProfile({ ...profileJson(), trustAnchors: [{ id: URI.NAB, purposes: ['accredit-rm-laboratories'] }] });
     const result = await run({}, request(), p);
     expect(basis(result, 'trust-anchor')).toMatchObject({ state: 'not_established' });
     expect(result.decision).toBe('not_established');

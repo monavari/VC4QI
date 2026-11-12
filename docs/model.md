@@ -196,9 +196,22 @@ identifiers prove a digital match, not that a physical sample was not swapped.
 An authority-issued answer (not implemented) can establish one specific predicate. Its
 content must be bound to the exact claim, grantee, activity, scope version, profile and
 time, and the signer's authority must be established independently. A point answer
-cannot prove that a whole scope is contained. The optional Recognized Entities adapter
-pins the 6 September 2026 Working Draft; recognition does not replace QI scope,
-restrictions, support or conformity.
+cannot prove that a whole scope is contained.
+
+Recognition (RM, experimental) answers who stands behind a grant's issuer, nothing
+more. A profile may name an arrangement's signatory list, a W3C Recognized Entities
+credential (Working Draft of 4 November 2026), in `bindingRules.recognition`. When the
+issuer of A or H is not a configured anchor for the purpose, the list establishes it
+only if the list is usable and not suspended, its issuer is an anchor for the list
+purpose, it names that issuer with stated actions, and one action is the required
+action for the grant's main scope (activity and normative document, compared exactly),
+recognized by the list's issuer and in force at the activity time. A main scope the list
+does not grant contradicts; a missing list, entry or time is not established. The list
+joins the witness path. Recognition does not replace QI scope, containment,
+restrictions, support or conformity: D520 is recognized and still out of scope. A list
+supplied by the holder or reached through `issuer.recognizedIn` is not used, and the
+draft's own context is not yet published, so the binding pins a stand-in context whose
+terms expand to the draft vocabulary.
 
 ## 8. Security, time and disclosure
 
@@ -231,5 +244,5 @@ resolution, not traversal alone.
 
 [VCDM 2.0](https://www.w3.org/TR/2025/REC-vc-data-model-2.0-20250515/) (15 May 2025)
 provides the carriers; this project's bindings supply the QI interpretation. The
-[Recognized Entities snapshot](https://www.w3.org/TR/2026/WD-vc-recognized-entities-1.0-20260906/)
-is experimental.
+[Recognized Entities Working Draft](https://www.w3.org/TR/2026/WD-vc-recognized-entities-1.0-20261104/)
+(4 November 2026) is experimental.

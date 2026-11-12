@@ -13,9 +13,10 @@ accreditation or external endorsement is claimed.
 | Signed fixtures | Generated for RM (A, A2, O, D178/197/520, S, H), calibration (CAL-A, CAL-O, CAL-M, CAL-T, DCC-1, DCC-2, DCC-N, REPORT-1) and GS (GS-A, GS-S, GSC-1–3, TR-1–3, FI-1, TL-A, GSM-1–6, DPP-1–3), with controller documents and status lists |
 | Protection and time | `eddsa-rdfc-2022` over JSON-LD safe mode, keys authorized by signed controller documents, exact-byte integrity, Bitstring status with freshness, validity at the activity time |
 | Resolution | Offline, from a pinned catalog per binding; no network access and no trust registry (anchors are profile configuration) |
+| Recognition (RM, experimental) | A profile can name an arrangement's signatory list, a W3C Recognized Entities credential (Working Draft of 4 November 2026), through which an accreditation body that is not itself an anchor is accepted for the main scope each grant requires (`rm-verifier-global-aci-1`, fictional Global ACI stand-in). Discovery through `issuer.recognizedIn` or identifiers is not implemented |
 | API | `evaluateReliance` (Python `evaluate_reliance`) over the installed binding; see [API](api.md) |
 | Demonstrator | Runs the full evaluators (gates 0–6) in the browser for RM, DCC, GS and DPP examples, and RM and GS actor boards that sign suspensions, revocations and typed certificates live with the fixture keys |
-| Not implemented | Authority-issued answers and Recognized Entities discovery, selective disclosure, historical status at a past time (returns `not_established`), a wallet, a verifier service |
+| Not implemented | Authority-issued answers, Recognized Entities discovery (`recognizedIn`, identifier-based), selective disclosure, historical status at a past time (returns `not_established`), a wallet, a verifier service |
 
 The v0.3 graph verifier, its fixtures, the selective-disclosure path and the legacy
 graph-explorer demo were removed in 0.4.0; tag
@@ -23,13 +24,16 @@ graph-explorer demo were removed in 0.4.0; tag
 
 ## Acceptance ledger
 
-The [83-case ledger](acceptance-ledger.csv) records each case's expected outcome, test
-and evidence: **65 passing, 3 excluded as unsupported, 15 not implemented**.
+The [88-case ledger](acceptance-ledger.csv) records each case's expected outcome, test
+and evidence: **73 passing, 3 excluded as unsupported, 12 not implemented**.
 
 - Excluded: P05 (the bindings use no trust registry; anchors are profile
   configuration), V08 (grants discovered outside the credential chain) and V03 (the
   explicit legacy profile, removed in 0.4.0).
-- Not implemented: E01–E15 (authority answers and Recognized Entities, selective
+- Passing since 0.4.0: E01–E03 and E16–E20, recognition of the accreditation body
+  through a profile-named signatory list (unreleased, branch
+  `feat/global-aci-recognition`).
+- Not implemented: E04–E15 (Recognized Entities discovery, authority answers, selective
   disclosure, compiled-graph UI interaction tests and an offline reproducibility
   package).
 

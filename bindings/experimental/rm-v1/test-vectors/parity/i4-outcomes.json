@@ -223,7 +223,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,
@@ -464,7 +464,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,
@@ -699,7 +699,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,
@@ -932,7 +932,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,
@@ -1166,7 +1166,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,
@@ -1407,7 +1407,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,
@@ -1726,7 +1726,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,

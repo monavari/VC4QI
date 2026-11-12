@@ -179,10 +179,16 @@ def evaluate_status(
         return no(f"Status list {uri} is not protected and valid.")
     if status_list.get("id") != uri:
         return no(f"Resolved status list identifies itself as {status_list.get('id')}.")
-    if status_list.get("issuer") != credential.get("issuer"):
+    # VCDM 2.0 allows an issuer object with an id (a Recognized Entities list uses one).
+    def issuer_id(issuer: Any) -> Any:
+        return issuer.get("id") if isinstance(issuer, dict) else issuer
+
+    list_issuer = issuer_id(status_list.get("issuer"))
+    credential_issuer = issuer_id(credential.get("issuer"))
+    if not isinstance(list_issuer, str) or list_issuer != credential_issuer:
         return no(
-            f"Status list is signed by {status_list.get('issuer')}, who may not state "
-            f"status for credentials of {credential.get('issuer')}."
+            f"Status list is signed by {list_issuer}, who may not state "
+            f"status for credentials of {credential_issuer}."
         )
     subject = status_list.get("credentialSubject")
     if (

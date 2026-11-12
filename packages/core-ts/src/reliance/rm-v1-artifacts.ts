@@ -20,7 +20,7 @@ import {
 import { semanticAnd } from './index.js';
 import { authorizeAssertionMethod, type KeyAuthorization } from './key-authorization.js';
 import type { BindingManifest } from './manifest.js';
-import { RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, VC_V2_CONTEXT } from './rm-v1.js';
+import { RECOGNIZED_ENTITIES_DRAFT_CONTEXT, RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, VC_V2_CONTEXT } from './rm-v1.js';
 import type {
   ArtifactVerificationResult, Gate, PredicateResult, RelianceRequest, SemanticState,
 } from './types.js';
@@ -36,11 +36,17 @@ export const RM_V1_ARTIFACT_SCHEMAS: Readonly<Record<string, string>> = Object.f
   RmStudy: `${RM_V1_SCHEMA_BASE}study.json`,
   RmLabAuthority: `${RM_V1_SCHEMA_BASE}lab-authority.json`,
   BitstringStatusListCredential: `${RM_V1_SCHEMA_BASE}status-list.json`,
+  RecognizedEntityCredential: `${RM_V1_SCHEMA_BASE}recognized-entity.json`,
 });
 
-/** Exact context list each recognized type must use; status lists use VCDM 2.0 only. */
+/**
+ * Exact context list each recognized type must use: status lists use VCDM 2.0 only,
+ * an arrangement's signatory list the Recognized Entities stand-in context.
+ */
 function expectedContexts(type: unknown): readonly string[] {
-  return type === 'BitstringStatusListCredential' ? [VC_V2_CONTEXT] : [VC_V2_CONTEXT, RM_V1_CONTEXT];
+  if (type === 'BitstringStatusListCredential') return [VC_V2_CONTEXT];
+  if (type === 'RecognizedEntityCredential') return [VC_V2_CONTEXT, RECOGNIZED_ENTITIES_DRAFT_CONTEXT];
+  return [VC_V2_CONTEXT, RM_V1_CONTEXT];
 }
 
 /**

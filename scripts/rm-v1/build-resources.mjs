@@ -19,6 +19,9 @@ const CHECK = process.argv.includes('--check');
 
 const VC_V2 = 'https://www.w3.org/ns/credentials/v2';
 const RM_CONTEXT = 'https://vc4qi.example/contexts/rm/1';
+// Stand-in for the unpublished W3C Recognized Entities context (Working Draft of
+// 4 November 2026); hand-authored in resources/contexts.
+const RE_CONTEXT = 'https://vc4qi.example/contexts/recognized-entities/draft-20261104';
 const SCHEMA_BASE = 'https://vc4qi.example/schemas/rm/1/';
 
 const iri = { type: 'string', format: 'uri' };
@@ -211,6 +214,47 @@ const schemas = {
       proof,
     }, ['@context', 'id', 'type', 'issuer', 'validFrom', 'validUntil', 'credentialSchema', 'credentialSubject']),
   },
+  // An arrangement's signatory list as a W3C Recognized Entities credential (Working
+  // Draft of 4 November 2026). recognizedTo is optional here so that a list naming an
+  // entity without actions is structurally valid; the evaluator does not accept it.
+  'recognized-entity.json': {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    $id: `${SCHEMA_BASE}recognized-entity.json`,
+    title: 'Arrangement signatory list (W3C Recognized Entities credential)',
+    description: 'Experimental VC4QI RM binding v1 fixture schema for a Recognized Entities credential. Not an external standard.',
+    ...closed({
+      '@context': { const: [VC_V2, RE_CONTEXT] },
+      id: iri,
+      type: { const: ['VerifiableCredential', 'RecognizedEntityCredential'] },
+      issuer: closed({ id: iri, type: { const: 'RecognizedIssuer' }, name: { type: 'string', minLength: 1 } }, ['id', 'type']),
+      validFrom: dateTime,
+      validUntil: dateTime,
+      credentialSchema: closed({ id: { const: `${SCHEMA_BASE}recognized-entity.json` }, type: { const: 'JsonSchema' } }),
+      credentialSubject: nonemptySet(closed({
+        id: iri,
+        type: { const: 'RecognizedEntity' },
+        name: { type: 'string', minLength: 1 },
+        recognizedTo: {
+          type: 'array',
+          items: closed({
+            type: { const: 'RecognizedAction' },
+            action: { type: 'string', minLength: 1 },
+            recognizedBy: iri,
+            mainScope: closed({
+              activity: { type: 'string', minLength: 1 },
+              standard: closed({ id: iri, name: { type: 'string', minLength: 1 } }),
+            }),
+            validFrom: dateTime,
+            validUntil: dateTime,
+          }, ['type', 'action']),
+        },
+      }, ['id', 'type'])),
+      credentialStatus,
+      name: { type: 'string', minLength: 1 },
+      description: { type: 'string', minLength: 1 },
+      proof,
+    }, ['@context', 'id', 'type', 'issuer', 'validFrom', 'validUntil', 'credentialSchema', 'credentialSubject', 'credentialStatus']),
+  },
   'authorization-policy.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     $id: `${SCHEMA_BASE}authorization-policy.json`,
@@ -253,6 +297,15 @@ const entries = [
     mediaType: 'application/ld+json',
     origin: 'VC4QI experimental RM binding (repository-owned fictional fixture)',
     version: '1',
+  },
+  {
+    uri: RE_CONTEXT,
+    path: 'bindings/experimental/rm-v1/resources/contexts/recognized-entities-draft-20261104.jsonld',
+    mediaType: 'application/ld+json',
+    origin: 'VC4QI stand-in for the unpublished W3C Recognized Entities v1.0 context: terms expand to the '
+      + 'draft vocabulary of w3c/vc-recognized-entities@3961cf6 (Working Draft of 4 November 2026); '
+      + 'mainScope, activity and standard are RM binding extension terms',
+    version: 'draft-20261104',
   },
   ...Object.keys(schemas).map(file => ({
     uri: `${SCHEMA_BASE}${file}`,

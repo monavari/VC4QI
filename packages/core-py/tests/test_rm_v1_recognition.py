@@ -1,0 +1,268 @@
+# SPDX-License-Identifier: Apache-2.0
+"""Python mirror of tests/rm-v1-recognition.test.ts (ledger E01-E03, E16-E20).
+
+The verifier abroad trusts only the fictional Global ACI stand-in and reaches the
+accreditation body through its signatory list, a W3C Recognized Entities credential.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+from typing import Any
+
+from qi_vc_core.reliance import load_reliance_profile
+from qi_vc_core.reliance.profile import RelianceProfile
+from qi_vc_core.reliance.rm_v1 import RM_V1_DIRECTORY
+from qi_vc_core.reliance.rm_v1_artifacts import evaluate_rm_slice
+from qi_vc_core.reliance.status_list import MIN_STATUS_BITS, encode_status_list
+from qi_vc_core.reliance.types import VersionedIdentifier
+
+from .test_rm_v1_slice import (
+    MANIFEST,
+    PROFILE,
+    URI,
+    catalog_with,
+    doc,
+    request,
+    resign,
+)
+
+GACI = "https://global-aci.vc4qi.example/controller"
+SIGNATORIES = "https://global-aci.vc4qi.example/credentials/MRA-2026"
+GACI_SUSPENSION = "https://global-aci.vc4qi.example/status/suspension/1"
+D197 = "https://producer.vc4qi.example/credentials/D197"
+D520 = "https://producer.vc4qi.example/credentials/D520"
+RM_PRODUCTION = "Reference material production"
+
+
+def _profile_json() -> dict[str, Any]:
+    return dict(
+        json.loads(
+            (RM_V1_DIRECTORY / "profiles/rm-verifier-global-aci-1.json").read_text()
+        )
+    )
+
+
+GLOBAL_ACI = load_reliance_profile(_profile_json())
+
+
+def _request(profile: RelianceProfile, target: str = URI["D"], **extra: Any) -> Any:
+    return request(
+        target_id=target,
+        profile=VersionedIdentifier(profile.id, profile.version),
+        **extra,
+    )
+
+
+def run(
+    overrides: dict[str, str | None] | None = None,
+    profile: RelianceProfile = GLOBAL_ACI,
+    target: str = URI["D"],
+) -> Any:
+    return evaluate_rm_slice(
+        _request(profile, target), catalog_with(overrides or {}), MANIFEST, profile
+    ).result
+
+
+def _trace(result: Any, predicate: str) -> Any:
+    return next(t for t in result.trace if t.predicate == predicate)
+
+
+def anchor(result: Any) -> Any:
+    return _trace(result, "route:operational-scope:trust-anchor")
+
+
+def lab_anchor(result: Any) -> Any:
+    return _trace(result, "support:laboratory-anchor")
+
+
+def _sign_list(document: dict[str, Any]) -> str:
+    return resign(document, "global-aci", f"{GACI}#key-1")
+
+
+def list_with(edit: Any) -> dict[str, str | None]:
+    document = doc(SIGNATORIES)
+    edit(document)
+    return {SIGNATORIES: _sign_list(document)}
+
+
+def _entity(document: dict[str, Any]) -> dict[str, Any]:
+    entity: dict[str, Any] = document["credentialSubject"][0]
+    return entity
+
+
+def _suspended() -> dict[str, str | None]:
+    bits = bytearray(MIN_STATUS_BITS // 8)
+    bits[0] |= 0x80
+    status = doc(GACI_SUSPENSION)
+    status["credentialSubject"]["encodedList"] = encode_status_list(bytes(bits))
+    return {GACI_SUSPENSION: resign(status, "global-aci", f"{GACI}#key-1")}
+
+
+def test_e01_d178_is_relied_upon_through_the_signatory_list() -> None:
+    result = run()
+    assert anchor(result).state == "established"
+    assert re.search(
+        r"recognized by https://global-aci\.vc4qi\.example/controller .* to accredit "
+        r"for Reference material production under ISO 17034:2016",
+        anchor(result).reason,
+    )
+    assert lab_anchor(result).state == "established"
+    assert SIGNATORIES in result.authorization[0].route_witness_ids
+    assert SIGNATORIES in result.support[0].witness_ids
+    assert any(
+        t.node_use.startswith(f"{SIGNATORIES} |")
+        and "| recognition-list |" in t.node_use
+        for t in result.trace
+    )
+    assert result.decision == "accept"
+
+
+def test_e03_recognized_and_d520_still_out_of_scope() -> None:
+    result = run(target=D520)
+    assert anchor(result).state == "established"
+    assert result.authorization[0].state == "contradicted"
+    assert result.decision == "reject"
+
+
+def test_d197_authorized_and_rejected_only_by_the_guarded_rule() -> None:
+    result = run(target=D197)
+    assert result.authorization[0].state == "established"
+    assert result.conformity.state == "contradicted"
+    assert result.decision == "reject"
+
+
+def test_e02_testing_only_contradicts_the_producer_route() -> None:
+    def edit(document: dict[str, Any]) -> None:
+        entity = _entity(document)
+        entity["recognizedTo"] = [
+            a
+            for a in entity["recognizedTo"]
+            if a["mainScope"]["activity"] != RM_PRODUCTION
+        ]
+
+    result = run(list_with(edit))
+    assert anchor(result).state == "contradicted"
+    assert "not to accredit for Reference material production" in anchor(result).reason
+    assert lab_anchor(result).state == "established"
+    assert result.decision == "reject"
+
+
+def test_e02_laboratory_without_testing_contradicts_support() -> None:
+    def edit(document: dict[str, Any]) -> None:
+        entity = _entity(document)
+        entity["recognizedTo"] = [
+            a
+            for a in entity["recognizedTo"]
+            if a["mainScope"]["activity"] == RM_PRODUCTION
+        ]
+
+    result = run(list_with(edit))
+    assert anchor(result).state == "established"
+    assert lab_anchor(result).state == "contradicted"
+    assert result.support[0].state == "contradicted"
+    assert result.decision == "reject"
+
+
+def test_e16_body_not_listed_is_not_established() -> None:
+    def edit(document: dict[str, Any]) -> None:
+        _entity(document)["id"] = "https://other-ab.vc4qi.example/controller"
+
+    result = run(list_with(edit))
+    assert anchor(result).state == "not_established"
+    assert "does not list https://nab.vc4qi.example/controller" in anchor(result).reason
+    assert result.decision == "not_established"
+
+
+def test_e17_suspended_list_contradicts_reliance() -> None:
+    result = run(_suspended())
+    assert anchor(result).state == "contradicted"
+    assert "has suspended its signatory list" in anchor(result).reason
+    assert result.decision == "reject"
+
+
+def test_e17_domestic_verifier_is_unaffected() -> None:
+    result = evaluate_rm_slice(
+        request(), catalog_with(_suspended()), MANIFEST, PROFILE
+    ).result
+    assert result.decision == "accept"
+    assert all(a.artifact_id != SIGNATORIES for a in result.artifact_verification)
+
+
+def test_e18_recognition_without_actions_is_not_accepted() -> None:
+    def edit(document: dict[str, Any]) -> None:
+        del _entity(document)["recognizedTo"]
+
+    result = run(list_with(edit))
+    assert anchor(result).state == "not_established"
+    assert "without recognized actions" in anchor(result).reason
+
+
+def test_e19_recognition_after_the_activity_cannot_authorize_it() -> None:
+    def edit(document: dict[str, Any]) -> None:
+        for action in _entity(document)["recognizedTo"]:
+            action["validFrom"] = "2026-02-01T00:00:00Z"
+
+    result = run(list_with(edit))
+    assert anchor(result).state == "not_established"
+    assert "at the activity time 2026-01-20" in anchor(result).reason
+
+
+def test_e20_list_issuer_not_anchored_for_the_list_purpose() -> None:
+    profile = load_reliance_profile(
+        {
+            **_profile_json(),
+            "trustAnchors": [{"id": GACI, "purposes": ["accredit-rm-producers"]}],
+        }
+    )
+    result = run(profile=profile)
+    assert anchor(result).state == "not_established"
+    assert (
+        "is not a configured anchor for recognize-accreditation-bodies"
+        in anchor(result).reason
+    )
+
+
+def test_unavailable_list_is_not_established() -> None:
+    result = run({SIGNATORIES: None})
+    assert anchor(result).state == "not_established"
+    assert result.decision == "not_established"
+
+
+def test_matching_action_naming_another_recognizer_is_contradicted() -> None:
+    def edit(document: dict[str, Any]) -> None:
+        for action in _entity(document)["recognizedTo"]:
+            action["recognizedBy"] = "https://other-anchor.vc4qi.example/controller"
+
+    assert anchor(run(list_with(edit))).state == "contradicted"
+
+
+def test_malformed_recognition_rules_are_never_defaulted() -> None:
+    profile_json = _profile_json()
+    del profile_json["bindingRules"]["recognition"]["action"]
+    result = run(profile=load_reliance_profile(profile_json))
+    assert anchor(result).state == "not_established"
+    assert "recognition rules are malformed" in anchor(result).reason
+
+
+def test_holder_cannot_supply_a_list_the_profile_does_not_name() -> None:
+    profile = load_reliance_profile({**_profile_json(), "bindingRules": {}})
+    req = _request(
+        profile,
+        supplied_evidence=(URI["A"], URI["O"], URI["S"], URI["H"], SIGNATORIES),
+    )
+    result = evaluate_rm_slice(req, catalog_with({}), MANIFEST, profile).result
+    assert anchor(result).state == "not_established"
+    assert result.decision == "not_established"
+
+
+def test_reasons_match_typescript_for_the_accepted_case() -> None:
+    reason = anchor(run()).reason
+    assert reason == (
+        "https://nab.vc4qi.example/controller is recognized by "
+        "https://global-aci.vc4qi.example/controller (a configured anchor for "
+        "recognize-accreditation-bodies) to accredit for Reference material production "
+        "under ISO 17034:2016, in force at 2026-01-20T00:00:00Z, in "
+        "https://global-aci.vc4qi.example/credentials/MRA-2026."
+    )

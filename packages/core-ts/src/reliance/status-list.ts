@@ -151,8 +151,10 @@ export function evaluateStatus(
   if (list.id !== listUri) {
     return { state: 'not_established', reason: `Resolved status list identifies itself as ${String(list.id)}.`, listUri, sources };
   }
-  if (list.issuer !== credential.issuer) {
-    return { state: 'not_established', reason: `Status list is signed by ${String(list.issuer)}, who may not state status for credentials of ${String(credential.issuer)}.`, listUri, sources };
+  // VCDM 2.0 allows an issuer object with an id (a Recognized Entities list uses one).
+  const issuerId = (issuer: unknown) => (isObject(issuer) ? issuer.id : issuer);
+  if (typeof issuerId(list.issuer) !== 'string' || issuerId(list.issuer) !== issuerId(credential.issuer)) {
+    return { state: 'not_established', reason: `Status list is signed by ${String(issuerId(list.issuer))}, who may not state status for credentials of ${String(issuerId(credential.issuer))}.`, listUri, sources };
   }
   const subject = list.credentialSubject;
   if (!isObject(subject) || subject.type !== 'BitstringStatusList' || subject.statusPurpose !== entry.statusPurpose) {

@@ -4,6 +4,8 @@
 authorized = AND(global restrictions) AND OR(complete routes); route = AND(bases).
 Authority is derived only from the chain's own termsOfUse references: unreferenced
 credentials confer nothing (V07), discovered grants are unsupported (V08).
+The top grant's issuer must be a configured anchor, or be recognized through a
+signatory list the verifier's profile names (recognized_entities.py, E01-E03).
 """
 
 from __future__ import annotations
@@ -14,6 +16,7 @@ from datetime import datetime
 from typing import Any, Literal
 
 from .profile import RelianceProfile
+from .recognized_entities import grant_issuer_standing
 from .rm_scope import contained_in
 from .types import SemanticState, semantic_and, semantic_or
 
@@ -350,7 +353,17 @@ def _operational_scope_route(
             ("/credentialSubject/scope",),
         )
     )
-    bases.append(_anchor("trust-anchor", a, "accredit-rm-producers", profile))
+    standing, recognized_in = grant_issuer_standing(
+        "trust-anchor",
+        a,
+        "accredit-rm-producers",
+        profile,
+        lookup,
+        _subject(d).get("activityTime"),
+    )
+    bases.append(standing)
+    if recognized_in is not None:
+        chain.append(recognized_in)
     bases.append(_in_force_at_activity(d, [("O", o), ("A", a)]))
     return _route("operational-scope", bases, chain, o_node.uri)
 
@@ -383,7 +396,17 @@ def _direct_accreditation_route(
             "A does not permit issuing RM certificates.",
         )
     )
-    bases.append(_anchor("trust-anchor", a, "accredit-rm-producers", profile))
+    standing, recognized_in = grant_issuer_standing(
+        "trust-anchor",
+        a,
+        "accredit-rm-producers",
+        profile,
+        lookup,
+        _subject(d).get("activityTime"),
+    )
+    bases.append(standing)
+    if recognized_in is not None:
+        chain.append(recognized_in)
     bases.append(_in_force_at_activity(d, [("A", a)]))
     return _route("direct-accreditation", bases, chain, a_node.uri)
 
@@ -423,14 +446,20 @@ def _accreditation_suspension(
                 continue
             doc = node.document
             queue.append(doc)
-            anchored = any(
-                a.id == doc.get("issuer") and "accredit-rm-producers" in a.purposes
-                for a in profile.trust_anchors
-            )
+            # Anchor-issued: by a configured accreditation anchor, or by an
+            # accreditation body the profile accepts through a signatory list.
             if (
                 _type_of(doc) == "RmAccreditation"
-                and anchored
                 and _subject(doc).get("id") == actor
+                and grant_issuer_standing(
+                    "anchor",
+                    doc,
+                    "accredit-rm-producers",
+                    profile,
+                    lookup,
+                    _subject(target.document).get("activityTime"),
+                )[0].state
+                == "established"
             ):
                 applicable.append(node)
     if not applicable:
@@ -611,7 +640,17 @@ def study_authority(
             source,
         )
     )
-    bases.append(_anchor("laboratory-anchor", h, "recognize-rm-laboratories", profile))
+    standing, recognized_in = grant_issuer_standing(
+        "laboratory-anchor",
+        h,
+        "accredit-rm-laboratories",
+        profile,
+        lookup,
+        s.get("activityTime"),
+    )
+    bases.append(standing)
+    if recognized_in is not None:
+        chain.append(recognized_in)
     return _route("laboratory-authority", bases, chain)
 
 

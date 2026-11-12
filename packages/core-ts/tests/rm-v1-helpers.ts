@@ -21,6 +21,10 @@ export const profile = loadRelianceProfile(profileJson());
 /** The fictional two-route profile: (operational scope within A) OR (direct accreditation). */
 export const twoRouteProfile = loadRelianceProfile(
   JSON.parse(readFileSync(new URL('profiles/rm-verifier-two-routes-1.json', rmDir), 'utf8')) as JsonObject);
+/** The fictional verifier abroad: Global ACI stand-in as only anchor, NAB recognized through its signatory list. */
+export const globalAciProfileJson = (): JsonObject =>
+  JSON.parse(readFileSync(new URL('profiles/rm-verifier-global-aci-1.json', rmDir), 'utf8')) as JsonObject;
+export const globalAciProfile = loadRelianceProfile(globalAciProfileJson());
 const pinned = readPinnedResources(new URL('catalog.json', rmDir).pathname);
 export const signed = readPinnedResources(new URL('test-vectors/signed/catalog.json', rmDir).pathname);
 
@@ -36,8 +40,19 @@ export const URI = {
   NAB: 'https://nab.vc4qi.example/controller',
   PRODUCER: 'https://producer.vc4qi.example/controller',
   LAB: 'https://lab.vc4qi.example/controller',
+  GACI: 'https://global-aci.vc4qi.example/controller',
+  SIGNATORIES: 'https://global-aci.vc4qi.example/credentials/MRA-2026',
+  GACI_STATUS: 'https://global-aci.vc4qi.example/status/1',
+  GACI_SUSPENSION: 'https://global-aci.vc4qi.example/status/suspension/1',
 } as const;
-const KEY_OF: Record<string, string> = { [URI.NAB]: 'nab', [URI.PRODUCER]: 'producer', [URI.LAB]: 'lab' };
+const KEY_OF: Record<string, string> = {
+  [URI.NAB]: 'nab', [URI.PRODUCER]: 'producer', [URI.LAB]: 'lab', [URI.GACI]: 'global-aci',
+};
+/** VCDM issuer identifier: a string, or an object's id. */
+const issuerOf = (document: JsonObject) => {
+  const issuer = document.issuer as unknown;
+  return typeof issuer === 'string' ? issuer : String((issuer as { id?: unknown } | null)?.id);
+};
 
 export const NOW = '2026-09-25T12:00:00Z';
 export const text = (uri: string) => new TextDecoder().decode(signed.find(r => r.uri === uri)!.bytes);
@@ -64,7 +79,7 @@ export function catalogWith(overrides: Record<string, string | null> = {}): Stat
 }
 
 /** Sign `document` (any existing proof removed) with the fixture key of its issuer. */
-export async function resign(document: JsonObject, issuer = String(document.issuer)): Promise<string> {
+export async function resign(document: JsonObject, issuer = issuerOf(document)): Promise<string> {
   const { proof: _proof, ...unsigned } = document;
   const seed = createHash('sha256').update(`vc4qi-rm-v1-insecure-fixture-key:${KEY_OF[issuer]}`).digest();
   const proof = await createProof(unsigned, {

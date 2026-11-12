@@ -6,7 +6,9 @@
 //   D178 does not reference), H (lab authority), O (operational scope),
 //   S (homogeneity study) and D178 (RM certificate, x = 178 mg/kg, U = 5, k = 2, with the
 //   Cu, Zn and Pb values of the M375a DRMD transcription as further certified results),
-//   plus D197 and D520, hypothetical reissues with the same inputs and x = 197 / 520.
+//   plus D197 and D520, hypothetical reissues with the same inputs and x = 197 / 520,
+//   and a fictional Global ACI signatory list (a W3C Recognized Entities credential,
+//   Working Draft of 4 November 2026) naming the NAB for RM production and testing.
 //
 //   pnpm -C packages/core-ts exec tsx scripts/generate-rm-v1-artifacts.ts          # write files
 //   pnpm -C packages/core-ts exec tsx scripts/generate-rm-v1-artifacts.ts --check  # fail if stale
@@ -23,7 +25,8 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createProof } from '../src/proofs/index.js';
 import {
-  catalogDocumentLoader, RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, RM_V1_VOCAB, sha384SRI, VC_V2_CONTEXT,
+  catalogDocumentLoader, RECOGNIZED_ENTITIES_DRAFT_CONTEXT, RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, RM_V1_VOCAB, sha384SRI,
+  VC_V2_CONTEXT,
 } from '../src/reliance/index.js';
 import { loadRmV1Catalog } from '../src/reliance/rm-v1-node.js';
 import { encodeStatusList, MIN_STATUS_BITS } from '../src/reliance/status-list.js';
@@ -38,6 +41,10 @@ const rm = (term: string) => `${RM_V1_VOCAB}${term}`;
 const NAB = 'https://nab.vc4qi.example/controller';
 const PRODUCER = 'https://producer.vc4qi.example/controller';
 const LAB = 'https://lab.vc4qi.example/controller';
+// A fictional stand-in for an arrangement anchor; not Global Accreditation Cooperation
+// Incorporated, and nothing here represents it.
+const GACI = 'https://global-aci.vc4qi.example/controller';
+const SIGNATORIES = 'https://global-aci.vc4qi.example/credentials/MRA-2026';
 const BATCH = 'urn:vc4qi-example:batch:cuzn39pb3-disc-lot-1';
 
 // Revocation status: one Bitstring Status List per issuer, all bits clear. The NAB
@@ -47,8 +54,11 @@ const STATUS_LIST = {
   nab: 'https://nab.vc4qi.example/status/1',
   producer: 'https://producer.vc4qi.example/status/1',
   lab: 'https://lab.vc4qi.example/status/1',
+  gaci: 'https://global-aci.vc4qi.example/status/1',
 } as const;
 const SUSPENSION_LIST = 'https://nab.vc4qi.example/status/suspension/1';
+// The arrangement anchor can suspend its signatory list as a whole.
+const GACI_SUSPENSION_LIST = 'https://global-aci.vc4qi.example/status/suspension/1';
 type Entry = [list: string, index: number, purpose: 'revocation' | 'suspension'];
 const STATUS_ENTRY: Record<string, Entry[]> = {
   'https://nab.vc4qi.example/credentials/A': [[STATUS_LIST.nab, 0, 'revocation'], [SUSPENSION_LIST, 0, 'suspension']],
@@ -59,6 +69,7 @@ const STATUS_ENTRY: Record<string, Entry[]> = {
   'https://producer.vc4qi.example/credentials/D197': [[STATUS_LIST.producer, 2, 'revocation']],
   'https://producer.vc4qi.example/credentials/D520': [[STATUS_LIST.producer, 3, 'revocation']],
   'https://lab.vc4qi.example/credentials/S': [[STATUS_LIST.lab, 0, 'revocation']],
+  [SIGNATORIES]: [[STATUS_LIST.gaci, 0, 'revocation'], [GACI_SUSPENSION_LIST, 0, 'suspension']],
 };
 
 interface Party { name: string; controller: string; seed: Uint8Array; publicKey: Uint8Array }
@@ -152,9 +163,10 @@ async function main() {
   const nab = await party('nab', NAB);
   const producer = await party('producer', PRODUCER);
   const lab = await party('lab', LAB);
+  const gaci = await party('global-aci', GACI);
   const FIXTURE = 'VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)';
 
-  for (const p of [nab, producer, lab]) {
+  for (const p of [nab, producer, lab, gaci]) {
     record(p.controller, `controllers/${p.name}.json`, 'application/json',
       serialize(controllerDocument(p)), FIXTURE);
   }
@@ -166,6 +178,8 @@ async function main() {
     [producer, STATUS_LIST.producer, 'producer', 'revocation'],
     [lab, STATUS_LIST.lab, 'lab', 'revocation'],
     [nab, SUSPENSION_LIST, 'nab-suspension', 'suspension'],
+    [gaci, STATUS_LIST.gaci, 'global-aci', 'revocation'],
+    [gaci, GACI_SUSPENSION_LIST, 'global-aci-suspension', 'suspension'],
   ];
   for (const [p, listId, file, purpose] of lists) {
     record(listId, `status/${file}.json`, 'application/vc', serialize(await sign({
@@ -296,6 +310,41 @@ async function main() {
       relatedResource: integrity([O_ID, oText], [S_ID, sText]),
     }, producer, '2026-02-01T00:00:00Z')), FIXTURE);
   }
+
+  // The arrangement anchor's signatory list: the NAB is recognized to accredit for two
+  // main scopes (activity and normative document, as RFC 5141 ISO URNs), from the
+  // arrangement's start. A verifier abroad that trusts only the arrangement anchor
+  // reaches the NAB's grants through it; QI scope stays with the grants themselves.
+  const mainScope = (activity: string, id: string, name: string) => ({ activity, standard: { id, name } });
+  const recognized = (scope: ReturnType<typeof mainScope>) => ({
+    type: 'RecognizedAction',
+    action: 'accredit',
+    recognizedBy: GACI,
+    mainScope: scope,
+    validFrom: '2026-01-01T00:00:00Z',
+    validUntil: '2027-12-31T23:59:59Z',
+  });
+  record(SIGNATORIES, 'credentials/MRA-2026.json', 'application/vc', serialize(await sign({
+    '@context': [VC_V2_CONTEXT, RECOGNIZED_ENTITIES_DRAFT_CONTEXT],
+    id: SIGNATORIES,
+    type: ['VerifiableCredential', 'RecognizedEntityCredential'],
+    issuer: { id: GACI, type: 'RecognizedIssuer', name: 'Global ACI (fictional stand-in)' },
+    validFrom: '2026-01-01T00:00:00Z',
+    validUntil: '2027-12-31T23:59:59Z',
+    credentialSchema: { id: `${RM_V1_SCHEMA_BASE}recognized-entity.json`, type: 'JsonSchema' },
+    name: 'Signatories of the arrangement (fictional fixture)',
+    description: 'Fictional fixture in the shape of a W3C Recognized Entities credential. Not issued or endorsed by '
+      + 'Global Accreditation Cooperation Incorporated or any accreditation body.',
+    credentialSubject: [{
+      id: NAB,
+      type: 'RecognizedEntity',
+      name: 'Fictional national accreditation body',
+      recognizedTo: [
+        recognized(mainScope('Reference material production', 'urn:iso:std:iso:17034:ed-1', 'ISO 17034:2016')),
+        recognized(mainScope('Testing', 'urn:iso:std:iso-iec:17025:ed-3', 'ISO/IEC 17025:2017')),
+      ],
+    }],
+  }, gaci, '2026-01-01T00:00:00Z')), FIXTURE);
 
   outputs.set('catalog.json', `${JSON.stringify({
     description: 'Signed RM v1 vertical-slice fixtures. digestSRI is SHA-384 over the exact file bytes. '
