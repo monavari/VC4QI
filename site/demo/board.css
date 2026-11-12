@@ -24,7 +24,8 @@
   --hatch:repeating-linear-gradient(135deg, transparent 0 7px, rgba(163,178,184,.10) 7px 14px); }
 :root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
 *,*::before,*::after{ box-sizing:inherit; }
-html{ font-size:16px; -webkit-text-size-adjust:100%; }
+/* The scrollbar's room is kept, so a step that scrolls does not shift the board sideways. */
+html{ font-size:16px; -webkit-text-size-adjust:100%; scrollbar-gutter:stable; }
 @media (min-width:64rem){ html{ font-size:17px; } }
 @media (min-width:110rem){ html{ font-size:18px; } }
 body{ margin:0; background:var(--paper); color:var(--ink); font:1rem/1.5 var(--sans); }
@@ -63,7 +64,7 @@ button, input, select{ font:inherit; color:inherit; }
 .stephead{ padding:var(--s2) 0 var(--s3); display:grid; gap:var(--s2); }
 .kicker{ margin:0; font-size:.82rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--petrol); }
 h1{ margin:0; font-size:clamp(1.5rem, 1.15rem + .9vw, 2rem); line-height:1.2; font-weight:750; letter-spacing:-.01em; }
-.acts{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2) var(--s3); margin:0; font-size:1.05rem; font-weight:650; }
+.acts{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2) var(--s3); margin:0; font-size:1.05rem; font-weight:650; min-height:1.7rem; }
 .acts .arrow{ color:var(--muted); font-weight:400; }
 .acts .who{ display:inline-flex; align-items:center; gap:var(--s2); }
 .lead{ margin:0; font-size:1.12rem; line-height:1.5; color:var(--muted); max-width:46rem; }
@@ -72,6 +73,8 @@ h1{ margin:0; font-size:clamp(1.5rem, 1.15rem + .9vw, 2rem); line-height:1.2; fo
   .stephead{ grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); column-gap:var(--s6); align-items:end; }
   .stephead > *{ grid-column:1; }
   .stephead .lead{ grid-column:2; grid-row:1 / span 3; align-self:center; }
+  /* Room for a two-line title on every step, so the board starts at the same height. */
+  .stephead h1{ min-height:2.4em; display:flex; align-items:flex-end; }
 }
 
 /* monograms: level 3 */
@@ -82,7 +85,8 @@ h1{ margin:0; font-size:clamp(1.5rem, 1.15rem + .9vw, 2rem); line-height:1.2; fo
 /* placeholders: grey, dashed, hatched, never a state colour */
 .placeholder{ border:2px dashed var(--soft); border-radius:var(--radius); background:var(--hatch), var(--wash); color:var(--ink); }
 .placeholder .tag{ display:inline-block; font-size:.82rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
-.band{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--s1) var(--s3); padding:.3rem var(--s4); margin:0 0 var(--s3); font-size:.88rem; }
+/* Under the board, so that showing it never moves the board. */
+.band{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--s1) var(--s3); padding:.3rem var(--s4); margin:var(--s3) 0 0; font-size:.88rem; }
 .band b{ font-weight:650; }
 #presentation{ padding:var(--s4) var(--s5); margin:var(--s2) 0 var(--s4); }
 #presentation p{ margin:0 0 var(--s2); max-width:60rem; }
@@ -106,17 +110,22 @@ body[data-mode="build"] .col.dim > .slot{ opacity:.42; }
 .colhead .does{ margin:0; font-size:.82rem; line-height:1.4; color:var(--muted); }
 .pubs{ display:flex; flex-wrap:wrap; gap:var(--s1); }
 .pub{ font-size:.82rem; line-height:1.2; padding:.15rem .5rem; border-radius:6px; border:1px solid var(--line); color:var(--muted); background:var(--paper); }
-.pub.changed{ border-color:var(--petrol); color:var(--petrol); font-weight:650; }
-.roles{ display:flex; flex-wrap:wrap; gap:var(--s1); min-height:0; }
+.pub.changed{ border-color:var(--petrol); background:var(--petrol); color:var(--on-petrol); }
+.vh{ position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+/* Role pills sit on the column's top edge: hovering a credential moves nothing. */
+.roles{ position:absolute; top:-.75rem; left:var(--s3); right:var(--s3); z-index:3; display:flex; flex-wrap:wrap; gap:var(--s1); pointer-events:none; }
 .role{ font-size:.82rem; font-weight:700; padding:.1rem .5rem; border-radius:999px; background:var(--petrol); color:var(--on-petrol); }
 .slot{ display:grid; gap:var(--s3); align-content:start; min-height:0; }
 .slot:empty{ display:none; }
 .actions{ display:flex; flex-wrap:wrap; gap:var(--s2); align-content:start; }
 .actions:empty{ display:none; }
 @media (min-width:64rem){
-  .board{ grid-template-columns:repeat(var(--actors, 4), minmax(0, 1fr)) minmax(0, 1.5fr); grid-template-rows:auto auto auto auto; column-gap:var(--s4); row-gap:var(--s2); }
+  /* The verifier's column spans every row; with the last row flexible, its height goes to
+     that row only, so the credentials' rows keep their place from step to step. */
+  .board{ grid-template-columns:repeat(var(--actors, 4), minmax(0, 1fr)) minmax(0, 1.5fr); grid-template-rows:auto auto auto 1fr; column-gap:var(--s4); row-gap:var(--s2); }
   .board > svg{ display:block; position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:1; }
-  .col{ display:grid; grid-row:1 / span 4; grid-template-rows:subgrid; order:0 !important; }
+  /* A column's content never widens it: text wraps inside, so wrapping and heights stay put. */
+  .col{ display:grid; grid-row:1 / span 4; grid-template-rows:subgrid; grid-template-columns:minmax(0, 1fr); order:0 !important; }
   .col[data-actor="verifier"]{ order:0; }
   .slot:empty{ display:grid; }
   .actions:empty{ display:flex; }
@@ -124,10 +133,11 @@ body[data-mode="build"] .col.dim > .slot{ opacity:.42; }
   .colhead .does{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; overflow:hidden; }
   /* Room for a citation between two credentials of the same actor (D → O). */
   .slot.r2, .slot.r3{ margin-top:1.75rem; }
-  .board.rows-3{ grid-template-rows:repeat(5, auto); }
+  .board.rows-3{ grid-template-rows:repeat(4, auto) 1fr; }
   .board.rows-3 .col{ grid-row:1 / span 5; }
   .board.rows-3 .slot.r3{ grid-row:4; } .board.rows-3 .actions{ grid-row:5; }
   .col.absent{ display:grid; visibility:hidden; }
+  .board .card.pending{ display:block; visibility:hidden; }
   /* On the board the lines show what a credential cites. */
   .card .cites{ display:none; }
   /* The verifier does not hold credentials: its verdict and settings flow on their own. */
@@ -139,15 +149,20 @@ body[data-mode="build"] .col.dim > .slot{ opacity:.42; }
 .card{ position:relative; z-index:2; display:block; width:100%; text-align:left; background:var(--raise); color:var(--ink); border:2px solid var(--line); border-radius:var(--radius); padding:var(--s2) var(--s3); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.07); }
 .card:hover{ border-color:var(--muted); }
 .card.claim{ border-width:3.5px; }
-.card .top{ display:flex; align-items:center; gap:var(--s2); }
+/* The top line may wrap and the state icon sits outside its flow, so a card lays out the same
+   with or without the icon (a button grows to its widest unbreakable line). */
+.card .top{ display:flex; flex-wrap:wrap; align-items:center; gap:.2rem var(--s2); padding-right:1.25rem; }
 .code{ white-space:nowrap; font:700 .9rem/1 var(--mono); padding:.2rem .4rem; border-radius:5px; background:var(--wash); border:1px solid var(--line); }
 .card .kind{ font-size:1rem; font-weight:650; line-height:1.25; }
 .card .kind .tag{ vertical-align:2px; white-space:nowrap; }
-.card .icon{ margin-left:auto; font-weight:800; font-size:1rem; }
+.card .icon{ position:absolute; top:.7rem; right:var(--s3); font-weight:800; font-size:1rem; line-height:1; }
 .card .fact{ display:block; margin-top:var(--s1); font-size:.95rem; line-height:1.35; overflow-wrap:anywhere; }
 .card .fact + .fact{ margin-top:0; }
 .card .foot{ display:flex; flex-wrap:wrap; align-items:center; gap:.2rem .4rem; margin-top:var(--s2); padding-top:var(--s1); border-top:1px solid var(--line); font-size:.82rem; color:var(--muted); }
 .tags{ display:flex; flex-wrap:wrap; gap:var(--s1); margin-top:var(--s1); }
+.card .tag{ line-height:1.25; }
+/* A card keeps a line for its tags, so a tag that comes or goes does not move the row below. */
+.card .tags{ min-height:calc(.82rem * 1.25 + .1rem + 2px); }
 .tag{ font-size:.82rem; font-weight:700; padding:.05rem .45rem; border-radius:999px; border:1px solid var(--line); color:var(--muted); }
 .tag.t-bad{ border-color:var(--bad); color:var(--bad); }
 .tag.t-new{ border-color:var(--petrol); background:var(--petrol); color:var(--on-petrol); }
@@ -158,6 +173,8 @@ body[data-mode="build"] .col.dim > .slot{ opacity:.42; }
 .card.missing{ border-style:dashed; box-shadow:none; }
 .card.fresh{ border-color:var(--petrol); box-shadow:0 0 0 3px var(--petrol); }
 .card.cited{ box-shadow:0 0 0 3px var(--paper), 0 0 0 5px var(--petrol); }
+/* Not issued yet: holds its place on wide screens, invisible (board.js). */
+.card.pending{ display:none; }
 .card.empty{ cursor:default; border-style:dashed; color:var(--muted); background:transparent; box-shadow:none; }
 @media (prefers-reduced-motion: no-preference){ .card.handover{ animation:handover .3s ease-out; } }
 @keyframes handover{ from{ transform:translateX(-24px); opacity:0; } to{ transform:none; opacity:1; } }
@@ -281,7 +298,8 @@ footer p{ margin:var(--s1) 0; max-width:60rem; }
   .proposal .boxes{ grid-template-columns:1fr 1fr; }
   /* More than four actors: a narrower verifier column, and a name may drop below its monogram. */
   .board.many{ grid-template-columns:var(--cols, repeat(var(--actors, 5), minmax(0, 1fr)) minmax(0, 1.3fr)); column-gap:var(--s3); }
-  /* What each actor does is told while the chain is built; afterwards the room goes to the credentials. */
-  body:not([data-mode="build"]) .colhead .does{ display:none; }
   .board.many .colhead .name{ flex-wrap:wrap; row-gap:var(--s1); }
+  /* Actors keep their description on every step (the rows must not move). The verifier's column
+     is outside those rows: once it decides, the room goes to the verdict. */
+  body:not([data-mode="build"]) .col[data-actor="verifier"] .colhead .does{ display:none; }
 }

@@ -30,14 +30,14 @@
     <table id="presentTable"></table>
   </section>
 
+
+  <section class="panel" id="panel" aria-live="polite" hidden></section>
+  <div class="board" id="board" aria-live="polite"></div>
   <div class="band" id="band" hidden>
     <span class="tag">Evaluated · proposal</span>
     <b>Recognized through R</b>
     <span>A and H point up to Global ACI's recognition of this body (W3C Recognized Entities, draft). It says who may accredit for what; each claim is still decided by the producer's own scope.</span>
   </div>
-
-  <section class="panel" id="panel" aria-live="polite" hidden></section>
-  <div class="board" id="board" aria-live="polite"></div>
   <p class="legend" id="legend">Lines read the credentials' own references:<i></i>cites as authority<i class="dot"></i>cites as evidence<i class="dash"></i>handed over. Green holds, red fails, amber cannot be told; grey is not evaluated. Select a credential to see who signs it, what it is about and who holds it.</p>
 
   <footer>
@@ -183,7 +183,7 @@ await mountBoard(api, {
   tags: (code, st) => [
     ...(code === 'R' && st.suspendGaci ? [{ text: 'suspended', bad: true }] : []),
     ...(code === 'R' && st.trust !== 'global-aci' ? [{ text: 'beyond the root' }] : []),
-    ...(code === 'A' && st.suspendA ? [{ text: 'suspended since 20 Sep', bad: true }] : []),
+    ...(code === 'A' && st.suspendA ? [{ text: 'suspended', bad: true }] : []),
     ...(code === 'S' && st.revokeS ? [{ text: 'revoked', bad: true }] : []),
     ...(code === 'D' && st.tamper ? [{ text: 'edited after signing', bad: true }] : []),
   ],

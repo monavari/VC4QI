@@ -27,6 +27,16 @@
   (`test-vectors/signed/status-archive/2026-01`). Freshness is judged at the time asked
   about; for current questions nothing changes. W3C Recognized Entities (draft of
   4 November 2026) evaluates validity windows at a past date but not status at that date.
+- **The actor board holds still.** Stepping through the RM and GS stories no longer moves
+  the board: the header keeps room for a two-line title and the acting parties,
+  credentials not yet issued and columns not yet reached hold their place invisibly,
+  cards keep a line for tags with the state icon outside the text, the verifier's
+  column no longer stretches the credential rows, column headers keep their
+  descriptions, re-signed status lists are filled rather than relabelled, the
+  recognition band moves under the board, and the scrollbar's room is kept. Measured in
+  Firefox at 1920×1080 and 1280×720: no credential moves between steps. A credential
+  left out keeps its content on its card, marked "not shown". The suspension tag on A
+  reads "suspended".
 - **RM story, eleven steps.** Opens with D178 drawn with what each link points to (up,
   down, sideways, beside) next to eight design rules; builds the chain in three steps
   (R; then A and H; then O, S and D); one "Try to break it" step with every manipulation
