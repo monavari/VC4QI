@@ -1,0 +1,51 @@
+{
+  "id": "https://vc4qi.example/profiles/rm-verifier-global-aci",
+  "version": "1",
+  "status": "experimental",
+  "description": "Fictional verifier abroad: its only trust anchor is a fictional stand-in for an arrangement anchor (Global ACI role), not the accreditation body. The accreditation body is accepted through the anchor's signatory list, a W3C Recognized Entities credential (Working Draft of 4 November 2026), for the main scope each grant requires. Otherwise identical to rm-verifier-1; not an external standard.",
+  "binding": {"id": "https://vc4qi.example/bindings/rm/1", "version": "1"},
+  "trustAnchors": [
+    {
+      "id": "https://global-aci.vc4qi.example/controller",
+      "purposes": ["recognize-accreditation-bodies"]
+    }
+  ],
+  "authority": {
+    "certificateRoutes": ["operational-scope"],
+    "globalRestrictions": ["accreditation-suspension"],
+    "maxRoutes": 8
+  },
+  "credentialStatus": {
+    "required": true,
+    "purposes": ["revocation"],
+    "maxAgeSeconds": 2592000
+  },
+  "mapping": {
+    "methodSuccession": "none"
+  },
+  "conformity": {
+    "requirements": [
+      {
+        "id": "as-mass-fraction-max-200-mg-per-kg",
+        "propertyIri": "https://vc4qi.example/bindings/rm/1#As",
+        "quantityKindIri": "https://vc4qi.example/bindings/rm/1#MassFraction",
+        "upperLimit": {"value": "200", "unit": "mg/kg"}
+      }
+    ],
+    "decisionRules": [
+      {"id": "guarded-acceptance-expanded-u", "acceptWhen": "value-plus-expanded-uncertainty-at-most-limit"},
+      {"id": "simple-acceptance", "acceptWhen": "value-at-most-limit"}
+    ]
+  },
+  "bindingRules": {
+    "recognition": {
+      "lists": ["https://global-aci.vc4qi.example/credentials/MRA-2026"],
+      "listPurpose": "recognize-accreditation-bodies",
+      "action": "accredit",
+      "purposes": {
+        "accredit-rm-producers": {"activity": "Reference material production", "standardId": "urn:iso:std:iso:17034:ed-1"},
+        "accredit-rm-laboratories": {"activity": "Testing", "standardId": "urn:iso:std:iso-iec:17025:ed-3"}
+      }
+    }
+  }
+}

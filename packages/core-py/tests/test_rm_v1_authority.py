@@ -219,7 +219,7 @@ def test_anchor_without_the_accreditation_purpose() -> None:
             "trustAnchors": [
                 {
                     "id": "https://nab.vc4qi.example/controller",
-                    "purposes": ["recognize-rm-laboratories"],
+                    "purposes": ["accredit-rm-laboratories"],
                 }
             ],
         }

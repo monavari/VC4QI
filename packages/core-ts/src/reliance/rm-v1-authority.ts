@@ -10,8 +10,11 @@
 // (termsOfUse → authorizationCredential). An authentic credential that nothing in
 // the chain references confers nothing (V07); a grant discovered by other means is
 // unsupported in this binding (V08). Provenance never establishes permission (V06).
+// The issuer of the top grant must be a configured anchor, or be recognized through a
+// signatory list the verifier's profile names (recognized-entities.ts, E01-E03).
 import { semanticAnd, semanticOr } from './index.js';
 import type { RelianceProfile } from './profile.js';
+import { grantIssuerStanding } from './recognized-entities.js';
 import { containedIn } from './rm-scope.js';
 import type { SemanticState } from './types.js';
 
@@ -185,7 +188,9 @@ function operationalScopeRoute(target: NodeFacts & { document: Doc }, lookup: No
     : no('projection-permission', 'A does not permit maintaining an operational scope for RM certification.', ['/credentialSubject/permittedActivity']));
   const projection = containedIn(list(subjectOf(O).scope).filter(isObject), list(subjectOf(A).scope).filter(isObject));
   bases.push({ id: 'bounded-projection', state: projection.state, reason: projection.reason, sources: ['/credentialSubject/scope'] });
-  bases.push(anchor('trust-anchor', A, 'accredit-rm-producers', profile));
+  const standing = grantIssuerStanding('trust-anchor', A, 'accredit-rm-producers', profile, lookup, subjectOf(D).activityTime);
+  bases.push(standing.basis);
+  if (standing.list) chain.push(standing.list);
   bases.push(inForceAtActivity(D, [['O', O], ['A', A]]));
   return route('operational-scope', bases, chain, ref.node.uri);
 }
@@ -204,7 +209,9 @@ function directAccreditationRoute(target: NodeFacts & { document: Doc }, lookup:
   bases.push(permits(A, RM_ACTIVITIES.issueRmCertificate)
     ? ok('activity-permission', 'A permits issuing RM certificates.', ['/credentialSubject/permittedActivity'])
     : no('activity-permission', 'A does not permit issuing RM certificates.', ['/credentialSubject/permittedActivity']));
-  bases.push(anchor('trust-anchor', A, 'accredit-rm-producers', profile));
+  const standing = grantIssuerStanding('trust-anchor', A, 'accredit-rm-producers', profile, lookup, subjectOf(D).activityTime);
+  bases.push(standing.basis);
+  if (standing.list) chain.push(standing.list);
   bases.push(inForceAtActivity(D, [['A', A]]));
   return route('direct-accreditation', bases, chain, ref.node.uri);
 }
@@ -241,8 +248,12 @@ function accreditationSuspension(target: NodeFacts & { document: Doc }, lookup: 
       if (node?.usable !== 'established' || node.document === undefined) continue;
       queue.push(node.document);
       const doc = node.document;
-      const anchored = profile.trustAnchors.some(a => a.id === doc.issuer && a.purposes.includes('accredit-rm-producers'));
-      if (typeOf(doc) === 'RmAccreditation' && anchored && subjectOf(doc).id === actor) applicable.push(node);
+      // Anchor-issued: by a configured accreditation anchor, or by an accreditation
+      // body the profile accepts through a recognized signatory list.
+      const anchored = typeOf(doc) === 'RmAccreditation' && subjectOf(doc).id === actor
+        && grantIssuerStanding('anchor', doc, 'accredit-rm-producers', profile, lookup,
+          subjectOf(target.document).activityTime).basis.state === 'established';
+      if (anchored) applicable.push(node);
     }
   }
   if (applicable.length === 0) {
@@ -353,7 +364,9 @@ export function studyAuthority(study: NodeFacts & { document: Doc }, lookup: Nod
   bases.push(covered
     ? ok('study-scope', 'H covers this matrix, property and study type.', ['/credentialSubject/scope'])
     : no('study-scope', 'H does not cover this matrix, property and study type.', ['/credentialSubject/scope']));
-  bases.push(anchor('laboratory-anchor', H, 'recognize-rm-laboratories', profile));
+  const standing = grantIssuerStanding('laboratory-anchor', H, 'accredit-rm-laboratories', profile, lookup, s.activityTime);
+  bases.push(standing.basis);
+  if (standing.list) chain.push(standing.list);
   return route('laboratory-authority', bases, chain);
 }
 

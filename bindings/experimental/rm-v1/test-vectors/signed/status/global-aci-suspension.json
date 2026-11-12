@@ -1,0 +1,31 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2"
+  ],
+  "id": "https://global-aci.vc4qi.example/status/suspension/1",
+  "type": [
+    "VerifiableCredential",
+    "BitstringStatusListCredential"
+  ],
+  "issuer": "https://global-aci.vc4qi.example/controller",
+  "validFrom": "2026-09-01T00:00:00Z",
+  "validUntil": "2027-09-01T00:00:00Z",
+  "credentialSchema": {
+    "id": "https://vc4qi.example/schemas/rm/1/status-list.json",
+    "type": "JsonSchema"
+  },
+  "credentialSubject": {
+    "id": "https://global-aci.vc4qi.example/status/suspension/1#list",
+    "type": "BitstringStatusList",
+    "statusPurpose": "suspension",
+    "encodedList": "uH4sIAAAAAAACA-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "https://global-aci.vc4qi.example/controller#key-1",
+    "created": "2026-09-01T00:00:00Z",
+    "proofValue": "z664VM8J2kLbvocdhnouVbiwL92xnnYfH3oQE2CiersaxjJkj8iFuHfc8WBnGwj7p9CqBpKJ6ere6hk63k8sPRWBL"
+  }
+}

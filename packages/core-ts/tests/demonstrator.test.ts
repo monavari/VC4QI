@@ -129,6 +129,11 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     expect([revoked.result.decision, answers(revoked).current, answers(revoked).supported]).toEqual(['reject', 'contradicted', 'contradicted']);
     const suspended = await api.evaluateRmBoard({ suspendA: true });
     expect([suspended.result.decision, answers(suspended).authentic, answers(suspended).authorized]).toEqual(['reject', 'established', 'contradicted']);
+    // A root abroad: another accreditation body cannot tell; Global ACI's signatory list bridges it,
+    // and its suspension stops a verifier abroad but not one that trusts the accreditation body directly.
+    expect((await api.evaluateRmBoard({ trust: 'other' })).result.decision).toBe('not_established');
+    expect(answers(await api.evaluateRmBoard({ trust: 'global-aci' }))).toEqual(answers(await api.evaluateRmBoard()));
+    expect((await api.evaluateRmBoard({ suspendGaci: true })).result.decision).toBe('accept');
     // Editing a live-signed certificate breaks its signature like any other.
     expect(answers(await api.evaluateRmBoard({ certificate: 'custom', value: '178', uncertainty: '5', tamper: true })).authentic).toBe('contradicted');
   });

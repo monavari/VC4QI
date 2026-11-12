@@ -76,7 +76,7 @@ what is handed over, why, the detail.
 | `--bad`, ✕ | fails (contradicted) | states only |
 | `--unk`, ? | cannot tell (not established) | states only |
 | `--off`, – | not asked, not required | states only |
-| grey, dashed, hatched, "Not evaluated" | placeholder | international recognition band, presentation, selective disclosure |
+| grey, dashed, hatched, "Not evaluated" | placeholder | presentation, selective disclosure |
 | `--petrol` | *now and here*: current step, acting column, primary button | navigation and attention |
 | `--cyan` | keyboard focus | focus only |
 | `--red` | brand | wordmark only |
@@ -88,8 +88,9 @@ Dark mode redefines every token; nothing is hard-coded outside `:root`.
 One column per actor, in a fixed order from where trust comes from to where it is used.
 An actor's column appears when the chain first reaches it, in its fixed place, so a story
 starts with one actor and the board fills as it goes; "Your turn" shows every actor.
-Placeholders that concern one moment of the story (international recognition of the
-accreditation body) appear only in that moment.
+A band that concerns one moment of the story appears only in that moment: in the RM
+story, the evaluated note that a verifier abroad reaches the accreditation body through
+Global ACI's signatory list (a fictional stand-in, W3C Recognized Entities draft).
 For the RM story: Accreditation body (AB), Laboratory (LAB), RM producer (RMP), Holder
 (H), Verifier (V). For the GS story: Accreditation body (AB), Scheme owner (SO), GS body
 (GSB), Manufacturer (MFR), Verifier (V).

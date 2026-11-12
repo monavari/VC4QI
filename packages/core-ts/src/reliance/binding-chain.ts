@@ -13,6 +13,7 @@ import {
   nodeUseKey, notRun, predicate, PROTECTION_CHECK_GATES, verifyRmArtifact,
   type ArtifactBinding, type RmArtifactVerification,
 } from './rm-v1-artifacts.js';
+import { recognitionLists } from './recognized-entities.js';
 import type { NodeFacts } from './rm-v1-authority.js';
 import { evaluateStatus, selectStatusEntry, type StatusOutcome, type StatusPolicy } from './status-list.js';
 import type {
@@ -85,6 +86,14 @@ export async function verifyChain(
   const artifacts: RmArtifactVerification[] = [target];
   const depth = new Map<string, number>([[request.targetId, 0]]);
   for (const uri of request.suppliedEvidence) {
+    if (depth.has(uri)) continue;
+    depth.set(uri, 1);
+    artifacts.push(await verifyRmArtifact(uri, session, options));
+  }
+  // Signatory lists named by the verifier's profile are trust configuration: verified
+  // like any credential (gates 0-3), never chosen by the holder or the chain.
+  const recognition = new Set(recognitionLists(profile));
+  for (const uri of recognition) {
     if (depth.has(uri)) continue;
     depth.set(uri, 1);
     artifacts.push(await verifyRmArtifact(uri, session, options));
@@ -204,7 +213,7 @@ export async function verifyChain(
   const trace: TraceEntry[] = [];
   const resources: ResourceObservation[] = [];
   artifacts.forEach((artifact, index) => {
-    const role = index === 0 ? 'target' : 'supplied-evidence';
+    const role = index === 0 ? 'target' : recognition.has(artifact.artifactId) ? 'recognition-list' : 'supplied-evidence';
     const nodeUse = nodeUseKey(artifact.artifactId, artifact.digestSRI, role, request);
     for (const check of artifact.checks) {
       trace.push({ gate: PROTECTION_CHECK_GATES[check.check], nodeUse, predicate: check.check,

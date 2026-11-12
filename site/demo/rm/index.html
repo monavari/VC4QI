@@ -30,10 +30,10 @@
     <table id="presentTable"></table>
   </section>
 
-  <div class="band placeholder" id="band" hidden>
-    <span class="tag">Not evaluated</span>
-    <b>International recognition of the accreditation body</b>
-    <span>(for example through Global ACI) would tell this verifier that the accreditation body is genuine. Today each verifier configures its trust anchors itself.</span>
+  <div class="band" id="band" hidden>
+    <span class="tag">Evaluated</span>
+    <b>Recognized through Global ACI's signatory list</b>
+    <span>A W3C Recognized Entities credential (Working Draft of 4 November 2026) names this accreditation body for reference material production and for testing. It says who may accredit; the producer's own scope still decides each claim. Global ACI here is a fictional stand-in.</span>
   </div>
 
   <div class="board" id="board" aria-live="polite"></div>
@@ -77,7 +77,7 @@ catch (error) { fail('This browser could not run the evaluator (' + error.messag
 await mountBoard(api, {
   name: 'RM story', story: api.RM_STORY, actors: api.RM_ACTORS, assets: api.RM_ASSETS, defaults: api.RM_DEFAULT,
   parts: api.BOARD_PARTS, evaluate: state => api.evaluateRmBoard(state), rows: 2,
-  hosts: { nab: 'the accreditation body', lab: 'the laboratory', producer: 'the RM producer', 'other-ab': 'another accreditation body' },
+  hosts: { nab: 'the accreditation body', lab: 'the laboratory', producer: 'the RM producer', 'other-ab': 'another accreditation body', 'global-aci': 'Global ACI (fictional)' },
   facts,
   actions: {
     ab: [{ type: 'toggle', key: 'suspendA', label: 'Suspend A', control: 'suspend' }],
@@ -91,7 +91,8 @@ await mountBoard(api, {
     holder: [{ type: 'toggle', key: 'tamper', label: 'Edit a value', control: 'tamper' }, { type: 'toggle', key: 'withholdS', label: 'Leave out S', control: 'withhold' }],
   },
   settings: [
-    { type: 'seg', key: 'trustAB', label: 'Trusts', control: 'trust', options: [{ id: true, label: 'This accreditation body', sub: 'AB' }, { id: false, label: 'Another body', sub: 'abroad' }] },
+    { type: 'seg', key: 'trust', label: 'Trusts', control: 'trust', options: [{ id: 'ab', label: 'This accreditation body', sub: 'AB' }, { id: 'global-aci', label: 'Global ACI', sub: 'abroad' }, { id: 'other', label: 'Another body', sub: 'abroad' }] },
+    { type: 'toggle', key: 'suspendGaci', label: 'Global ACI suspends its list', control: 'suspendGaci', when: st => st.trust === 'global-aci' },
     { type: 'seg', key: 'ask', label: 'Asks', control: 'ask', options: [{ id: 'authorized', label: 'Authorized?' }, { id: 'fit', label: 'Fit for use?' }] },
     { type: 'seg', key: 'rule', label: 'Decision rule', control: 'rule', when: st => st.ask === 'fit',
       options: [{ id: 'guarded', label: 'Guarded', sub: 'As + U ≤ 200' }, { id: 'simple', label: 'Simple', sub: 'As ≤ 200' }] },
@@ -103,7 +104,8 @@ await mountBoard(api, {
     ...(code === 'D' && st.tamper ? [{ text: 'edited after signing', bad: true }] : []),
   ],
   withheld: st => st.withholdS ? 'S' : undefined,
-  changedList: (uri, st) => uri.endsWith('/status/suspension/1') && st.suspendA || uri === 'https://lab.vc4qi.example/status/1' && st.revokeS,
+  changedList: (uri, st) => uri === 'https://nab.vc4qi.example/status/suspension/1' && st.suspendA || uri === 'https://lab.vc4qi.example/status/1' && st.revokeS
+    || uri === 'https://global-aci.vc4qi.example/status/suspension/1' && st.suspendGaci,
   extras: { holder: { row: 2, html: ({ st, R, mode, reached, esc }) => !reached('certify')
     ? "<div class='card empty'><span class='kind'>Nothing yet</span><span class='fact'>The disc and its certificate arrive when the producer ships them.</span></div>"
     : "<div class='wallet' id='wallet'><span class='object'>Disc lot 1 · CuZn39Pb3</span><p class='refs'>Holds certificate <b class='mono'>" + esc(short(R.certificate)) + '</b>'
@@ -114,7 +116,7 @@ await mountBoard(api, {
     ...(mode !== 'build' ? [['#wallet', 'verdict']] : []),
   ],
   objectAt: ({ reached }) => reached('certify') ? 'holder' : 'rmp',
-  band: st => st.trustAB === false,
+  band: st => st.trust === 'global-aci',
 }).catch(e => fail('The evaluator could not run: ' + e.message));
 </script>
 </body>

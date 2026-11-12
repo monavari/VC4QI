@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+- **Recognition through an arrangement's signatory list (RM, experimental).** A verifier
+  profile can name a signatory list, a W3C Recognized Entities credential (Working Draft
+  of 4 November 2026), in `bindingRules.recognition`. An accreditation body that is not
+  itself an anchor is then accepted for a grant when the list's issuer is an anchor for
+  the list purpose and the list names the body, with a stated action, for the grant's main
+  scope at the activity time. New fixtures: a fictional Global ACI stand-in controller,
+  its revocation and suspension lists, and signatory list `MRA-2026`; new profile
+  `rm-verifier-global-aci-1`; new schema `recognized-entity.json` and a stand-in context
+  for the unpublished Recognized Entities context. Ledger E01–E03 and the new E16–E20
+  pass in TypeScript and Python. Recognition never widens QI scope: D520 is recognized
+  and still rejected. Status lists now compare issuer identifiers, so an issuer object
+  with an `id` is accepted.
+- The laboratory anchor purpose `recognize-rm-laboratories` is renamed
+  `accredit-rm-laboratories`, since "recognize" now means Recognized Entities
+  recognition; the RM parity vector changes only in that string.
+- RM story: credential H is the laboratory's accreditation, not a "recognition". The
+  verifier's root is now one of three (this accreditation body, the Global ACI stand-in,
+  another body); step 14 is evaluated through the signatory list instead of a placeholder,
+  and two steps are added (D520 recognized and still out of scope; Global ACI suspends its
+  list, which stops the verifier abroad but not one that trusts the accreditation body).
+  The GS story says a verifier "trusts" its roots.
 - The DPP tab gains the same verifier choice ("Accreditation body only"), using a
   demonstrator-only profile derived from `gs-verifier-dpp-1` without the scheme owner's
   anchor. When a single question cannot be told, the verdict line now gives its first

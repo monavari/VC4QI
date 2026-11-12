@@ -1,0 +1,15 @@
+{
+  "@context": "https://www.w3.org/ns/cid/v1",
+  "id": "https://global-aci.vc4qi.example/controller",
+  "verificationMethod": [
+    {
+      "id": "https://global-aci.vc4qi.example/controller#key-1",
+      "type": "Multikey",
+      "controller": "https://global-aci.vc4qi.example/controller",
+      "publicKeyMultibase": "z6Mkfmx88o53XX7KZXNHSpMcghcJwZfJLv9ir93PNxexgHkp"
+    }
+  ],
+  "assertionMethod": [
+    "https://global-aci.vc4qi.example/controller#key-1"
+  ]
+}

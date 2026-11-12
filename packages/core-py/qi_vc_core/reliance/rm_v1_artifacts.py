@@ -38,7 +38,13 @@ from .catalog import (
 from .key_authorization import KeyAuthorization, authorize_assertion_method
 from .manifest import RM_V1_BINDING_ID, BindingManifest
 from .profile import RelianceProfile
-from .rm_v1 import RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, VC_V2_CONTEXT
+from .recognized_entities import recognition_lists
+from .rm_v1 import (
+    RECOGNIZED_ENTITIES_DRAFT_CONTEXT,
+    RM_V1_CONTEXT,
+    RM_V1_SCHEMA_BASE,
+    VC_V2_CONTEXT,
+)
 from .rm_v1_authority import (
     BasisResult,
     NodeFacts,
@@ -87,13 +93,17 @@ RM_V1_ARTIFACT_SCHEMAS: dict[str, str] = {
     "RmStudy": f"{RM_V1_SCHEMA_BASE}study.json",
     "RmLabAuthority": f"{RM_V1_SCHEMA_BASE}lab-authority.json",
     "BitstringStatusListCredential": f"{RM_V1_SCHEMA_BASE}status-list.json",
+    "RecognizedEntityCredential": f"{RM_V1_SCHEMA_BASE}recognized-entity.json",
 }
 
 
 def _expected_contexts(declared_type: Any) -> list[str]:
-    """Exact context list each recognized type must use; status lists use VCDM 2.0."""
+    """Exact context list each recognized type must use: status lists use VCDM 2.0
+    only, an arrangement's signatory list the Recognized Entities stand-in context."""
     if declared_type == "BitstringStatusListCredential":
         return [VC_V2_CONTEXT]
+    if declared_type == "RecognizedEntityCredential":
+        return [VC_V2_CONTEXT, RECOGNIZED_ENTITIES_DRAFT_CONTEXT]
     return [VC_V2_CONTEXT, RM_V1_CONTEXT]
 
 
@@ -730,6 +740,18 @@ def verify_chain(
                 uri, session, manifest, request.evaluation_time, static, binding
             )
         )
+    # Signatory lists named by the verifier's profile are trust configuration:
+    # verified like any credential (gates 0-3), never chosen by the holder or chain.
+    recognition = recognition_lists(profile)
+    for uri in recognition:
+        if uri in depth:
+            continue
+        depth[uri] = 1
+        artifacts.append(
+            verify_rm_artifact(
+                uri, session, manifest, request.evaluation_time, static, binding
+            )
+        )
     # Follow the chain's own references (termsOfUse, evidence) from protected
     # credentials, within maxDepth; supplied-but-unreferenced credentials stay inert.
     index = 0
@@ -956,7 +978,13 @@ def verify_chain(
     trace: list[TraceEntry] = []
     resources: list[ResourceObservation] = []
     for index, artifact in enumerate(artifacts):
-        role = "target" if index == 0 else "supplied-evidence"
+        role = (
+            "target"
+            if index == 0
+            else "recognition-list"
+            if artifact.artifact_id in recognition
+            else "supplied-evidence"
+        )
         use = node_use_key(artifact.artifact_id, artifact.digest_sri, role, request)
         for check in artifact.checks:
             trace.append(

@@ -37,7 +37,7 @@ const loaded = Object.fromEntries((['rm', 'cal', 'gs'] as const).map(key => [key
 /**
  * A second passport verifier, derived here and not shipped as a binding profile: the
  * same profile as gs-verifier-dpp-1 without the scheme owner's anchor, so the same bytes
- * meet a verifier that recognises the accreditation body only.
+ * meet a verifier that trusts the accreditation body only.
  */
 const ACCREDITATION_ONLY = 'gs-verifier-dpp-accreditation-only (demonstrator)';
 {
@@ -499,11 +499,12 @@ const RM_URI = {
   LIVE: 'https://producer.vc4qi.example/credentials/D-live',
   NAB_STATUS: 'https://nab.vc4qi.example/status/1', SUSPENSION: 'https://nab.vc4qi.example/status/suspension/1',
   LAB_STATUS: 'https://lab.vc4qi.example/status/1', PRODUCER_STATUS: 'https://producer.vc4qi.example/status/1',
+  GACI: 'https://global-aci.vc4qi.example/controller', GACI_SUSPENSION: 'https://global-aci.vc4qi.example/status/suspension/1',
 } as const;
 export const RM_ACTORS: readonly BoardActor[] = [
-  { id: 'ab', mono: 'AB', name: 'Accreditation body', does: 'Accredits the producer and recognises the laboratory. Can suspend.',
+  { id: 'ab', mono: 'AB', name: 'Accreditation body', does: 'Accredits the producer and the laboratory. Can suspend.',
     publishes: [{ label: 'Key', uri: RM_URI.NAB }, { label: 'Revocation list', uri: RM_URI.NAB_STATUS }, { label: 'Suspension list', uri: RM_URI.SUSPENSION }] },
-  { id: 'lab', mono: 'LAB', name: 'Laboratory', does: 'Studies the batch under its recognition. Can revoke its study.',
+  { id: 'lab', mono: 'LAB', name: 'Laboratory', does: 'Studies the batch under its accreditation. Can revoke its study.',
     publishes: [{ label: 'Key', uri: RM_URI.LAB }, { label: 'Revocation list', uri: RM_URI.LAB_STATUS }] },
   { id: 'rmp', mono: 'RMP', name: 'RM producer', does: 'Declares its scope, certifies the material and ships it.',
     publishes: [{ label: 'Key', uri: RM_URI.PRODUCER }, { label: 'Revocation list', uri: RM_URI.PRODUCER_STATUS }] },
@@ -515,7 +516,7 @@ export const RM_ACTORS: readonly BoardActor[] = [
 /** D is the certificate shown: D178, D197, D520 or the one signed live. */
 export const RM_ASSETS: readonly BoardAsset[] = [
   { code: 'A', label: 'Accreditation', kind: 'grant', actor: 'ab', row: 1, about: 'rmp', heldBy: 'rmp' },
-  { code: 'H', label: 'Laboratory recognition', kind: 'grant', actor: 'ab', row: 2, about: 'lab', heldBy: 'lab' },
+  { code: 'H', label: 'Laboratory accreditation', kind: 'grant', actor: 'ab', row: 2, about: 'lab', heldBy: 'lab' },
   { code: 'O', label: 'Operational scope', kind: 'grant', actor: 'rmp', row: 1, about: 'rmp', heldBy: 'rmp' },
   { code: 'S', label: 'Homogeneity study', kind: 'evidence', actor: 'lab', row: 2, about: 'object', aboutLabel: 'disc lot 1', heldBy: 'rmp' },
   { code: 'D', label: 'RM certificate', kind: 'claim', actor: 'rmp', row: 2, about: 'object', aboutLabel: 'disc lot 1', heldBy: 'holder' },
@@ -527,19 +528,21 @@ export interface RmBoardState {
   readonly value: string; readonly uncertainty: string; readonly method: 'M1' | 'M2';
   readonly suspendA: boolean; readonly revokeS: boolean;
   readonly tamper: boolean; readonly withholdS: boolean;
-  readonly trustAB: boolean; readonly ask: 'authorized' | 'fit'; readonly rule: 'guarded' | 'simple';
+  /** The verifier's root: this accreditation body, the Global ACI stand-in (abroad), or another body (abroad). */
+  readonly trust: 'ab' | 'global-aci' | 'other'; readonly suspendGaci: boolean;
+  readonly ask: 'authorized' | 'fit'; readonly rule: 'guarded' | 'simple';
 }
 export const RM_DEFAULT: RmBoardState = {
   certificate: '178', value: '178', uncertainty: '5', method: 'M1', suspendA: false, revokeS: false,
-  tamper: false, withholdS: false, trustAB: true, ask: 'fit', rule: 'guarded',
+  tamper: false, withholdS: false, trust: 'ab', suspendGaci: false, ask: 'fit', rule: 'guarded',
 };
 export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
   { id: 'join', part: 'build', acts: ['ab'], joins: ['ab'],
     title: 'The accreditation body is the first party',
     text: 'Before anything is signed it publishes a key, so that anyone can check what it signs, and two status lists, so that it can later revoke or suspend what it issued.' },
-  { id: 'recognise', part: 'build', acts: ['ab', 'lab'], joins: ['lab'], issues: ['H'],
-    title: 'The accreditation body recognises the laboratory',
-    text: 'Recognition H permits the laboratory to run homogeneity studies on brass. The laboratory publishes its own key and status list.' },
+  { id: 'accredit-lab', part: 'build', acts: ['ab', 'lab'], joins: ['lab'], issues: ['H'],
+    title: 'The accreditation body accredits the laboratory',
+    text: 'Accreditation H permits the laboratory to run homogeneity studies on brass. The laboratory publishes its own key and status list.' },
   { id: 'accredit', part: 'build', acts: ['ab', 'rmp'], joins: ['rmp'], issues: ['A'],
     title: 'The accreditation body accredits the RM producer',
     text: 'Accreditation A is broad, like a real annex row ("non-ferrous metals and alloys, element contents, 0.1 mg/kg – 997 g/kg"): here the element contents of this brass by methods M1 and M2. It is a flexible scope: the producer may add materials within it and keeps its own list. The body can suspend it.' },
@@ -576,9 +579,15 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
   { id: 'simple', part: 'decide', acts: ['verifier'], state: { certificate: '197', rule: 'simple' }, unlock: ['rule'], expect: 'accept',
     title: 'Verifier 2 applies simple acceptance',
     text: 'The same bytes and the same chain. Under simple acceptance only the value counts: 197 is at most 200. The verifier\'s rule decides, not the issuer.' },
-  { id: 'abroad', part: 'decide', acts: ['verifier'], state: { trustAB: false }, unlock: ['trust'], expect: 'not_established',
-    title: 'Verifier 3 does not know this accreditation body',
-    text: 'A verifier abroad has not configured this accreditation body as a trust anchor. Every signature is valid, but it cannot tell whether the authority behind them is real. Recognition through an international arrangement would be the bridge; it is not evaluated here.' },
+  { id: 'abroad', part: 'decide', acts: ['verifier'], state: { trust: 'global-aci' }, unlock: ['trust'], expect: 'accept',
+    title: 'Verifier 3 trusts Global ACI, not this accreditation body',
+    text: 'A verifier abroad has configured only Global ACI as its root. Global ACI\'s signatory list, a W3C Recognized Entities credential, names this accreditation body for reference material production under ISO 17034 and for testing under ISO/IEC 17025. The verifier checks the list like any credential, then follows the same chain as Verifier 1.' },
+  { id: 'abroad-range', part: 'decide', acts: ['rmp', 'verifier'], state: { trust: 'global-aci', certificate: '520' }, unlock: ['certificate'], expect: 'reject',
+    title: 'Recognized, and still out of scope',
+    text: 'The same verifier abroad, certificate D520. Global ACI recognizes the accreditation body, the accreditation body accredits the producer, and 520 mg/kg is still outside the producer\'s own scope. Recognition says who may accredit; it does not say whether this claim is covered.' },
+  { id: 'aci-suspend', part: 'decide', acts: ['verifier'], state: { trust: 'global-aci', suspendGaci: true }, unlock: ['suspendGaci'], expect: 'reject',
+    title: 'Global ACI suspends its signatory list',
+    text: 'It sets one bit in its suspension list and signs the list again, here in your browser. Verifier 3 may no longer rely on the chain. A verifier that trusts the accreditation body directly is not affected: which root a verifier trusts is its own policy.' },
 
   { id: 'present', part: 'present', acts: ['holder', 'verifier'],
     title: 'The holder presents what the verifier asks for',
@@ -591,13 +600,15 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
     ] },
 
   { id: 'play', part: 'play', acts: ['ab', 'lab', 'rmp', 'holder', 'verifier'],
-    unlock: ['suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'ask', 'rule'],
+    unlock: ['suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'suspendGaci', 'ask', 'rule'],
     title: 'Your turn',
     text: 'Every action is live. Certify another value, suspend or revoke, change or leave out a credential, or change what the verifier trusts and asks. Each change is evaluated at once.' },
 ];
 
 const RM_PROFILE = 'rm-verifier-1';
 const RM_OTHER_ANCHOR = 'rm-verifier-other-anchor (demonstrator)';
+/** The verifier abroad whose only root is the Global ACI stand-in (a binding profile). */
+const RM_GLOBAL_ACI = 'rm-verifier-global-aci-1';
 {
   // A verifier abroad: rm-verifier-1 with another accreditation body as its only anchor.
   const base = resources.rm.profiles[RM_PROFILE] as { trustAnchors: { id: string; purposes: string[] }[] };
@@ -633,6 +644,9 @@ export async function evaluateRmBoard(over: Partial<RmBoardState> = {}): Promise
   if (state.certificate === 'custom') texts[target] = await liveCertificate(state);
   if (state.suspendA) texts[RM_URI.SUSPENSION] = await resignedList('rm', RM_URI.SUSPENSION, 'nab', RM_URI.NAB);
   if (state.revokeS) texts[RM_URI.LAB_STATUS] = await resignedList('rm', RM_URI.LAB_STATUS, 'lab', RM_URI.LAB);
+  if (state.suspendGaci) {
+    texts[RM_URI.GACI_SUSPENSION] = await resignedList('rm', RM_URI.GACI_SUSPENSION, 'global-aci', RM_URI.GACI);
+  }
   const signedLive = Object.keys(texts);
   if (state.tamper) {
     // Change the As value in the bytes the holder shows, without re-signing.
@@ -641,7 +655,7 @@ export async function evaluateRmBoard(over: Partial<RmBoardState> = {}): Promise
     texts[target] = edited(text, `"value": "${shown}"`, `"value": "${shown === '150' ? '151' : '150'}"`);
   }
   const r = await evaluate({
-    binding: 'rm', profileName: state.trustAB ? RM_PROFILE : RM_OTHER_ANCHOR,
+    binding: 'rm', profileName: state.trust === 'ab' ? RM_PROFILE : state.trust === 'global-aci' ? RM_GLOBAL_ACI : RM_OTHER_ANCHOR,
     requestId: 'urn:vc4qi:demonstrator:rm-board', target,
     claims: [{ id: 'as', sourcePointer: '/credentialSubject/materialPropertiesList/0/results/0' }], supplied: [], texts,
     withheld: state.withholdS ? RM_URI.S : undefined,
@@ -739,10 +753,10 @@ export const GS_STORY: readonly BoardStep<GsBoardState>[] = [
 
   { id: 'surveillance', part: 'decide', acts: ['verifier'], expect: 'accept',
     title: 'Verifier 1: market surveillance',
-    text: 'Its profile recognises the accreditation body and the scheme owner, so both halves of the authority, competence and permission, reach a root it trusts.' },
+    text: 'Its profile trusts the accreditation body and the scheme owner, so both halves of the authority, competence and permission, reach a root it trusts.' },
   { id: 'abroad', part: 'decide', acts: ['verifier'], state: { trust: 'accreditation-only' }, unlock: ['trust'], expect: 'not_established',
     title: 'Verifier 2: a buyer abroad',
-    text: 'The same passport and the same bytes. This verifier recognises the accreditation body but not the scheme owner, so it cannot tell whether the mark was permitted. The verifier\'s policy decides, not the issuer\'s.' },
+    text: 'The same passport and the same bytes. This verifier trusts the accreditation body but not the scheme owner, so it cannot tell whether the mark was permitted. The verifier\'s policy decides, not the issuer\'s.' },
 
   { id: 'present', part: 'present', acts: ['mfr', 'verifier'],
     title: 'Show what the question needs, and no more',
