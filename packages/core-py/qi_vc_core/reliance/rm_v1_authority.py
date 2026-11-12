@@ -17,7 +17,7 @@ from typing import Any, Literal
 
 from .profile import RelianceProfile
 from .recognized_entities import grant_issuer_standing
-from .rm_scope import contained_in
+from .rm_scope import EXACT_CONCEPTS, Concepts, contained_in
 from .types import SemanticState, semantic_and, semantic_or
 
 RM = "https://vc4qi.example/bindings/rm/1#"
@@ -284,6 +284,7 @@ def _operational_scope_route(
     lookup: NodeLookup,
     profile: RelianceProfile,
     stack: tuple[str, ...],
+    concepts: Concepts = EXACT_CONCEPTS,
 ) -> RouteResult:
     assert target.document is not None
     d = target.document
@@ -344,6 +345,7 @@ def _operational_scope_route(
     projection = contained_in(
         [r for r in _list(_subject(o).get("scope")) if isinstance(r, dict)],
         [r for r in _list(_subject(a).get("scope")) if isinstance(r, dict)],
+        concepts,
     )
     bases.append(
         BasisResult(
@@ -373,6 +375,7 @@ def _direct_accreditation_route(
     lookup: NodeLookup,
     profile: RelianceProfile,
     stack: tuple[str, ...],
+    concepts: Concepts = EXACT_CONCEPTS,
 ) -> RouteResult:
     assert target.document is not None
     d = target.document
@@ -413,7 +416,9 @@ def _direct_accreditation_route(
 
 CERTIFICATE_ROUTES: dict[
     str,
-    Callable[[NodeFacts, NodeLookup, RelianceProfile, tuple[str, ...]], RouteResult],
+    Callable[
+        [NodeFacts, NodeLookup, RelianceProfile, tuple[str, ...], Concepts], RouteResult
+    ],
 ] = {
     "operational-scope": _operational_scope_route,
     "direct-accreditation": _direct_accreditation_route,
@@ -553,7 +558,10 @@ def claim_authority(
 
 
 def certificate_authority(
-    target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
+    target: NodeFacts,
+    lookup: NodeLookup,
+    profile: RelianceProfile,
+    concepts: Concepts = EXACT_CONCEPTS,
 ) -> AuthorityResult:
     if target.usable != "established" or target.document is None:
         return AuthorityResult(
@@ -579,7 +587,7 @@ def certificate_authority(
                 [target.uri],
             )
             if evaluate is None
-            else evaluate(target, lookup, profile, (target.uri,))
+            else evaluate(target, lookup, profile, (target.uri,), concepts)
         )
     restrictions = tuple(
         _unknown(
@@ -597,6 +605,7 @@ def study_authority(
     lookup: NodeLookup,
     profile: RelianceProfile,
     stack: tuple[str, ...],
+    concepts: Concepts = EXACT_CONCEPTS,
 ) -> RouteResult:
     assert study.document is not None
     s_doc = study.document
@@ -625,8 +634,11 @@ def study_authority(
     s = _subject(s_doc)
     covered = any(
         isinstance(record, dict)
-        and record.get("matrixIri") == s.get("matrixIri")
-        and s.get("propertyIri") in _list(record.get("allowedPropertyIris"))
+        and concepts.within(s.get("matrixIri"), record.get("matrixIri"))
+        and any(
+            concepts.within(s.get("propertyIri"), p)
+            for p in _list(record.get("allowedPropertyIris"))
+        )
         and s.get("studyTypeIri") in _list(record.get("studyTypeIris"))
         for record in _list(_subject(h).get("scope"))
     )
@@ -666,7 +678,10 @@ def _time(value: Any) -> datetime | None:
 
 
 def certificate_support(
-    target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
+    target: NodeFacts,
+    lookup: NodeLookup,
+    profile: RelianceProfile,
+    concepts: Concepts = EXACT_CONCEPTS,
 ) -> SupportResult:
     """Required study: same batch, property and matrix; earlier; own authority."""
     if target.usable != "established" or target.document is None:
@@ -786,7 +801,7 @@ def certificate_support(
                 when,
             )
         )
-    authority = study_authority(node, lookup, profile, (target.uri, uri))
+    authority = study_authority(node, lookup, profile, (target.uri, uri), concepts)
     bases.extend(authority.bases)
     state = semantic_and(tuple(b.state for b in bases))
     reason = {

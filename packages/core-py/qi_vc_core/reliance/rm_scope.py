@@ -9,6 +9,7 @@ malformed numbers are never compared.
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from fractions import Fraction
 from typing import Any, Literal
@@ -61,12 +62,75 @@ def record_interval(record: dict[str, Any]) -> tuple[Fraction, Fraction] | str:
     return low, high
 
 
+class Concepts:
+    """The binding's governed concept hierarchy (skos:broader, applied transitively).
+
+    A scope record that names a set (a material class, a form class, element contents)
+    also covers every narrower concept the binding relates to it; otherwise identifiers
+    must be equal. Labels are never compared.
+    """
+
+    def __init__(self, pairs: dict[str, tuple[str, ...]] | None = None) -> None:
+        self._up = dict(pairs or {})
+
+    def within(self, narrower: Any, broader: Any) -> bool:
+        """True when `narrower` is `broader` or lies under it in the hierarchy."""
+        if not isinstance(narrower, str) or not isinstance(broader, str):
+            return False
+        seen = {narrower}
+        queue = [narrower]
+        while queue:
+            at = queue.pop(0)
+            if at == broader:
+                return True
+            for nxt in self._up.get(at, ()):
+                if nxt not in seen:
+                    seen.add(nxt)
+                    queue.append(nxt)
+        return False
+
+
+EXACT_CONCEPTS = Concepts()
+
+
+def concepts_from(scope_and_mapping: Any) -> Concepts:
+    """Concepts from the manifest's scopeAndMapping.broader ({narrower, broader} pairs).
+
+    Malformed entries are ignored, so they can never widen a scope.
+    """
+    up: dict[str, tuple[str, ...]] = {}
+    # A loaded manifest is frozen: mappings are read-only and arrays are tuples.
+    entries = (
+        scope_and_mapping.get("broader")
+        if isinstance(scope_and_mapping, Mapping)
+        else None
+    )
+    for entry in entries if isinstance(entries, list | tuple) else ():
+        if not isinstance(entry, Mapping):
+            continue
+        narrower, broader = entry.get("narrower"), entry.get("broader")
+        if (
+            isinstance(narrower, str)
+            and isinstance(broader, str)
+            and narrower != broader
+        ):
+            up[narrower] = (*up.get(narrower, ()), broader)
+    return Concepts(up)
+
+
 def _strings(value: Any) -> list[str]:
     return [v for v in value if isinstance(v, str)] if isinstance(value, list) else []
 
 
 def _subset(child: list[str], parent: list[str]) -> bool:
     return bool(child) and all(item in parent for item in child)
+
+
+def _covers(child: list[str], parent: list[str], concepts: Concepts) -> bool:
+    """Every child concept lies within some parent concept."""
+    return bool(child) and all(
+        any(concepts.within(item, s) for s in parent) for item in child
+    )
 
 
 @dataclass(frozen=True)
@@ -77,9 +141,15 @@ class Containment:
 
 
 def contained_in(
-    children: list[dict[str, Any]], parents: list[dict[str, Any]]
+    children: list[dict[str, Any]],
+    parents: list[dict[str, Any]],
+    concepts: Concepts = EXACT_CONCEPTS,
 ) -> Containment:
-    """Every child record must fit inside ONE complete parent record (no splicing)."""
+    """Every child record must fit inside ONE complete parent record (no splicing).
+
+    Matrix, form and properties may be narrower concepts than the parent's; methods and
+    quantity kind are exact.
+    """
     if not children:
         return Containment("not_established", "The projected scope has no records.", ())
     witnesses: list[tuple[str, str]] = []
@@ -112,10 +182,12 @@ def contained_in(
             parent_range = record_interval(parent)
             if (
                 not isinstance(parent_range, str)
-                and parent.get("matrixIri") == child.get("matrixIri")
-                and parent.get("formIri") == child.get("formIri")
+                and concepts.within(child.get("matrixIri"), parent.get("matrixIri"))
+                and concepts.within(child.get("formIri"), parent.get("formIri"))
                 and parent.get("quantityKindIri") == child.get("quantityKindIri")
-                and _subset(properties, _strings(parent.get("allowedPropertyIris")))
+                and _covers(
+                    properties, _strings(parent.get("allowedPropertyIris")), concepts
+                )
                 and _subset(methods, _strings(parent.get("allowedMethodIris")))
                 and child_range[0] >= parent_range[0]
                 and child_range[1] <= parent_range[1]

@@ -38,6 +38,7 @@ from .catalog import (
 from .key_authorization import KeyAuthorization, authorize_assertion_method
 from .manifest import RM_V1_BINDING_ID, BindingManifest
 from .profile import RelianceProfile
+from .rm_scope import concepts_from
 from .rm_v1 import (
     RECOGNIZED_ENTITIES_DRAFT_CONTEXT,
     RM_V1_CONTEXT,
@@ -1087,8 +1088,15 @@ def evaluate_rm_slice(
     chain = verify_chain(request, catalog, manifest, profile)
     target, artifacts, facts = chain.target, list(chain.artifacts), dict(chain.facts)
     verification_of, verification = chain.verification_of, list(chain.verification)
-    authority = certificate_authority(facts[request.target_id], facts.get, profile)
-    supported = certificate_support(facts[request.target_id], facts.get, profile)
+    # The binding's governed concept hierarchy: a grant naming a set contains its
+    # members.
+    concepts = concepts_from(manifest.data.get("scopeAndMapping"))
+    authority = certificate_authority(
+        facts[request.target_id], facts.get, profile, concepts
+    )
+    supported = certificate_support(
+        facts[request.target_id], facts.get, profile, concepts
+    )
     winner = next((r for r in authority.routes if r.state == "established"), None)
 
     target_document = facts[request.target_id].document
@@ -1175,6 +1183,7 @@ def evaluate_rm_slice(
                 scope_records(route.scope),
                 revisions,
                 profile.method_succession,
+                concepts,
             )
             sources = (route.scope, *covered.sources)
             coverage[route.id] = Outcome(

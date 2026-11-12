@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { loadRelianceProfile } from '../src/reliance/index.js';
+import { loadBindingManifest } from '../src/reliance/manifest.js';
 import { composeAuthority, type BasisResult, type RouteResult } from '../src/reliance/rm-v1-authority.js';
 import { evaluateRmSlice } from '../src/reliance/rm-v1-slice.js';
 import type { JsonObject } from '../src/types.js';
@@ -24,7 +26,7 @@ describe('I3 authority routes on the signed RM chain', () => {
       'maintenance-grant', 'accreditation-grantee', 'projection-permission', 'bounded-projection', 'trust-anchor']) {
       expect(basis(result, id), id).toMatchObject({ gate: 5, state: 'established' });
     }
-    expect(basis(result, 'bounded-projection')?.reason).toMatch(/scope-as-m1 ⊆ .*scope-elements/);
+    expect(basis(result, 'bounded-projection')?.reason).toMatch(/scope-as-m1 ⊆ .*scope-non-ferrous/);
   });
 
   it('P06: an operational scope granted to another party is contradicted', async () => {
@@ -117,6 +119,58 @@ describe('I3 authority routes on the signed RM chain', () => {
     const result = await run({}, request(), p);
     expect(basis(result, 'trust-anchor')).toMatchObject({ state: 'not_established' });
     expect(result.decision).toBe('not_established');
+  });
+});
+
+describe('Accreditations name sets: the binding\'s governed hierarchy (skos:broader)', () => {
+  const RM = 'https://vc4qi.example/bindings/rm/1#';
+  const manifestJson = () => JSON.parse(readFileSync(new URL('../../../bindings/experimental/rm-v1/manifest.json', import.meta.url), 'utf8')) as JsonObject;
+  const withBroader = (broader: unknown) => {
+    const m = manifestJson();
+    (m.scopeAndMapping as JsonObject).broader = broader as JsonObject[];
+    return loadBindingManifest(m);
+  };
+  const runUnder = (m: ReturnType<typeof loadBindingManifest>, overrides: Record<string, string | null> = {}) =>
+    evaluateRmSlice(request(), catalogWith(overrides), m, profile).then(e => e.result);
+
+  it('A names non-ferrous metals and alloys and element contents; O\'s arsenic in CuZn39Pb3 discs lies within it', async () => {
+    const A = subject(json(URI.A)).scope as JsonObject[];
+    expect([A[0]!.matrixIri, A[0]!.formIri, A[0]!.allowedPropertyIris]).toEqual(
+      [`${RM}NonFerrousMetalsAndAlloys`, `${RM}SolidForms`, [`${RM}ElementContents`]]);
+    const result = await run();
+    expect(basis(result, 'bounded-projection')).toMatchObject({ state: 'established' });
+    expect(supportBasis(result, 'study-scope')).toMatchObject({ state: 'established' });
+    expect(result.decision).toBe('accept');
+  });
+
+  it('without the binding\'s hierarchy a set does not contain its members', async () => {
+    const result = await runUnder(withBroader([]));
+    expect(basis(result, 'bounded-projection')).toMatchObject({ state: 'contradicted' });
+    expect(supportBasis(result, 'study-scope')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
+  });
+
+  it('malformed hierarchy entries are ignored and never widen a scope', async () => {
+    const result = await runUnder(withBroader([{ narrower: `${RM}CuZn39Pb3` }, { narrower: 7, broader: `${RM}NonFerrousMetalsAndAlloys` }, 'x']));
+    expect(basis(result, 'bounded-projection')).toMatchObject({ state: 'contradicted' });
+  });
+
+  it('the hierarchy never runs downward: a scope naming the set is not within an accreditation naming a member', async () => {
+    const A = json(URI.A), O = json(URI.O);
+    Object.assign((subject(A).scope as JsonObject[])[0]!, { matrixIri: `${RM}CuZn39Pb3` });
+    Object.assign((subject(O).scope as JsonObject[])[0]!, { matrixIri: `${RM}NonFerrousMetalsAndAlloys` });
+    const result = await run(await reissue({ [URI.A]: A, [URI.O]: O }));
+    expect(basis(result, 'bounded-projection')).toMatchObject({ state: 'contradicted' });
+  });
+
+  it('a set the member does not belong to contains nothing of it', async () => {
+    const A = json(URI.A), H = json(URI.H);
+    (subject(A).scope as JsonObject[])[0]!.matrixIri = `${RM}FerrousMetals`;
+    (subject(H).scope as JsonObject[])[0]!.matrixIri = `${RM}FerrousMetals`;
+    const result = await run(await reissue({ [URI.A]: A, [URI.H]: H }));
+    expect(basis(result, 'bounded-projection')).toMatchObject({ state: 'contradicted' });
+    expect(supportBasis(result, 'study-scope')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
   });
 });
 

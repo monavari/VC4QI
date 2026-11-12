@@ -10,6 +10,7 @@ import { RM_V1_BINDING_ID, type BindingManifest } from './manifest.js';
 import type { RelianceProfile } from './profile.js';
 import { nodeUseKey, notRun, predicate, resolvePointer, type RmArtifactVerification } from './rm-v1-artifacts.js';
 import { certificateAuthority, certificateSupport, claimAuthority } from './rm-v1-authority.js';
+import { conceptsFrom } from './rm-scope.js';
 import {
   claimCoverage, evaluateConformity, mapClaim, type ClaimCoordinates, type MethodRevision, type Outcome,
 } from './rm-v1-claims.js';
@@ -43,8 +44,10 @@ export async function evaluateRmSlice(
   const chain = await verifyChain(request, catalog, manifest, profile);
   const { target, artifacts, facts, verificationOf, artifactVerification } = chain;
   const lookup = (uri: string) => facts.get(uri);
-  const authority = certificateAuthority(facts.get(request.targetId)!, lookup, profile);
-  const supported = certificateSupport(facts.get(request.targetId)!, lookup, profile);
+  // The binding's governed concept hierarchy: a grant naming a set contains its members.
+  const concepts = conceptsFrom(manifest.scopeAndMapping);
+  const authority = certificateAuthority(facts.get(request.targetId)!, lookup, profile, concepts);
+  const supported = certificateSupport(facts.get(request.targetId)!, lookup, profile, concepts);
   const winner = authority.routes.find(r => r.state === 'established');
 
   const targetDocument = facts.get(request.targetId)?.document;
@@ -74,7 +77,7 @@ export async function evaluateRmSlice(
     }
     const coordinates = mapping.coordinates;
     const composed = claimAuthority(authority, route => {
-      const covered = claimCoverage(coordinates, scopeRecords(route.scope!), revisions, profile.mapping.methodSuccession);
+      const covered = claimCoverage(coordinates, scopeRecords(route.scope!), revisions, profile.mapping.methodSuccession, concepts);
       const sources = [route.scope!, ...covered.sources];
       coverage.set(route.id, { ...covered, sources });
       return { id: 'claim-coverage', state: covered.state, reason: covered.reason, sources };

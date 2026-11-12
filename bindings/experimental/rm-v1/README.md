@@ -19,6 +19,11 @@ SRI over exact bytes). Signed controller documents, credentials and status lists
 `incomplete` until an independent proof-suite transformation vector is in place; see
 [status](../../../docs/status.md#open-issues).
 
+- The manifest's `scopeAndMapping.broader` is the binding's governed concept hierarchy
+  (`skos:broader` pairs, applied transitively): accreditations A and H name sets
+  (non-ferrous metals and alloys, element contents, solid forms), as an annex does,
+  and contain the members the hierarchy places under them. It is binding governance,
+  like units and method revisions, not something a credential can assert.
 - [`resources/contexts/rm-1.jsonld`](resources/contexts/rm-1.jsonld) is hand-authored,
   `@protected`, uses the `rm:` prefix (the VCDM 2.0 context already protects `exp`),
   types every quantity, bound and uncertainty as an `xsd:decimal` string, and makes

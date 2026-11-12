@@ -114,6 +114,16 @@
     "missingOrEmptyRestrictedDimension": "not_established",
     "recordCombination": "one-complete-record-per-claim-no-splicing",
     "uncertainty": {"requiredCoverageFactor": "2", "nonnegative": true, "accreditationCeiling": "none"},
+    "broader": [
+      {"narrower": "https://vc4qi.example/bindings/rm/1#CuZn39Pb3", "broader": "https://vc4qi.example/bindings/rm/1#CopperAlloys"},
+      {"narrower": "https://vc4qi.example/bindings/rm/1#CopperAlloys", "broader": "https://vc4qi.example/bindings/rm/1#NonFerrousMetalsAndAlloys"},
+      {"narrower": "https://vc4qi.example/bindings/rm/1#Disc", "broader": "https://vc4qi.example/bindings/rm/1#SolidForms"},
+      {"narrower": "https://vc4qi.example/bindings/rm/1#As", "broader": "https://vc4qi.example/bindings/rm/1#ElementContents"},
+      {"narrower": "https://vc4qi.example/bindings/rm/1#Cu", "broader": "https://vc4qi.example/bindings/rm/1#ElementContents"},
+      {"narrower": "https://vc4qi.example/bindings/rm/1#Zn", "broader": "https://vc4qi.example/bindings/rm/1#ElementContents"},
+      {"narrower": "https://vc4qi.example/bindings/rm/1#Pb", "broader": "https://vc4qi.example/bindings/rm/1#ElementContents"}
+    ],
+    "conceptHierarchy": "skos:broader assertions in broader, applied transitively: a scope record's matrix, form or property covers every narrower concept (an accreditation for non-ferrous metals and alloys and element contents contains arsenic in CuZn39Pb3 discs); methods and quantity kinds are exact; labels are never compared; malformed entries are ignored and never widen a scope",
     "methodRevisions": [
       {"method": "https://vc4qi.example/bindings/rm/1#M2", "revises": "https://vc4qi.example/bindings/rm/1#M1"}
     ],
