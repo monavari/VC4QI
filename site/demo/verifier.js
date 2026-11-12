@@ -25504,7 +25504,7 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
     joins: ["gaci", "ab"],
     issues: ["R"],
     title: "Global ACI recognizes the accreditation body",
-    text: "After peer evaluation, Global ACI signs R about the accreditation body: what it may accredit for. One credential per recognition is our proposal."
+    text: "After peer evaluation, Global ACI signs R: this body may accredit RM production (ISO 17034) and testing (ISO/IEC 17025). R names nothing above it; one credential per recognition is our proposal."
   },
   {
     id: "accredit",
@@ -25513,7 +25513,7 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
     joins: ["lab", "rmp"],
     issues: ["A", "H"],
     title: "The accreditation body accredits the producer and the laboratory",
-    text: "The body accredits the producer (A) and the laboratory (H). Both point up to R, the authority the body acts under."
+    text: "The body accredits the producer (A) and the laboratory (H). Each names R in termsOfUse, the authority it acts under, pinned by digest, and must stay within it."
   },
   {
     id: "act",
@@ -25522,7 +25522,7 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
     joins: ["holder"],
     issues: ["O", "S", "D"],
     title: "The producer and the laboratory act",
-    text: "The producer keeps its own scope O within A, the lab studies the lot (S), and certificate D178 cites both and ships with the disc."
+    text: "The producer declares its scope O under A, the lab studies the lot (S) under H, and certificate D178 names O as its authority and S as its evidence."
   },
   {
     id: "verify",

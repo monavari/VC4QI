@@ -12,7 +12,7 @@
 <header class="topbar"><div class="in">
   <a class="brand" href="../../"><strong>VC4QI</strong> demonstrator</a>
   <nav class="links" aria-label="Demonstrator">
-    <a href="../rm/">RM story</a><a href="./" aria-current="page">GS story</a><a href="../#rm">Examples</a>
+    <a href="../rm/">RM board</a><a href="../rm/vertical.html">RM vertical</a><a href="./" aria-current="page">GS story</a><a href="../#rm">Examples</a>
   </nav>
 </div></header>
 <main>
@@ -30,13 +30,13 @@
     <table id="presentTable"></table>
   </section>
 
+  <p class="legend" id="legend"><b>Reading the lines:</b> each line is a field of the credential it starts from.<i></i><b>acts under</b> <code>termsOfUse</code>, the authority it names, pinned by digest<i class="dot"></i><b>backed by</b> <code>evidence</code>, supports a claim and grants nothing<i class="dash"></i>handed over. Green holds, red fails, amber cannot be told, grey is not evaluated. Click a credential or a line to learn more.</p>
   <div class="board" id="board" aria-live="polite"></div>
   <div class="band placeholder" id="band" hidden>
     <span class="tag">Not evaluated</span>
     <b>Recognition of the scheme owner</b>
     <span>(for example through an international arrangement) would tell this verifier who may permit the GS mark. Today each verifier configures its trust anchors itself.</span>
   </div>
-  <p class="legend">Lines read the credentials' own references:<i></i>cites as authority<i class="dot"></i>cites as evidence<i class="dash"></i>handed over. Green holds, red fails, amber cannot be told; grey is not evaluated. Select a credential to see who signs it, what it is about and who holds it.</p>
 
   <footer>
     <p>Evaluated in your browser by the repository's GS evaluator, as of <span id="evalTime">25 September 2026</span> (status lists expire). Nothing is fetched.</p>
@@ -48,8 +48,7 @@
 <dialog id="sheet" aria-labelledby="sheetTitle">
   <button class="close" type="button" id="sheetClose">Close</button>
   <h2 id="sheetTitle"></h2>
-  <dl class="map" id="sheetMap"></dl>
-  <details class="raw"><summary>Signed bytes</summary><pre id="sheetBody"></pre></details>
+  <div id="sheetContent"></div>
 </dialog>
 
 <script type="module">
@@ -83,6 +82,15 @@ await mountBoard(api, {
   parts: api.BOARD_PARTS, evaluate: state => api.evaluateGsBoard(state), rows: 3,
   hosts: { nab: 'the accreditation body', zls: 'the scheme owner', 'gs-body': 'the GS body', maker: 'the manufacturer' },
   facts,
+  types: {
+    GsAccreditation: 'An accreditation: the accreditation body states that the GS body may test and certify, for which product categories.',
+    GsSchemeAuthorization: 'A scheme permission: the scheme owner, in the role ZLS has for the GS mark, permits the GS body to award the mark, for named categories only.',
+    GsTestReport: "A type-examination report: the test result for the model. Evidence: it supports the certificate and grants nothing.",
+    GsInspectionReport: "A factory-inspection report: the production site was inspected. Evidence: it supports the certificate and grants nothing.",
+    GsCertificate: 'A GS certificate: the GS body certifies the model, under both its accreditation and its scheme permission.',
+    GsMarkCredential: 'A GS-mark credential: the manufacturer states that this unit carries the GS mark, acting under the GS certificate.',
+    ProductPassport: 'A digital product passport: the manufacturer describes the unit; its compliance section names the GS-mark credential as evidence.',
+  },
   actions: {
     ab: [{ type: 'toggle', key: 'revokeA', label: 'Revoke GS-A', control: 'revokeA' }],
     so: [{ type: 'toggle', key: 'revokeS', label: 'Revoke GS-S', control: 'revokeS' }],
