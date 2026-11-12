@@ -37,6 +37,9 @@ fixtures, or is marked as not evaluated.
    Phones get a full reading layout, one column, but are not the presenting layout.
 9. **Motion only for handover.** A credential moving from issuer to holder may animate
    for about 300 ms. Nothing else moves, and `prefers-reduced-motion` turns it off.
+   Nothing moves between steps either: on wide screens the step header, the columns and
+   every credential keep their place from step to step, so a step changes what is shown,
+   never where.
 
 ## Visual hierarchy
 
@@ -178,8 +181,14 @@ Plain words lead and the terms follow in mono, each with where it comes from.
 - So that a step fits the screen, a guided step shows its live controls, plus any whose
   value it changed (faded, marked "available in *Your turn*"), and the verifier's root.
   The last step shows and unlocks every action.
-- What each actor does is shown while the chain is built; in evaluated steps that room
-  goes to the credentials.
+- What each actor does stays in its column header on every step, so the rows never move;
+  the verifier's description is dropped once it decides, which moves no credential.
+- How the board keeps its place on wide screens: room for a two-line title and for the
+  acting parties on every step; credentials not yet issued and columns not yet reached
+  are laid out invisibly; every card keeps a line for its tags, and its state icon sits
+  outside the text; the verifier's height goes only to the last (actions) row; a
+  re-signed list is marked by filling its label, not by more text; a band sits under
+  the board; the scrollbar's room is always kept.
 - Step text is one or two sentences under the title.
 - Every change re-evaluates immediately. The URL hash holds the whole state, so a link
   reproduces a slide. Arrow keys and Page Up/Down move between steps.

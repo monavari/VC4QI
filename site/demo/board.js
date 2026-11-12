@@ -106,9 +106,9 @@ export async function mountBoard(api, cfg) {
     $('title').textContent = s.title; $('lead').textContent = s.text;
     document.title = s.title + ' · ' + cfg.name + ' · VC4QI';
     const who = id => "<span class='who'><span class='mono-badge sm'>" + esc(actor(id).mono) + '</span>' + esc(actor(id).name) + '</span>';
-    $('acts').innerHTML = s.part === 'play' ? '' : s.acts.map(who).join("<span class='arrow' aria-label='to'>→</span>");
-    // Up to three acting parties are named; with more, the outlined columns show them.
-    $('acts').hidden = s.part === 'play' || s.acts.length === 0 || s.acts.length > 3;
+    // Up to three acting parties are named; with more, the outlined columns show them. The
+    // line keeps its height when empty, so the board does not move.
+    $('acts').innerHTML = s.part === 'play' || s.acts.length > 3 ? '' : s.acts.map(who).join("<span class='arrow' aria-label='to'>→</span>");
     $('presentation').hidden = !s.presentation;
     if (s.presentation) {
       $('presentTable').innerHTML = '<thead><tr><th>Credential</th><th>Reveal</th><th>Could stay hidden</th></tr></thead><tbody>'
@@ -125,11 +125,16 @@ export async function mountBoard(api, cfg) {
   const ctxOf = (R, mode) => ({ step, st: stateOf(STORY[step]), R, mode, reached, short, esc });
   const aboutCol = (a, R, mode) => a.about === 'object' ? cfg.objectAt(ctxOf(R, mode)) : a.about;
 
-  function cardHTML(a, R, mode) {
+  // A card not yet issued (`pending`) is drawn invisible, so that the rows have their final
+  // height from the first step and nothing moves when it is issued.
+  function cardHTML(a, R, mode, pending = false) {
     const s = STORY[step], st = stateOf(s), uri = R.uris[a.code], node = R.graph.nodes.find(n => n.uri === uri);
     const fresh = mode === 'build' && (s.issues ?? []).includes(a.code);
     const missing = mode === 'evaluate' && cfg.withheld(st) === a.code;
-    const d = R.texts[uri] ? JSON.parse(R.texts[uri]) : null;
+    // A credential left out still shows what it says (from the generated chain), so its card
+    // keeps its size; it is marked "not shown".
+    const text = R.texts[uri] ?? defaultResult?.texts[uri];
+    const d = text ? JSON.parse(text) : null;
     const state = mode === 'evaluate' ? (missing ? 'not_established' : node?.state ?? 'not_established') : '';
     const tags = [];
     if (fresh) tags.push("<span class='tag t-new'>new</span>");
@@ -140,12 +145,13 @@ export async function mountBoard(api, cfg) {
     const foot = "<span class='foot'>signed by <span class='who-inline'>" + esc(actor(a.actor).mono) + '</span> · about ' + about
       + (d && cites(d).length ? "<span class='cites'>· cites " + esc(cites(d).join(', ')) + '</span>' : '') + '</span>';
     return "<button type='button' class='card " + a.kind + (state ? ' s-' + state : '') + (missing ? ' missing' : '') + (fresh ? ' fresh' : '')
-      + (fresh && a.kind === 'claim' ? ' handover' : '') + "' data-code='" + esc(a.code) + "' data-uri='" + esc(uri) + "'>"
+      + (fresh && a.kind === 'claim' ? ' handover' : '') + (pending ? " pending' aria-hidden='true' tabindex='-1" : '')
+      + "' data-code='" + esc(a.code) + "' data-uri='" + esc(uri) + "'>"
       + "<span class='top'><span class='code'>" + esc(short(uri) || a.code) + "</span><span class='kind'>" + esc(a.label)
       + (a.kind === 'evidence' ? " <span class='tag'>evidence</span>" : '') + (a.tag ? " <span class='tag'>" + esc(a.tag) + '</span>' : '') + '</span>'
       + (state ? "<span class='icon' aria-label='" + esc(LABEL[state]) + "'>" + ICON[state] + '</span>' : '') + '</span>'
       + (d ? cfg.facts(a.code, d).map(l => "<span class='fact'>" + esc(l) + '</span>').join('') : '')
-      + (tags.length ? "<span class='tags'>" + tags.join('') + '</span>' : '') + foot + '</button>';
+      + "<span class='tags'>" + tags.join('') + '</span>' + foot + '</button>';
   }
 
   function seg(spec, value) {
@@ -222,13 +228,17 @@ export async function mountBoard(api, cfg) {
   }
 
   const note = st => (typeof cfg.note === 'function' ? cfg.note(st) : cfg.note) ?? '';
+  // A column the chain has not reached yet is drawn with its content but invisible, so the
+  // board keeps its shape when the column appears.
   function colHTML(a, R, mode) {
-    if (!joined(a.id)) return "<section class='col absent' data-actor='" + a.id + "' aria-hidden='true'></section>";
+    const absent = !joined(a.id);
     const s = STORY[step], st = stateOf(s), play = s.part === 'play', ctx = ctxOf(R, mode);
-    const acting = !play && s.acts.includes(a.id), dim = !play && !acting;
+    const acting = !absent && !play && s.acts.includes(a.id), dim = !absent && !play && !acting;
     const pubs = a.publishes.map(p => {
       const changed = mode === 'evaluate' && p.uri && cfg.changedList(p.uri, st);
-      return "<span class='pub" + (changed ? ' changed' : '') + "'" + (changed ? " title='Re-signed in this browser'" : '') + '>' + esc(p.label) + (changed ? ' · re-signed' : '') + '</span>';
+      // A re-signed list is filled, not relabelled: the same width, so the header keeps its height.
+      return "<span class='pub" + (changed ? ' changed' : '') + "'" + (changed ? " title='Re-signed in this browser'" : '') + '>' + esc(p.label)
+        + (changed ? "<span class='vh'>, re-signed in this browser</span>" : '') + '</span>';
     }).join('');
     const issued = issuedSoFar();
     const rows = Array.from({ length: cfg.rows }, (_, i) => i + 1);
@@ -236,9 +246,10 @@ export async function mountBoard(api, cfg) {
       if (a.id === 'verifier') return row === 1 ? verdictHTML(R, mode) : row === 2
         ? cfg.settings.map(spec => control(spec, st)).join('') + (note(st) ? "<p class='limit'>" + note(st) + '</p>' : '') : '';
       const extra = cfg.extras[a.id]?.row === row ? cfg.extras[a.id].html(ctx) : '';
-      return ASSETS.filter(x => x.actor === a.id && x.row === row && (mode !== 'build' || issued.has(x.code))).map(x => cardHTML(x, R, mode)).join('') + extra;
+      return ASSETS.filter(x => x.actor === a.id && x.row === row).map(x => cardHTML(x, R, mode, absent || (mode === 'build' && !issued.has(x.code)))).join('') + extra;
     };
-    return "<section class='col" + (acting ? ' acting' : '') + (dim ? ' dim' : '') + "' data-actor='" + a.id + "' aria-label='" + esc(a.name) + "'>"
+    return "<section class='col" + (absent ? ' absent' : '') + (acting ? ' acting' : '') + (dim ? ' dim' : '') + "' data-actor='" + a.id + "'"
+      + (absent ? " aria-hidden='true' inert" : " aria-label='" + esc(a.name) + "'") + '>'
       + "<div class='colhead'><div class='name'><span class='mono-badge'>" + esc(a.mono) + '</span><h2>' + esc(a.name) + '</h2></div>'
       + "<p class='does'>" + esc(a.does) + "</p><div class='pubs'>" + pubs + "</div><div class='roles'></div></div>"
       + rows.map(row => "<div class='slot r" + row + "'>" + slot(row) + '</div>').join('')
@@ -251,7 +262,7 @@ export async function mountBoard(api, cfg) {
     const board = $('board'), svg = board.querySelector('svg');
     if (!svg || getComputedStyle(svg).display === 'none') return;
     const base = board.getBoundingClientRect();
-    const box = uri => board.querySelector(".card[data-uri='" + CSS.escape(uri) + "']");
+    const box = uri => board.querySelector(".col:not(.absent) .card:not(.pending)[data-uri='" + CSS.escape(uri) + "']");
     const find = ref => ref === 'verdict' ? board.querySelector('.col[data-actor="verifier"] .verdict')
       : ref.startsWith('#') ? board.querySelector(ref) : ref.startsWith('code:') ? box(R.uris[ref.slice(5)]) : null;
     const path = (from, to, cls, marker) => {
@@ -319,7 +330,7 @@ export async function mountBoard(api, cfg) {
   }
   const clearRoles = () => document.querySelectorAll('.roles').forEach(r => { r.innerHTML = ''; });
   function wire(R, mode) {
-    document.querySelectorAll('.card[data-code]').forEach(el => {
+    document.querySelectorAll('.col:not(.absent) .card[data-code]:not(.pending)').forEach(el => {
       const a = ASSETS.find(x => x.code === el.dataset.code);
       el.addEventListener('mouseenter', () => labelRoles(a, R, mode)); el.addEventListener('focus', () => labelRoles(a, R, mode));
       el.addEventListener('mouseleave', clearRoles); el.addEventListener('blur', clearRoles);
@@ -373,7 +384,8 @@ export async function mountBoard(api, cfg) {
     const busy = $('board').querySelector('.col[data-actor="verifier"] .slot.r1');
     if (busy && mode === 'evaluate') busy.innerHTML = "<div class='verdict busy'><div class='mark'>…</div><div><b>Evaluating</b><small>Signing and checking in your browser.</small></div></div>";
     // Build and presentation steps evaluate nothing; they read the generated credentials.
-    const R = mode === 'evaluate' ? await cfg.evaluate(stateOf(s)) : (defaultResult ??= await cfg.evaluate({}));
+    defaultResult ??= await cfg.evaluate({});
+    const R = mode === 'evaluate' ? await cfg.evaluate(stateOf(s)) : defaultResult;
     if (my !== seq) return;
     $('board').innerHTML = "<svg aria-hidden='true'></svg>" + ACTORS.map(a => colHTML(a, R, mode)).join('');
     wire(R, mode);
