@@ -25498,13 +25498,22 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
     text: "Certificate D178 itself. Every link points somewhere: authority up, the material down, evidence sideways, status beside it."
   },
   {
-    id: "grant",
+    id: "recognize",
     part: "build",
     acts: ["gaci", "ab"],
-    joins: ["gaci", "ab", "lab", "rmp"],
-    issues: ["R", "A", "H"],
-    title: "Authority is issued downward",
-    text: "Global ACI recognizes the accreditation body (R, our proposal). The body accredits the producer (A) and the laboratory (H)."
+    joins: ["gaci", "ab"],
+    issues: ["R"],
+    title: "Global ACI recognizes the accreditation body",
+    text: "After peer evaluation, Global ACI signs R about the accreditation body: what it may accredit for. One credential per recognition is our proposal."
+  },
+  {
+    id: "accredit",
+    part: "build",
+    acts: ["ab"],
+    joins: ["lab", "rmp"],
+    issues: ["A", "H"],
+    title: "The accreditation body accredits the producer and the laboratory",
+    text: "The body accredits the producer (A) and the laboratory (H). Both point up to R, the authority the body acts under."
   },
   {
     id: "act",

@@ -27,9 +27,9 @@
   (`test-vectors/signed/status-archive/2026-01`). Freshness is judged at the time asked
   about; for current questions nothing changes. W3C Recognized Entities (draft of
   4 November 2026) evaluates validity windows at a past date but not status at that date.
-- **RM story, ten steps.** Opens with D178 drawn with what each link points to (up,
-  down, sideways, beside) next to eight design rules; builds the chain in two steps
-  (R, A and H; then O, S and D); one "Try to break it" step with every manipulation
+- **RM story, eleven steps.** Opens with D178 drawn with what each link points to (up,
+  down, sideways, beside) next to eight design rules; builds the chain in three steps
+  (R; then A and H; then O, S and D); one "Try to break it" step with every manipulation
   live, including clicking a citation line to leave that credential out; one decision
   step where the verifier's rule and its limit (180, 200 or 250 mg/kg) can be changed;
   the verifier abroad; and "Was it valid when it was issued?" (today, at issuance with
