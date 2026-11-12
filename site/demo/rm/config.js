@@ -12,6 +12,7 @@ const list = a => (a ?? []).map(short).join(', ');
 const SETS = { NonFerrousMetalsAndAlloys: 'non-ferrous metals and alloys', ElementContents: 'element contents', SolidForms: 'solid forms', CopperAlloys: 'copper alloys' };
 const words = iri => SETS[short(iri)] ?? short(iri);
 const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+const typeOf = d => [d?.type].flat().filter(Boolean).at(-1) ?? '';
 function facts(code, d) {
   const s = d.credentialSubject ?? {}, r = (s.scope ?? [])[0] ?? {};
   // What the body may accredit for: activity and standard of each recognized action.
@@ -74,7 +75,7 @@ function proposal() {
   const term = x => "<span class='term'>" + x + '</span>';
   return "<span class='tag'>Proposal · for discussion · not evaluated</span><div class='proposal'>"
     + "<table class='compare'><thead><tr><th></th><th>A list of recognized bodies</th><th>Proposal: one credential per recognition</th></tr></thead><tbody>"
-    + row('What is signed', 'One list naming every recognized body', 'R: one credential about one body, in the Recognized Entities vocabulary (' + term('recognizedTo') + ', ' + term('action') + ', main scope)')
+    + row('What is signed', 'One list naming every recognized body', 'R: one credential about one body, in the Recognized Entities vocabulary (' + term('recognizedTo') + ', ' + term('action') + '), with the main scope in ILAC and IAF terms (our extension)')
     + row('One body is suspended', 'The list is re-issued, and its digest changes for everyone who pinned it', "One bit in the recognizer's suspension list; R and everything below it stay as issued")
     + row('How a verifier reaches it', 'Its profile names the list, or it searches from the top', 'The accreditation points up to R (' + term('termsOfUse') + ', pinned by digest), like every other link')
     + row('Valid when issued?', 'Only from an old copy of the list, if someone kept it', 'R carries its validity window; status lists are dated credentials the issuers keep: the list in force that day answers')
@@ -84,11 +85,92 @@ function proposal() {
     + "<li>Whether the required evidence is there (study S)</li><li>Whether the value is fit for use: the verifier's own rule (D197)</li></ul></section>"
     + "<section class='open'><h3>Open, for the pitches</h3><ul>"
     + '<li>Renewal: a new R means re-pinned accreditations, or a link from the new R to the old</li>'
-    + '<li>The up-pointer: ' + term('termsOfUse') + ' from VCDM, or ' + term('recognizedIn') + ' from Recognized Entities</li>'
+    + '<li>The up-pointer: both, ' + term('recognizedIn') + ' to find and ' + term('termsOfUse') + ' to bind (next page)</li>'
     + '<li>Recognized Entities checks validity windows at a past date, not suspension or revocation at that date</li>'
     + '<li>Trusted time: an issuer-written activity time can be backdated; a trusted timestamp closes that</li>'
     + '<li>Governed identifiers for activities and standards</li></ul></section></div>'
     + "<p class='limit'>Global ACI here is a fictional stand-in. Nothing on this page is issued or endorsed by Global Accreditation Cooperation Incorporated or any accreditation body.</p></div>";
+}
+
+/** The opening page: a credential's parts, what W3C says each is for, and how this story uses it. */
+function anatomy({ R, esc }) {
+  const d = JSON.parse(R.texts[D178]);
+  const q = t => '<q>' + esc(t) + '</q>';
+  const c = t => '<code>' + esc(t) + '</code>';
+  const group = t => "<tr class='group'><th colspan='4'>" + esc(t) + '</th></tr>';
+  const row = (prop, sec, says, here, board, star) => '<tr' + (star ? " class='star'" : '') + "><th scope='row'>" + c(prop) + '<small>§' + sec + '</small></th><td>' + says + '</td><td>' + here + '</td><td>' + board + '</td></tr>';
+  const res = d.credentialSubject.materialPropertiesList[0].results[0], qty = res.data.quantity;
+  const status = [d.credentialStatus].flat()[0], tou = [d.termsOfUse].flat()[0], ev = [d.evidence].flat()[0];
+  const table = "<table class='taxonomy'><thead><tr><th>Property</th><th>What W3C says it is for</th><th>In certificate D178</th><th>On the board</th></tr></thead><tbody>"
+    + group('Who, about what, what kind')
+    + row('type', '4.5', 'What kind of credential it is; each type is to be documented in a specification.', c(typeOf(d)), 'The mono line on every card')
+    + row('issuer', '4.7', 'Who issued it: a URL, recommended to lead to the issuer’s keys.', 'The RM producer', 'The column it sits in; “signed by”')
+    + row('credentialSubject', '4.8', 'The claims, about one or more subjects.', 'Disc lot 1: ' + esc(short(res.propertyIri)) + ' = ' + esc(qty.value + ' ± ' + qty.uncertainty.expandedUncertainty + ' ' + qty.unit.ucumCode), 'What the card says; “about”')
+    + group('When, and whether it still holds')
+    + row('validFrom, validUntil', '4.9', 'When the credential is valid.', esc(String(d.validFrom).slice(0, 10) + ' – ' + String(d.validUntil).slice(0, 10)), 'Checked at the time asked about')
+    + row('credentialStatus', '4.10', 'Where to learn whether it is still in force, such as a status list.', esc(status.statusPurpose) + ', bit ' + esc(status.statusListIndex) + ' of the producer’s list', 'The lists in each column head; suspend and revoke re-sign them')
+    + group('Links to other credentials')
+    + row('termsOfUse', '5.5', 'Terms of use can tell a verifier ' + q('the identity of the entity under whose authority the issuer issued this particular verifiable credential') + '. Each entry is typed; the type defines it.', c(tou.type) + ' → ' + esc(short(tou.authorizationCredential.id)), '<b>Solid line: acts under</b>', true)
+    + row('evidence', '5.6', q('Evidence can be included by an issuer to provide the verifier with additional supporting information'), c(ev.type) + ' → ' + esc(short(ev.id)), 'Dotted line: is backed by')
+    + row('relatedResource', '5.3', q('Any object in the verifiable credential that contains an id property MAY be annotated with integrity information'), (d.relatedResource ?? []).map(r => esc(short(r.id))).join(' and ') + ', by sha384 digest', 'The digest that pins a line')
+    + group('The seal')
+    + row('proof', '4.12', 'The securing mechanism: the issuer’s signature over the exact bytes.', c(d.proof.cryptosuite), '◆ sealed; edit a value and it fails')
+    + '</tbody></table>';
+  const why = "<section class='why'><h3>Why a term of use points up to an authority</h3><div class='three'>"
+    + '<div><h4>The standard provides for it</h4><p>Among what terms of use tell a verifier, §5.5 lists ' + q('the identity of the entity under whose authority the issuer issued this particular verifiable credential') + '. Its value '
+    + q('MUST specify one or more terms of use policies under which the creator issued the') + ' credential, and ' + q('The precise contents of each term of use is determined by the specific termsOfUse type definition.') + '</p></div>'
+    + '<div><h4>The chain is left to the verifier</h4><p>' + q('The data model detailed in this specification does not imply a transitive trust model') + ' (§5.1). '
+    + q('Authorization is not an appropriate use for this specification without an accompanying authorization framework.') + ' (§5.9)</p><p>Here that framework is the verifier’s profile: the policy type it accepts, its roots, and what each link must satisfy.</p></div>'
+    + '<div><h4>Others use the same place</h4><ul>'
+    + '<li><b>EBSI</b>: ' + c('AccreditationPolicy') + ' with ' + c('parentAccreditation') + ' and ' + c('rootAuthorisation') + '; ' + c('IssuanceCertificate') + ' binds the issuer’s accreditation into each credential</li>'
+    + '<li><b>cheqd</b>: ' + c('AttestationPolicy') + ' with ' + c('parentAccreditation') + ' and ' + c('rootAuthorization') + '</li>'
+    + '<li><b>W3C Recognized Entities</b> takes another route, ' + c('issuer.recognizedIn') + '; the last proposal page reconciles the two</li>'
+    + '<li><b>UNTP</b>: an ' + c('authorisation') + ' inside the conformity attestation</li></ul>'
+    + '<p>None of these links carries a digest of the parent; every link here does.</p></div>'
+    + '</div></section>';
+  return "<span class='tag'>Signed test credential D178 · read, not evaluated</span><div class='anatomy'>" + table + why
+    + "<p class='src'>Quotes: W3C Verifiable Credentials Data Model 2.0, Recommendation of 15 May 2025; the other descriptions are ours. D178’s values are read from the signed test credential.</p></div>";
+}
+
+/** Recognized Entities and terms of use: recognizedIn finds, IssuedUnderPolicy binds. A proposal. Static. */
+function reconcile({ esc }) {
+  const c = t => '<code>' + esc(t) + '</code>';
+  const row = (what, re, ours) => "<tr><th scope='row'>" + what + '</th><td>' + re + "</td><td class='ours'>" + ours + '</td></tr>';
+  const table = "<table class='compare'><thead><tr><th></th><th>" + c('issuer.recognizedIn') + ' · W3C Recognized Entities</th><th>' + c('termsOfUse') + ' · ' + c('IssuedUnderPolicy') + ' · proposed</th></tr></thead><tbody>'
+    + row('Says', 'The issuer appears in that list of recognized entities', 'This credential was issued under that grant')
+    + row('Is about', 'The issuer, the same in every credential it issues', 'This one credential')
+    + row('Points to', 'A ' + c('RecognizedEntityCredential') + ', or an external list (ETSI, X.509)', 'The credential that grants the authority: a recognition, an accreditation, or a scope within one')
+    + row('Pinned', 'By URL; fetched, or stapled by the holder, when checked', 'By digest in ' + c('relatedResource') + ': the exact bytes relied on')
+    + row('More than one', 'Discovery may find several chains; any one that passes is enough', 'Every entry is claimed, and all must hold: an accreditation and a scheme permission (GS)')
+    + row('A verifier checks', 'At each link the subject is the issuer; the action, credential validators, validity at the evaluation time', 'The same, then: the claim within one scope record, a projection within its parent, required evidence, status at the activity time')
+    + '</tbody></table>';
+  const json = '{\n  "type": ["VerifiableCredential", "RmCertificate"],\n  "issuer": {\n    "id": "https://producer.vc4qi.example/controller",\n    "recognizedIn": {\n      "id": "https://nab.vc4qi.example/credentials/A",\n      "type": "RecognizedEntityCredential"\n    }\n  },\n'
+    + '  "termsOfUse": [{\n    "type": "IssuedUnderPolicy",\n    "authorizationCredential": {\n      "id": "https://producer.vc4qi.example/credentials/O",\n      "type": "RmOperationalScope"\n    },\n    "action": "issue"\n  }],\n'
+    + '  "evidence": [{\n    "id": "https://lab.vc4qi.example/credentials/S",\n    "type": "RmStudyReference"\n  }],\n  "relatedResource": [\n    { "id": "https://producer.vc4qi.example/credentials/O", "digestSRI": "sha384-…" },\n    { "id": "https://lab.vc4qi.example/credentials/S", "digestSRI": "sha384-…" }\n  ]\n}';
+  const chain = "<section><h3>The chain under the proposal</h3><dl class='chainmap'>"
+    + '<dt>R</dt><dd>A ' + c('RecognizedEntityCredential') + ' from Global ACI about the body: ' + c('recognizedTo') + ' accredit; the main scope moves into ' + c('registration') + ', the register Global ACI keeps</dd>'
+    + '<dt>A, H</dt><dd>Recognized entity credentials from the body about the producer and the laboratory: ' + c('recognizedTo') + ' issue; the annex scope in ' + c('registration') + '; ' + c('recognizedIn') + ' and ' + c('IssuedUnderPolicy') + ' both name R</dd>'
+    + '<dt>O</dt><dd>The producer’s own scope: ' + c('IssuedUnderPolicy') + ' names A. Not a recognition: a list issued by the entity it lists is a cycle in Recognized Entities</dd>'
+    + '<dt>S</dt><dd>' + c('recognizedIn') + ' and ' + c('IssuedUnderPolicy') + ' name H</dd>'
+    + '<dt>D178</dt><dd>' + c('recognizedIn') + ' names A, to find the producer; ' + c('IssuedUnderPolicy') + ' names O, the grant it exercises; ' + c('evidence') + ' names S</dd></dl></section>';
+  const gets = "<div class='boxes'><section><h3>A Recognized Entities verifier gets</h3><ul>"
+    + '<li>The producer is recognized, through A and R, up to Global ACI</li><li>It is recognized to issue RM certificates, and D178 matches the schema</li></ul></section>'
+    + '<section><h3>This verifier adds</h3><ul><li>178 lies in one scope record of O, and O within A</li><li>Study S, under H, as the profile requires</li>'
+    + '<li>A and R in force and not suspended on 20 January</li><li>Then its own rule: 178 + 5 ≤ 200</li></ul></section></div>';
+  const def = "<section class='def'><h3>" + c('IssuedUnderPolicy') + ', a draft definition</h3><ol>'
+    + '<li>The issuer states that it issued this credential exercising the grant in ' + c('authorizationCredential') + '.</li>'
+    + '<li>' + c('relatedResource') + ' pins that credential by digest; a mismatch is an error (VCDM §5.3).</li>'
+    + '<li>The granting credential is about this credential’s issuer; in a recognized entity credential, an entity whose ' + c('id') + ' is the issuer.</li>'
+    + '<li>' + c('action') + ', where given, names a recognized action of that entity, valid at the activity time; its credential validators apply.</li>'
+    + '<li>Every entry is claimed: all must hold. Alternatives belong to the verifier’s profile.</li>'
+    + '<li>What lies within a grant is defined by the domain binding, at the activity time: scope records, containment of a projection.</li></ol></section>';
+  const open = "<section class='open'><h3>Open, for the workshop</h3><ul><li>Field names: " + c('authorizationCredential') + ' or EBSI’s ' + c('parentAccreditation') + '</li>'
+    + '<li>Who owns the ' + c('registration') + ' vocabulary for scopes: ILAC and IAF, or each binding</li><li>Renewal re-pins: a new A means new digests below it</li></ul></section>';
+  return "<span class='tag'>Proposal · for the workshop · not evaluated</span><div class='proposal reconcile'>"
+    + "<p class='lede'><b>Find, then bind.</b> " + c('recognizedIn') + ' tells a verifier where to find the issuer’s recognition. A term of use tells it which grant this credential was issued under, pinned by digest.</p>'
+    + table + "<div class='pair'><figure class='json'><figcaption>D178 under the proposal (illustrative, not signed)</figcaption><pre>" + esc(json) + '</pre></figure>' + chain + '</div>'
+    + gets + "<div class='boxes'>" + def + open + '</div>'
+    + "<p class='limit'>Proposal for discussion: not part of W3C Recognized Entities (Working Draft of 12 November 2026), and not yet in the evaluator. Global ACI is a fictional stand-in.</p></div>";
 }
 
 /** One sentence per credential type, for the explainers. */
@@ -167,7 +249,7 @@ export const rmConfig = api => ({
   ],
   objectAt: ({ reached }) => reached('certify') ? 'holder' : 'rmp',
   band: st => st.trust === 'global-aci',
-  panels: { rules, proposal },
+  panels: { anatomy, rules, proposal, reconcile },
   leaveOut: { key: 'withhold', control: 'withhold' },
   hideLocked: true,
   // The holder's column holds only the wallet: narrower, so the credentials get the room.

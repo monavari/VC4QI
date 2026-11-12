@@ -27,6 +27,19 @@
   (`test-vectors/signed/status-archive/2026-01`). Freshness is judged at the time asked
   about; for current questions nothing changes. W3C Recognized Entities (draft of
   4 November 2026) evaluates validity windows at a past date but not status at that date.
+- **The RM story opens with the credential's parts, and reconciles Recognized Entities
+  with terms of use.** A first page lists each property of D178 (type, issuer,
+  credentialSubject, validity, status, termsOfUse, evidence, relatedResource, proof)
+  with what W3C VCDM 2.0 says it is for, its value in D178 and how the board draws it,
+  and says explicitly why a term of use points up to an authority: VCDM §5.5 lists "the
+  identity of the entity under whose authority the issuer issued this particular
+  verifiable credential" among what terms of use tell a verifier, §5.1 and §5.9 leave the
+  chain to an authorization framework (here, the verifier's profile), and EBSI and cheqd
+  use the same place. A page after the proposal reconciles the W3C Recognized Entities
+  Working Draft of 12 November 2026: `issuer.recognizedIn` finds where an issuer is
+  recognized, and a proposed `IssuedUnderPolicy` term of use binds a credential to the
+  grant it was issued under, pinned by digest, every entry required. A draft definition
+  and the open questions are on the page; the evaluator does not implement it yet.
 - **The demonstrator explains its links (RM, GS).** Every card shows its credential
   type (`RmAccreditation`, `RecognizedEntityCredential`, …). The key sits above the board
   and reads the lines in plain words: *acts under* (`termsOfUse`) and *is backed by*
