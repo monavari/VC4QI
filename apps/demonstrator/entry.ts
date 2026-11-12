@@ -446,7 +446,7 @@ export interface BoardAsset {
   /** A short tag beside the kind, e.g. "proposal" for what the binding proposes rather than reuses. */
   readonly tag?: string;
 }
-export type BoardPart = 'rules' | 'build' | 'verify' | 'manipulate' | 'decide' | 'when' | 'proposal' | 'present' | 'play';
+export type BoardPart = 'anatomy' | 'rules' | 'build' | 'verify' | 'manipulate' | 'decide' | 'when' | 'proposal' | 'present' | 'play';
 export const BOARD_PARTS: readonly { readonly id: BoardPart; readonly label: string }[] = [
   { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' }, { id: 'manipulate', label: 'Manipulate' },
   { id: 'decide', label: 'The verifier decides' }, { id: 'present', label: 'Present' }, { id: 'play', label: 'Your turn' },
@@ -506,7 +506,7 @@ export type RmStep = BoardStep<RmBoardState>;
 export type RmBoardResult = BoardResult<RmBoardState>;
 /** The RM story: the design rules on one credential, the chain, and the question at issuance. */
 export const RM_PARTS: readonly { readonly id: BoardPart; readonly label: string }[] = [
-  { id: 'rules', label: 'Design rules' }, { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' },
+  { id: 'anatomy', label: 'The credential' }, { id: 'rules', label: 'Design rules' }, { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' },
   { id: 'manipulate', label: 'Try to break it' }, { id: 'decide', label: 'Who decides' }, { id: 'when', label: 'At issuance' },
   { id: 'proposal', label: 'Proposal' }, { id: 'play', label: 'Your turn' },
 ];
@@ -566,6 +566,10 @@ export const RM_DEFAULT: RmBoardState = {
 /** D178's activity time: the day the material was certified. */
 export const RM_ACTIVITY = '2026-01-20T00:00:00Z';
 export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
+  { id: 'anatomy', part: 'anatomy', acts: [], panel: 'anatomy',
+    title: 'What a verifiable credential is made of',
+    text: 'Every card in this story is one W3C verifiable credential. Its parts, what the standard says each is for, and how this demonstrator uses it.' },
+
   { id: 'rules', part: 'rules', acts: [], panel: 'rules',
     title: 'One credential, and the rules that make a chain',
     text: 'Certificate D178 itself. Every link points somewhere: authority up, the material down, evidence sideways, status beside it.' },
@@ -604,6 +608,9 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
   { id: 'proposal', part: 'proposal', acts: ['gaci', 'ab'], panel: 'proposal',
     title: 'Proposal: from recognized body to accreditation',
     text: 'One recognition credential per body, which its accreditations point up to, and dated status lists for the question at issuance.' },
+  { id: 'reconcile', part: 'proposal', acts: ['gaci', 'ab', 'rmp'], panel: 'reconcile',
+    title: 'Recognized Entities and terms of use: find, then bind',
+    text: 'recognizedIn says where an issuer is recognized; a term of use says which grant this credential was issued under. Our proposal: IssuedUnderPolicy.' },
 
   { id: 'play', part: 'play', acts: ['gaci', 'ab', 'lab', 'rmp', 'holder', 'verifier'],
     unlock: ['suspendGaci', 'suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'ask', 'rule', 'limit', 'asOf', 'archive'],

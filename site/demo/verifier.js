@@ -25397,6 +25397,7 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
   bytes: new TextEncoder().encode(t.text),
   digestSRI: t.digestSRI
 })), on = (e, t, n, i) => kl(`${e}:list:${t}`, () => El(Ly(Cn(e, t), [0], Id), n, i, Id, Ml(e), Cn(e, i))), Ol = (e, t, n) => e.replace(t, n), ug = [
+  { id: "anatomy", label: "The credential" },
   { id: "rules", label: "Design rules" },
   { id: "build", label: "Build the chain" },
   { id: "verify", label: "Verify" },
@@ -25490,6 +25491,14 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
   archive: !1
 }, By = "2026-01-20T00:00:00Z", hg = [
   {
+    id: "anatomy",
+    part: "anatomy",
+    acts: [],
+    panel: "anatomy",
+    title: "What a verifiable credential is made of",
+    text: "Every card in this story is one W3C verifiable credential. Its parts, what the standard says each is for, and how this demonstrator uses it."
+  },
+  {
     id: "rules",
     part: "rules",
     acts: [],
@@ -25579,6 +25588,14 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
     panel: "proposal",
     title: "Proposal: from recognized body to accreditation",
     text: "One recognition credential per body, which its accreditations point up to, and dated status lists for the question at issuance."
+  },
+  {
+    id: "reconcile",
+    part: "proposal",
+    acts: ["gaci", "ab", "rmp"],
+    panel: "reconcile",
+    title: "Recognized Entities and terms of use: find, then bind",
+    text: "recognizedIn says where an issuer is recognized; a term of use says which grant this credential was issued under. Our proposal: IssuedUnderPolicy."
   },
   {
     id: "play",

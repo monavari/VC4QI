@@ -177,9 +177,14 @@ bar switches layouts and keeps the step and its state.
 
 ### Pages instead of the board
 
-A step may draw a page instead of the board: in the RM story, the start page (D178
-drawn with what each link points to, beside the eight design rules) and the recognition
-proposal. A page
+A step may draw a page instead of the board. The RM story opens with what a verifiable
+credential is made of: each property of D178, what W3C VCDM 2.0 says it is for (quoted
+only where the words are the specification's own), its value in D178 and how the board
+draws it, then why a term of use points up to an authority (VCDM §5.5, the limits of
+§5.1 and §5.9, and who else uses the same place). It goes on with D178 drawn with what
+each link points to beside the eight design rules, and ends with the recognition
+proposal and its reconciliation with W3C Recognized Entities (*find, then bind*:
+`issuer.recognizedIn` to find, an `IssuedUnderPolicy` term of use to bind). A page
 reads the generated credentials and evaluates nothing, says so in a tag above it, and
 uses no state colour: direction is arrow shape (↑ up to authority, ↓ down to the
 subject, → sideways to evidence), state is a drawn switch, the seal a solid diamond.
