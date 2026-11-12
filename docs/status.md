@@ -16,7 +16,7 @@ accreditation or external endorsement is claimed.
 | Recognition (RM, experimental) | One recognition credential per body: A and H point up (`termsOfUse`, pinned by digest) to R, a single-subject W3C Recognized Entities credential (Working Draft of 4 November 2026) from a fictional Global ACI stand-in. A verifier that anchors the recognizer (`rm-verifier-global-aci-1`) accepts the accreditation body for the main scope each grant requires; one that anchors the body never relies on R. Discovery through `issuer.recognizedIn` or identifiers is not implemented |
 | API | `evaluateReliance` (Python `evaluate_reliance`) over the installed binding; see [API](api.md) |
 | Demonstrator | Runs the full evaluators (gates 0–6) in the browser for RM, DCC, GS and DPP examples, and RM and GS actor boards that sign suspensions, revocations and typed certificates live with the fixture keys |
-| Not implemented | Authority-issued answers, Recognized Entities discovery (`recognizedIn`, identifier-based), selective disclosure, historical status at a past time (returns `not_established`), a wallet, a verifier service |
+| Not implemented | Authority-issued answers, Recognized Entities discovery (`recognizedIn`, identifier-based), selective disclosure, discovery of kept status lists (status at a past time is answered only by a list in force then that the request is given), trusted timestamps, a wallet, a verifier service |
 
 The v0.3 graph verifier, its fixtures, the selective-disclosure path and the legacy
 graph-explorer demo were removed in 0.4.0; tag

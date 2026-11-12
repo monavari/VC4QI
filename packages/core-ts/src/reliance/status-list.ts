@@ -160,15 +160,23 @@ export function evaluateStatus(
   if (!isObject(subject) || subject.type !== 'BitstringStatusList' || subject.statusPurpose !== entry.statusPurpose) {
     return { state: 'not_established', reason: 'Status list purpose does not match the entry.', listUri, sources };
   }
-  const at = Date.parse(evaluationTime), issued = Date.parse(String(list.validFrom));
-  if (!Number.isFinite(at) || !Number.isFinite(issued) || (at - issued) / 1000 > policy.maxAgeSeconds) {
+  // Status is asked at the activity time t (the evaluation time when no earlier time is
+  // asked). Only a list that was in force at t, and fresh at t, answers it: a list
+  // observed later says nothing about an earlier activity (P13), and a retained, dated
+  // list of that time does (historical status from the issuer's own signed lists).
+  const issued = Date.parse(String(list.validFrom)), until = Date.parse(String(list.validUntil));
+  const activity = Date.parse(activityTime);
+  if (!Number.isFinite(Date.parse(evaluationTime)) || !Number.isFinite(issued)) {
     return { state: 'not_established', reason: `Status list is older than the profile's ${policy.maxAgeSeconds} s freshness limit.`, listUri, sources };
   }
-  // A list observed at T says nothing about an earlier activity: historical status is
-  // not substituted by current status (P13).
-  const activity = Date.parse(activityTime);
   if (!Number.isFinite(activity) || activity < issued) {
     return { state: 'not_established', reason: `Status list observed at ${String(list.validFrom)} cannot establish status at the earlier activity time ${activityTime}; historical status is unavailable.`, listUri, sources };
+  }
+  if (Number.isFinite(until) && activity > until) {
+    return { state: 'not_established', reason: `Status list in force until ${String(list.validUntil)} cannot establish status at ${activityTime}.`, listUri, sources };
+  }
+  if ((activity - issued) / 1000 > policy.maxAgeSeconds) {
+    return { state: 'not_established', reason: `Status list is older than the profile's ${policy.maxAgeSeconds} s freshness limit.`, listUri, sources };
   }
   if (!/^(0|[1-9][0-9]*)$/.test(entry.statusListIndex)) {
     return { state: 'not_established', reason: 'statusListIndex is not a non-negative integer.', listUri, sources };

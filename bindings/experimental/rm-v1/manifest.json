@@ -160,8 +160,8 @@
     "statusMechanism": "W3C Bitstring Status List v1.0: multibase base64url GZIP encodedList, bounded decompression",
     "statusAuthority": "status-list-issuer-equals-credential-issuer",
     "validity": ["validFrom", "validUntil"],
-    "freshness": "verifier-profile maxAgeSeconds from the status list validFrom; no default",
-    "historicalReliance": "unsupported-without-authenticated-historical-evidence",
+    "freshness": "verifier-profile maxAgeSeconds from the status list validFrom, judged at the activity time asked about; no default",
+    "historicalReliance": "status at an earlier activity time only from a status list of the same issuer in force and fresh at that time (kept, dated lists); a later list cannot establish it; no archive discovery",
     "resolver": {"network": false, "unknownUri": "refuse", "budgets": ["maxResources", "maxDepth", "maxBytes"]},
     "installedEvaluatorsOnly": true,
     "issuerProvidedExecutableCode": false

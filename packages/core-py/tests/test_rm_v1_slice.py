@@ -507,8 +507,10 @@ def test_p08_list_from_party_without_status_authority() -> None:
 
 
 def test_p09_stale_or_unavailable_list_is_not_established() -> None:
+    # Asked about now; for an earlier time freshness is judged at that time.
+    later = "2026-11-15T00:00:00Z"
     stale = evaluate_rm_slice(
-        request(evaluation_time="2026-11-15T00:00:00Z"),
+        request(evaluation_time=later, activity_time=later),
         catalog_with(),
         MANIFEST,
         PROFILE,

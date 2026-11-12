@@ -33,6 +33,11 @@ export function fail(message) {
  *   objectAt(ctx) -> actorId           the column the physical object sits in,
  *   band(st) -> bool                   show the international-recognition note,
  *   panels: { name: ctx -> html }      pages drawn instead of the board (a step's `panel`),
+ *   hideLocked: bool                   in guided steps, hide a locked control unless its value
+ *                                       differs from the default or the spec says `always`,
+ *   columns: css                        grid columns on wide screens (actors, then the verifier),
+ *   leaveOut: { key, control }         clicking a citation line leaves its credential out
+ *                                       (state[key] = the credential's code; again restores it),
  * }
  */
 export async function mountBoard(api, cfg) {
@@ -102,7 +107,8 @@ export async function mountBoard(api, cfg) {
     document.title = s.title + ' · ' + cfg.name + ' · VC4QI';
     const who = id => "<span class='who'><span class='mono-badge sm'>" + esc(actor(id).mono) + '</span>' + esc(actor(id).name) + '</span>';
     $('acts').innerHTML = s.part === 'play' ? '' : s.acts.map(who).join("<span class='arrow' aria-label='to'>→</span>");
-    $('acts').hidden = s.part === 'play';
+    // Up to three acting parties are named; with more, the outlined columns show them.
+    $('acts').hidden = s.part === 'play' || s.acts.length === 0 || s.acts.length > 3;
     $('presentation').hidden = !s.presentation;
     if (s.presentation) {
       $('presentTable').innerHTML = '<thead><tr><th>Credential</th><th>Reveal</th><th>Could stay hidden</th></tr></thead><tbody>'
@@ -161,7 +167,11 @@ export async function mountBoard(api, cfg) {
       : "<input name='" + f.key + "' inputmode='decimal' pattern='[0-9]+(\\.[0-9]+)?' required value='" + esc(st[f.key]) + "'>") + '</label>').join('')
       + "<button class='act' type='submit'>" + esc(spec.submit) + '</button></form>';
   }
-  const control = (spec, st) => spec.when && !spec.when(st) ? ''
+  // So that a step fits the screen, a guided step shows its live controls and any whose
+  // value it changed; "Your turn" shows them all.
+  const hidden = (spec, st) => cfg.hideLocked && STORY[step].part !== 'play' && !live(spec.control) && !spec.always
+    && (spec.key === undefined || String(st[spec.key]) === String(cfg.defaults[spec.key]));
+  const control = (spec, st) => (spec.when && !spec.when(st)) || hidden(spec, st) ? ''
     : spec.type === 'toggle' ? toggle(spec, st[spec.key]) : spec.type === 'seg' ? seg(spec, st[spec.key]) : form(spec, st);
 
   // The decisive reason, in the evaluator's words: a restriction, an anchor or a missing
@@ -190,6 +200,10 @@ export async function mountBoard(api, cfg) {
     }
     const anchor = [...entries.map(e => e.reason), ...R.questions.map(x => x.summary)].join(' ').split(/(?<=\.) /).find(x => /not a configured trust anchor/.test(x));
     if (anchor) return [null, anchor];
+    // Asked about an earlier time with only later status lists.
+    if (entries.some(e => e.state === 'not_established' && /historical status is unavailable/.test(e.reason))) {
+      return [null, 'Status lists signed later cannot say what held at that time.'];
+    }
     const gone = q.authentic.details.find(e => e.state === 'not_established' && /unavailable/.test(e.reason));
     if (gone) return [null, short(gone.reason.split(':').slice(0, 2).join(':')) + ', which the chain cites, was not shown.'];
     const open = ORDER.filter(k => q[k].state === 'not_established');
@@ -207,19 +221,20 @@ export async function mountBoard(api, cfg) {
         + LABEL[x.state] + "</span></summary><p class='why'>" + esc(plain(x.summary)) + '</p></details>').join('') + '</div>';
   }
 
+  const note = st => (typeof cfg.note === 'function' ? cfg.note(st) : cfg.note) ?? '';
   function colHTML(a, R, mode) {
     if (!joined(a.id)) return "<section class='col absent' data-actor='" + a.id + "' aria-hidden='true'></section>";
     const s = STORY[step], st = stateOf(s), play = s.part === 'play', ctx = ctxOf(R, mode);
     const acting = !play && s.acts.includes(a.id), dim = !play && !acting;
     const pubs = a.publishes.map(p => {
       const changed = mode === 'evaluate' && p.uri && cfg.changedList(p.uri, st);
-      return "<span class='pub" + (changed ? ' changed' : '') + "'>" + esc(p.label) + (changed ? ' · re-signed in this browser' : '') + '</span>';
+      return "<span class='pub" + (changed ? ' changed' : '') + "'" + (changed ? " title='Re-signed in this browser'" : '') + '>' + esc(p.label) + (changed ? ' · re-signed' : '') + '</span>';
     }).join('');
     const issued = issuedSoFar();
     const rows = Array.from({ length: cfg.rows }, (_, i) => i + 1);
     const slot = row => {
       if (a.id === 'verifier') return row === 1 ? verdictHTML(R, mode) : row === 2
-        ? cfg.settings.map(spec => control(spec, st)).join('') + (cfg.note ? "<p class='limit'>" + cfg.note + '</p>' : '') : '';
+        ? cfg.settings.map(spec => control(spec, st)).join('') + (note(st) ? "<p class='limit'>" + note(st) + '</p>' : '') : '';
       const extra = cfg.extras[a.id]?.row === row ? cfg.extras[a.id].html(ctx) : '';
       return ASSETS.filter(x => x.actor === a.id && x.row === row && (mode !== 'build' || issued.has(x.code))).map(x => cardHTML(x, R, mode)).join('') + extra;
     };
@@ -261,13 +276,25 @@ export async function mountBoard(api, cfg) {
     const colour = v => ({ established: 'var(--ok)', not_required: 'var(--ok)', contradicted: 'var(--bad)', not_established: 'var(--unk)', plain: 'var(--soft)' }[v]);
     const markers = ['established', 'not_required', 'contradicted', 'not_established', 'plain'].map(k => "<marker id='m-" + k
       + "' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0 0 L10 5 L0 10 z' fill='" + colour(k) + "'/></marker>").join('');
+    const codeOf = uri => Object.keys(R.uris).find(code => R.uris[code] === uri);
+    const leave = cfg.leaveOut && mode === 'evaluate' && live(cfg.leaveOut.control);
     const edges = R.graph.edges.map(e => {
       const state = mode === 'evaluate' && e.state !== 'unused' ? e.state : 'plain';
-      return path(box(e.from), box(e.to), e.kind + ' e-' + state, state);
+      const drawn = path(box(e.from), box(e.to), e.kind + ' e-' + state, state);
+      const code = codeOf(e.to);
+      // A wide transparent copy of the line takes the click: leave that credential out.
+      if (!leave || !drawn || !code || code === 'D') return drawn;
+      const d = /d='([^']+)'/.exec(drawn)[1];
+      const out = stateOf(STORY[step])[cfg.leaveOut.key] === code;
+      return drawn + "<path class='edge-hit' data-leave='" + esc(code) + "' d='" + d + "'><title>" + (out ? 'Show ' : 'Leave out ') + esc(code) + '</title></path>';
     });
     const handovers = cfg.handovers(ctxOf(R, mode)).filter(([, to]) => to !== 'verdict' || joined('verifier'))
       .map(([from, to]) => path(find(from), find(to), 'handover', 'plain'));
     svg.innerHTML = '<defs>' + markers + '</defs>' + edges.join('') + handovers.join('');
+    svg.querySelectorAll('[data-leave]').forEach(el => el.addEventListener('click', () => {
+      const code = el.dataset.leave, key = cfg.leaveOut.key;
+      set(key, stateOf(STORY[step])[key] === code ? '' : code);
+    }));
   }
 
   // ---------------------------------------------------------------- selecting a credential
@@ -329,6 +356,7 @@ export async function mountBoard(api, cfg) {
     const actorColumns = ACTORS.filter(a => a.id !== 'verifier').length;
     $('board').style.setProperty('--actors', String(actorColumns));
     $('board').classList.toggle('many', actorColumns > 4);
+    if (cfg.columns) $('board').style.setProperty('--cols', cfg.columns);
     // A panel step draws a page instead of the board: it reads the generated credentials
     // and evaluates nothing.
     const panel = $('panel');

@@ -298,6 +298,8 @@ interface Evaluation {
   readonly texts?: Readonly<Record<string, string>>;
   /** What "fit for use" says when the verifier asked no conformity question. */
   readonly notAsked: string;
+  /** The time the question is about; the evaluation time when omitted. */
+  readonly activityTime?: string;
 }
 interface Evaluated {
   readonly profile: string;
@@ -337,7 +339,7 @@ async function evaluate(e: Evaluation): Promise<Evaluated> {
     profile: { id: profile.id, version: profile.version },
     trustConfigId: 'https://vc4qi.example/trust/fixture-anchors',
     evaluationTime: EVALUATION_TIME,
-    activityTime: EVALUATION_TIME,
+    activityTime: e.activityTime ?? EVALUATION_TIME,
     suppliedEvidence: e.supplied.filter(uri => uri !== e.withheld),
     resolverLimits: { maxResources: 64, maxDepth: 4, maxBytes: 5_000_000 },
     ...(e.conformity ? { conformity: { ...e.conformity } } : {}),
@@ -444,7 +446,7 @@ export interface BoardAsset {
   /** A short tag beside the kind, e.g. "proposal" for what the binding proposes rather than reuses. */
   readonly tag?: string;
 }
-export type BoardPart = 'anatomy' | 'build' | 'verify' | 'manipulate' | 'decide' | 'proposal' | 'present' | 'play';
+export type BoardPart = 'rules' | 'build' | 'verify' | 'manipulate' | 'decide' | 'when' | 'proposal' | 'present' | 'play';
 export const BOARD_PARTS: readonly { readonly id: BoardPart; readonly label: string }[] = [
   { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' }, { id: 'manipulate', label: 'Manipulate' },
   { id: 'decide', label: 'The verifier decides' }, { id: 'present', label: 'Present' }, { id: 'play', label: 'Your turn' },
@@ -502,9 +504,11 @@ export type RmActor = BoardActor;
 export type RmAsset = BoardAsset;
 export type RmStep = BoardStep<RmBoardState>;
 export type RmBoardResult = BoardResult<RmBoardState>;
-/** The RM story opens with the anatomy of one credential and closes with the recognition proposal. */
+/** The RM story: the design rules on one credential, the chain, and the question at issuance. */
 export const RM_PARTS: readonly { readonly id: BoardPart; readonly label: string }[] = [
-  { id: 'anatomy', label: 'A credential' }, ...BOARD_PARTS.slice(0, 4), { id: 'proposal', label: 'Proposal' }, ...BOARD_PARTS.slice(4),
+  { id: 'rules', label: 'Design rules' }, { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' },
+  { id: 'manipulate', label: 'Try to break it' }, { id: 'decide', label: 'Who decides' }, { id: 'when', label: 'At issuance' },
+  { id: 'proposal', label: 'Proposal' }, { id: 'play', label: 'Your turn' },
 ];
 const RM_URI = {
   NAB: 'https://nab.vc4qi.example/controller', PRODUCER: 'https://producer.vc4qi.example/controller', LAB: 'https://lab.vc4qi.example/controller',
@@ -545,90 +549,63 @@ export interface RmBoardState {
   readonly certificate: '178' | '197' | '520' | 'custom';
   readonly value: string; readonly uncertainty: string; readonly method: 'M1' | 'M2';
   readonly suspendA: boolean; readonly revokeS: boolean;
-  readonly tamper: boolean; readonly withholdS: boolean;
+  /** The holder edits a value after signing; or leaves one credential of the chain out ('' for none). */
+  readonly tamper: boolean; readonly withhold: '' | 'R' | 'A' | 'H' | 'O' | 'S';
   /** The verifier's root: this accreditation body, the Global ACI stand-in (abroad), or another body (abroad). */
   readonly trust: 'ab' | 'global-aci' | 'other'; readonly suspendGaci: boolean;
-  readonly ask: 'authorized' | 'fit'; readonly rule: 'guarded' | 'simple';
+  /** The verifier's question, its rule and its upper limit for As in mg/kg. */
+  readonly ask: 'authorized' | 'fit'; readonly rule: 'guarded' | 'simple'; readonly limit: '180' | '200' | '250';
+  /** Asked about today, or about D's activity on 20 January 2026; and which status lists answer that. */
+  readonly asOf: 'now' | 'issuance'; readonly archive: boolean;
 }
 export const RM_DEFAULT: RmBoardState = {
   certificate: '178', value: '178', uncertainty: '5', method: 'M1', suspendA: false, revokeS: false,
-  tamper: false, withholdS: false, trust: 'ab', suspendGaci: false, ask: 'fit', rule: 'guarded',
+  tamper: false, withhold: '', trust: 'ab', suspendGaci: false, ask: 'fit', rule: 'guarded', limit: '200',
+  asOf: 'now', archive: false,
 };
+/** D178's activity time: the day the material was certified. */
+export const RM_ACTIVITY = '2026-01-20T00:00:00Z';
 export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
-  { id: 'anatomy', part: 'anatomy', acts: ['rmp'], panel: 'anatomy',
-    title: 'One credential, read by where it points',
-    text: 'Certificate D178 itself. The envelope is W3C Verifiable Credentials 2.0; only its content and a few link words are ours. Up points to the authority it acts under, down to what it is about, sideways to its evidence; status says whether it still holds, and the proof seals it. A chain is these links: issued downward, checked upward.' },
+  { id: 'rules', part: 'rules', acts: [], panel: 'rules',
+    title: 'One credential, and the rules that make a chain',
+    text: 'Certificate D178 itself. Every link points somewhere: authority up, the material down, evidence sideways, status beside it.' },
 
-  { id: 'recognize', part: 'build', acts: ['gaci', 'ab'], joins: ['gaci', 'ab'], issues: ['R'],
-    title: 'Global ACI recognizes the accreditation body',
-    text: 'Our proposal: one credential per recognized body. R is about this accreditation body only: it may accredit reference material producers (ISO 17034) and laboratories (ISO/IEC 17025). Global ACI can suspend R without touching any other body. Both publish a key and status lists first, so anyone can check what they sign.' },
-  { id: 'accredit-lab', part: 'build', acts: ['ab', 'lab'], joins: ['lab'], issues: ['H'],
-    title: 'The accreditation body accredits the laboratory',
-    text: 'Accreditation H names a set, as an annex does: homogeneity studies of element contents in non-ferrous metals and alloys. It points up to R, pinned by digest: the body acts under its recognition. The laboratory publishes its own key and status list.' },
-  { id: 'accredit', part: 'build', acts: ['ab', 'rmp'], joins: ['rmp'], issues: ['A'],
-    title: 'The accreditation body accredits the RM producer',
-    text: 'Accreditation A names sets, as a real annex row does: non-ferrous metals and alloys, element contents, 0.1 mg/kg – 997 g/kg, by methods M1 and M2. It is a flexible scope: the producer keeps its own, narrower list. A points up to R; the body can suspend A.' },
-  { id: 'scope', part: 'build', acts: ['rmp'], issues: ['O'],
-    title: 'The producer declares its operational scope',
-    text: 'Scope O is the producer\'s own list within that flexible scope: arsenic in CuZn39Pb3 discs, method M1, 50 to 500 mg/kg. It cites A, so it can be no wider than A. That this brass is a non-ferrous alloy and arsenic an element content is not a guess: the binding\'s governed vocabulary says so (skos:broader).' },
-  { id: 'study', part: 'build', acts: ['lab', 'rmp'], issues: ['S'],
-    title: 'The laboratory studies disc lot 1',
-    text: 'Study S finds the batch homogeneous for arsenic. It is evidence: it supports a certificate and authorizes nothing.' },
-  { id: 'certify', part: 'build', acts: ['rmp', 'holder'], joins: ['holder'], issues: ['D'],
-    title: 'The producer certifies disc lot 1 and ships it',
-    text: 'Certificate D178: As = 178 ± 5 mg/kg (k = 2), method M1. It cites scope O for its authority and study S as evidence, and travels with the disc to the customer lab.' },
+  { id: 'grant', part: 'build', acts: ['gaci', 'ab'], joins: ['gaci', 'ab', 'lab', 'rmp'], issues: ['R', 'A', 'H'],
+    title: 'Authority is issued downward',
+    text: 'Global ACI recognizes the accreditation body (R, our proposal). The body accredits the producer (A) and the laboratory (H).' },
+  { id: 'act', part: 'build', acts: ['rmp', 'lab', 'holder'], joins: ['holder'], issues: ['O', 'S', 'D'],
+    title: 'The producer and the laboratory act',
+    text: 'The producer keeps its own scope O within A, the lab studies the lot (S), and certificate D178 cites both and ships with the disc.' },
 
   { id: 'verify', part: 'verify', acts: ['holder', 'verifier'], joins: ['verifier'], expect: 'accept',
-    title: 'The verifier checks the certificate',
-    text: 'It knows none of the parties in advance and trusts one root: the accreditation body. It follows every reference from D178 up to that root and answers six questions; R lies beyond its root and does not decide for it. The last question is its own: is As + U at most 200 mg/kg? 178 + 5 = 183.' },
+    title: 'Checked upward',
+    text: 'The verifier trusts one root, the accreditation body, and climbs every link from D178 to it. Its own rule: As + U at most 200 mg/kg.' },
 
-  { id: 'tamper', part: 'manipulate', acts: ['holder', 'verifier'], state: { tamper: true }, unlock: ['tamper'], expect: 'reject',
-    title: 'Someone changes the value after signing',
-    text: '178 becomes 150 in the bytes. The signature no longer matches them; nothing else needs to be checked.' },
-  { id: 'withheld', part: 'manipulate', acts: ['holder', 'verifier'], state: { withholdS: true }, unlock: ['withhold'], expect: 'not_established',
-    title: 'The study is left out',
-    text: 'Nothing shown is false, but the evidence D178 cites is missing. The verifier cannot tell, and "cannot tell" is never accepted.' },
-  { id: 'range', part: 'manipulate', acts: ['rmp', 'verifier'], state: { certificate: '520' }, unlock: ['certificate'], expect: 'reject',
-    title: 'The producer certifies a value outside its scope',
-    text: 'Certificate D520 says 520 mg/kg and is correctly signed. The accreditation would allow it, but the producer\'s own scope ends at 500 mg/kg, and the certificate draws its authority from that scope, not from the accreditation directly.' },
-  { id: 'suspend', part: 'manipulate', acts: ['ab', 'verifier'], state: { suspendA: true }, unlock: ['suspend'], expect: 'reject',
-    title: 'The accreditation body suspends the accreditation',
-    text: 'It sets one bit in its suspension list and signs the list again, here in your browser. Nothing in D178 changes, yet the verifier may no longer rely on it.' },
+  { id: 'break', part: 'manipulate', acts: ['holder', 'rmp', 'ab', 'lab'], expect: 'accept',
+    unlock: ['withhold', 'tamper', 'certificate', 'suspend', 'revoke'],
+    title: 'Try to break it',
+    text: 'Click a line to leave that credential out. Edit a value after signing, certify 520 or your own value, suspend A or revoke S.' },
 
-  { id: 'guarded', part: 'decide', acts: ['verifier'], state: { certificate: '197', rule: 'guarded' }, unlock: ['rule'], expect: 'reject',
-    title: 'Verifier 1 applies guarded acceptance',
-    text: 'Certificate D197: As = 197 ± 5 mg/kg. Under guarded acceptance the uncertainty counts against the value: 197 + 5 = 202 is above 200, so it is not fit for use.' },
-  { id: 'simple', part: 'decide', acts: ['verifier'], state: { certificate: '197', rule: 'simple' }, unlock: ['rule'], expect: 'accept',
-    title: 'Verifier 2 applies simple acceptance',
-    text: 'The same bytes and the same chain. Under simple acceptance only the value counts: 197 is at most 200. The verifier\'s rule decides, not the issuer.' },
-  { id: 'abroad', part: 'decide', acts: ['verifier'], state: { trust: 'global-aci' }, unlock: ['trust'], expect: 'accept',
-    title: 'Verifier 3 trusts Global ACI, not this accreditation body',
-    text: 'A verifier abroad has configured only Global ACI as its root. It follows the same chain up to A and H, then one link further: both point up to R, Global ACI\'s recognition of this accreditation body for reference material production under ISO 17034 and for testing under ISO/IEC 17025. R is checked like any credential.' },
-  { id: 'abroad-range', part: 'decide', acts: ['rmp', 'verifier'], state: { trust: 'global-aci', certificate: '520' }, unlock: ['certificate'], expect: 'reject',
-    title: 'Recognized, and still out of scope',
-    text: 'The same verifier abroad, certificate D520. Global ACI recognizes the accreditation body, the accreditation body accredits the producer, and 520 mg/kg is still outside the producer\'s own scope. Recognition says who may accredit; it does not say whether this claim is covered.' },
-  { id: 'aci-suspend', part: 'decide', acts: ['verifier'], state: { trust: 'global-aci', suspendGaci: true }, unlock: ['suspendGaci'], expect: 'reject',
-    title: 'Global ACI suspends its recognition of this body',
-    text: 'It sets the one bit for R in its suspension list and signs the list again, here in your browser. No other recognized body is touched, and nothing below R is re-issued. Verifier 3 may no longer rely on the chain; a verifier that trusts the accreditation body directly is not affected: which root a verifier trusts is its own policy.' },
+  { id: 'decide', part: 'decide', acts: ['verifier', 'rmp'], state: { certificate: '197' }, unlock: ['rule', 'limit', 'ask', 'certificate'], expect: 'reject',
+    title: 'The verifier decides, not the issuer',
+    text: 'D197: 197 ± 5 mg/kg, authorized. Guarded acceptance counts the uncertainty: 202 is above 200. Change the rule or the limit.' },
+  { id: 'abroad', part: 'decide', acts: ['verifier', 'gaci', 'rmp'], state: { trust: 'global-aci' }, unlock: ['trust', 'suspendGaci', 'certificate'], expect: 'accept',
+    title: 'A verifier abroad trusts only Global ACI',
+    text: 'It climbs one link further: A and H point up to R. Suspend R, or certify 520: recognized is not the same as in scope.' },
+
+  { id: 'when', part: 'when', acts: ['ab', 'verifier'], state: { suspendA: true, asOf: 'issuance', archive: true },
+    unlock: ['asOf', 'archive', 'suspend'], expect: 'accept',
+    title: 'Was it valid when it was issued?',
+    text: 'A was suspended in September; D178 was certified on 20 January. Asked about today it fails. Asked about January, the lists kept from January answer: A held.' },
 
   { id: 'proposal', part: 'proposal', acts: ['gaci', 'ab'], panel: 'proposal',
     title: 'Proposal: from recognized body to accreditation',
-    text: 'How we propose to use Recognized Entities in quality infrastructure: one recognition credential per body, which the body\'s accreditations point up to. It uses the Recognized Entities vocabulary as drafted; the per-recognition shape and the termsOfUse link are our proposal, for discussion.' },
+    text: 'One recognition credential per body, which its accreditations point up to, and dated status lists for the question at issuance.' },
 
-  { id: 'present', part: 'present', acts: ['holder', 'verifier'],
-    title: 'The holder presents what the verifier asks for',
-    text: 'Not evaluated yet. In a presentation the customer lab would sign a fresh envelope around the certificate, answering the verifier\'s challenge: proof of who presents, and that the presentation was made for this verifier now. It adds no trust to the certificate; the chain still decides. With selective disclosure it could reveal only what the question needs.',
-    presentation: [
-      { credential: 'Certificate D178', reveal: 'Issuer, batch, the arsenic result and its uncertainty', hide: 'The copper, zinc and lead results' },
-      { credential: 'Scope O, accreditation A', reveal: 'Everything the authority check reads', hide: 'Nothing: they are the authority' },
-      { credential: 'Study S', reveal: 'Issuer, batch, study type and outcome', hide: 'In a real study: the measurement data' },
-      { credential: 'The presentation', reveal: 'Holder, the verifier\'s challenge and domain', hide: '–' },
-    ] },
-
-  { id: 'play', part: 'play', acts: ['ab', 'lab', 'rmp', 'holder', 'verifier'],
-    unlock: ['suspendGaci', 'suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'ask', 'rule'],
+  { id: 'play', part: 'play', acts: ['gaci', 'ab', 'lab', 'rmp', 'holder', 'verifier'],
+    unlock: ['suspendGaci', 'suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'ask', 'rule', 'limit', 'asOf', 'archive'],
     title: 'Your turn',
-    text: 'Every action is live. Certify another value, suspend or revoke, change or leave out a credential, or change what the verifier trusts and asks. Each change is evaluated at once.' },
+    text: 'Every action is live: leave out, edit, certify, suspend or revoke, and change what the verifier trusts, asks and when.' },
 ];
 
 const RM_PROFILE = 'rm-verifier-1';
@@ -642,6 +619,21 @@ const RM_GLOBAL_ACI = 'rm-verifier-global-aci-1';
     id: 'https://vc4qi.example/profiles/rm-verifier-other-anchor',
     description: 'Demonstrator-only variant of rm-verifier-1 whose only trust anchor is another, fictional accreditation body.',
     trustAnchors: base.trustAnchors.map(anchor => ({ ...anchor, id: 'https://other-ab.vc4qi.example/controller' })) });
+}
+/** The verifier's profile with its As limit set to `limit` mg/kg (demonstrator-only variants). */
+function rmProfileWithLimit(name: string, limit: string): string {
+  if (limit === '200') return name;
+  const variant = `${name} (limit ${limit} mg/kg, demonstrator)`;
+  if (!loaded.rm.profiles[variant]) {
+    const base = loaded.rm.profiles[name]!;
+    const json = structuredClone(resources.rm.profiles[name] ?? resources.rm.profiles[RM_PROFILE]) as JsonObject;
+    if (name === RM_OTHER_ANCHOR) json.trustAnchors = base.trustAnchors.map(a => ({ id: a.id, purposes: [...a.purposes] }));
+    const conformity = json.conformity as { requirements: { upperLimit: { value: string } }[] };
+    conformity.requirements[0]!.upperLimit.value = limit;
+    loaded.rm.profiles[variant] = loadRelianceProfile({ ...json, id: `${base.id}-limit-${limit}`,
+      description: `Demonstrator-only variant of ${base.id} whose As limit is ${limit} mg/kg.` });
+  }
+  return variant;
 }
 const rmText = (uri: string) => textOf('rm', uri);
 const certificateUri = (state: RmBoardState) =>
@@ -673,23 +665,29 @@ export async function evaluateRmBoard(over: Partial<RmBoardState> = {}): Promise
   if (state.suspendGaci) {
     texts[RM_URI.GACI_SUSPENSION] = await resignedList('rm', RM_URI.GACI_SUSPENSION, 'global-aci', RM_URI.GACI);
   }
-  const signedLive = Object.keys(texts);
+  // Asked about January with the lists kept from January: those answer status then,
+  // in place of today's (including any re-signed here).
+  if (state.asOf === 'issuance' && state.archive) for (const list of resources.rm.archive ?? []) texts[list.uri] = list.text;
+  const kept = new Set((state.asOf === 'issuance' && state.archive ? resources.rm.archive ?? [] : []).map(list => list.uri));
+  const signedLive = Object.keys(texts).filter(uri => !kept.has(uri));
   if (state.tamper) {
     // Change the As value in the bytes the holder shows, without re-signing.
     const text = texts[target] ?? rmText(target);
     const shown = (JSON.parse(text) as any).credentialSubject.materialPropertiesList[0].results[0].data.quantity.value as string;
     texts[target] = edited(text, `"value": "${shown}"`, `"value": "${shown === '150' ? '151' : '150'}"`);
   }
+  const uris = { R: RM_URI.R, A: RM_URI.A, H: RM_URI.H, O: RM_URI.O, S: RM_URI.S, D: target };
+  const root = state.trust === 'ab' ? RM_PROFILE : state.trust === 'global-aci' ? RM_GLOBAL_ACI : RM_OTHER_ANCHOR;
   const r = await evaluate({
-    binding: 'rm', profileName: state.trust === 'ab' ? RM_PROFILE : state.trust === 'global-aci' ? RM_GLOBAL_ACI : RM_OTHER_ANCHOR,
+    binding: 'rm', profileName: state.ask === 'fit' ? rmProfileWithLimit(root, state.limit) : root,
     requestId: 'urn:vc4qi:demonstrator:rm-board', target,
     claims: [{ id: 'as', sourcePointer: '/credentialSubject/materialPropertiesList/0/results/0' }], supplied: [], texts,
-    withheld: state.withholdS ? RM_URI.S : undefined,
+    withheld: state.withhold ? uris[state.withhold] : undefined,
+    activityTime: state.asOf === 'issuance' ? RM_ACTIVITY : EVALUATION_TIME,
     ...(state.ask === 'fit' ? { conformity: { requirementId: 'as-mass-fraction-max-200-mg-per-kg',
       decisionRuleId: state.rule === 'simple' ? 'simple-acceptance' : 'guarded-acceptance-expanded-u' } } : {}),
     notAsked: 'The verifier asked only whether the value is authorized; no limit was applied.',
   });
-  const uris = { R: RM_URI.R, A: RM_URI.A, H: RM_URI.H, O: RM_URI.O, S: RM_URI.S, D: target };
   return { ...r, state, certificate: target, uris, signedLive };
 }
 

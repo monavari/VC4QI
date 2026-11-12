@@ -11,6 +11,8 @@ declare module 'virtual:demo-resources' {
       digestSRI: `sha384-${string}`;
       text: string;
     }[];
+    /** Status lists kept from an earlier time (same identifiers as current ones). */
+    archive?: BindingResources['files'];
   }
   const resources: { rm: BindingResources; cal: BindingResources; gs: BindingResources };
   export default resources;

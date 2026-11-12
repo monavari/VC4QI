@@ -60,7 +60,7 @@ button, input, select{ font:inherit; color:inherit; }
 .stepper button:disabled{ opacity:.35; cursor:default; }
 
 /* step header: level 2 title, level 3 acting actors, level 5 lead */
-.stephead{ padding:var(--s3) 0; display:grid; gap:var(--s2); }
+.stephead{ padding:var(--s2) 0 var(--s3); display:grid; gap:var(--s2); }
 .kicker{ margin:0; font-size:.82rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--petrol); }
 h1{ margin:0; font-size:clamp(1.5rem, 1.15rem + .9vw, 2rem); line-height:1.2; font-weight:750; letter-spacing:-.01em; }
 .acts{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2) var(--s3); margin:0; font-size:1.05rem; font-weight:650; }
@@ -123,7 +123,7 @@ body[data-mode="build"] .col.dim > .slot{ opacity:.42; }
   .slot.r1{ grid-row:2; } .slot.r2{ grid-row:3; } .actions{ grid-row:4; }
   .colhead .does{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; overflow:hidden; }
   /* Room for a citation between two credentials of the same actor (D → O). */
-  .slot.r2, .slot.r3{ margin-top:2.25rem; }
+  .slot.r2, .slot.r3{ margin-top:1.75rem; }
   .board.rows-3{ grid-template-rows:repeat(5, auto); }
   .board.rows-3 .col{ grid-row:1 / span 5; }
   .board.rows-3 .slot.r3{ grid-row:4; } .board.rows-3 .actions{ grid-row:5; }
@@ -219,6 +219,9 @@ body[data-mode="build"] .col.dim > .slot{ opacity:.42; }
 .edge.handover{ stroke:var(--soft); stroke-dasharray:8 6; stroke-width:2; }
 .e-established, .e-not_required{ stroke:var(--ok); } .e-unused{ stroke:var(--soft); } .e-contradicted{ stroke:var(--bad); stroke-width:3.5; } .e-not_established{ stroke:var(--unk); stroke-width:3; }
 .e-plain{ stroke:var(--soft); }
+/* The click target of a line that can leave its credential out: wide, invisible. */
+.edge-hit{ fill:none; stroke:transparent; stroke-width:18; pointer-events:stroke; cursor:pointer; }
+.edge-hit:hover{ stroke:rgba(0,85,110,.14); }
 .legend{ margin:var(--s3) 0 0; font-size:.82rem; color:var(--muted); }
 .legend i{ display:inline-block; width:2rem; height:0; vertical-align:middle; margin:0 .35rem 0 .6rem; border-top:3px solid var(--soft); }
 .legend i.dot{ border-top-style:dotted; } .legend i.dash{ border-top:2px dashed var(--soft); }
@@ -244,29 +247,25 @@ footer p{ margin:var(--s1) 0; max-width:60rem; }
 .panel ul{ margin:0; padding-left:1.1rem; display:grid; gap:var(--s1); }
 .panel .term{ font-family:var(--mono); font-size:.86rem; color:var(--ink); background:var(--wash); border-radius:4px; padding:0 .3rem; white-space:nowrap; }
 .panel .src{ font-size:.82rem; color:var(--muted); }
-.anatomy{ display:grid; gap:var(--s4); }
-.cred{ border:2px solid var(--ink); border-radius:var(--radius); background:var(--raise); padding:var(--s3) var(--s4); display:grid; gap:var(--s2); }
-.cred-head{ display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s1) var(--s3); padding-bottom:var(--s2); border-bottom:1px solid var(--line); }
-.cred-head .code{ font:700 1rem/1.2 var(--mono); }
-.cred-head b{ font-size:1.1rem; }
-.cred-head small{ font-size:.86rem; color:var(--muted); }
-.dir{ display:grid; grid-template-columns:2.4rem minmax(0, 1fr); gap:var(--s1) var(--s3); align-items:start; padding:var(--s2) 0; border-bottom:1px solid var(--line); }
-.dir:last-child{ border-bottom:0; }
-.dir .glyph{ grid-row:1 / span 2; font:700 1.6rem/1 var(--sans); color:var(--ink); text-align:center; padding-top:.1rem; }
-.dir .what{ font-size:1.02rem; font-weight:650; }
-.dir .what span{ font-weight:400; color:var(--muted); }
-.dir .fields{ display:flex; flex-wrap:wrap; gap:var(--s1) var(--s3); font-size:.95rem; }
-/* State: a switch, drawn, since it is on until its issuer turns it off. */
-.dir.d-state .glyph::before{ content:''; display:inline-block; width:1.6rem; height:.95rem; border:2px solid var(--ink); border-radius:999px; background:radial-gradient(circle at 70% 50%, var(--ink) 0 .26rem, transparent .29rem); vertical-align:middle; }
-.aside{ display:grid; gap:var(--s4); align-content:start; }
-.aside section{ border:1px solid var(--line); border-radius:var(--radius); padding:var(--s3) var(--s4); background:var(--paper); }
-.prov{ list-style:none; padding:0 !important; }
-.prov li{ display:grid; gap:.15rem; padding:var(--s1) 0; border-bottom:1px solid var(--line); }
-.prov li:last-child{ border-bottom:0; }
-.prov .who{ font-size:.9rem; font-weight:700; }
-.prov .terms{ display:flex; flex-wrap:wrap; gap:.3rem; }
-.chainline{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--s1) var(--s2); font:700 .95rem/1.4 var(--mono); }
-.chainline .up{ font-family:var(--sans); color:var(--muted); font-weight:400; }
+/* Start page: the credential drawn (left) and the design rules (right). */
+.rulespage{ display:grid; gap:var(--s4); align-items:start; }
+.vcfig{ margin:0; border:1px solid var(--line); border-radius:var(--radius); background:var(--paper); padding:var(--s3); }
+.vcfig svg{ display:block; width:100%; height:auto; max-height:62vh; }
+.vcfig text{ font-family:var(--sans); font-size:15px; fill:var(--ink); }
+.vcfig text.b{ font-weight:700; }
+.vcfig text.s{ font-size:13px; fill:var(--muted); }
+.vcfig text.m{ font-family:var(--mono); font-size:13px; fill:var(--muted); }
+.vcfig text.m2{ font-family:var(--mono); }
+.vcfig .nb{ fill:var(--raise); stroke:var(--line); stroke-width:1.5; }
+.vcfig .vc{ fill:var(--raise); stroke:var(--ink); stroke-width:2.5; }
+.vcfig .ln{ stroke:var(--ink); stroke-width:2; }
+.vcfig .ln.dot{ stroke-dasharray:2 5; stroke-linecap:round; stroke-width:3; }
+.vcfig .ah{ fill:var(--ink); }
+.rules{ border:1px solid var(--line); border-radius:var(--radius); padding:var(--s3) var(--s4); background:var(--paper); }
+.rules ol{ margin:0; padding-left:1.4rem; display:grid; gap:var(--s2); font-size:1.02rem; line-height:1.4; }
+.rules li b{ font-weight:700; }
+.rules .terms{ white-space:normal; }
+.rules .src{ margin:var(--s3) 0 0; }
 .proposal{ display:grid; gap:var(--s4); }
 .proposal .compare th{ font-size:.86rem; }
 .proposal .compare thead th{ font-size:.95rem; color:var(--ink); }
@@ -278,9 +277,11 @@ footer p{ margin:var(--s1) 0; max-width:60rem; }
 .proposal .boxes section.open{ border-style:dashed; }
 .panel .limit{ margin:0; font-size:.82rem; color:var(--muted); }
 @media (min-width:64rem){
-  .anatomy{ grid-template-columns:minmax(0, 1.25fr) minmax(0, 1fr); align-items:start; }
+  .rulespage{ grid-template-columns:minmax(0, 1.15fr) minmax(0, 1fr); }
   .proposal .boxes{ grid-template-columns:1fr 1fr; }
   /* More than four actors: a narrower verifier column, and a name may drop below its monogram. */
-  .board.many{ grid-template-columns:repeat(var(--actors, 5), minmax(0, 1fr)) minmax(0, 1.3fr); column-gap:var(--s3); }
+  .board.many{ grid-template-columns:var(--cols, repeat(var(--actors, 5), minmax(0, 1fr)) minmax(0, 1.3fr)); column-gap:var(--s3); }
+  /* What each actor does is told while the chain is built; afterwards the room goes to the credentials. */
+  body:not([data-mode="build"]) .colhead .does{ display:none; }
   .board.many .colhead .name{ flex-wrap:wrap; row-gap:var(--s1); }
 }
