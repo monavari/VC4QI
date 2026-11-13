@@ -182,21 +182,34 @@ const party = (value: unknown) => {
   const host = /^https:\/\/([^./]+)\./.exec(String(iri))?.[1];
   return host === undefined ? String(iri).split('#')[0]!.split(':').pop()! : PARTY[host] ?? host;
 };
+/** Who signs: an authority (grants or recognizes) or an actor (works under a grant), by host. */
+const GROUP: Record<string, 'authority' | 'actor'> = {
+  nab: 'authority', 'global-aci': 'authority', zls: 'authority', ministry: 'authority',
+  producer: 'actor', lab: 'actor', nmi: 'actor', testlab: 'actor', 'testlab-gs': 'actor', 'gs-body': 'actor', maker: 'actor', clone: 'actor',
+};
+const groupOf = (value: unknown) => {
+  const iri = value !== null && typeof value === 'object' ? (value as { id?: unknown }).id : value;
+  return GROUP[/^https:\/\/([^./]+)\./.exec(String(iri))?.[1] ?? ''];
+};
 const ROLE: Record<string, string> = {
-  RmAccreditation: 'Accreditation', RmLabAuthority: 'Laboratory authority', RmOperationalScope: 'Operational scope',
-  RmStudy: 'Homogeneity study', RmCertificate: 'RM certificate (DRMD)', RecognizedEntityCredential: 'Recognition',
+  RmAccreditation: 'Producer accreditation', RmLabAuthority: 'Laboratory accreditation', RmOperationalScope: 'Operational scope',
+  RmStudy: 'Homogeneity study', RmCertificate: 'RM certificate (DRMD)', RecognizedEntityCredential: 'Recognition of the body',
   CalAccreditation: 'Accreditation', CalOperationalScope: 'Operational scope', CalLegalMandate: 'Statutory mandate',
   CalCertificate: 'Calibration certificate', CalTestReport: 'Test report',
   GsAccreditation: 'Accreditation', GsSchemeAuthorization: 'Scheme authorization', GsCertificate: 'GS certificate',
   GsTestReport: 'Type examination', GsInspectionReport: 'Factory inspection', GsMarkCredential: 'GS-mark credential', ProductPassport: 'Product passport (DPP)',
 };
 export interface GraphNode {
-  readonly uri: string; readonly name: string; readonly role: string; readonly parties: string;
+  /** `name`: the identifier's last part (A); `code`: what the page shows (PA1). */
+  readonly uri: string; readonly name: string; readonly code: string; readonly role: string; readonly parties: string;
+  /** The credential's own type, and the signer's group. */
+  readonly type: string; readonly group: 'authority' | 'actor' | undefined;
   readonly layer: number; readonly present: boolean; readonly state: SemanticState; readonly target: boolean;
 }
 /** `unused`: a link to a credential the verifier verified but did not rely on, such as R for a verifier whose root is the accreditation body. */
 /** `authority`: termsOfUse IssuedUnderPolicy (or a binding's own authorization policy); `recognition`: termsOfUse RecognitionPolicy (the issuer's recognition, no authority); `support`: evidence. */
-export interface GraphEdge { readonly from: string; readonly to: string; readonly kind: 'authority' | 'recognition' | 'support'; readonly state: SemanticState | 'not_required' | 'unused' }
+/** `policy`: the termsOfUse entry's type (IssuedUnderPolicy, RecognitionPolicy, a binding's own), or `evidence`. */
+export interface GraphEdge { readonly from: string; readonly to: string; readonly kind: 'authority' | 'recognition' | 'support'; readonly policy: string; readonly state: SemanticState | 'not_required' | 'unused' }
 export interface Graph { readonly nodes: readonly GraphNode[]; readonly edges: readonly GraphEdge[] }
 
 /**
@@ -214,12 +227,12 @@ function buildGraph(target: string, texts: Record<string, string>, result: Relia
   const docs = new Map<string, Record<string, unknown>>();
   for (const [uri, text] of Object.entries(texts)) { try { docs.set(uri, JSON.parse(text) as Record<string, unknown>); } catch { /* not JSON */ } }
   const refs = (d: Record<string, unknown> | undefined) => [
-    ...((d?.termsOfUse ?? []) as { authorizationCredential?: { id?: string } }[])
-      .map(t => t.authorizationCredential?.id).filter((x): x is string => typeof x === 'string').map(to => ({ to, kind: 'authority' as const })),
-    ...((d?.termsOfUse ?? []) as { recognitionCredential?: { id?: string } }[])
-      .map(t => t.recognitionCredential?.id).filter((x): x is string => typeof x === 'string').map(to => ({ to, kind: 'recognition' as const })),
+    ...((d?.termsOfUse ?? []) as { type?: string; authorizationCredential?: { id?: string } }[])
+      .filter(t => typeof t.authorizationCredential?.id === 'string').map(t => ({ to: t.authorizationCredential!.id!, kind: 'authority' as const, policy: String(t.type ?? 'termsOfUse') })),
+    ...((d?.termsOfUse ?? []) as { type?: string; recognitionCredential?: { id?: string } }[])
+      .filter(t => typeof t.recognitionCredential?.id === 'string').map(t => ({ to: t.recognitionCredential!.id!, kind: 'recognition' as const, policy: String(t.type ?? 'termsOfUse') })),
     ...((d?.evidence ?? []) as { id?: string }[]).map(e => e.id).filter((x): x is string => typeof x === 'string')
-      .map(to => ({ to, kind: 'support' as const })),
+      .map(to => ({ to, kind: 'support' as const, policy: 'evidence' })),
   ];
   const verification = new Map(result.artifactVerification.map(a => [a.artifactId, a.state]));
   const witnesses = result.decision === 'accept'
@@ -231,14 +244,14 @@ function buildGraph(target: string, texts: Record<string, string>, result: Relia
   const seenEdge = new Set<string>();
   while (queue.length > 0) {
     const [uri, viaSupport] = queue.shift()!;
-    for (const { to, kind } of refs(docs.get(uri))) {
+    for (const { to, kind, policy } of refs(docs.get(uri))) {
       const key = `${uri}>${to}`;
       const support = viaSupport || kind === 'support';
       if (!seenEdge.has(key)) {
         seenEdge.add(key);
         // The target's own links carry the answers to "authorized" and "supported";
         // deeper links show the verification of the credential they point to.
-        edges.push({ from: uri, to, kind,
+        edges.push({ from: uri, to, kind, policy,
           state: uri === target ? (kind === 'support' ? supported : authorized)
             : witnesses && !witnesses.has(to) ? 'unused' : verification.get(to) ?? 'not_established' });
       }
@@ -251,7 +264,9 @@ function buildGraph(target: string, texts: Record<string, string>, result: Relia
     const d = docs.get(uri);
     const type = Array.isArray(d?.type) ? String((d.type as unknown[])[1]) : '';
     const subject = (d?.credentialSubject ?? {}) as Record<string, unknown>;
-    return { uri, name: short(uri), role: ROLE[type] ?? (type || 'not supplied'), layer: l, present: d !== undefined, target: uri === target,
+    // RM credentials show a code (PA1 for A); the other bindings' names already are codes.
+    return { uri, name: short(uri), code: RM_CODES[short(uri)] ?? short(uri), role: ROLE[type] ?? (type || 'not supplied'), type, group: d === undefined ? undefined : groupOf(d.issuer),
+      layer: l, present: d !== undefined, target: uri === target,
       parties: d === undefined ? 'withheld' : `${party(d.issuer)} → ${party(subject.id)}`,
       state: verification.get(uri) ?? 'not_established' };
   });
@@ -433,6 +448,9 @@ export async function evaluateScenario(options: ScenarioOptions): Promise<Scenar
  */
 export interface BoardActor {
   readonly id: string; readonly mono: string; readonly name: string; readonly does: string;
+  /** Its colour on the board: an authority (grants or recognizes), an actor (does the work
+   * under a grant), or neither (holder, verifier). */
+  readonly group?: 'authority' | 'actor';
   /** What the actor publishes, by URI where it is a signed document. */
   readonly publishes: readonly { readonly label: string; readonly uri?: string }[];
 }
@@ -449,7 +467,7 @@ export interface BoardAsset {
   /** A short tag beside the kind, e.g. "proposal" for what the binding proposes rather than reuses. */
   readonly tag?: string;
 }
-export type BoardPart = 'anatomy' | 'rules' | 'build' | 'verify' | 'manipulate' | 'decide' | 'when' | 'proposal' | 'present' | 'play';
+export type BoardPart = 'anatomy' | 'build' | 'verify' | 'manipulate' | 'decide' | 'when' | 'proposal' | 'present' | 'play';
 export const BOARD_PARTS: readonly { readonly id: BoardPart; readonly label: string }[] = [
   { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' }, { id: 'manipulate', label: 'Manipulate' },
   { id: 'decide', label: 'The verifier decides' }, { id: 'present', label: 'Present' }, { id: 'play', label: 'Your turn' },
@@ -507,9 +525,9 @@ export type RmActor = BoardActor;
 export type RmAsset = BoardAsset;
 export type RmStep = BoardStep<RmBoardState>;
 export type RmBoardResult = BoardResult<RmBoardState>;
-/** The RM story: the design rules on one credential, the chain, and the question at issuance. */
+/** The RM story: one credential and the design rules, the chain, and the question at issuance. */
 export const RM_PARTS: readonly { readonly id: BoardPart; readonly label: string }[] = [
-  { id: 'anatomy', label: 'The credential' }, { id: 'rules', label: 'Design rules' }, { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' },
+  { id: 'anatomy', label: 'The credential' }, { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' },
   { id: 'manipulate', label: 'Try to break it' }, { id: 'decide', label: 'Who decides' }, { id: 'when', label: 'At issuance' },
   { id: 'proposal', label: 'Proposal' }, { id: 'play', label: 'Your turn' },
 ];
@@ -524,20 +542,28 @@ const RM_URI = {
   GACI_STATUS: 'https://global-aci.vc4qi.example/status/1', R: 'https://global-aci.vc4qi.example/credentials/R',
 } as const;
 export const RM_ACTORS: readonly BoardActor[] = [
-  { id: 'gaci', mono: 'ACI', name: 'Global ACI', does: 'Recognizes accreditation bodies after peer evaluation. Can suspend one recognition. A fictional stand-in.',
+  { id: 'gaci', mono: 'GACI', group: 'authority', name: 'Global ACI', does: 'Recognizes accreditation bodies after peer evaluation. Can suspend one recognition. A fictional stand-in.',
     publishes: [{ label: 'Key', uri: RM_URI.GACI }, { label: 'Revocation list', uri: RM_URI.GACI_STATUS }, { label: 'Suspension list', uri: RM_URI.GACI_SUSPENSION }] },
-  { id: 'ab', mono: 'AB', name: 'Accreditation body', does: 'Accredits the producer and the laboratory. Can suspend.',
+  { id: 'ab', mono: 'AB', group: 'authority', name: 'Accreditation body', does: 'Accredits the producer and the laboratory. Can suspend.',
     publishes: [{ label: 'Key', uri: RM_URI.NAB }, { label: 'Revocation list', uri: RM_URI.NAB_STATUS }, { label: 'Suspension list', uri: RM_URI.SUSPENSION }] },
-  { id: 'lab', mono: 'LAB', name: 'Laboratory', does: 'Studies the batch under its accreditation. Can revoke its study.',
+  { id: 'lab', mono: 'LAB', group: 'actor', name: 'Laboratory', does: 'Studies the batch under its accreditation. Can revoke its study.',
     publishes: [{ label: 'Key', uri: RM_URI.LAB }, { label: 'Revocation list', uri: RM_URI.LAB_STATUS }] },
-  { id: 'rmp', mono: 'RMP', name: 'RM producer', does: 'Declares its scope, certifies the material and ships it.',
+  { id: 'rmp', mono: 'RMP', group: 'actor', name: 'RM producer', does: 'Declares its scope, certifies the material and ships it.',
     publishes: [{ label: 'Key', uri: RM_URI.PRODUCER }, { label: 'Revocation list', uri: RM_URI.PRODUCER_STATUS }] },
-  { id: 'holder', mono: 'H', name: 'Customer lab', does: 'Bought disc lot 1. Holds its certificate and shows it.',
+  { id: 'holder', mono: 'CUST', name: 'Customer lab', does: 'Bought disc lot 1. Holds its certificate and shows it.',
     publishes: [{ label: 'Wallet' }] },
-  { id: 'verifier', mono: 'V', name: 'Verifier', does: 'Relies on the certificate only as far as its own profile allows.',
+  { id: 'verifier', mono: 'VER', name: 'Verifier', does: 'Relies on the certificate only as far as its own profile allows.',
     publishes: [{ label: 'Profile' }] },
 ];
-/** D is the certificate shown: D178, D197, D520 or the one signed live. */
+/**
+ * The code each RM credential shows: three or four letters and a number. The signed test
+ * credentials keep the paper's letters in their identifiers (credentials/A); these codes
+ * are display only.
+ */
+export const RM_CODES: Readonly<Record<string, string>> = {
+  R: 'REC1', A: 'PA1', A2: 'PA2', H: 'LA1', O: 'OS1', S: 'HS1', D178: 'RM178', D197: 'RM197', D520: 'RM520', 'D-live': 'RM-own',
+};
+/** D is the certificate shown: RM178, RM197, RM520 or the one signed live. */
 export const RM_ASSETS: readonly BoardAsset[] = [
   { code: 'R', label: 'Recognition of the body', tag: 'proposal', kind: 'grant', actor: 'gaci', row: 1, about: 'ab', heldBy: 'ab' },
   { code: 'A', label: 'Producer accreditation', kind: 'grant', actor: 'ab', row: 1, about: 'rmp', heldBy: 'rmp' },
@@ -569,56 +595,61 @@ export const RM_DEFAULT: RmBoardState = {
 /** D178's activity time: the day the material was certified. */
 export const RM_ACTIVITY = '2026-01-20T00:00:00Z';
 export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
-  { id: 'anatomy', part: 'anatomy', acts: [], panel: 'anatomy',
-    title: 'What a verifiable credential is made of',
-    text: 'Every card in this story is one W3C verifiable credential. Its parts, what the standard says each is for, and how this demonstrator uses it.' },
-
-  { id: 'rules', part: 'rules', acts: [], panel: 'rules',
-    title: 'One credential, and the rules that make a chain',
-    text: 'Certificate D178 itself. Every link points somewhere: authority up, the material down, evidence sideways, status beside it.' },
+  { id: 'credential', part: 'anatomy', acts: [], panel: 'credential',
+    title: 'One credential, its links and the rules',
+    text: 'Every card is a W3C verifiable credential. Its links are standard fields; the type of each term of use says what the link means.' },
 
   { id: 'recognize', part: 'build', acts: ['gaci', 'ab'], joins: ['gaci', 'ab'], issues: ['R'],
     title: 'Global ACI recognizes the accreditation body',
-    text: 'After peer evaluation, Global ACI recognizes the body for RM production (ISO 17034) and testing (ISO/IEC 17025). Recognition grants no authority: the body’s authority is its national appointment.' },
-  { id: 'accredit', part: 'build', acts: ['ab'], joins: ['lab', 'rmp'], issues: ['A', 'H'],
-    title: 'The accreditation body accredits the producer and the laboratory',
-    text: 'The body accredits the producer (A) and the laboratory (H). Each names R as a RecognitionPolicy: issued while recognized, not under R’s authority.' },
-  { id: 'act', part: 'build', acts: ['rmp', 'lab', 'holder'], joins: ['holder'], issues: ['O', 'S', 'D'],
-    title: 'The producer and the laboratory act',
-    text: 'The producer issues its scope O under A, the lab its study S under H, and certificate D178 under O, with S as evidence.' },
+    text: 'After peer evaluation, for RM production (ISO 17034) and testing (ISO/IEC 17025). Recognition grants no authority.' },
+  { id: 'accredit-producer', part: 'build', acts: ['ab', 'rmp'], joins: ['rmp'], issues: ['A'],
+    title: 'The accreditation body accredits the producer',
+    text: 'PA1 names what the producer may certify. It names REC1 as a RecognitionPolicy: issued while recognized.' },
+  { id: 'accredit-lab', part: 'build', acts: ['ab', 'lab'], joins: ['lab'], issues: ['H'],
+    title: 'The accreditation body accredits the laboratory',
+    text: 'LA1 names which studies the laboratory may carry out. It too names REC1 as a RecognitionPolicy.' },
+  { id: 'scope', part: 'build', acts: ['rmp'], issues: ['O'],
+    title: 'The producer declares its operational scope',
+    text: 'OS1 is issued under PA1 (IssuedUnderPolicy) and must lie within it: As in CuZn39Pb3 discs, method M1.' },
+  { id: 'study', part: 'build', acts: ['lab'], issues: ['S'],
+    title: 'The laboratory studies the batch',
+    text: 'HS1, 10 January 2026: disc lot 1 is homogeneous for As. Issued under LA1.' },
+  { id: 'certify', part: 'build', acts: ['rmp', 'holder'], joins: ['holder'], issues: ['D'],
+    title: 'The producer certifies and ships',
+    text: 'RM178, 20 January 2026: As = 178 ± 5 mg/kg, issued under OS1, with HS1 as evidence.' },
 
   { id: 'verify', part: 'verify', acts: ['holder', 'verifier'], joins: ['verifier'], expect: 'accept',
     title: 'Checked upward',
-    text: 'The verifier trusts one root, the accreditation body, and climbs every link from D178 to it. Its own rule: As + U at most 200 mg/kg.' },
+    text: 'The verifier trusts the accreditation body and climbs every link from RM178 to it. Its own rule: As + U ≤ 200 mg/kg.' },
 
   { id: 'break', part: 'manipulate', acts: ['holder', 'rmp', 'ab', 'lab'], expect: 'accept',
     unlock: ['withhold', 'tamper', 'certificate', 'suspend', 'revoke'],
     title: 'Try to break it',
-    text: 'Click a line to leave that credential out. Edit a value after signing, certify 520 or your own value, suspend A or revoke S.' },
+    text: 'Click a line to leave that credential out, edit a value, certify 520 or your own value, suspend PA1 or revoke HS1.' },
 
   { id: 'decide', part: 'decide', acts: ['verifier', 'rmp'], state: { certificate: '197' }, unlock: ['rule', 'limit', 'ask', 'certificate'], expect: 'reject',
     title: 'The verifier decides, not the issuer',
-    text: 'D197: 197 ± 5 mg/kg, authorized. Guarded acceptance counts the uncertainty: 202 is above 200. Change the rule or the limit.' },
+    text: 'RM197 is authorized, but guarded acceptance counts the uncertainty: 197 + 5 = 202 > 200.' },
   { id: 'abroad', part: 'decide', acts: ['verifier', 'gaci', 'rmp'], state: { trust: 'global-aci' }, unlock: ['trust', 'suspendGaci', 'certificate'], expect: 'accept',
     title: 'A verifier abroad trusts only Global ACI',
-    text: 'It trusts Global ACI: R tells it to accept the body. Suspend R, or certify 520: recognized is not the same as in scope.' },
+    text: 'REC1 tells it to accept the body. Suspend REC1, or certify 520: recognized is not in scope.' },
 
   { id: 'when', part: 'when', acts: ['ab', 'verifier'], state: { suspendA: true, asOf: 'issuance', archive: true },
     unlock: ['asOf', 'archive', 'suspend'], expect: 'accept',
     title: 'Was it valid when it was issued?',
-    text: 'A was suspended in September; D178 was certified on 20 January. Asked about today it fails. Asked about January, the lists kept from January answer: A held.' },
+    text: 'PA1 was suspended in September; RM178 dates from 20 January. Only the status lists kept from January can answer.' },
 
   { id: 'proposal', part: 'proposal', acts: ['gaci', 'ab'], panel: 'proposal',
     title: 'Proposal: one recognition per body',
-    text: 'One recognition credential per body, named by its grants, and dated status lists for the question at issuance.' },
+    text: 'One recognition credential per body, named by its accreditations, and dated status lists.' },
   { id: 'reconcile', part: 'proposal', acts: ['gaci', 'ab', 'rmp'], panel: 'reconcile',
     title: 'Recognized Entities and terms of use',
-    text: 'Every upward link is a term of use, typed by what it means: IssuedUnderPolicy for a grant, RecognitionPolicy for a recognition. issuer.recognizedIn mirrors the recognition.' },
+    text: 'One rule for every upward link; its type says grant (IssuedUnderPolicy) or recognition (RecognitionPolicy).' },
 
   { id: 'play', part: 'play', acts: ['gaci', 'ab', 'lab', 'rmp', 'holder', 'verifier'],
     unlock: ['suspendGaci', 'suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'ask', 'rule', 'limit', 'asOf', 'archive'],
     title: 'Your turn',
-    text: 'Every action is live: leave out, edit, certify, suspend or revoke, and change what the verifier trusts, asks and when.' },
+    text: 'Every action is live: leave out, edit, certify, suspend, revoke, and change what the verifier trusts, asks and when.' },
 ];
 
 const RM_PROFILE = 'rm-verifier-1';
@@ -715,15 +746,15 @@ const GS_BOARD_URI = {
   TR: GS_URI.TR1, FI: 'https://gs-body.vc4qi.example/credentials/FI-1', C: GS_URI.C1,
 } as const;
 export const GS_ACTORS: readonly BoardActor[] = [
-  { id: 'ab', mono: 'AB', name: 'Accreditation body', does: 'Accredits the GS body for testing and certifying. Can revoke.',
+  { id: 'ab', mono: 'AB', group: 'authority', name: 'Accreditation body', does: 'Accredits the GS body for testing and certifying. Can revoke.',
     publishes: [{ label: 'Key', uri: GS_BOARD_URI.NAB }, { label: 'Revocation list', uri: GS_BOARD_URI.NAB_STATUS }] },
-  { id: 'so', mono: 'SO', name: 'Scheme owner', does: 'Permits a body to award the GS mark, in the role ZLS has. Can revoke.',
+  { id: 'so', mono: 'SO', group: 'authority', name: 'Scheme owner', does: 'Permits a body to award the GS mark, in the role ZLS has. Can revoke.',
     publishes: [{ label: 'Key', uri: GS_BOARD_URI.ZLS }, { label: 'Revocation list', uri: GS_BOARD_URI.ZLS_STATUS }] },
-  { id: 'gsb', mono: 'GSB', name: 'GS body', does: 'Examines, inspects and certifies. Can withdraw a certificate.',
+  { id: 'gsb', mono: 'GSB', group: 'actor', name: 'GS body', does: 'Examines, inspects and certifies. Can withdraw a certificate.',
     publishes: [{ label: 'Key', uri: GS_BOARD_URI.BODY }, { label: 'Revocation list', uri: GS_BOARD_URI.BODY_STATUS }] },
-  { id: 'mfr', mono: 'MFR', name: 'Manufacturer', does: 'Makes hair dryer HD-01, marks each unit and issues its passport.',
+  { id: 'mfr', mono: 'MFR', group: 'actor', name: 'Manufacturer', does: 'Makes hair dryer HD-01, marks each unit and issues its passport.',
     publishes: [{ label: 'Key', uri: GS_BOARD_URI.MAKER }, { label: 'Revocation list', uri: GS_BOARD_URI.MAKER_STATUS }] },
-  { id: 'verifier', mono: 'V', name: 'Verifier', does: 'Relies on the passport\'s GS mark only as far as its own profile allows.',
+  { id: 'verifier', mono: 'VER', name: 'Verifier', does: 'Relies on the passport\'s GS mark only as far as its own profile allows.',
     publishes: [{ label: 'Profile' }] },
 ];
 /** GSM is the GS-mark credential the passport cites; DPP is the passport shown. */

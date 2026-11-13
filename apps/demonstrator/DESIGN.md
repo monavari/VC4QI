@@ -13,9 +13,12 @@ fixtures, or is marked as not evaluated.
 1. **The verifier decides.** The verifier is the main character. Its verdict is always
    on screen, and every other actor's action is shown through its effect on that
    verdict.
-2. **One meaning per visual channel.** Colour shows state, position shows the actor,
-   shape shows the kind of asset, line style shows the relation. No channel carries a
-   second meaning. Actors therefore have no colours of their own.
+2. **One meaning per visual channel.** State colours (green, red, amber) show state,
+   position shows the actor, shape shows the kind of asset, line style shows the
+   relation. Two further colours, never used for state, say who signs: violet an
+   authority (Global ACI, the accreditation body, the scheme owner), blue an actor that
+   works under a grant (producer, laboratory, GS body, manufacturer). Holder and verifier
+   have none.
 3. **Never colour alone.** Every state also has an icon and a word.
 4. **One step, one question.** In a guided story the acting columns are outlined, and
    only that step's actions are live. A "try it" step may make several actions live
@@ -24,7 +27,11 @@ fixtures, or is marked as not evaluated.
    what the verifier reads.
 5. **Actions belong to the actor who can take them.** Suspending sits with the
    accreditation body, leaving out a study with the holder, the decision rule with the
-   verifier. Where one clicks says who may do what.
+   verifier: in the actor's column on the board, under the actor's monogram in the left
+   column of the vertical layout. Where one clicks says who may do what.
+8. **Detail folds.** A step shows a one-line title and one sentence; the rest opens under
+   "More", over the board. Explainers open only what a credential says; links, envelope,
+   checks and bytes fold, and what the reader opened stays open from step to step.
 6. **Nothing simulated, and "not evaluated" is said.** Placeholders have their own look
    and never borrow a state colour.
 7. **Plain words first, terms second.** The page says *signed by*, *is about*, *held by*,
@@ -50,7 +57,7 @@ what is handed over, why, the detail.
 | --- | --- | --- |
 | 1 | Verdict | Solid state fill, white text; title 1.5rem/750, reason 1rem. One per screen. |
 | 2 | Step title (`h1`) | 2rem/750, ink. |
-| 3 | Actor names | Column header: monogram (2.25rem circle, ink outline, .9rem/750 letters) and name 1.15rem/700, ink. In the step header: the acting monograms with an arrow and their names, 1.05rem/650, ink. |
+| 3 | Actor names | Column header: monogram (2.25rem pill, outlined in the signer colour or ink, .78rem/750 letters) and name 1.15rem/700, ink. |
 | 4 | Assets | Credential card: code badge (mono .9rem/700) and kind (1rem/650), one key fact (.95rem, ink). |
 | 5 | Explanation | Step lead 1.12rem, muted, at most 46rem wide. |
 | 6 | Answers | The six questions: label .9rem/650 ink, answer with icon in its state colour. |
@@ -66,7 +73,7 @@ what is handed over, why, the detail.
   line under each chain box; both were hard to read at a distance.)
 - Ink is for names, titles, values and answers; muted is for explanation and detail only.
   State colours are used on icons, state words and borders, never on running text.
-- Uppercase is used only for level-7 labels and the kicker.
+- Uppercase is used only for level-7 labels, the lane verbs and fold headings.
 - Check: on a 1280×720 projector, from four metres, the verdict, the step title and every
   actor name are readable.
 
@@ -84,6 +91,7 @@ what is handed over, why, the detail.
 | `--petrol` | *now and here*: current step, acting column, primary button | navigation and attention |
 | `--cyan` | keyboard focus | focus only |
 | `--red` | brand | wordmark only |
+| `--g-auth` (violet), `--g-act` (blue) | who signs: an authority, or an actor under a grant | the stripe on a card, the monogram, the signer chip |
 
 Dark mode redefines every token; nothing is hard-coded outside `:root`.
 
@@ -95,10 +103,11 @@ starts with one actor and the board fills as it goes; "Your turn" shows every ac
 A band that concerns one moment of the story appears only in that moment: in the RM
 story, the evaluated note that a verifier abroad reaches the accreditation body through
 R, Global ACI's recognition of it (a fictional stand-in, W3C Recognized Entities draft).
-For the RM story: Global ACI (ACI), Accreditation body (AB), Laboratory (LAB), RM
-producer (RMP), Holder (H), Verifier (V). With more than four actor columns the
+For the RM story: Global ACI (GACI), Accreditation body (AB), Laboratory (LAB), RM
+producer (RMP), Customer lab (CUST), Verifier (VER). Monograms are pills, so three or
+four letters fit. With more than four actor columns the
 verifier's column narrows and a name may drop below its monogram; it never truncates. For the GS story: Accreditation body (AB), Scheme owner (SO), GS body
-(GSB), Manufacturer (MFR), Verifier (V).
+(GSB), Manufacturer (MFR), Verifier (VER).
 
 - The header carries the monogram, the name, one line on what the actor does, and what it
   publishes, as small chips: key, revocation list, suspension list.
@@ -151,11 +160,13 @@ is the accreditation body). Handover lines are always grey.
 
 ### What a card shows
 
-The paper's letter as a small code and a full name that leads (“Producer accreditation”,
-“Producer’s operational scope”), and under it the credential's own type in mono (the last
-entry of `type`, for example `RmAccreditation`), then what it says, its tags and who
-signed it about whom. Explanations name a credential by full name and letter
-(“Producer’s operational scope O”). Column heads carry the actor's name and published
+A code of three or four letters and a number (REC1, PA1, LA1, OS1, HS1, RM178; the paper's
+R, A, H, O, S, D178, which the signed identifiers keep) and a full name that leads
+(“Producer accreditation”), under it the credential's own type in mono (the last entry
+of `type`, for example `RmAccreditation`) and, in the lanes, the signer's monogram, then
+what it says, its tags and who signed it about whom. A stripe in the signer's colour runs
+down the card's left edge. Explanations name a credential by full name and code
+(“Producer’s operational scope OS1”). Column heads carry the actor's name and published
 lists only; the descriptions are gone, as are other texts the board does not need.
 
 ### Explaining a credential or a link
@@ -172,13 +183,15 @@ vocabulary in one line each.
 
 ### The vertical layout
 
-`rm/vertical.html` draws the same story in three columns. On the left: the step (kicker,
-title, acting parties, text), then the verifier's policy check in evaluated steps
-(verdict, the six questions, the verifier's settings) and the key. In the middle: the
-chain top to bottom in one place, one lane per level of authority (recognizes, accredits,
-acts under its accreditation, certifies, holds and shows), compact cards (letter, name,
-type, tags), each credential under what it acts under, and every actor's controls in its
-lane head, always shown and faded until live, so a lane never changes height. On the
+`rm/vertical.html` draws the same story in three columns. On the left, scrolling on its
+own: the step (title and sentence), then in evaluated steps the verifier's policy check
+(verdict, the six questions, its live settings) and what the other parties can do in this
+step, each under its monogram; the key at the bottom. In the middle: the
+chain top to bottom in one place, one lane per level of authority and per actor (recognizes,
+accredits, declares its scope, studies the batch, certifies, holds and shows), compact
+cards in smaller type (code, name,
+type, signer, tags), each credential under what it is issued under, and no controls, so a
+lane never changes height. On the
 right: the selected credential, read for its content (a certificate's results table, a
 grant's activities and scope records, a study's outcome, a recognition's action and main
 scopes), what it points to and what points to it, its envelope, the checks run on it and
@@ -190,14 +203,17 @@ layouts and keeps the step and its state.
 
 ### Pages instead of the board
 
-A step may draw a page instead of the board. The RM story opens with what a verifiable
-credential is made of: each property of D178, what W3C VCDM 2.0 says it is for (quoted
-only where the words are the specification's own), its value in D178 and how the board
-draws it, then why a term of use points up to an authority (VCDM §5.5, the limits of
-§5.1 and §5.9, and who else uses the same place). It goes on with D178 drawn with what
-each link points to beside the eight design rules, and ends with the recognition
-proposal and its reconciliation with W3C Recognized Entities (*find, then bind*:
-`issuer.recognizedIn` to find, an `IssuedUnderPolicy` term of use to bind). A page
+A step may draw a page instead of the board, at full width in both layouts. The RM story
+opens with the whole chain on one wide graph read from the signed credentials: each
+credential with its code, name, type, kind (grant, result, recognition) and who signs it
+about whom; each link with its field, its type and target and the digest that pins it
+(`termsOfUse · IssuedUnderPolicy · authorizationCredential → OS1 · relatedResource
+sha384-…`); the numbers of the design rules on the links they govern, and the eight rules
+under the graph (hovering one lights its numbers). What W3C VCDM 2.0 says each field is
+for, and why a term of use points up, fold below. The story ends with the recognition
+proposal and its reconciliation with W3C Recognized Entities: one rule for every upward
+link, `IssuedUnderPolicy` for a grant, `RecognitionPolicy` for a recognition, mirrored by
+`issuer.recognizedIn`. A page
 reads the generated credentials and evaluates nothing, says so in a tag above it, and
 uses no state colour: direction is arrow shape (↑ up to authority, ↓ down to the
 subject, → sideways to evidence), state is a drawn switch, the seal a solid diamond.

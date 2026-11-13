@@ -1,6 +1,7 @@
 /* Actor boards (site/demo/rm, site/demo/gs), drawn by board.js.
-   Design rules: apps/demonstrator/DESIGN.md. Colour is state, position is actor,
-   shape is the kind of asset, line style is the relation. */
+   Design rules: apps/demonstrator/DESIGN.md. Colour is state (green, red, amber) or the
+   signer's group (violet authority, blue actor), position is actor, shape is the kind of
+   asset, line style is the relation. */
 :root{
   --petrol:#00556E; --cyan:#00AFF0; --red:#D2001E;
   --paper:#FFFFFF; --raise:#FFFFFF; --wash:#F3F5F6; --wallet:#F4F7F2; --line:#DADEE1;
@@ -8,6 +9,8 @@
   --ok:#1B7A47; --ok-wash:#E7F4EC; --bad:#C8102E; --bad-wash:#FCEBEE;
   --unk:#9A5B00; --unk-wash:#FFF3DC; --off:#8A979E; --off-wash:#F3F5F6; --on-petrol:#FFFFFF;
   --v-ok:#1B7A47; --v-bad:#C8102E; --v-unk:#8A5300; --v-busy:#56656D;
+  /* Who signs: an authority (grants or recognizes) or an actor (works under a grant). */
+  --g-auth:#6A4C9C; --g-act:#2D6CB5;
   --hatch:repeating-linear-gradient(135deg, transparent 0 7px, rgba(86,101,109,.09) 7px 14px);
   --s1:.25rem; --s2:.5rem; --s3:.75rem; --s4:1rem; --s5:1.5rem; --s6:2rem; --s7:3rem;
   --radius:10px;
@@ -15,11 +18,11 @@
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){ --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --wallet:#15261F; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --petrol:#0A6A86;
+  :root:not([data-theme="light"]){ --g-auth:#B79CF2; --g-act:#7FB2F0; --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --wallet:#15261F; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --petrol:#0A6A86;
     --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D;
     --hatch:repeating-linear-gradient(135deg, transparent 0 7px, rgba(163,178,184,.10) 7px 14px); }
 }
-:root[data-theme="dark"]{ --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --wallet:#15261F; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --petrol:#0A6A86;
+:root[data-theme="dark"]{ --g-auth:#B79CF2; --g-act:#7FB2F0; --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --wallet:#15261F; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --petrol:#0A6A86;
   --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D;
   --hatch:repeating-linear-gradient(135deg, transparent 0 7px, rgba(163,178,184,.10) 7px 14px); }
 :root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
@@ -49,38 +52,51 @@ button, input, select{ font:inherit; color:inherit; }
 .storynav{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s3); padding:var(--s3) 0; border-bottom:1px solid var(--line); }
 .parts{ display:flex; flex-wrap:wrap; gap:var(--s2); list-style:none; padding:0; margin:0; counter-reset:part; }
 .parts li{ counter-increment:part; }
-.parts button{ border:1px solid var(--line); background:var(--paper); color:var(--muted); font-size:.85rem; font-weight:600; padding:.3rem .8rem; border-radius:999px; cursor:pointer; }
-.parts button::before{ content:counter(part); margin-right:.45rem; color:var(--soft); font-variant-numeric:tabular-nums; }
+.parts button{ border:1px solid var(--line); background:var(--paper); color:var(--muted); font-size:.8rem; font-weight:600; padding:.25rem .55rem; border-radius:999px; cursor:pointer; white-space:nowrap; }
+.parts button::before{ content:counter(part); margin-right:.35rem; color:var(--soft); font-variant-numeric:tabular-nums; }
 .parts button:hover{ border-color:var(--muted); color:var(--ink); }
 .parts button[aria-current="step"]{ background:var(--petrol); border-color:var(--petrol); color:var(--on-petrol); }
 .parts button[aria-current="step"]::before{ color:#BFE3EE; }
 .stepper{ display:flex; align-items:center; gap:var(--s2); }
-.stepper span{ margin-right:var(--s2); font-size:.85rem; color:var(--muted); font-variant-numeric:tabular-nums; }
-.stepper button{ border:1px solid var(--line); background:var(--paper); border-radius:8px; padding:.45rem 1rem; font-weight:650; cursor:pointer; }
+.stepper span{ margin-right:var(--s1); font-size:.85rem; color:var(--muted); font-variant-numeric:tabular-nums; }
+.stepper button{ border:1px solid var(--line); background:var(--paper); border-radius:8px; padding:.3rem .8rem; font-weight:650; cursor:pointer; white-space:nowrap; }
+/* Wide screens: parts and stepper on one line. */
+@media (min-width:64rem){
+  .storynav{ flex-wrap:nowrap; padding:var(--s2) 0; }
+  .parts{ flex-wrap:nowrap; min-width:0; overflow-x:auto; scrollbar-width:none; gap:var(--s1); }
+}
 .stepper #next{ background:var(--petrol); border-color:var(--petrol); color:var(--on-petrol); }
 .stepper button:disabled{ opacity:.35; cursor:default; }
 
-/* step header: level 2 title, level 3 acting actors, level 5 lead */
-.stephead{ padding:var(--s2) 0 var(--s3); display:grid; gap:var(--s2); }
+/* step header: one line of title and one sentence; the rest folds into "More". */
+.stephead{ position:relative; padding:var(--s2) 0; display:grid; gap:var(--s1); }
 .kicker{ margin:0; font-size:.82rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--petrol); }
-h1{ margin:0; font-size:clamp(1.5rem, 1.15rem + .9vw, 2rem); line-height:1.2; font-weight:750; letter-spacing:-.01em; }
+h1{ margin:0; font-size:clamp(1.3rem, 1.1rem + .5vw, 1.6rem); line-height:1.25; font-weight:750; letter-spacing:-.01em; }
 .acts{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2) var(--s3); margin:0; font-size:1.05rem; font-weight:650; min-height:1.7rem; }
 .acts .arrow{ color:var(--muted); font-weight:400; }
 .acts .who{ display:inline-flex; align-items:center; gap:var(--s2); }
-.lead{ margin:0; font-size:1.12rem; line-height:1.5; color:var(--muted); max-width:46rem; }
+.lead{ margin:0; font-size:1rem; line-height:1.45; color:var(--muted); }
+/* "More" opens over what is below it: opening it moves nothing. */
+.more{ display:inline; }
+.more summary{ display:inline; cursor:pointer; font-weight:650; color:var(--petrol); list-style:none; }
+.more summary::-webkit-details-marker{ display:none; }
+.more summary::after{ content:" ▾"; font-size:.8em; }
+.more[open] summary::after{ content:" ▴"; }
+.more p{ position:absolute; z-index:30; right:0; left:0; margin:var(--s1) 0 0; padding:var(--s3) var(--s4); border:1px solid var(--line); border-radius:var(--radius); background:var(--raise); color:var(--ink); box-shadow:0 8px 24px rgba(0,0,0,.14); max-width:48rem; margin-left:auto; }
 .legend code, .lede code, .map code{ font:600 .82rem var(--mono); color:var(--petrol); }
 @media (min-width:64rem){
-  /* Title and actors on the left, the explanation beside them: the board starts higher. */
-  .stephead{ grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); column-gap:var(--s6); align-items:end; }
-  .stephead > *{ grid-column:1; }
-  .stephead .lead{ grid-column:2; grid-row:1 / span 3; align-self:center; }
-  /* Room for a two-line title on every step, so the board starts at the same height. */
-  .stephead h1{ min-height:2.4em; display:flex; align-items:flex-end; }
+  /* Title and sentence on one line; each keeps one line, so the board starts at the same height. */
+  .stephead{ grid-template-columns:auto minmax(0, 1fr); column-gap:var(--s5); align-items:baseline; }
+  .stephead h1{ white-space:nowrap; }
+  .stephead .lead{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .stephead .lead:has(.more[open]){ overflow:visible; }
 }
 
 /* monograms: level 3 */
-.mono-badge{ flex:none; display:inline-grid; place-items:center; width:2.25rem; height:2.25rem; border-radius:50%; border:2px solid var(--ink); font:750 .82rem/1 var(--sans); letter-spacing:.02em; color:var(--ink); background:var(--paper); }
-.mono-badge.sm{ width:1.7rem; height:1.7rem; font-size:.7rem; border-width:1.5px; }
+.mono-badge{ flex:none; display:inline-grid; place-items:center; min-width:2.25rem; height:2.25rem; padding:0 .45rem; border-radius:999px; border:2px solid var(--ink); font:750 .78rem/1 var(--sans); letter-spacing:.02em; color:var(--ink); background:var(--paper); }
+.mono-badge.sm{ min-width:1.7rem; height:1.7rem; padding:0 .35rem; font-size:.68rem; border-width:1.5px; }
+.mono-badge.g-authority{ border-color:var(--g-auth); color:var(--g-auth); }
+.mono-badge.g-actor{ border-color:var(--g-act); color:var(--g-act); }
 .who-inline{ display:inline-flex; align-items:center; gap:.3rem; font-weight:700; color:var(--ink); }
 
 /* placeholders: grey, dashed, hatched, never a state colour */
@@ -150,16 +166,24 @@ body[data-mode="build"] .col.dim > .slot{ opacity:.42; }
 .card{ position:relative; z-index:2; display:block; width:100%; text-align:left; background:var(--raise); color:var(--ink); border:2px solid var(--line); border-radius:var(--radius); padding:var(--s2) var(--s3); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.07); }
 .card:hover{ border-color:var(--muted); }
 .card.claim{ border-width:3.5px; }
+/* The signer's group: a stripe on the card's left edge, inside the state border. */
+.card.by-authority, .card.by-actor{ padding-left:calc(var(--s3) + 4px); }
+.card.by-authority::before, .card.by-actor::before{ content:""; position:absolute; left:3px; top:5px; bottom:5px; width:4px; border-radius:2px; background:var(--g-auth); }
+.card.by-actor::before{ background:var(--g-act); }
+/* The signer's monogram beside the type: in the lanes, where no column says who signed. */
+.card .by{ display:none; margin-left:.4rem; padding:0 .35rem; border-radius:999px; border:1.5px solid currentColor; font:750 .66rem/1.35 var(--sans); vertical-align:1px; }
+.card.by-authority .by{ color:var(--g-auth); } .card.by-actor .by{ color:var(--g-act); }
+.flow .card .by{ display:inline-block; }
 /* The top line may wrap and the state icon sits outside its flow, so a card lays out the same
    with or without the icon (a button grows to its widest unbreakable line). */
 .card .top{ display:flex; flex-wrap:wrap; align-items:center; gap:.2rem var(--s2); padding-right:1.25rem; }
 .code{ white-space:nowrap; font:700 .9rem/1 var(--mono); padding:.2rem .4rem; border-radius:5px; background:var(--wash); border:1px solid var(--line); }
-.card .kind{ font-size:1rem; font-weight:650; line-height:1.25; }
+.card .kind{ font-size:.95rem; font-weight:650; line-height:1.25; }
 .card .kind .tag{ vertical-align:2px; white-space:nowrap; }
 .card .icon{ position:absolute; top:.7rem; right:var(--s3); font-weight:800; font-size:1rem; line-height:1; }
 /* The credential's own type, under its label. */
 .card .type, code.type{ display:block; font:600 .76rem/1.3 var(--mono); color:var(--petrol); overflow-wrap:anywhere; }
-.card .fact{ display:block; margin-top:var(--s1); font-size:.95rem; line-height:1.35; overflow-wrap:anywhere; }
+.card .fact{ display:block; margin-top:var(--s1); font-size:.88rem; line-height:1.35; overflow-wrap:anywhere; }
 .card .fact + .fact{ margin-top:0; }
 .card .foot{ display:flex; flex-wrap:wrap; align-items:center; gap:.2rem .4rem; margin-top:var(--s2); padding-top:var(--s1); border-top:1px solid var(--line); font-size:.82rem; color:var(--muted); }
 .tags{ display:flex; flex-wrap:wrap; gap:var(--s1); margin-top:var(--s1); }
@@ -247,10 +271,14 @@ body[data-mode="build"] .col.dim > .slot{ opacity:.42; }
 .edge-label{ font:600 .74rem var(--mono); fill:var(--petrol); text-anchor:middle; dominant-baseline:middle; paint-order:stroke; stroke:var(--paper); stroke-width:5px; stroke-linejoin:round; }
 .edge-hit{ fill:none; stroke:transparent; stroke-width:18; pointer-events:stroke; cursor:pointer; }
 .edge-hit:hover{ stroke:rgba(0,85,110,.14); }
-/* The key sits above the board: what a line means is read before the lines. */
-.legend{ margin:0 0 var(--s3); font-size:.85rem; color:var(--muted); }
+/* The key sits under the board (beside it in the vertical layout): the board starts higher. */
+.legend{ margin:var(--s3) 0 0; font-size:.82rem; color:var(--muted); }
+.legend{ display:flex; flex-wrap:wrap; gap:.15rem 1rem; }
+.legend > span{ white-space:nowrap; }
+.legend .g{ display:inline-block; width:.8rem; height:.8rem; border-radius:3px; vertical-align:-1px; margin-right:.35rem; background:var(--g-auth); }
+.legend .g.ga{ background:var(--g-act); }
 .legend b{ color:var(--ink); font-weight:650; }
-.legend i{ display:inline-block; width:2rem; height:0; vertical-align:middle; margin:0 .35rem 0 .6rem; border-top:3px solid var(--soft); }
+.legend i{ display:inline-block; width:2rem; height:0; vertical-align:middle; margin-right:.35rem; border-top:3px solid var(--soft); }
 .legend i.dot{ border-top-style:dotted; } .legend i.dash{ border-top:2px dashed var(--soft); }
 .legend i.rec{ border-top:none; height:3px; background:repeating-linear-gradient(90deg, var(--soft) 0 12px, transparent 12px 16px, var(--soft) 16px 18px, transparent 18px 22px); }
 
@@ -275,6 +303,53 @@ footer p{ margin:var(--s1) 0; max-width:60rem; }
 .panel ul{ margin:0; padding-left:1.1rem; display:grid; gap:var(--s1); }
 .panel .term{ font-family:var(--mono); font-size:.86rem; color:var(--ink); background:var(--wash); border-radius:4px; padding:0 .3rem; white-space:nowrap; }
 .panel .src{ font-size:.82rem; color:var(--muted); }
+/* The opening page (rm/config.js credential): the chain on one wide graph, the design rules
+   under it as chips (hovering one lights its numbers on the links), and folds for the rest. */
+.credpage{ display:grid; gap:var(--s3); }
+.credfig{ margin:0; border:1px solid var(--line); border-radius:var(--radius); background:var(--paper); padding:var(--s2) var(--s3); }
+.credfig svg{ display:block; width:100%; height:auto; max-height:calc(100vh - 17rem); }
+.credfig text{ font-family:var(--sans); font-size:15px; fill:var(--ink); }
+.credfig text.b{ font-weight:700; font-size:16px; }
+.credfig text.s{ font-size:13.5px; fill:var(--muted); }
+.credfig text.code{ font:700 14px var(--mono); }
+.credfig text.type{ font:600 13px var(--mono); fill:var(--petrol); }
+.credfig text.kindt{ font-size:12px; font-weight:700; fill:var(--ink); }
+.credfig text.lf{ font:700 13.5px var(--mono); fill:var(--petrol); }
+.credfig text.lm{ font:13px var(--mono); fill:var(--muted); }
+.credfig text.mkn{ font-size:12px; font-weight:800; fill:var(--paper); }
+.credfig .nb{ fill:var(--raise); stroke:var(--line); stroke-width:2; }
+.credfig .nb.claim{ stroke:var(--ink); stroke-width:3.5; }
+.credfig .nb.plain{ stroke-dasharray:6 4; }
+.credfig .chip{ fill:var(--wash); stroke:var(--line); }
+.credfig .g-authority{ fill:var(--g-auth); } .credfig .g-actor{ fill:var(--g-act); }
+.credfig .kind{ fill:none; stroke:var(--muted); stroke-width:1.2; }
+.credfig .kind.k-recognition{ stroke-dasharray:4 3; }
+.credfig .ln{ fill:none; stroke:var(--muted); stroke-width:2.2; }
+.credfig .ln.dot{ stroke-dasharray:2 5; stroke-linecap:round; stroke-width:3; }
+.credfig .ln.rec{ stroke-dasharray:12 4 2 4; }
+.credfig .ah{ fill:var(--muted); }
+.credfig .mk circle{ fill:var(--soft); transition:fill .15s; }
+.credfig figcaption{ font-size:.82rem; color:var(--muted); padding-top:var(--s1); }
+.credfig figcaption .g, .credpage .g{ display:inline-block; width:.8rem; height:.8rem; border-radius:3px; vertical-align:-1px; background:var(--g-auth); }
+.credfig figcaption .g.ga{ background:var(--g-act); margin-left:.4rem; }
+.rulechips{ list-style:none; margin:0; padding:0; display:grid; gap:var(--s2); grid-template-columns:repeat(auto-fill, minmax(18rem, 1fr)); }
+.rulechip{ border:1px solid var(--line); border-radius:8px; padding:.35rem .6rem; font-size:.86rem; line-height:1.35; color:var(--muted); cursor:default; }
+.rulechip b{ color:var(--ink); }
+.rulechip .n{ display:inline-grid; place-items:center; width:1.35rem; height:1.35rem; margin-right:.35rem; border-radius:50%; background:var(--soft); color:var(--paper); font-size:.75rem; font-weight:800; }
+.rulechip:hover, .rulechip:focus-visible{ border-color:var(--petrol); }
+.rulechip:hover .n, .rulechip:focus-visible .n{ background:var(--petrol); }
+.credpage:has(.rulechip[data-r="1"]:is(:hover, :focus-visible)) .mk.r1 circle,
+.credpage:has(.rulechip[data-r="2"]:is(:hover, :focus-visible)) .mk.r2 circle,
+.credpage:has(.rulechip[data-r="3"]:is(:hover, :focus-visible)) .mk.r3 circle,
+.credpage:has(.rulechip[data-r="4"]:is(:hover, :focus-visible)) .mk.r4 circle,
+.credpage:has(.rulechip[data-r="5"]:is(:hover, :focus-visible)) .mk.r5 circle,
+.credpage:has(.rulechip[data-r="6"]:is(:hover, :focus-visible)) .mk.r6 circle,
+.credpage:has(.rulechip[data-r="7"]:is(:hover, :focus-visible)) .mk.r7 circle,
+.credpage:has(.rulechip[data-r="8"]:is(:hover, :focus-visible)) .mk.r8 circle{ fill:var(--petrol); }
+/* A fold: secondary detail, closed until asked for. */
+details.fold{ border:1px solid var(--line); border-radius:var(--radius); padding:var(--s2) var(--s3); background:var(--paper); }
+details.fold > summary{ cursor:pointer; font-weight:650; }
+details.fold[open] > summary{ margin-bottom:var(--s3); }
 /* Start page: the credential drawn (left) and the design rules (right). */
 .rulespage{ display:grid; gap:var(--s4); align-items:start; }
 .vcfig{ margin:0; border:1px solid var(--line); border-radius:var(--radius); background:var(--paper); padding:var(--s3); }
@@ -349,13 +424,21 @@ footer p{ margin:var(--s1) 0; max-width:60rem; }
   body:not([data-mode="build"]) .col[data-actor="verifier"] .colhead .does{ display:none; }
 }
 
-/* the Terms button in the stepper */
-.stepper .terms{ background:var(--paper); color:var(--ink); }
+/* the Terms button, in the top bar beside the page links */
+.links .terms{ border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:999px; padding:.3rem .8rem; font-size:.9rem; font-weight:650; cursor:pointer; }
 
 /* explaining a credential or a link (the sheet on the board, the side in the vertical layout) */
 /* One column that never widens: a long line of signed bytes scrolls inside its own box. */
 .detail, .explain-list{ display:grid; grid-template-columns:minmax(0, 1fr); gap:var(--s2); min-width:0; }
 .detail h3{ margin:var(--s2) 0 0; font-size:.8rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+/* Folding sections: only "What it says" is open at first. */
+details.sec{ border-top:1px solid var(--line); padding-top:var(--s1); }
+details.sec > summary{ list-style:none; cursor:pointer; display:flex; align-items:center; gap:var(--s2); }
+details.sec > summary::-webkit-details-marker{ display:none; }
+details.sec > summary h3{ margin:var(--s1) 0; }
+details.sec > summary::before{ content:"▸"; color:var(--muted); font-size:.8rem; }
+details.sec[open] > summary::before{ content:"▾"; }
+details.sec > :not(summary){ margin-top:var(--s1); }
 .dhead{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); font-size:1.1rem; }
 .dhead .verb{ font-weight:650; color:var(--petrol); }
 .dhead code.type{ display:inline; }
@@ -387,7 +470,14 @@ article.explain{ border:1px solid var(--line); border-radius:var(--radius); padd
 .vleft .stephead > *, .vleft .stephead .lead{ grid-column:1; grid-row:auto; align-self:start; }
 .vleft .stephead h1{ font-size:1.55rem; min-height:0; display:block; }
 .vleft .stephead .lead{ font-size:1rem; }
-.vleft .legend{ margin:0; }
+.vleft .legend{ margin:0; display:grid; gap:.2rem; }
+/* What the other parties can do in an evaluated step: their live controls, under their monogram. */
+.doers{ display:grid; gap:var(--s2); padding-top:var(--s2); border-top:1px solid var(--line); }
+.doers h3{ margin:0; font-size:.8rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.doer{ display:grid; gap:var(--s1); }
+.doer .who{ display:flex; align-items:center; gap:var(--s2); font-weight:650; font-size:.92rem; }
+/* The lanes show the chain only: no wallet text. */
+.flow .wallet .refs{ display:none; }
 .vcheck{ display:grid; gap:var(--s2); padding:var(--s3); border:1px solid var(--line); border-radius:12px; background:var(--paper); }
 .vcheck .settings{ display:grid; gap:var(--s2); }
 .vcheck .questions{ grid-template-columns:1fr 1fr; }
@@ -404,13 +494,20 @@ body[data-mode="build"] .lane.dim .cells{ opacity:.42; }
 .lanehead{ display:grid; gap:.3rem; align-content:start; }
 .lanehead .verb{ margin:0; font-size:.74rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--petrol); }
 .lanehead .name{ display:flex; align-items:center; gap:var(--s2); }
-.lanehead .mono-badge{ width:1.9rem; height:1.9rem; font-size:.7rem; }
+.lanehead .mono-badge{ min-width:1.9rem; height:1.9rem; font-size:.68rem; padding:0 .35rem; }
 .lanehead h2{ margin:0; font-size:.95rem; line-height:1.2; font-weight:700; }
 .lanehead .pubs:empty{ display:none; }
 .cells{ display:grid; gap:var(--s2); }
-/* Compact cards in the lanes: the code, the name, the type and the tags; the content is in
-   the right column. */
+/* Compact cards in the lanes: the code, the name, the type and the tags, in smaller type;
+   the content is in the right column. */
 .flow .card{ padding:var(--s1) var(--s2); }
+.flow .card.by-authority, .flow .card.by-actor{ padding-left:calc(var(--s2) + 6px); }
+.flow .card .code{ font-size:.76rem; padding:.15rem .35rem; }
+.flow .card .kind{ font-size:.86rem; line-height:1.2; }
+.flow .card .type{ font-size:.68rem; }
+.flow .card .tag{ font-size:.72rem; }
+.flow .card .tags{ min-height:calc(.72rem * 1.25 + .1rem + 2px); }
+.flow .card .icon{ top:.5rem; font-size:.9rem; }
 .flow .card .fact, .flow .card .foot{ display:none; }
 .side{ display:grid; grid-template-columns:minmax(0, 1fr); gap:var(--s3); align-content:start; min-width:0; padding:var(--s4); border:1px solid var(--line); border-radius:12px; background:var(--paper); }
 .side .map{ grid-template-columns:7rem 1fr; }
@@ -428,7 +525,15 @@ body[data-mode="build"] .lane.dim .cells{ opacity:.42; }
 .says .records li{ border:1px solid var(--line); border-radius:8px; padding:var(--s2) var(--s3); font-size:.92rem; line-height:1.4; }
 @media (min-width:64rem){
   .vcols{ grid-template-columns:minmax(17rem, 21rem) minmax(0, 1fr); column-gap:var(--s5); align-items:start; }
-  .vleft{ position:sticky; top:var(--s3); }
+  /* The left column scrolls on its own: what it shows never moves the chain. */
+  .vleft{ position:sticky; top:var(--s3); max-height:calc(100vh - 2 * var(--s3)); overflow-y:auto; overscroll-behavior:contain; padding-right:var(--s1); }
+  .vleft .stephead h1{ white-space:normal; }
+  .vleft .stephead .lead{ white-space:normal; overflow:visible; }
+  /* A page step (the credential, the proposals) takes the full width. */
+  body[data-mode="panel"] .vcols{ grid-template-columns:minmax(0, 1fr); }
+  body[data-mode="panel"] .vleft{ position:static; max-height:none; overflow:visible; }
+  body[data-mode="panel"] .vleft .stephead{ grid-template-columns:auto minmax(0, 1fr); column-gap:var(--s5); align-items:baseline; }
+  body[data-mode="panel"] .vleft .stephead > *{ grid-column:auto; }
   .board.vertical{ grid-template-columns:minmax(0, 1fr); grid-template-rows:none; align-items:start; }
   .board.vertical .side{ display:none; }
   .flow > svg{ display:block; position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:1; }

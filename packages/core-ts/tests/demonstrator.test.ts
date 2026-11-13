@@ -112,10 +112,10 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     for (const s of api.RM_STORY.filter(x => x.expect !== undefined)) {
       expect([s.id, (await api.evaluateRmBoard(s.state)).result.decision]).toEqual([s.id, s.expect]);
     }
-    // Only the pages (the credential's parts, the design rules, the proposals), the build
+    // Only the pages (the credential and the design rules, the proposals), the build
     // steps and "Your turn" have no expected decision.
     expect([...new Set(api.RM_STORY.filter(s => s.expect === undefined).map(s => s.part))])
-      .toEqual(['anatomy', 'rules', 'build', 'proposal', 'play']);
+      .toEqual(['anatomy', 'build', 'proposal', 'play']);
   });
 
   it('RM board: documents signed in the browser verify like the generated fixtures', async () => {
