@@ -38,7 +38,13 @@ from .catalog import (
 from .key_authorization import KeyAuthorization, authorize_assertion_method
 from .manifest import RM_V1_BINDING_ID, BindingManifest
 from .profile import RelianceProfile
-from .rm_v1 import RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, VC_V2_CONTEXT
+from .rm_scope import concepts_from
+from .rm_v1 import (
+    RECOGNIZED_ENTITIES_DRAFT_CONTEXT,
+    RM_V1_CONTEXT,
+    RM_V1_SCHEMA_BASE,
+    VC_V2_CONTEXT,
+)
 from .rm_v1_authority import (
     BasisResult,
     NodeFacts,
@@ -87,13 +93,17 @@ RM_V1_ARTIFACT_SCHEMAS: dict[str, str] = {
     "RmStudy": f"{RM_V1_SCHEMA_BASE}study.json",
     "RmLabAuthority": f"{RM_V1_SCHEMA_BASE}lab-authority.json",
     "BitstringStatusListCredential": f"{RM_V1_SCHEMA_BASE}status-list.json",
+    "RecognizedEntityCredential": f"{RM_V1_SCHEMA_BASE}recognized-entity.json",
 }
 
 
 def _expected_contexts(declared_type: Any) -> list[str]:
-    """Exact context list each recognized type must use; status lists use VCDM 2.0."""
+    """Exact context list each recognized type must use: status lists use VCDM 2.0
+    only, a recognition credential the Recognized Entities stand-in context."""
     if declared_type == "BitstringStatusListCredential":
         return [VC_V2_CONTEXT]
+    if declared_type == "RecognizedEntityCredential":
+        return [VC_V2_CONTEXT, RECOGNIZED_ENTITIES_DRAFT_CONTEXT]
     return [VC_V2_CONTEXT, RM_V1_CONTEXT]
 
 
@@ -732,6 +742,8 @@ def verify_chain(
         )
     # Follow the chain's own references (termsOfUse, evidence) from protected
     # credentials, within maxDepth; supplied-but-unreferenced credentials stay inert.
+    # A grant's termsOfUse may point up to its issuer's recognition; it is followed
+    # like any other link and decides only for a verifier whose route uses it.
     index = 0
     while index < len(artifacts):
         current = artifacts[index]
@@ -791,6 +803,12 @@ def verify_chain(
     lists: dict[str, RmArtifactVerification] = {}
     status: dict[str, StatusOutcome | None] = {}
 
+    asked, now = (
+        _parse_time(request.activity_time),
+        _parse_time(request.evaluation_time),
+    )
+    historical = asked is not None and now is not None and asked < now
+
     def status_for(
         artifact_id: str, document: dict[str, Any], policy: StatusPolicy
     ) -> StatusOutcome:
@@ -823,8 +841,14 @@ def verify_chain(
                 and checked.protection.state == "established"
             ):
                 status_list = read(list_uri)
-                list_state = semantic_and(
-                    (checked.protection.state, checked.validity.state)
+                # Asked about an earlier time, the list must have been in force then
+                # (checked by evaluate_status); asked about now, it must be valid now.
+                list_state = (
+                    checked.protection.state
+                    if historical
+                    else semantic_and(
+                        (checked.protection.state, checked.validity.state)
+                    )
                 )
             elif checked.digest_sri is not None:
                 # Resolved but not protected: its contents are never read.
@@ -1076,8 +1100,15 @@ def evaluate_rm_slice(
     chain = verify_chain(request, catalog, manifest, profile)
     target, artifacts, facts = chain.target, list(chain.artifacts), dict(chain.facts)
     verification_of, verification = chain.verification_of, list(chain.verification)
-    authority = certificate_authority(facts[request.target_id], facts.get, profile)
-    supported = certificate_support(facts[request.target_id], facts.get, profile)
+    # The binding's governed concept hierarchy: a grant naming a set contains its
+    # members.
+    concepts = concepts_from(manifest.data.get("scopeAndMapping"))
+    authority = certificate_authority(
+        facts[request.target_id], facts.get, profile, concepts
+    )
+    supported = certificate_support(
+        facts[request.target_id], facts.get, profile, concepts
+    )
     winner = next((r for r in authority.routes if r.state == "established"), None)
 
     target_document = facts[request.target_id].document
@@ -1164,6 +1195,7 @@ def evaluate_rm_slice(
                 scope_records(route.scope),
                 revisions,
                 profile.method_succession,
+                concepts,
             )
             sources = (route.scope, *covered.sources)
             coverage[route.id] = Outcome(
@@ -1274,6 +1306,9 @@ def evaluate_rm_slice(
 
     # Only the target and the credentials on the selected witness paths decide the
     # request; a failed credential on an unused alternative is diagnostic (C03, C07).
+    # The same holds for a decisive credential's digest pin on a reference off those
+    # paths, such as an accreditation's pin on a recognition that a verifier anchoring
+    # the body never uses.
     decisive = {
         request.target_id,
         *(winner.chain if winner else ()),
@@ -1284,6 +1319,7 @@ def evaluate_rm_slice(
         for a in artifacts
         if a.artifact_id in decisive
         for r in verification_of(a)
+        if r.artifact_id in decisive
     ]
     required += [r.state for r in authorization] + [r.state for r in support]
     if isinstance(conformity, ConformityRequestedResult):

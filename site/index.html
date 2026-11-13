@@ -36,6 +36,7 @@ p{ margin:.5rem 0; }
 .demo p{ margin:0 0 .8rem; font-size:.95rem; }
 .btn{ display:inline-block; background:var(--petrol); color:#fff; text-decoration:none; font-weight:650; padding:.55rem 1rem; border-radius:8px; }
 .btn:hover{ filter:brightness(1.1); }
+.btn + .btn{ margin:.4rem 0 0 .4rem; }
 .qr{ width:8.5rem; background:#fff; border-radius:8px; padding:.25rem; display:block; }
 .qr + small{ display:block; text-align:center; font-size:.72rem; color:var(--muted); margin-top:.25rem; }
 @media (max-width:34rem){ .demo{ grid-template-columns:1fr; } .demo figure{ display:none; } }
@@ -64,8 +65,8 @@ footer p{ margin:.35rem 0; }
   <section class="demo" aria-labelledby="h-demo">
     <div>
       <h2 id="h-demo">Try it: the demonstrator</h2>
-      <p>Four examples, one top bar: a certified reference material (M375a), calibration certificates (DCC), a GS certificate and an experimental product passport. Your browser runs the repository's own reliance evaluators on signed test credentials and answers six questions: authentic, current, understood, authorized, supported and fit for use. Switch the case or the verifier, tamper with a credential or withhold one, and watch the answer change.</p>
-      <a class="btn" href="demo/">Open the demonstrator</a>
+      <p>Four examples, one top bar: a certified reference material (M375a), calibration certificates (DCC), a GS certificate and an experimental product passport. Your browser runs the repository's own reliance evaluators on signed test credentials and answers six questions: authentic, current, understood, authorized, supported and fit for use. Switch the case or the verifier, tamper with a credential or withhold one, and watch the answer change. The RM and GS stories put a chain on an actor board, one column per party, where you can suspend, revoke or certify a value yourself.</p>
+      <a class="btn" href="demo/">Open the demonstrator</a> <a class="btn" href="demo/rm/">RM story</a> <a class="btn" href="demo/gs/">GS story</a>
     </div>
     <figure>
       <img class="qr" src="assets/qr-m375a.svg" alt="QR code linking to monavari.github.io/VC4QI/m375a/" width="136" height="136">

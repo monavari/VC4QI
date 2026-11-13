@@ -8,7 +8,9 @@ accreditation, calibration, reference-material or certification credentials.
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 - **Website and documentation:** <https://monavari.github.io/VC4QI/>
-- **Demonstrator (RM · DCC · GS · DPP):** <https://monavari.github.io/VC4QI/demo/>
+- **Demonstrator (RM · DCC · GS · DPP):** <https://monavari.github.io/VC4QI/demo/>,
+  and the RM and GS stories on an actor board: <https://monavari.github.io/VC4QI/demo/rm/>,
+  <https://monavari.github.io/VC4QI/demo/gs/>
 
 ## The idea
 

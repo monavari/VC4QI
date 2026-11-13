@@ -1,0 +1,31 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2"
+  ],
+  "id": "https://nab.vc4qi.example/status/1",
+  "type": [
+    "VerifiableCredential",
+    "BitstringStatusListCredential"
+  ],
+  "issuer": "https://nab.vc4qi.example/controller",
+  "validFrom": "2026-01-01T00:00:00Z",
+  "validUntil": "2026-03-01T00:00:00Z",
+  "credentialSchema": {
+    "id": "https://vc4qi.example/schemas/rm/1/status-list.json",
+    "type": "JsonSchema"
+  },
+  "credentialSubject": {
+    "id": "https://nab.vc4qi.example/status/1#list",
+    "type": "BitstringStatusList",
+    "statusPurpose": "revocation",
+    "encodedList": "uH4sIAAAAAAACA-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-rdfc-2022",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "https://nab.vc4qi.example/controller#key-1",
+    "created": "2026-01-01T00:00:00Z",
+    "proofValue": "z4itZrxKrNv9aZ8zVkTsow8bRevMxvLxx3Paar8MXeY28S4ZznsQGhgEMMg1nb1DRQ8Kmar5Svu5GtV7xc29KSStm"
+  }
+}

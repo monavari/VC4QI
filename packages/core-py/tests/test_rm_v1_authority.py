@@ -6,7 +6,11 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from qi_vc_core.reliance import load_reliance_profile, sha384_sri
+from qi_vc_core.reliance import (
+    load_binding_manifest,
+    load_reliance_profile,
+    sha384_sri,
+)
 from qi_vc_core.reliance.rm_v1 import RM_V1_DIRECTORY
 from qi_vc_core.reliance.rm_v1_artifacts import evaluate_rm_slice
 from qi_vc_core.reliance.rm_v1_authority import (
@@ -32,12 +36,15 @@ KEY = {
     "https://nab.vc4qi.example/controller": "nab",
     URI["PRODUCER"]: "producer",
     URI["LAB"]: "lab",
+    URI["GACI"]: "global-aci",
 }
 PROFILE_JSON = json.loads((RM_V1_DIRECTORY / "profiles/rm-verifier-1.json").read_text())
 
 
 def sign(document: dict[str, Any]) -> str:
+    """Sign with the fixture key of the issuer (a string, or an object's id)."""
     issuer = document["issuer"]
+    issuer = issuer["id"] if isinstance(issuer, dict) else issuer
     return resign(document, KEY[issuer], f"{issuer}#key-1")
 
 
@@ -46,7 +53,7 @@ def reissue(
 ) -> dict[str, str | None]:
     """Re-sign changed credentials and every credential pinning them by digest."""
     overrides: dict[str, str | None] = {}
-    for uri in (URI["A"], URI["H"], URI["O"], URI["S"], URI["D"]):
+    for uri in (URI["R"], URI["A"], URI["A2"], URI["H"], URI["O"], URI["S"], URI["D"]):
         document = changed.get(uri) or doc(uri)
         dirty = uri in changed
         if uri == URI["D"] and edit_d is not None:
@@ -161,7 +168,8 @@ def test_c08_accreditation_without_maintenance_permission() -> None:
 
 def test_scope_wider_than_accreditation_is_not_a_bounded_projection() -> None:
     o = doc(URI["O"])
-    o["credentialSubject"]["scope"][0]["range"]["to"] = "600"
+    # A's record ends at 997 g/kg (997000 mg/kg).
+    o["credentialSubject"]["scope"][0]["range"]["to"] = "998000"
     result = run(reissue({URI["O"]: o}))
     assert basis(result, "bounded-projection").state == "contradicted"
 
@@ -169,14 +177,14 @@ def test_scope_wider_than_accreditation_is_not_a_bounded_projection() -> None:
 def test_bounded_projection_is_exact_across_units() -> None:
     o = doc(URI["O"])
     o["credentialSubject"]["scope"][0]["range"] = {
-        "from": "0.00005",
-        "to": "0.0005",
+        "from": "0.0000001",
+        "to": "0.997",
         "unit": "kg/kg",
     }
     assert (
         basis(run(reissue({URI["O"]: o})), "bounded-projection").state == "established"
     )
-    o["credentialSubject"]["scope"][0]["range"]["to"] = "0.0005000001"
+    o["credentialSubject"]["scope"][0]["range"]["to"] = "0.9970000001"
     assert (
         basis(run(reissue({URI["O"]: o})), "bounded-projection").state == "contradicted"
     )
@@ -218,7 +226,7 @@ def test_anchor_without_the_accreditation_purpose() -> None:
             "trustAnchors": [
                 {
                     "id": "https://nab.vc4qi.example/controller",
-                    "purposes": ["recognize-rm-laboratories"],
+                    "purposes": ["accredit-rm-laboratories"],
                 }
             ],
         }
@@ -611,3 +619,67 @@ def test_v06_provenance_only_credential_establishes_no_authority() -> None:
     assert entry(result, "authority").state == "not_established"
     assert result.authorization[0].state != "established"
     assert result.authorization[0].route_witness_ids == ()
+
+
+# Accreditations name sets: the binding's governed hierarchy (skos:broader).
+RM = "https://vc4qi.example/bindings/rm/1#"
+
+
+def _under(broader: Any, overrides: dict[str, str | None] | None = None) -> Any:
+    manifest = json.loads((RM_V1_DIRECTORY / "manifest.json").read_text())
+    manifest["scopeAndMapping"]["broader"] = broader
+    return evaluate_rm_slice(
+        request(), catalog_with(overrides), load_binding_manifest(manifest), PROFILE
+    ).result
+
+
+def test_a_names_sets_and_o_lies_within_them() -> None:
+    record = doc(URI["A"])["credentialSubject"]["scope"][0]
+    assert (record["matrixIri"], record["formIri"], record["allowedPropertyIris"]) == (
+        f"{RM}NonFerrousMetalsAndAlloys",
+        f"{RM}SolidForms",
+        [f"{RM}ElementContents"],
+    )
+    result = run()
+    assert basis(result, "bounded-projection").state == "established"
+    assert "scope-non-ferrous" in basis(result, "bounded-projection").reason
+    assert support(result, "study-scope").state == "established"
+    assert result.decision == "accept"
+
+
+def test_without_the_hierarchy_a_set_does_not_contain_its_members() -> None:
+    result = _under([])
+    assert basis(result, "bounded-projection").state == "contradicted"
+    assert support(result, "study-scope").state == "contradicted"
+    assert result.decision == "reject"
+
+
+def test_malformed_hierarchy_entries_never_widen_a_scope() -> None:
+    result = _under(
+        [
+            {"narrower": f"{RM}CuZn39Pb3"},
+            {"narrower": 7, "broader": f"{RM}NonFerrousMetalsAndAlloys"},
+            "x",
+        ]
+    )
+    assert basis(result, "bounded-projection").state == "contradicted"
+
+
+def test_the_hierarchy_never_runs_downward() -> None:
+    accreditation, scope = doc(URI["A"]), doc(URI["O"])
+    accreditation["credentialSubject"]["scope"][0]["matrixIri"] = f"{RM}CuZn39Pb3"
+    scope["credentialSubject"]["scope"][0]["matrixIri"] = (
+        f"{RM}NonFerrousMetalsAndAlloys"
+    )
+    result = run(reissue({URI["A"]: accreditation, URI["O"]: scope}))
+    assert basis(result, "bounded-projection").state == "contradicted"
+
+
+def test_a_set_the_member_does_not_belong_to_contains_nothing_of_it() -> None:
+    accreditation, lab = doc(URI["A"]), doc(URI["H"])
+    accreditation["credentialSubject"]["scope"][0]["matrixIri"] = f"{RM}FerrousMetals"
+    lab["credentialSubject"]["scope"][0]["matrixIri"] = f"{RM}FerrousMetals"
+    result = run(reissue({URI["A"]: accreditation, URI["H"]: lab}))
+    assert basis(result, "bounded-projection").state == "contradicted"
+    assert support(result, "study-scope").state == "contradicted"
+    assert result.decision == "reject"

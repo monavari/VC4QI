@@ -10,9 +10,12 @@
 // (termsOfUse → authorizationCredential). An authentic credential that nothing in
 // the chain references confers nothing (V07); a grant discovered by other means is
 // unsupported in this binding (V08). Provenance never establishes permission (V06).
+// The issuer of the top grant must be a configured anchor, or be recognized by one
+// through a recognition credential the grant points up to (recognized-entities.ts, E01-E03).
 import { semanticAnd, semanticOr } from './index.js';
 import type { RelianceProfile } from './profile.js';
-import { containedIn } from './rm-scope.js';
+import { grantIssuerStanding } from './recognized-entities.js';
+import { containedIn, EXACT_CONCEPTS, type Concepts } from './rm-scope.js';
 import type { SemanticState } from './types.js';
 
 const RM = 'https://vc4qi.example/bindings/rm/1#';
@@ -158,7 +161,9 @@ export function route(id: string, bases: BasisResult[], chain: string[], scope?:
 }
 
 /** Route "operational-scope": D ← O (producer's own scope) ← A (accreditation) ← anchor. */
-function operationalScopeRoute(target: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile, stack: string[]): RouteResult {
+function operationalScopeRoute(
+  target: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile, stack: string[], concepts: Concepts,
+): RouteResult {
   const D = target.document;
   const bases: BasisResult[] = [];
   const chain = [target.uri];
@@ -183,15 +188,19 @@ function operationalScopeRoute(target: NodeFacts & { document: Doc }, lookup: No
   bases.push(permits(A, RM_ACTIVITIES.maintainRmScope) && permits(A, RM_ACTIVITIES.issueRmCertificate)
     ? ok('projection-permission', 'A permits maintaining an operational scope for RM certification.', ['/credentialSubject/permittedActivity'])
     : no('projection-permission', 'A does not permit maintaining an operational scope for RM certification.', ['/credentialSubject/permittedActivity']));
-  const projection = containedIn(list(subjectOf(O).scope).filter(isObject), list(subjectOf(A).scope).filter(isObject));
+  const projection = containedIn(list(subjectOf(O).scope).filter(isObject), list(subjectOf(A).scope).filter(isObject), concepts);
   bases.push({ id: 'bounded-projection', state: projection.state, reason: projection.reason, sources: ['/credentialSubject/scope'] });
-  bases.push(anchor('trust-anchor', A, 'accredit-rm-producers', profile));
+  const standing = grantIssuerStanding('trust-anchor', A, 'accredit-rm-producers', profile, lookup, subjectOf(D).activityTime);
+  bases.push(standing.basis);
+  if (standing.recognition) chain.push(standing.recognition);
   bases.push(inForceAtActivity(D, [['O', O], ['A', A]]));
   return route('operational-scope', bases, chain, ref.node.uri);
 }
 
 /** Route "direct-accreditation": D ← A (accreditation naming D's issuer) ← anchor. */
-function directAccreditationRoute(target: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile, stack: string[]): RouteResult {
+function directAccreditationRoute(
+  target: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile, stack: string[], _concepts: Concepts,
+): RouteResult {
   const D = target.document;
   const bases: BasisResult[] = [];
   const chain = [target.uri];
@@ -204,7 +213,9 @@ function directAccreditationRoute(target: NodeFacts & { document: Doc }, lookup:
   bases.push(permits(A, RM_ACTIVITIES.issueRmCertificate)
     ? ok('activity-permission', 'A permits issuing RM certificates.', ['/credentialSubject/permittedActivity'])
     : no('activity-permission', 'A does not permit issuing RM certificates.', ['/credentialSubject/permittedActivity']));
-  bases.push(anchor('trust-anchor', A, 'accredit-rm-producers', profile));
+  const standing = grantIssuerStanding('trust-anchor', A, 'accredit-rm-producers', profile, lookup, subjectOf(D).activityTime);
+  bases.push(standing.basis);
+  if (standing.recognition) chain.push(standing.recognition);
   bases.push(inForceAtActivity(D, [['A', A]]));
   return route('direct-accreditation', bases, chain, ref.node.uri);
 }
@@ -241,8 +252,12 @@ function accreditationSuspension(target: NodeFacts & { document: Doc }, lookup: 
       if (node?.usable !== 'established' || node.document === undefined) continue;
       queue.push(node.document);
       const doc = node.document;
-      const anchored = profile.trustAnchors.some(a => a.id === doc.issuer && a.purposes.includes('accredit-rm-producers'));
-      if (typeOf(doc) === 'RmAccreditation' && anchored && subjectOf(doc).id === actor) applicable.push(node);
+      // Anchor-issued: by a configured accreditation anchor, or by an accreditation
+      // body recognized by one through the recognition the accreditation points up to.
+      const anchored = typeOf(doc) === 'RmAccreditation' && subjectOf(doc).id === actor
+        && grantIssuerStanding('anchor', doc, 'accredit-rm-producers', profile, lookup,
+          subjectOf(target.document).activityTime).basis.state === 'established';
+      if (anchored) applicable.push(node);
     }
   }
   if (applicable.length === 0) {
@@ -307,9 +322,12 @@ export function claimAuthority(
   return composeAuthority(authority.restrictions, evaluated, skipped);
 }
 
-/** Authority of D's issuer to issue D, over the profile's permitted routes. */
+/**
+ * Authority of D's issuer to issue D, over the profile's permitted routes. `concepts` is
+ * the binding's governed hierarchy, so that a grant naming a set contains its members.
+ */
 export function certificateAuthority(
-  target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile,
+  target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile, concepts: Concepts = EXACT_CONCEPTS,
 ): AuthorityResult {
   if (target.usable !== 'established' || target.document === undefined) {
     return { state: 'not_established', reason: 'The target is not usable, so its authority is not evaluated.', restrictions: [], routes: [] };
@@ -321,7 +339,7 @@ export function certificateAuthority(
     const evaluate = CERTIFICATE_ROUTES[id as keyof typeof CERTIFICATE_ROUTES];
     return evaluate === undefined
       ? route(id, [unknown('installed-evaluator', `Route ${id} has no installed evaluator.`)], [t.uri])
-      : evaluate(t, lookup, profile, [t.uri]);
+      : evaluate(t, lookup, profile, [t.uri], concepts);
   });
   const restrictions = profile.authority.globalRestrictions.map(r => {
     const evaluate = GLOBAL_RESTRICTIONS[r as keyof typeof GLOBAL_RESTRICTIONS];
@@ -333,7 +351,10 @@ export function certificateAuthority(
 }
 
 /** Authority of a study's laboratory: S ← H (laboratory authority) ← anchor. */
-export function studyAuthority(study: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile, stack: string[]): RouteResult {
+export function studyAuthority(
+  study: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile, stack: string[],
+  concepts: Concepts = EXACT_CONCEPTS,
+): RouteResult {
   const S = study.document;
   const bases: BasisResult[] = [];
   const chain = [study.uri];
@@ -348,12 +369,14 @@ export function studyAuthority(study: NodeFacts & { document: Doc }, lookup: Nod
     : no('study-permission', 'H does not permit issuing RM studies.', ['/credentialSubject/permittedActivity']));
   const s = subjectOf(S);
   const covered = list(subjectOf(H).scope).filter(isObject).some(record =>
-    record.matrixIri === s.matrixIri && list(record.allowedPropertyIris).includes(s.propertyIri)
+    concepts.within(s.matrixIri, record.matrixIri) && list(record.allowedPropertyIris).some(set => concepts.within(s.propertyIri, set))
     && list(record.studyTypeIris).includes(s.studyTypeIri));
   bases.push(covered
     ? ok('study-scope', 'H covers this matrix, property and study type.', ['/credentialSubject/scope'])
     : no('study-scope', 'H does not cover this matrix, property and study type.', ['/credentialSubject/scope']));
-  bases.push(anchor('laboratory-anchor', H, 'recognize-rm-laboratories', profile));
+  const standing = grantIssuerStanding('laboratory-anchor', H, 'accredit-rm-laboratories', profile, lookup, s.activityTime);
+  bases.push(standing.basis);
+  if (standing.recognition) chain.push(standing.recognition);
   return route('laboratory-authority', bases, chain);
 }
 
@@ -370,7 +393,9 @@ export interface SupportResult {
  * holds its own authority (C09-C11). A study for another batch contradicts support;
  * a missing study leaves it not established.
  */
-export function certificateSupport(target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile): SupportResult {
+export function certificateSupport(
+  target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile, concepts: Concepts = EXACT_CONCEPTS,
+): SupportResult {
   if (target.usable !== 'established' || target.document === undefined) {
     return { state: 'not_established', reason: 'The target is not usable, so its support is not evaluated.', bases: [], chain: [] };
   }
@@ -413,7 +438,7 @@ export function certificateSupport(target: NodeFacts, lookup: NodeLookup, profil
       ? ok('study-precedes-certification', 'The study precedes the certification activity.', ['/credentialSubject/activityTime'])
       : no('study-precedes-certification', 'The study postdates the certification activity.', ['/credentialSubject/activityTime']))
     : unknown('study-precedes-certification', 'An activity time is missing.', ['/credentialSubject/activityTime']));
-  const authority = studyAuthority(node as NodeFacts & { document: Doc }, lookup, profile, [target.uri, uri]);
+  const authority = studyAuthority(node as NodeFacts & { document: Doc }, lookup, profile, [target.uri, uri], concepts);
   bases.push(...authority.bases);
   const state = semanticAnd(bases.map(b => b.state));
   return {

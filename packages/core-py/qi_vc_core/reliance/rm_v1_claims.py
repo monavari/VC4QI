@@ -13,7 +13,9 @@ from fractions import Fraction
 from typing import Any, Literal
 
 from .rm_scope import (
+    EXACT_CONCEPTS,
     RM_UNIT_EXPONENTS,
+    Concepts,
     format_decimal,
     parse_decimal,
     record_interval,
@@ -189,6 +191,7 @@ def claim_coverage(
     records: list[dict[str, Any]],
     revisions: tuple[MethodRevision, ...],
     succession: MethodSuccession,
+    concepts: Concepts = EXACT_CONCEPTS,
 ) -> Outcome:
     """Gate 5: one complete record covers every dimension (records are alternatives)."""
     sources = ("/credentialSubject/scope",)
@@ -206,11 +209,11 @@ def claim_coverage(
             continue
         low, high = interval
         failures: list[str] = []
-        if record.get("matrixIri") != claim.matrix_iri:
+        if not concepts.within(claim.matrix_iri, record.get("matrixIri")):
             failures.append(
                 f"matrix {_short(claim.matrix_iri)} ≠ {_short(record.get('matrixIri'))}"
             )
-        if record.get("formIri") != claim.form_iri:
+        if not concepts.within(claim.form_iri, record.get("formIri")):
             failures.append(
                 f"form {_short(claim.form_iri)} ≠ {_short(record.get('formIri'))}"
             )
@@ -219,7 +222,10 @@ def claim_coverage(
                 f"quantity kind {_short(claim.quantity_kind_iri)} ≠ "
                 f"{_short(record.get('quantityKindIri'))}"
             )
-        if claim.property_iri not in _strings(record.get("allowedPropertyIris")):
+        if not any(
+            concepts.within(claim.property_iri, s)
+            for s in _strings(record.get("allowedPropertyIris"))
+        ):
             failures.append(f"property {_short(claim.property_iri)} is not allowed")
         if claim.value < low:
             failures.append("value is below the range")

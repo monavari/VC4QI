@@ -1,0 +1,305 @@
+/* Actor boards (site/demo/rm, site/demo/gs), drawn by board.js.
+   Design rules: apps/demonstrator/DESIGN.md. Colour is state, position is actor,
+   shape is the kind of asset, line style is the relation. */
+:root{
+  --petrol:#00556E; --cyan:#00AFF0; --red:#D2001E;
+  --paper:#FFFFFF; --raise:#FFFFFF; --wash:#F3F5F6; --wallet:#F4F7F2; --line:#DADEE1;
+  --ink:#14232A; --muted:#56656D; --soft:#8A979E;
+  --ok:#1B7A47; --ok-wash:#E7F4EC; --bad:#C8102E; --bad-wash:#FCEBEE;
+  --unk:#9A5B00; --unk-wash:#FFF3DC; --off:#8A979E; --off-wash:#F3F5F6; --on-petrol:#FFFFFF;
+  --v-ok:#1B7A47; --v-bad:#C8102E; --v-unk:#8A5300; --v-busy:#56656D;
+  --hatch:repeating-linear-gradient(135deg, transparent 0 7px, rgba(86,101,109,.09) 7px 14px);
+  --s1:.25rem; --s2:.5rem; --s3:.75rem; --s4:1rem; --s5:1.5rem; --s6:2rem; --s7:3rem;
+  --radius:10px;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --wallet:#15261F; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --petrol:#0A6A86;
+    --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D;
+    --hatch:repeating-linear-gradient(135deg, transparent 0 7px, rgba(163,178,184,.10) 7px 14px); }
+}
+:root[data-theme="dark"]{ --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --wallet:#15261F; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --petrol:#0A6A86;
+  --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D;
+  --hatch:repeating-linear-gradient(135deg, transparent 0 7px, rgba(163,178,184,.10) 7px 14px); }
+:root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+*,*::before,*::after{ box-sizing:inherit; }
+/* The scrollbar's room is kept, so a step that scrolls does not shift the board sideways. */
+html{ font-size:16px; -webkit-text-size-adjust:100%; scrollbar-gutter:stable; }
+@media (min-width:64rem){ html{ font-size:17px; } }
+@media (min-width:110rem){ html{ font-size:18px; } }
+body{ margin:0; background:var(--paper); color:var(--ink); font:1rem/1.5 var(--sans); }
+main{ max-width:92rem; margin:0 auto; padding:0 16px var(--s7); }
+a{ color:inherit; text-underline-offset:3px; }
+button, input, select{ font:inherit; color:inherit; }
+:focus-visible{ outline:3px solid var(--cyan); outline-offset:2px; border-radius:4px; }
+[hidden]{ display:none !important; }
+.mono{ font-family:var(--mono); }
+
+/* top bar */
+.topbar{ border-bottom:1px solid var(--line); background:var(--paper); }
+.topbar .in{ max-width:92rem; margin:0 auto; padding:var(--s2) 16px; display:flex; align-items:center; gap:var(--s4); }
+.brand{ font-size:.9rem; text-decoration:none; white-space:nowrap; } .brand strong{ color:var(--red); }
+.links{ display:flex; gap:var(--s1); margin-left:auto; flex-wrap:wrap; }
+.links a{ text-decoration:none; font-weight:650; font-size:.9rem; padding:.35rem .8rem; border-radius:999px; color:var(--muted); }
+.links a:hover{ background:var(--wash); color:var(--ink); }
+.links a[aria-current="page"]{ background:var(--petrol); color:var(--on-petrol); }
+
+/* story navigation */
+.storynav{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s3); padding:var(--s3) 0; border-bottom:1px solid var(--line); }
+.parts{ display:flex; flex-wrap:wrap; gap:var(--s2); list-style:none; padding:0; margin:0; counter-reset:part; }
+.parts li{ counter-increment:part; }
+.parts button{ border:1px solid var(--line); background:var(--paper); color:var(--muted); font-size:.85rem; font-weight:600; padding:.3rem .8rem; border-radius:999px; cursor:pointer; }
+.parts button::before{ content:counter(part); margin-right:.45rem; color:var(--soft); font-variant-numeric:tabular-nums; }
+.parts button:hover{ border-color:var(--muted); color:var(--ink); }
+.parts button[aria-current="step"]{ background:var(--petrol); border-color:var(--petrol); color:var(--on-petrol); }
+.parts button[aria-current="step"]::before{ color:#BFE3EE; }
+.stepper{ display:flex; align-items:center; gap:var(--s2); }
+.stepper span{ margin-right:var(--s2); font-size:.85rem; color:var(--muted); font-variant-numeric:tabular-nums; }
+.stepper button{ border:1px solid var(--line); background:var(--paper); border-radius:8px; padding:.45rem 1rem; font-weight:650; cursor:pointer; }
+.stepper #next{ background:var(--petrol); border-color:var(--petrol); color:var(--on-petrol); }
+.stepper button:disabled{ opacity:.35; cursor:default; }
+
+/* step header: level 2 title, level 3 acting actors, level 5 lead */
+.stephead{ padding:var(--s2) 0 var(--s3); display:grid; gap:var(--s2); }
+.kicker{ margin:0; font-size:.82rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--petrol); }
+h1{ margin:0; font-size:clamp(1.5rem, 1.15rem + .9vw, 2rem); line-height:1.2; font-weight:750; letter-spacing:-.01em; }
+.acts{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2) var(--s3); margin:0; font-size:1.05rem; font-weight:650; min-height:1.7rem; }
+.acts .arrow{ color:var(--muted); font-weight:400; }
+.acts .who{ display:inline-flex; align-items:center; gap:var(--s2); }
+.lead{ margin:0; font-size:1.12rem; line-height:1.5; color:var(--muted); max-width:46rem; }
+@media (min-width:64rem){
+  /* Title and actors on the left, the explanation beside them: the board starts higher. */
+  .stephead{ grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); column-gap:var(--s6); align-items:end; }
+  .stephead > *{ grid-column:1; }
+  .stephead .lead{ grid-column:2; grid-row:1 / span 3; align-self:center; }
+  /* Room for a two-line title on every step, so the board starts at the same height. */
+  .stephead h1{ min-height:2.4em; display:flex; align-items:flex-end; }
+}
+
+/* monograms: level 3 */
+.mono-badge{ flex:none; display:inline-grid; place-items:center; width:2.25rem; height:2.25rem; border-radius:50%; border:2px solid var(--ink); font:750 .82rem/1 var(--sans); letter-spacing:.02em; color:var(--ink); background:var(--paper); }
+.mono-badge.sm{ width:1.7rem; height:1.7rem; font-size:.7rem; border-width:1.5px; }
+.who-inline{ display:inline-flex; align-items:center; gap:.3rem; font-weight:700; color:var(--ink); }
+
+/* placeholders: grey, dashed, hatched, never a state colour */
+.placeholder{ border:2px dashed var(--soft); border-radius:var(--radius); background:var(--hatch), var(--wash); color:var(--ink); }
+.placeholder .tag{ display:inline-block; font-size:.82rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+/* Under the board, so that showing it never moves the board. */
+.band{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--s1) var(--s3); padding:.3rem var(--s4); margin:var(--s3) 0 0; font-size:.88rem; }
+.band b{ font-weight:650; }
+#presentation{ padding:var(--s4) var(--s5); margin:var(--s2) 0 var(--s4); }
+#presentation p{ margin:0 0 var(--s2); max-width:60rem; }
+table{ width:100%; border-collapse:collapse; font-size:.92rem; margin:var(--s2) 0 0; }
+th{ text-align:left; font-size:.82rem; font-weight:700; color:var(--muted); border-bottom:1px solid var(--line); padding:var(--s1) var(--s2); }
+td{ padding:var(--s2); border-bottom:1px solid var(--line); vertical-align:top; }
+
+/* the board: one column per actor; rows line up across columns (subgrid) */
+.board{ position:relative; display:grid; gap:var(--s4); }
+.board > svg{ display:none; }
+.col{ position:relative; min-width:0; display:flex; flex-direction:column; gap:var(--s2); padding:var(--s3); border:1px solid var(--line); border-radius:12px; background:var(--paper); }
+.col[data-actor="holder"]{ background:var(--wallet); }
+.col[data-actor="verifier"]{ order:-1; }
+.col.acting{ border-color:var(--petrol); box-shadow:0 0 0 2px var(--petrol); }
+.col.dim > .actions{ opacity:.42; }
+.col.absent{ display:none; }
+body[data-mode="build"] .col.dim > .slot{ opacity:.42; }
+.colhead{ display:grid; gap:.4rem; align-content:start; }
+.colhead .name{ display:flex; align-items:center; gap:var(--s2); }
+.colhead h2{ margin:0; font-size:1.15rem; line-height:1.2; font-weight:700; color:var(--ink); }
+.colhead .does{ margin:0; font-size:.82rem; line-height:1.4; color:var(--muted); }
+.pubs{ display:flex; flex-wrap:wrap; gap:var(--s1); }
+.pub{ font-size:.82rem; line-height:1.2; padding:.15rem .5rem; border-radius:6px; border:1px solid var(--line); color:var(--muted); background:var(--paper); }
+.pub.changed{ border-color:var(--petrol); background:var(--petrol); color:var(--on-petrol); }
+.vh{ position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+/* Role pills sit on the column's top edge: hovering a credential moves nothing. */
+.roles{ position:absolute; top:-.75rem; left:var(--s3); right:var(--s3); z-index:3; display:flex; flex-wrap:wrap; gap:var(--s1); pointer-events:none; }
+.role{ font-size:.82rem; font-weight:700; padding:.1rem .5rem; border-radius:999px; background:var(--petrol); color:var(--on-petrol); }
+.slot{ display:grid; gap:var(--s3); align-content:start; min-height:0; }
+.slot:empty{ display:none; }
+.actions{ display:flex; flex-wrap:wrap; gap:var(--s2); align-content:start; }
+.actions:empty{ display:none; }
+@media (min-width:64rem){
+  /* The verifier's column spans every row; with the last row flexible, its height goes to
+     that row only, so the credentials' rows keep their place from step to step. */
+  .board{ grid-template-columns:repeat(var(--actors, 4), minmax(0, 1fr)) minmax(0, 1.5fr); grid-template-rows:auto auto auto 1fr; column-gap:var(--s4); row-gap:var(--s2); }
+  .board > svg{ display:block; position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:1; }
+  /* A column's content never widens it: text wraps inside, so wrapping and heights stay put. */
+  .col{ display:grid; grid-row:1 / span 4; grid-template-rows:subgrid; grid-template-columns:minmax(0, 1fr); order:0 !important; }
+  .col[data-actor="verifier"]{ order:0; }
+  .slot:empty{ display:grid; }
+  .actions:empty{ display:flex; }
+  .slot.r1{ grid-row:2; } .slot.r2{ grid-row:3; } .actions{ grid-row:4; }
+  .colhead .does{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; overflow:hidden; }
+  /* Room for a citation between two credentials of the same actor (D → O). */
+  .slot.r2, .slot.r3{ margin-top:1.75rem; }
+  .board.rows-3{ grid-template-rows:repeat(4, auto) 1fr; }
+  .board.rows-3 .col{ grid-row:1 / span 5; }
+  .board.rows-3 .slot.r3{ grid-row:4; } .board.rows-3 .actions{ grid-row:5; }
+  .col.absent{ display:grid; visibility:hidden; }
+  .board .card.pending{ display:block; visibility:hidden; }
+  /* On the board the lines show what a credential cites. */
+  .card .cites{ display:none; }
+  /* The verifier does not hold credentials: its verdict and settings flow on their own. */
+  .col[data-actor="verifier"]{ display:flex; flex-direction:column; }
+  .col[data-actor="verifier"] .slot{ grid-row:auto; }
+}
+
+/* assets: level 4. Grants standard, evidence tagged, the claim thicker. State is the border. */
+.card{ position:relative; z-index:2; display:block; width:100%; text-align:left; background:var(--raise); color:var(--ink); border:2px solid var(--line); border-radius:var(--radius); padding:var(--s2) var(--s3); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.07); }
+.card:hover{ border-color:var(--muted); }
+.card.claim{ border-width:3.5px; }
+/* The top line may wrap and the state icon sits outside its flow, so a card lays out the same
+   with or without the icon (a button grows to its widest unbreakable line). */
+.card .top{ display:flex; flex-wrap:wrap; align-items:center; gap:.2rem var(--s2); padding-right:1.25rem; }
+.code{ white-space:nowrap; font:700 .9rem/1 var(--mono); padding:.2rem .4rem; border-radius:5px; background:var(--wash); border:1px solid var(--line); }
+.card .kind{ font-size:1rem; font-weight:650; line-height:1.25; }
+.card .kind .tag{ vertical-align:2px; white-space:nowrap; }
+.card .icon{ position:absolute; top:.7rem; right:var(--s3); font-weight:800; font-size:1rem; line-height:1; }
+.card .fact{ display:block; margin-top:var(--s1); font-size:.95rem; line-height:1.35; overflow-wrap:anywhere; }
+.card .fact + .fact{ margin-top:0; }
+.card .foot{ display:flex; flex-wrap:wrap; align-items:center; gap:.2rem .4rem; margin-top:var(--s2); padding-top:var(--s1); border-top:1px solid var(--line); font-size:.82rem; color:var(--muted); }
+.tags{ display:flex; flex-wrap:wrap; gap:var(--s1); margin-top:var(--s1); }
+.card .tag{ line-height:1.25; }
+/* A card keeps a line for its tags, so a tag that comes or goes does not move the row below. */
+.card .tags{ min-height:calc(.82rem * 1.25 + .1rem + 2px); }
+.tag{ font-size:.82rem; font-weight:700; padding:.05rem .45rem; border-radius:999px; border:1px solid var(--line); color:var(--muted); }
+.tag.t-bad{ border-color:var(--bad); color:var(--bad); }
+.tag.t-new{ border-color:var(--petrol); background:var(--petrol); color:var(--on-petrol); }
+.tag.t-live{ border-color:var(--petrol); color:var(--petrol); }
+.card.s-established{ border-color:var(--ok); } .card.s-established .icon{ color:var(--ok); }
+.card.s-contradicted{ border-color:var(--bad); background:var(--bad-wash); } .card.s-contradicted .icon{ color:var(--bad); }
+.card.s-not_established{ border-color:var(--unk); background:var(--unk-wash); } .card.s-not_established .icon{ color:var(--unk); }
+.card.missing{ border-style:dashed; box-shadow:none; }
+.card.fresh{ border-color:var(--petrol); box-shadow:0 0 0 3px var(--petrol); }
+.card.cited{ box-shadow:0 0 0 3px var(--paper), 0 0 0 5px var(--petrol); }
+/* Not issued yet: holds its place on wide screens, invisible (board.js). */
+.card.pending{ display:none; }
+.card.empty{ cursor:default; border-style:dashed; color:var(--muted); background:transparent; box-shadow:none; }
+@media (prefers-reduced-motion: no-preference){ .card.handover{ animation:handover .3s ease-out; } }
+@keyframes handover{ from{ transform:translateX(-24px); opacity:0; } to{ transform:none; opacity:1; } }
+
+/* the wallet: what the holder has */
+.wallet{ display:grid; gap:var(--s2); }
+.object{ display:inline-flex; align-items:center; gap:var(--s2); justify-self:start; padding:.3rem .8rem; border-radius:999px; border:1.5px solid var(--muted); background:var(--paper); font-size:.95rem; font-weight:650; }
+.object::before{ content:"◼"; color:var(--muted); }
+.wallet .refs{ margin:0; font-size:.82rem; color:var(--muted); }
+.wallet .refs s{ color:var(--unk); }
+
+/* actions: buttons in the actor's own column */
+.act{ border:1.5px solid var(--ink); background:var(--paper); color:var(--ink); border-radius:8px; padding:.4rem .75rem; font-size:.9rem; font-weight:650; cursor:pointer; }
+.act[aria-pressed="true"]{ background:var(--ink); color:var(--paper); }
+.act:disabled{ opacity:.45; cursor:not-allowed; border-style:dashed; }
+.seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; border:1px solid var(--line); border-radius:8px; overflow:hidden; width:100%; }
+.seg button{ border:0; background:var(--paper); padding:.35rem .4rem; font-size:.88rem; cursor:pointer; line-height:1.2; }
+.seg button small{ display:block; font-size:.82rem; color:var(--muted); }
+.seg button[aria-pressed="true"]{ background:var(--ink); color:var(--paper); font-weight:650; }
+.seg button[aria-pressed="true"] small{ color:var(--paper); opacity:.85; }
+.seg button + button{ border-left:1px solid var(--line); }
+.seg button:disabled{ cursor:not-allowed; }
+.seg.locked{ opacity:.45; border-style:dashed; }
+.field{ display:grid; gap:.2rem; width:100%; }
+.field > span{ font-size:.82rem; font-weight:700; color:var(--muted); }
+.custom{ display:grid; grid-template-columns:1fr 1fr; gap:var(--s2); width:100%; }
+.custom label{ display:grid; gap:.15rem; font-size:.82rem; font-weight:700; color:var(--muted); }
+.custom input, .custom select{ width:100%; padding:.3rem .4rem; border:1px solid var(--line); border-radius:6px; background:var(--paper); font:.95rem var(--mono); color:var(--ink); }
+.custom .act{ align-self:end; }
+.limit{ margin:0; font-size:.82rem; color:var(--muted); }
+.limit b{ color:var(--ink); }
+
+/* verdict: level 1. The six questions: level 6. */
+.verdict{ display:flex; gap:var(--s3); align-items:center; border-radius:var(--radius); padding:var(--s3) var(--s4); color:#fff; background:var(--v-ok); }
+.verdict.reject{ background:var(--v-bad); } .verdict.unknown{ background:var(--v-unk); } .verdict.busy{ background:var(--v-busy); }
+.verdict.idle{ background:var(--hatch), var(--wash); color:var(--ink); border:2px dashed var(--soft); }
+.verdict .mark{ flex:none; width:2.4rem; height:2.4rem; border-radius:50%; background:#fff; display:grid; place-items:center; font-size:1.2rem; font-weight:800; color:var(--v-ok); }
+.verdict.reject .mark{ color:var(--v-bad); } .verdict.unknown .mark{ color:var(--v-unk); } .verdict.busy .mark{ color:var(--v-busy); }
+.verdict.idle .mark{ color:var(--muted); background:var(--paper); border:1.5px solid var(--soft); }
+.verdict b{ display:block; font-size:1.5rem; line-height:1.2; font-weight:750; }
+.verdict small{ display:block; margin-top:var(--s1); font-size:1rem; line-height:1.35; overflow-wrap:anywhere; }
+.questions{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:var(--s2); }
+.q{ border-radius:8px; background:var(--off-wash); border-left:5px solid var(--off); }
+.q.s-established{ background:var(--ok-wash); border-left-color:var(--ok); }
+.q.s-contradicted{ background:var(--bad-wash); border-left-color:var(--bad); }
+.q.s-not_established{ background:var(--unk-wash); border-left-color:var(--unk); }
+.q summary{ list-style:none; cursor:pointer; padding:.35rem var(--s3); display:flex; flex-wrap:wrap; justify-content:space-between; gap:0 var(--s2); }
+.q summary::-webkit-details-marker{ display:none; }
+.q summary b{ font-size:.9rem; font-weight:650; }
+.q[open]{ grid-column:1 / -1; }
+.state{ font-size:.9rem; font-weight:700; white-space:nowrap; }
+.st-established{ color:var(--ok); } .st-contradicted{ color:var(--bad); } .st-not_established{ color:var(--unk); }
+.st-not_asked, .st-not_required{ color:var(--muted); }
+.why{ margin:0 var(--s3) var(--s2); font-size:.9rem; overflow-wrap:anywhere; }
+
+/* lines: solid = authority, dotted = evidence, dashed grey = handed over */
+.edge{ fill:none; stroke-width:2.5; }
+.edge.support{ stroke-dasharray:2 5; stroke-linecap:round; stroke-width:3; }
+.edge.handover{ stroke:var(--soft); stroke-dasharray:8 6; stroke-width:2; }
+.e-established, .e-not_required{ stroke:var(--ok); } .e-unused{ stroke:var(--soft); } .e-contradicted{ stroke:var(--bad); stroke-width:3.5; } .e-not_established{ stroke:var(--unk); stroke-width:3; }
+.e-plain{ stroke:var(--soft); }
+/* The click target of a line that can leave its credential out: wide, invisible. */
+.edge-hit{ fill:none; stroke:transparent; stroke-width:18; pointer-events:stroke; cursor:pointer; }
+.edge-hit:hover{ stroke:rgba(0,85,110,.14); }
+.legend{ margin:var(--s3) 0 0; font-size:.82rem; color:var(--muted); }
+.legend i{ display:inline-block; width:2rem; height:0; vertical-align:middle; margin:0 .35rem 0 .6rem; border-top:3px solid var(--soft); }
+.legend i.dot{ border-top-style:dotted; } .legend i.dash{ border-top:2px dashed var(--soft); }
+
+dialog{ border:0; border-radius:14px; width:min(46rem, 100%); padding:var(--s4) var(--s5) var(--s5); background:var(--paper); color:var(--ink); max-height:86vh; }
+dialog::backdrop{ background:rgba(0,20,26,.45); }
+dialog h2{ margin:0 0 var(--s3); font-size:1.15rem; }
+dialog .close{ float:right; border:1px solid var(--line); background:var(--paper); border-radius:8px; padding:.3rem .7rem; cursor:pointer; }
+.map{ display:grid; grid-template-columns:8.5rem 1fr; gap:var(--s1) var(--s3); margin:0 0 var(--s3); font-size:.95rem; }
+.map dt{ color:var(--muted); font-size:.85rem; padding-top:.15rem; } .map dd{ margin:0; overflow-wrap:anywhere; }
+details.raw summary{ cursor:pointer; font-weight:600; padding:var(--s2) 0; font-size:.9rem; }
+pre{ font:.78rem/1.45 var(--mono); background:var(--wash); padding:var(--s4); border-radius:8px; overflow-x:auto; max-height:24rem; margin:0; }
+
+footer{ margin-top:var(--s6); border-top:1px solid var(--line); padding-top:var(--s4); font-size:.82rem; color:var(--muted); }
+footer p{ margin:var(--s1) 0; max-width:60rem; }
+
+/* panel pages (a step's `panel`): drawn instead of the board, nothing evaluated.
+   Neutral: no state colours; direction is shown by arrow shape and line style. */
+.panel{ display:grid; gap:var(--s4); margin:var(--s2) 0 var(--s4); }
+.panel > .tag{ justify-self:start; }
+.panel .tag{ display:inline-block; font-size:.82rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.panel h3{ margin:0 0 var(--s2); font-size:1.05rem; line-height:1.3; font-weight:700; color:var(--ink); }
+.panel ul{ margin:0; padding-left:1.1rem; display:grid; gap:var(--s1); }
+.panel .term{ font-family:var(--mono); font-size:.86rem; color:var(--ink); background:var(--wash); border-radius:4px; padding:0 .3rem; white-space:nowrap; }
+.panel .src{ font-size:.82rem; color:var(--muted); }
+/* Start page: the credential drawn (left) and the design rules (right). */
+.rulespage{ display:grid; gap:var(--s4); align-items:start; }
+.vcfig{ margin:0; border:1px solid var(--line); border-radius:var(--radius); background:var(--paper); padding:var(--s3); }
+.vcfig svg{ display:block; width:100%; height:auto; max-height:62vh; }
+.vcfig text{ font-family:var(--sans); font-size:15px; fill:var(--ink); }
+.vcfig text.b{ font-weight:700; }
+.vcfig text.s{ font-size:13px; fill:var(--muted); }
+.vcfig text.m{ font-family:var(--mono); font-size:13px; fill:var(--muted); }
+.vcfig text.m2{ font-family:var(--mono); }
+.vcfig .nb{ fill:var(--raise); stroke:var(--line); stroke-width:1.5; }
+.vcfig .vc{ fill:var(--raise); stroke:var(--ink); stroke-width:2.5; }
+.vcfig .ln{ stroke:var(--ink); stroke-width:2; }
+.vcfig .ln.dot{ stroke-dasharray:2 5; stroke-linecap:round; stroke-width:3; }
+.vcfig .ah{ fill:var(--ink); }
+.rules{ border:1px solid var(--line); border-radius:var(--radius); padding:var(--s3) var(--s4); background:var(--paper); }
+.rules ol{ margin:0; padding-left:1.4rem; display:grid; gap:var(--s2); font-size:1.02rem; line-height:1.4; }
+.rules li b{ font-weight:700; }
+.rules .terms{ white-space:normal; }
+.rules .src{ margin:var(--s3) 0 0; }
+.proposal{ display:grid; gap:var(--s4); }
+.proposal .compare th{ font-size:.86rem; }
+.proposal .compare thead th{ font-size:.95rem; color:var(--ink); }
+.proposal .compare tbody th{ width:14rem; color:var(--ink); font-weight:650; font-size:.95rem; border-bottom:1px solid var(--line); vertical-align:top; padding:var(--s2); }
+.proposal .compare td{ font-size:.98rem; }
+.proposal .compare td.ours{ background:var(--wash); }
+.proposal .boxes{ display:grid; gap:var(--s4); }
+.proposal .boxes section{ border:1px solid var(--line); border-radius:var(--radius); padding:var(--s3) var(--s4); }
+.proposal .boxes section.open{ border-style:dashed; }
+.panel .limit{ margin:0; font-size:.82rem; color:var(--muted); }
+@media (min-width:64rem){
+  .rulespage{ grid-template-columns:minmax(0, 1.15fr) minmax(0, 1fr); }
+  .proposal .boxes{ grid-template-columns:1fr 1fr; }
+  /* More than four actors: a narrower verifier column, and a name may drop below its monogram. */
+  .board.many{ grid-template-columns:var(--cols, repeat(var(--actors, 5), minmax(0, 1fr)) minmax(0, 1.3fr)); column-gap:var(--s3); }
+  .board.many .colhead .name{ flex-wrap:wrap; row-gap:var(--s1); }
+  /* Actors keep their description on every step (the rows must not move). The verifier's column
+     is outside those rows: once it decides, the room goes to the verdict. */
+  body:not([data-mode="build"]) .col[data-actor="verifier"] .colhead .does{ display:none; }
+}

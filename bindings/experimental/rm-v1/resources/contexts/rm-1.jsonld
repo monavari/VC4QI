@@ -12,6 +12,7 @@
     "RmLabAuthority": "rm:RmLabAuthority",
     "RmAuthorizationPolicy": "rm:RmAuthorizationPolicy",
     "RmStudyReference": "rm:RmStudyReference",
+    "RecognizedEntityCredential": "https://www.w3.org/ns/credentials/recognized-entities#RecognizedEntityCredential",
 
     "permittedActivity": {"@id": "rm:permittedActivity", "@type": "@id", "@container": "@set"},
     "scope": {"@id": "rm:scope", "@container": "@set"},
