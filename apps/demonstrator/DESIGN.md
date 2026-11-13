@@ -171,8 +171,7 @@ lists only; the descriptions are gone, as are other texts the board does not nee
 
 ### Explaining a credential or a link
 
-Clicking a credential or a line explains it; on the board in a sheet, in the vertical
-layout beside the lanes. A credential: its type and what that type is, who signed it,
+Clicking a credential or a line explains it in a floating sheet, in both layouts. A credential: its type and what that type is, who signed it,
 about whom, who holds it, its validity, status entries and proof, what it points to and
 what points to it, and in evaluated steps every check that touched it, in the evaluator's
 words with the gate and predicate underneath. A link: the plain sentence (*D178 acts
@@ -183,24 +182,21 @@ vocabulary in one line each.
 
 ### The vertical layout
 
-`rm/vertical.html` draws the same story in three columns. On the left, scrolling on its
+`rm/vertical.html` draws the same story in two columns. On the left, scrolling on its
 own: the step (title and sentence), then in evaluated steps the verifier's policy check
 (verdict, the six questions, its live settings) and what the other parties can do in this
-step, each under its monogram; the key at the bottom. In the middle: the
-chain top to bottom in one place, one lane per actor, from where trust comes from to where it
-is used (recognizes, accredits, studies the batch, declares its scope and certifies,
-holds and shows), compact
-cards in smaller type (code, name,
-type, signer, tags), each credential under what it is issued under, and no controls, so a
-lane never changes height. On the
-right: the selected credential, read for its content (a certificate's results table, a
-grant's activities and scope records, a study's outcome, a recognition's action and main
-scopes), what it points to and what points to it, its envelope, the checks run on it and
-its signed bytes; or the selected link. Without a selection it shows the step's newest
-credential while building and the certificate once the verifier decides. Below about
-110rem the right column gives way to a floating sheet. Lanes not yet reached and
-credentials not yet issued hold their place invisibly. A link in the top bar switches
-layouts and keeps the step and its state.
+step, each under its monogram; the key at the bottom. The chain takes the rest of the
+width, top to bottom, one lane per actor (recognizes, accredits, studies the batch,
+declares its scope and certifies, holds and shows), with open space between the lanes.
+Cards look as on the opening graph: code, name, type, who signs it about whom (the signer
+in its group colour), tags, in smaller type, all of one width, either side of a wide
+middle gap, a lone card in the middle. Every line carries its name (the termsOfUse type or
+`evidence`) in the space it crosses; lines that meet at one card are named near where they
+start. Lanes hold no controls, so a lane never changes height. Clicking a credential or a
+line opens it in a floating sheet (what it says, its links, envelope, checks and signed
+bytes, folded but for what it says), and the card stays ringed while the sheet is open.
+Lanes not yet reached and credentials not yet issued hold their place invisibly. A link
+in the top bar switches layouts and keeps the step and its state.
 
 ### Pages instead of the board
 

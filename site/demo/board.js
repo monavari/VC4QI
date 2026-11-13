@@ -2,9 +2,9 @@
 // The actor board shared by the RM and GS stories (site/demo/rm, site/demo/gs), in two
 // layouts. `board` (the default): one column per actor, credentials in their issuer's
 // column, citations drawn across the columns, every action in the column of the actor who
-// can take it. `vertical`: three columns: the step and the verifier's policy check on the
-// left (#vcheck), the chain top to bottom in authority lanes in the middle, and the
-// selected credential or link on the right (a floating sheet where the screen is narrow).
+// can take it. `vertical`: the step, the verifier's policy check and the live controls on
+// the left (#vcheck); the chain top to bottom, one lane per actor, on the rest of the
+// width, every link named on its line; a credential or link opens in a floating sheet.
 // The bundle (verifier.js) supplies the story, actors, assets and the evaluator; the page
 // supplies a small configuration. Design rules: apps/demonstrator/DESIGN.md.
 const $ = id => document.getElementById(id);
@@ -110,7 +110,7 @@ export async function mountBoard(api, cfg) {
   const actor = id => ACTORS.find(a => a.id === id);
   const index = id => STORY.findIndex(s => s.id === id);
   // `selection`: the credential ({ kind: 'card', code }) or link ({ kind: 'link', from, to,
-  // linkKind }) the vertical layout explains; `last`: the evaluation on screen.
+  // linkKind }) whose sheet is open; `last`: the evaluation on screen.
   let step = 0, overrides = {}, seq = 0, redraw, defaultResult, selection = null, last;
   $('evalTime').textContent = new Date(api.EVALUATION_TIME).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
@@ -258,7 +258,7 @@ export async function mountBoard(api, cfg) {
     const group = actor(a.actor)?.group;
     const foot = "<span class='foot'>signed by <span class='who-inline'>" + esc(actor(a.actor).mono) + '</span> · about ' + about
       + (d && cites(d).length ? "<span class='cites'>· cites " + esc(cites(d).join(', ')) + '</span>' : '') + '</span>';
-    const sel = vertical ? selection ?? defaultSelection(mode) : selection;
+    const sel = selection;
     const selected = sel?.kind === 'card' && sel.code === a.code;
     return "<button type='button' class='card " + a.kind + (group ? ' by-' + group : '') + (state ? ' s-' + state : '') + (missing ? ' missing' : '') + (fresh ? ' fresh' : '')
       + (fresh && a.kind === 'claim' ? ' handover' : '') + (selected ? ' selected' : '') + (pending ? " pending' aria-hidden='true' tabindex='-1" : '')
@@ -266,7 +266,9 @@ export async function mountBoard(api, cfg) {
       + "<span class='top'><span class='code'>" + esc(uri ? codeOfUri(uri) : disp(a.code)) + "</span><span class='kind'>" + esc(a.label)
       + (a.kind === 'evidence' ? " <span class='tag'>evidence</span>" : '') + (a.tag ? " <span class='tag'>" + esc(a.tag) + '</span>' : '') + '</span>'
       + (state ? "<span class='icon' aria-label='" + esc(LABEL[state]) + "'>" + ICON[state] + '</span>' : '') + '</span>'
-      + "<span class='type'>" + esc(typeOf(d)).replace(/([a-z])([A-Z])/g, '$1<wbr>$2') + "<span class='by' title='Signed by " + esc(actor(a.actor).name) + "'>" + esc(actor(a.actor).mono) + '</span></span>'
+      + "<span class='type'>" + esc(typeOf(d)).replace(/([a-z])([A-Z])/g, '$1<wbr>$2') + '</span>'
+      + "<span class='sig'><b" + (group ? " class='g-" + group + "'" : '') + " title='Signed by " + esc(actor(a.actor).name) + "'>" + esc(actor(a.actor).mono) + '</b> → '
+      + (a.about === 'object' ? esc(a.aboutLabel) : esc(actor(a.about).mono)) + '</span>'
       + (d ? cfg.facts(a.code, d).map(l => "<span class='fact'>" + esc(l) + '</span>').join('') : '')
       + "<span class='tags'>" + tags.join('') + '</span>' + foot + '</button>';
   }
@@ -401,20 +403,6 @@ export async function mountBoard(api, cfg) {
     return "<button type='button' class='linkbtn' data-link='" + esc(from + '|' + l.to + '|' + l.kind) + "'>" + linkWords(from, l) + '</button>'
       + (mode === 'evaluate' && e ? ' ' + stateMark(e.state) : '');
   };
-  /** What the right-hand column shows unless something is selected: the step's newest
-   * credential while building, the credential checked once the verifier decides. */
-  const defaultSelection = mode => {
-    const issued = STORY[step].issues ?? [];
-    return { kind: 'card', code: mode === 'build' && issued.length ? issued.at(-1) : 'D' };
-  };
-  /** The right-hand column: the credential or link selected, with the step's new credentials as shortcuts. */
-  function sideHTML(R, mode) {
-    const sel = selection ?? defaultSelection(mode);
-    const issued = mode === 'build' ? STORY[step].issues ?? [] : [];
-    const chips = issued.length > 1 ? "<p class='newchips'>New in this step: " + issued.map(code => "<button type='button' class='code' data-card='" + esc(code) + "'>"
-      + esc(codeOfUri(R.uris[code])) + '</button>').join(' ') + '</p>' : '';
-    return chips + (sel.kind === 'card' ? detailHTML(sel.code, R, mode) : linkHTML(sel, R, mode));
-  }
   /** The left-hand column (vertical): the verdict, the six questions, the verifier's settings,
    * then what the other parties can do in this step, each under its monogram. */
   function checkHTML(R, mode) {
@@ -491,11 +479,10 @@ export async function mountBoard(api, cfg) {
   }
   // The sheet's title names what is explained; the explainer's own header says which one.
   const titleOf = sel => sel.kind === 'card' ? 'Credential' : 'Link';
-  /** Explain a credential or a link: beside the lanes (vertical), or in the sheet (board). */
+  /** Explain a credential or a link, in the floating sheet (both layouts). */
   function show(sel) {
     if (!last) return;
-    const side = $('board').querySelector('.side');
-    if (vertical && side && getComputedStyle(side).display !== 'none') { selection = sel; renderSide(); return; }
+    selection = sel; markSelected();
     openSheet(titleOf(sel), sel.kind === 'card' ? detailHTML(sel.code, last.R, last.mode) : linkHTML(sel, last.R, last.mode));
   }
   function openSheet(title, html) {
@@ -504,15 +491,6 @@ export async function mountBoard(api, cfg) {
     wireDetail($('sheetContent'));
     const s = $('sheet'); if (!s.open) { if (s.showModal) s.showModal(); else s.setAttribute('open', ''); }
     $('sheetContent').scrollTop = 0;
-  }
-  function renderSide() {
-    const side = $('board').querySelector('.side');
-    if (!side || !last) return;
-    side.innerHTML = sideHTML(last.R, last.mode);
-    side.scrollTop = 0;
-    wireDetail(side);
-    const sel = selection ?? defaultSelection(last.mode);
-    $('board').querySelectorAll('.flow .card').forEach(c => c.classList.toggle('selected', sel.kind === 'card' && sel.code === c.dataset.code));
   }
 
   // ---------------------------------------------------------------- lines
@@ -597,12 +575,15 @@ export async function mountBoard(api, cfg) {
     spread(p => p.e.from + '|' + p.sides.out, p => centre(p.b, p.sides.out), (p, f) => { p.fOut = f; });
     // In a build step, each new line carries the name of the field it is.
     const fresh = new Set(mode === 'build' ? (STORY[step].issues ?? []).map(code => R.uris[code]) : []);
+    // In the vertical layout every line is named, in the open space between the lanes; lines
+    // that meet at one card are named near where they start, so the names do not collide.
+    const into = plan.reduce((m, p) => m.set(p.e.to, (m.get(p.e.to) ?? 0) + 1), new Map());
     for (const { e, a, b, sides, fOut, fIn } of plan) {
       const state = mode === 'evaluate' && e.state !== 'unused' ? e.state : 'plain';
       const curve = routeLine(a, b, sides, fOut, fIn);
       const line = lineSVG(curve, e.kind + ' e-' + state, colour(state));
-      if (fresh.has(e.from)) {
-        const [x, y] = splitAt(curve, 0.5).at;
+      if (fresh.has(e.from) || vertical) {
+        const [x, y] = splitAt(curve, vertical && into.get(e.to) > 1 ? 0.3 : 0.5).at;
         const policy = linksOf(docOf(R, e.from)).find(l => l.to === e.to && l.kind === e.kind)?.policy ?? LINK[e.kind].field;
         labels.push("<text class='edge-label' x='" + x.toFixed(1) + "' y='" + y.toFixed(1) + "'>" + esc(policy) + '</text>');
       }
@@ -666,6 +647,9 @@ export async function mountBoard(api, cfg) {
     root.querySelectorAll('[data-card]').forEach(b => b.addEventListener('click', () => { if (b.dataset.card) show({ kind: 'card', code: b.dataset.card }); }));
     root.querySelectorAll('details.sec').forEach(x => x.addEventListener('toggle', () => { if (x.open) openSecs.add(x.dataset.sec); else openSecs.delete(x.dataset.sec); }));
   }
+  // The card whose sheet is open is ringed; closing the sheet (button, Escape, backdrop) clears it.
+  const markSelected = () => $('board').querySelectorAll('.card[data-code]').forEach(c => c.classList.toggle('selected', selection?.kind === 'card' && selection.code === c.dataset.code));
+  $('sheet').addEventListener('close', () => { selection = null; markSelected(); });
   $('sheetClose').addEventListener('click', () => { const s = $('sheet'); if (s.close) s.close(); else s.removeAttribute('open'); });
   $('sheet').addEventListener('click', function (e) { if (e.target === this && this.close) this.close(); });
 
@@ -711,11 +695,10 @@ export async function mountBoard(api, cfg) {
     if (my !== seq) return;
     last = { R, mode };
     board.innerHTML = vertical
-      ? "<div class='flow'><svg class='lines' aria-hidden='true'></svg><svg class='labels' aria-hidden='true'></svg>" + cfg.lanes.map(l => laneHTML(l, R, mode)).join('') + "</div><aside class='side' aria-live='polite'>" + sideHTML(R, mode) + '</aside>'
+      ? "<div class='flow'><svg class='lines' aria-hidden='true'></svg><svg class='labels' aria-hidden='true'></svg>" + cfg.lanes.map(l => laneHTML(l, R, mode)).join('') + '</div>'
       : "<svg class='lines' aria-hidden='true'></svg><svg class='labels' aria-hidden='true'></svg>" + ACTORS.map(a => colHTML(a, R, mode)).join('');
     wireCards(R, mode); wireControls(board);
     if (vertical) {
-      wireDetail(board.querySelector('.side'));
       if (vcheck) { vcheck.innerHTML = mode === 'evaluate' ? checkHTML(R, mode) : ''; wireControls(vcheck); }
     }
     redraw = () => drawLines(R, mode);
