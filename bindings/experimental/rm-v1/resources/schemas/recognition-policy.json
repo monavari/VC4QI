@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vc4qi.example/schemas/rm/1/recognition-policy.json",
+  "title": "RecognitionPolicy entry in termsOfUse: issued while recognized in the named recognition (no authority)",
+  "type": "object",
+  "required": [
+    "type",
+    "recognitionCredential"
+  ],
+  "properties": {
+    "type": {
+      "const": "RecognitionPolicy"
+    },
+    "recognitionCredential": {
+      "type": "object",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "type": {
+          "const": "RecognizedEntityCredential"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

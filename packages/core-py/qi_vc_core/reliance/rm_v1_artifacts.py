@@ -742,8 +742,10 @@ def verify_chain(
         )
     # Follow the chain's own references (termsOfUse, evidence) from protected
     # credentials, within maxDepth; supplied-but-unreferenced credentials stay inert.
-    # A grant's termsOfUse may point up to its issuer's recognition; it is followed
-    # like any other link and decides only for a verifier whose route uses it.
+    # Every upward link is a termsOfUse entry: an IssuedUnderPolicy
+    # (authorizationCredential) or a RecognitionPolicy (recognitionCredential, the
+    # issuer's recognition). Both are followed the same way; a recognition decides only
+    # for a verifier whose route uses it.
     index = 0
     while index < len(artifacts):
         current = artifacts[index]
@@ -756,6 +758,7 @@ def verify_chain(
         for policy in document.get("termsOfUse") or []:
             credential = (
                 policy.get("authorizationCredential")
+                or policy.get("recognitionCredential")
                 if isinstance(policy, dict)
                 else None
             )

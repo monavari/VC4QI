@@ -207,69 +207,37 @@ content must be bound to the exact claim, grantee, activity, scope version, prof
 time, and the signer's authority must be established independently. A point answer
 cannot prove that a whole scope is contained.
 
-Recognition (RM, experimental) answers who stands behind a grant's issuer, nothing
-more. Each recognition is its own credential: R, issued by an arrangement anchor (a
-fictional Global ACI stand-in) about one accreditation body, in the shape of a W3C
-Recognized Entities credential (Working Draft of 4 November 2026) with a single subject
-and its own revocation and suspension entries. The grants point up to it like every
-other link: A and H carry a `termsOfUse` policy whose `authorizationCredential` has type
-`RecognizedEntityCredential`, pinned by digest in `relatedResource`. A verifier whose
-profile anchors the accreditation body stops there, and R never decides for it. A
-verifier whose profile instead anchors the recognizer for the recognizer purpose
-(`bindingRules.recognition`: recognizer purpose, required action and the main scope per
-grant purpose) follows the link: R establishes the grant's issuer only if it is usable
-and not suspended, its issuer is an anchor for the recognizer purpose, its subject is
-the grant's issuer with stated actions, and one action is the required action for the
-grant's main scope (activity and normative document, compared exactly), recognized by
-its issuer and in force at the activity time. A recognition of another body, or for
-another main scope, contradicts; a missing recognition, entry or time is not
-established. R then joins the witness path. The profile names no recognition, and a
-recognition that nothing in the chain references confers nothing. Recognition does not
-replace QI scope, containment, restrictions, support or conformity: D520 is recognized
-and still out of scope. Suspending one body's recognition is one status bit; nothing is
-re-issued. The per-recognition shape and the `termsOfUse` link are this binding's
-proposal; the draft's own up-pointer is `issuer.recognizedIn`, which is not used, and
-the draft's context is not yet published, so the binding pins a stand-in context whose
-terms expand to the draft vocabulary.
-
-## 8. Security, time and disclosure
-
-- Every required credential and security resource gets the binding's real checks. A
-  constant key resolver is not identity evidence, and proof skipping is simulation.
-- Resolution is bounded (origin, redirects, media type, size, decompression, time).
-  Static resources are pinned by digest; status observations keep their time.
-- Evaluation, activity, issuance, validity, proof and status times are distinct.
-  `validFrom` is not issuance time. A request asks about its activity time, which is
-  the evaluation time for current reliance. Grants must be in force at that time, and
-  status at that time is established only by a status list of the same issuer that was
-  in force then and fresh then: a list signed later cannot say what held earlier, so a
-  question about the past with only current lists is not established, and a list the
-  issuer signed and kept from that time answers it. Status lists are dated credentials;
-  keeping them is what makes "was it valid when it was issued?" answerable. Finding a
-  kept list is the resolver's job (the RM fixtures keep January 2026 lists in their own
-  archive catalog); an issuer-written activity time can still be backdated without a
-  trusted timestamp.
-- Evidence may be supplied as a flat bundle or retrieved within budgets; extra
-  credentials confer nothing. Selective disclosure must keep every fact the request
-  needs: a valid disclosure proof that hides a required fact cannot establish reliance.
-
-## 9. Boundaries
-
-VC4QI specifies and demonstrates the conditions for QI reliance. It does not create
-institutional authority or prove physical truth. It does not require a wallet, LIMS,
-verifier service, timestamp service, ontology reasoner, rules engine or live
-institutional integration, and it claims no EBSI, EUDI, eIDAS or legal conformance.
-Recognition, signatures, query matching and schemas each establish only their own
-predicates; none alone establishes a reliance request.
-
-Decidability holds only under stated conditions: accepted mappings, terminating
-evaluators, finite route search and well-founded dependencies. A timeout is not
-falsity, and cost includes route search, cryptography, schema and RDF work and
-resolution, not traversal alone.
+Recognition (RM, experimental) answers whether a verifier that trusts a recognizer
+should accept a grant's issuer, nothing more; it grants no authority. An accreditation
+body's authority is its national appointment, which a verifier that anchors the body
+trusts directly. Each recognition is its own credential: R, issued by an arrangement
+anchor (a fictional Global ACI stand-in) about one accreditation body, in the shape of a
+W3C Recognized Entities credential (Working Draft of 12 November 2026) with a single
+subject, the action in `recognizedTo`, the main scopes in `registration`, and its own
+revocation and suspension entries. Every upward link is a `termsOfUse` entry, followed
+and pinned the same way; its type says what it means: `IssuedUnderPolicy`
+(`authorizationCredential`) for a grant, `RecognitionPolicy` (`recognitionCredential`)
+for a recognition. A and H carry a `RecognitionPolicy` naming R, pinned by digest in
+`relatedResource`, and mirror it as `issuer.recognizedIn`, which must then name the same
+credential. A verifier whose profile anchors the accreditation body stops there, and R
+never decides for it. A verifier whose profile instead anchors the recognizer for the
+recognizer purpose (`bindingRules.recognition`: recognizer purpose, required action and
+the main scope per grant purpose) follows the link: R establishes the grant's issuer
+only if it is usable and not suspended, its issuer is an anchor for the recognizer
+purpose, its subject is the grant's issuer with stated actions, one action is the
+required action recognized by its issuer and in force at the activity time, and its
+registration carries the grant's main scope (activity and normative document, compared
+exactly). A recognition of another body, or without that main scope, contradicts; a
+missing recognition, entry or time is not established. R then joins the witness path.
+The profile names no recognition, and a recognition that nothing in the chain names
+confers nothing. Recognition does not replace QI scope, containment, restrictions,
+support or conformity: D520 is recognized and still out of scope. Suspending one body's
+recognition is one status bit; nothing is re-issued. The per-recognition shape and the
+`RecognitionPolicy` link are this binding's resolution, not traversal alone.
 
 ## Standards
 
 [VCDM 2.0](https://www.w3.org/TR/2025/REC-vc-data-model-2.0-20250515/) (15 May 2025)
 provides the carriers; this project's bindings supply the QI interpretation. The
-[Recognized Entities Working Draft](https://www.w3.org/TR/2026/WD-vc-recognized-entities-1.0-20261104/)
-(4 November 2026) is experimental.
+[Recognized Entities Working Draft](https://www.w3.org/TR/2026/WD-vc-recognized-entities-1.0-20261112/)
+(12 November 2026) is experimental.

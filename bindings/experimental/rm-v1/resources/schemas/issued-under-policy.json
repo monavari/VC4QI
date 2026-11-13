@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://vc4qi.example/schemas/rm/1/authorization-policy.json",
-  "title": "RM authorization policy entry in termsOfUse",
+  "$id": "https://vc4qi.example/schemas/rm/1/issued-under-policy.json",
+  "title": "IssuedUnderPolicy entry in termsOfUse: issued exercising the named grant",
   "type": "object",
   "required": [
     "type",
@@ -9,7 +9,7 @@
   ],
   "properties": {
     "type": {
-      "const": "RmAuthorizationPolicy"
+      "const": "IssuedUnderPolicy"
     },
     "authorizationCredential": {
       "type": "object",
@@ -26,8 +26,7 @@
           "enum": [
             "RmAccreditation",
             "RmOperationalScope",
-            "RmLabAuthority",
-            "RecognizedEntityCredential"
+            "RmLabAuthority"
           ]
         }
       },

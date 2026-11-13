@@ -384,7 +384,7 @@ def citing_a2(
     def add(d: dict[str, Any]) -> None:
         d["termsOfUse"].append(
             {
-                "type": "RmAuthorizationPolicy",
+                "type": "IssuedUnderPolicy",
                 "authorizationCredential": {"id": URI["A2"], "type": "RmAccreditation"},
             }
         )
@@ -523,7 +523,7 @@ def test_reference_type_mismatch_is_contradicted() -> None:
 
 def policy_for(uri: str, kind: str) -> dict[str, Any]:
     return {
-        "type": "RmAuthorizationPolicy",
+        "type": "IssuedUnderPolicy",
         "authorizationCredential": {"id": uri, "type": kind},
     }
 

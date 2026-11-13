@@ -18,11 +18,13 @@
   plus `D197.json` and `D520.json`, hypothetical reissues with identical inputs except
   the value (fresh valid signatures) for the 197/520 witness cases.
 - `credentials/R.json`: a fictional Global ACI stand-in's recognition of the NAB, a W3C
-  Recognized Entities credential (Working Draft of 4 November 2026) with one subject,
-  recognizing the NAB to `accredit` for Reference material production (ISO 17034:2016)
-  and Testing (ISO/IEC 17025:2017) from 2024 to 2028. A, A2 and H point up to it through
-  `termsOfUse` and pin it in `relatedResource`; only a verifier that anchors Global ACI
-  (profile `rm-verifier-global-aci-1`) relies on it.
+  Recognized Entities credential (Working Draft of 12 November 2026) with one subject,
+  recognizing the NAB to `accredit` (`recognizedTo`), registered for Reference material
+  production (ISO 17034:2016) and Testing (ISO/IEC 17025:2017) (`registration`), from
+  2024 to 2028. A, A2 and H name it in a `termsOfUse` `RecognitionPolicy`, mirror it as
+  `issuer.recognizedIn` and pin it in `relatedResource`; it grants no authority, and
+  only a verifier that anchors Global ACI (profile `rm-verifier-global-aci-1`) relies on
+  it. O, S and D carry `IssuedUnderPolicy` links to their grants.
 - `status/{nab,producer,lab}.json`: one signed W3C Bitstring Status List per issuer
   (revocation, all bits clear); every credential above names its list and index.
   `status/nab-suspension.json` is the NAB's suspension list; A and A2 carry both a

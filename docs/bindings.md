@@ -81,7 +81,8 @@ accreditation A, operational scope O, certificate D, study S and laboratory auth
 | Batch (D, S) | `/credentialSubject/id` |
 | Permitted activity | `/credentialSubject/permittedActivity[]` (`issueRmCertificate`, `maintainRmScope`, `issueRmStudy`) |
 | Scope records | `/credentialSubject/scope[]` with `matrixIri`, `formIri`, `allowedPropertyIris`, `allowedMethodIris`, `range` |
-| Authorizing reference | `/termsOfUse[]` of type `RmAuthorizationPolicy` |
+| Authorizing reference | `/termsOfUse[]` of type `IssuedUnderPolicy` (`authorizationCredential`) |
+| Recognition reference (A, H) | `/termsOfUse[]` of type `RecognitionPolicy` (`recognitionCredential`), mirrored in `/issuer/recognizedIn`; never authority |
 | Required study | `/evidence[]` of type `RmStudyReference` |
 | Activity time | `/credentialSubject/activityTime` |
 | Selected claim | `/credentialSubject/materialPropertiesList/i/results/j` |

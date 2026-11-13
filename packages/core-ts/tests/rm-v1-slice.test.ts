@@ -331,7 +331,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
 
   describe('negative controls', () => {
     it('an arbitrary authorization policy name is not accepted', async () => {
-      for (const name of ['AuthorizedByPolicy', 'RmAuthorizationPolicyV2', 'rmAuthorizationPolicy']) {
+      for (const name of ['AuthorizedByPolicy', 'IssuedUnderPolicyV2', 'issuedUnderPolicy', 'RmAuthorizationPolicy']) {
         const document = json(URI.D);
         (document.termsOfUse as JsonObject[])[0]!.type = name;
         const artifact = await verifyRmArtifact(URI.D, session({ [URI.D]: serialize(document) }), { manifest, evaluationTime: NOW });

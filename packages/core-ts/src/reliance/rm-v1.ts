@@ -10,6 +10,6 @@ export const RM_V1_SCHEMA_BASE = 'https://vc4qi.example/schemas/rm/1/';
  * Repository-owned stand-in for the W3C Recognized Entities context, which the W3C
  * has not published yet. Its terms expand to the draft vocabulary
  * (https://www.w3.org/ns/credentials/recognized-entities#) of the Working Draft of
- * 4 November 2026; the arrangement extension terms are RM binding terms.
+ * 12 November 2026; the main-scope extension terms are RM binding terms.
  */
-export const RECOGNIZED_ENTITIES_DRAFT_CONTEXT = 'https://vc4qi.example/contexts/recognized-entities/draft-20261104';
+export const RECOGNIZED_ENTITIES_DRAFT_CONTEXT = 'https://vc4qi.example/contexts/recognized-entities/draft-20261112';

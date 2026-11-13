@@ -91,8 +91,9 @@ export async function verifyChain(
   }
   // Follow the chain's own references (termsOfUse, evidence) from protected
   // credentials, within maxDepth; supplied-but-unreferenced credentials stay inert.
-  // A grant's termsOfUse may point up to its issuer's recognition; it is followed like
-  // any other link and decides only for a verifier whose route uses it.
+  // Every upward link is a termsOfUse entry: an IssuedUnderPolicy (authorizationCredential)
+  // or a RecognitionPolicy (recognitionCredential, the issuer's recognition). Both are
+  // followed the same way; a recognition decides only for a verifier whose route uses it.
   for (let index = 0; index < artifacts.length; index++) {
     const artifact = artifacts[index]!;
     const at = depth.get(artifact.artifactId)!;
@@ -100,7 +101,8 @@ export async function verifyChain(
     const document = read(artifact.artifactId);
     const references = [
       ...(Array.isArray(document.termsOfUse) ? document.termsOfUse : [])
-        .map(p => (p as { authorizationCredential?: { id?: unknown } })?.authorizationCredential?.id),
+        .map(p => p as { authorizationCredential?: { id?: unknown }; recognitionCredential?: { id?: unknown } })
+        .map(p => p?.authorizationCredential?.id ?? p?.recognitionCredential?.id),
       ...(Array.isArray(document.evidence) ? document.evidence : []).map(e => (e as { id?: unknown })?.id),
     ].filter((uri): uri is string => typeof uri === 'string');
     for (const uri of references) {

@@ -177,7 +177,7 @@
         ],
         "properties": {
           "type": {
-            "const": "RmAuthorizationPolicy"
+            "const": "IssuedUnderPolicy"
           },
           "authorizationCredential": {
             "type": "object",
@@ -194,8 +194,7 @@
                 "enum": [
                   "RmAccreditation",
                   "RmOperationalScope",
-                  "RmLabAuthority",
-                  "RecognizedEntityCredential"
+                  "RmLabAuthority"
                 ]
               }
             },
