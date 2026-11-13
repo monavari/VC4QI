@@ -12,6 +12,7 @@
   --paper:#FFFFFF; --raise:#FFFFFF; --wash:#F3F5F6; --tcyan:#E3F5FD; --line:#DADEE1;
   --ink:#14232A; --muted:#56656D; --soft:#8A979E; --accent:#00556E;
   /* Reliance states: holds, fails, cannot tell, not asked. */
+  --g-auth:#6A4C9C; --g-act:#2D6CB5;
   --ok:#1B7A47; --ok-wash:#E7F4EC; --bad:#C8102E; --bad-wash:#FCEBEE;
   --unk:#9A5B00; --unk-wash:#FFF3DC; --off:#8A979E; --off-wash:#F3F5F6; --on-state:#FFFFFF;
   /* Verdict banners keep white text in both themes. */
@@ -23,10 +24,10 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){ --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --tcyan:#0F2F3C; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --accent:#5CC8E8; --petrol:#0A6A86;
-    --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D; --on-state:#0E1A1F; }
+    --g-auth:#B79CF2; --g-act:#7FB2F0; --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D; --on-state:#0E1A1F; }
 }
 :root[data-theme="dark"]{ --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --tcyan:#0F2F3C; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --accent:#5CC8E8; --petrol:#0A6A86;
-  --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D; --on-state:#0E1A1F; }
+  --g-auth:#B79CF2; --g-act:#7FB2F0; --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D; --on-state:#0E1A1F; }
 :root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
 *,*::before,*::after{ box-sizing:inherit; }
 html{ font-size:16px; scroll-padding-top:env(safe-area-inset-top,0px); -webkit-text-size-adjust:100%; }
@@ -81,7 +82,14 @@ h1{ margin:0 0 var(--s3); font-size:clamp(1.55rem, 1.2rem + .9vw, 2rem); line-he
 }
 section{ margin:0; }
 h2{ margin:0 0 var(--s3); font-size:.78rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
-.legend{ margin:calc(-1 * var(--s1)) 0 var(--s4); font-size:.85rem; color:var(--muted); }
+.legend{ margin:calc(-1 * var(--s1)) 0 var(--s4); font-size:.82rem; color:var(--muted); display:flex; flex-wrap:wrap; gap:.15rem 1rem; }
+.legend > span{ white-space:nowrap; }
+.legend i{ display:inline-block; width:2rem; height:0; vertical-align:middle; margin-right:.35rem; border-top:3px solid var(--soft); }
+.legend i.dot{ border-top-style:dotted; }
+.legend i.rec{ border-top:none; height:3px; background:repeating-linear-gradient(90deg, var(--soft) 0 12px, transparent 12px 16px, var(--soft) 16px 18px, transparent 18px 22px); }
+.legend .g{ display:inline-block; width:.8rem; height:.8rem; border-radius:3px; vertical-align:-1px; margin-right:.35rem; background:var(--g-auth); }
+.legend .g.ga{ background:var(--g-act); }
+.legend code{ font:600 .78rem var(--mono); color:var(--petrol); }
 
 /* verdict and the six questions */
 .result{ display:grid; gap:var(--s3); }
@@ -111,14 +119,21 @@ h2{ margin:0 0 var(--s3); font-size:.78rem; font-weight:700; letter-spacing:.08e
 .trace code{ font:.72rem var(--mono); color:var(--muted); display:block; overflow-wrap:anywhere; }
 
 /* credential chain */
-.graph{ position:relative; display:grid; gap:var(--s5); }
+.graph{ position:relative; display:grid; gap:2.6rem; }
 .graph svg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
 .layer{ display:flex; gap:var(--s3); justify-content:center; position:relative; z-index:1; }
 .node{ flex:1 1 0; max-width:13rem; min-width:0; text-align:left; background:var(--raise); color:var(--ink); border:2px solid var(--line); border-radius:var(--radius); padding:var(--s2) var(--s3); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.08); }
 .node:hover{ border-color:var(--muted); }
-.node b{ display:block; font-size:.95rem; font-weight:700; }
+.node{ position:relative; }
+.node b{ display:inline-block; font:700 .85rem/1 var(--mono); padding:.2rem .4rem; border-radius:5px; background:var(--wash); border:1px solid var(--line); }
+.node .role{ display:block; margin-top:.3rem; font-size:.92rem; font-weight:650; color:var(--ink); }
+.node code{ display:block; font:600 .7rem/1.3 var(--mono); color:var(--petrol); overflow-wrap:anywhere; }
+/* The signer's group: violet an authority, blue an actor (as on the boards). */
+.node.g-authority, .node.g-actor{ padding-left:calc(var(--s3) + 4px); }
+.node.g-authority::before, .node.g-actor::before{ content:""; position:absolute; left:3px; top:5px; bottom:5px; width:4px; border-radius:2px; background:var(--g-auth); }
+.node.g-actor::before{ background:var(--g-act); }
 .node small{ display:block; font-size:.76rem; line-height:1.35; color:var(--muted); overflow-wrap:anywhere; }
-.node small:first-of-type{ color:var(--ink); }
+
 .node.n-established{ border-color:var(--ok); }
 .node.n-contradicted{ border-color:var(--bad); background:var(--bad-wash); }
 .node.n-not_established{ border-color:var(--unk); background:var(--unk-wash); }
@@ -127,7 +142,8 @@ h2{ margin:0 0 var(--s3); font-size:.78rem; font-weight:700; letter-spacing:.08e
 .badge{ display:inline-block; margin-top:var(--s2); font-size:.7rem; font-weight:700; padding:.08rem .5rem; border-radius:999px; color:var(--on-state); background:var(--off); }
 .badge.b-established{ background:var(--ok); } .badge.b-contradicted{ background:var(--bad); } .badge.b-not_established{ background:var(--unk); }
 .edge{ fill:none; stroke-width:2.5; }
-.edge.support{ stroke-dasharray:5 5; }
+.edge.support{ stroke-dasharray:2 5; stroke-linecap:round; stroke-width:3; }
+.edge-label{ font:600 .68rem var(--mono); fill:var(--petrol); text-anchor:middle; dominant-baseline:middle; paint-order:stroke; stroke:var(--paper); stroke-width:4px; stroke-linejoin:round; }
 .edge.recognition{ stroke-dasharray:12 4 2 4; }
 .e-established, .e-not_required{ stroke:var(--ok); } .e-unused{ stroke:var(--soft); } .e-contradicted{ stroke:var(--bad); stroke-width:3.5; } .e-not_established{ stroke:var(--unk); stroke-width:3; }
 
@@ -219,7 +235,9 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const short = iri => String(iri ?? '').split('#').pop().split(/[/:]/).pop();
 const LABEL = { established: '✓ yes', contradicted: '✕ no', not_established: '? cannot tell', not_asked: 'not asked', not_required: 'not required' };
-const LEGEND = 'Read from the credentials’ own references. Solid line: issued under a grant (termsOfUse, IssuedUnderPolicy); dash-dot: the issuer’s recognition, no authority (termsOfUse, RecognitionPolicy); dashed: supporting study (evidence). Green holds, red fails, amber cannot be told. The ringed box is the credential being checked; click any box to open it.';
+const LEGEND = '<span><i></i>grant <code>IssuedUnderPolicy</code></span><span><i class="rec"></i>recognition <code>RecognitionPolicy</code>, no authority</span>'
+  + '<span><i class="dot"></i><code>evidence</code></span><span><span class="g"></span>signed by an authority</span><span><span class="g ga"></span>signed by an actor</span>'
+  + '<span>✓ holds · ✕ fails · ? cannot tell</span><span>Ringed: the credential checked. Click a box to open it.</span>';
 const QUESTIONS = { authentic: 'Authentic', current: 'Current', understood: 'Understood', authorized: 'Authorized', supported: 'Supported', fit: 'Fit for use' };
 const ORDER = ['authentic', 'current', 'understood', 'authorized', 'supported', 'fit'];
 
@@ -250,11 +268,11 @@ function writeHash() {
 }
 
 function renderTabs() {
-  $('tabs').innerHTML = "<a href='rm/'>RM story</a><a href='gs/'>GS story</a>" + api.EXAMPLES
+  $('tabs').innerHTML = "<a href='rm/'>RM board</a><a href='rm/vertical.html'>RM vertical</a><a href='gs/'>GS story</a>" + api.EXAMPLES
     .map(e => "<a href='#" + e.id + "'" + (e.id === state.example ? " aria-current='page'" : '') + '>' + esc(e.tab) + '</a>').join('');
 }
 
-$('legend').textContent = LEGEND;
+$('legend').innerHTML = LEGEND;
 function segment(label, options, value, key, many) {
   return "<p class='label'>" + esc(label) + "</p><div class='seg" + (many ? ' many' : '') + "' role='group' aria-label='" + esc(label) + "' data-key='" + key + "'>"
     + options.map(o => "<button type='button' data-value='" + esc(o.id) + "' aria-pressed='" + (o.id === value) + "'>" + esc(o.label) + '<small>' + esc(o.sublabel) + '</small></button>').join('') + '</div>';
@@ -380,7 +398,8 @@ function claimHTML(D, selected) {
   return h;
 }
 function cardHTML(D, selected, tampered) {
-  let h = "<div class='vc'><header><b>" + esc(D.name ?? short(D.id) + ' · ' + D.type[1]) + '</b>' + (tampered ? "<span class='tampered'>tampered</span>" : '<span>' + esc(short(D.id)) + '</span>') + '</header>';
+  const code = api.RM_CODES?.[short(D.id)] ?? short(D.id);
+  let h = "<div class='vc'><header><b>" + esc(D.name ?? code + ' · ' + D.type[1]) + '</b>' + (tampered ? "<span class='tampered'>tampered</span>" : '<span>' + esc(code) + '</span>') + '</header>';
   h += "<div class='body'>" + claimHTML(D, selected) + "<div class='meta'>";
   h += kv('issuer', esc(D.issuer)) + kv('valid', date(D.validFrom) + ' – ' + date(D.validUntil));
   // Each term of use is a grant (authorizationCredential) or a recognition (recognitionCredential).
@@ -411,9 +430,9 @@ function renderGraph(R) {
     const row = document.createElement('div'); row.className = 'layer';
     for (const n of layer) {
       const b = document.createElement('button'); b.type = 'button';
-      b.className = 'node' + (n.target ? ' target' : '') + (n.present ? ' n-' + n.state : ' missing');
+      b.className = 'node' + (n.target ? ' target' : '') + (n.present ? ' n-' + n.state : ' missing') + (n.group ? ' g-' + n.group : '');
       const badge = n.present ? "<span class='badge b-" + n.state + "'>" + (n.state === 'established' ? 'verified ✓' : n.state === 'contradicted' ? 'invalid ✕' : 'not checked') + '</span>' : '';
-      b.innerHTML = '<b>' + esc(n.name) + '</b><small>' + esc(n.role) + '</small><small>' + esc(n.parties) + '</small>' + badge;
+      b.innerHTML = '<b>' + esc(n.code) + "</b><span class='role'>" + esc(n.role) + '</span>' + (n.type ? '<code>' + esc(n.type) + '</code>' : '') + '<small>' + esc(n.parties) + '</small>' + badge;
       if (n.present) b.addEventListener('click', () => openSheet(n, R)); else b.disabled = true;
       row.appendChild(b); boxes.set(n.uri, b);
     }
@@ -423,12 +442,25 @@ function renderGraph(R) {
   g.prepend(svg);
   const draw = () => {
     const base = g.getBoundingClientRect();
+    // Each line ends in a head that follows its last stretch (it arrives vertically), and is
+    // labelled with its field: the termsOfUse type, or evidence.
+    const COLOUR = { established: 'var(--ok)', not_required: 'var(--ok)', contradicted: 'var(--bad)', not_established: 'var(--unk)', unused: 'var(--soft)' };
+    // A label sits where its line is clear of the others: near the source when lines meet at
+    // one target, near the target when they leave one source.
+    const count = key => R.graph.edges.filter(x => x[key] === undefined ? false : true).reduce((m, x) => m.set(x[key], (m.get(x[key]) ?? 0) + 1), new Map());
+    const into = count('to'), outOf = count('from');
     svg.innerHTML = R.graph.edges.map(e => {
       const a = boxes.get(e.from)?.getBoundingClientRect(), b = boxes.get(e.to)?.getBoundingClientRect();
       if (!a || !b) return '';
-      const x1 = a.left + a.width / 2 - base.left, y1 = a.top - base.top, x2 = b.left + b.width / 2 - base.left, y2 = b.bottom - base.top;
-      const my = (y1 + y2) / 2;
-      return "<path class='edge " + e.kind + ' e-' + e.state + "' d='M" + x1 + ' ' + y1 + ' C' + x1 + ' ' + my + ' ' + x2 + ' ' + my + ' ' + x2 + ' ' + y2 + "'/>";
+      const x1 = a.left + a.width / 2 - base.left, y1 = a.top - base.top, x2 = b.left + b.width / 2 - base.left, y2 = b.bottom - base.top + 9;
+      const my = (y1 + y2) / 2, c = COLOUR[e.state] ?? 'var(--soft)';
+      return "<path class='edge " + e.kind + ' e-' + e.state + "' d='M" + x1 + ' ' + y1 + ' C' + x1 + ' ' + my + ' ' + x2 + ' ' + my + ' ' + x2 + ' ' + y2 + "'/>"
+        + "<path d='M" + x2 + ' ' + (y2 - 9) + ' L' + (x2 - 5.5) + ' ' + (y2 + 2) + ' L' + (x2 + 5.5) + ' ' + (y2 + 2) + " z' fill='" + c + "'/>"
+        + (() => {
+          const t = into.get(e.to) > 1 ? 0.3 : outOf.get(e.from) > 1 ? 0.72 : 0.5, u = 1 - t;
+          const lx = x1 + (x2 - x1) * (3 * u * t * t + t * t * t), ly = u * u * u * y1 + 3 * u * u * t * my + 3 * u * t * t * my + t * t * t * y2;
+          return "<text class='edge-label' x='" + lx.toFixed(1) + "' y='" + ly.toFixed(1) + "'>" + esc(e.policy) + '</text>';
+        })();
     }).join('');
   };
   draw();
@@ -438,7 +470,7 @@ window.addEventListener('resize', () => current?.());
 
 function openSheet(n, R) {
   const doc = JSON.parse(R.texts[n.uri]);
-  $('sheetTitle').textContent = n.name + ' · ' + n.role;
+  $('sheetTitle').textContent = n.code + ' · ' + n.role;
   $('sheetCard').innerHTML = cardHTML(doc, [], false);
   $('sheetBody').textContent = R.texts[n.uri];
   const s = $('sheet'); if (s.showModal) s.showModal(); else s.setAttribute('open', '');

@@ -18,9 +18,7 @@
 <main>
   <nav class="storynav" id="storynav" aria-label="Story"></nav>
   <div class="stephead">
-    <p class="kicker" id="kicker"></p>
     <h1 id="title">Reference material on an actor board</h1>
-    <p class="acts" id="acts"></p>
     <p class="lead" id="lead"></p>
   </div>
 
@@ -31,16 +29,16 @@
   </section>
 
   <section class="panel" id="panel" aria-live="polite" hidden></section>
-  <p class="legend" id="legend"><b>Lines</b> are links inside the credential they start from:<i></i>acts under <code>IssuedUnderPolicy</code><i class="rec"></i>recognized in <code>RecognitionPolicy</code>, no authority<i class="dot"></i>backed by <code>evidence</code><i class="dash"></i>handed over. Green holds, red fails, amber cannot be told. Click a credential or a line.</p>
   <div class="board" id="board" aria-live="polite"></div>
+  <p class="legend" id="legend"><span><i></i>grant <code>IssuedUnderPolicy</code></span><span><i class="rec"></i>recognition <code>RecognitionPolicy</code>, no authority</span><span><i class="dot"></i><code>evidence</code></span><span><i class="dash"></i>handed over</span><span><span class="g"></span>signed by an authority</span><span><span class="g ga"></span>signed by an actor</span><span>✓ holds · ✕ fails · ? cannot tell</span><span>Click a credential or a line.</span></p>
   <div class="band" id="band" hidden>
     <span class="tag">Evaluated · proposal</span>
-    <b>Recognized in R</b>
-    <span>This verifier trusts Global ACI, and R tells it to accept the body. Recognition grants no authority; each claim is still decided by the producer’s own scope.</span>
+    <b>Recognized in REC1</b>
+    <span>This verifier trusts Global ACI, and REC1 tells it to accept the body. Recognition grants no authority; each claim is still decided by the producer’s own scope.</span>
   </div>
 
   <footer>
-    <p>Evaluated in your browser on signed test credentials, as of <span id="evalTime">25 September 2026</span>; nothing is fetched. The 178 value is from the M375a certificate; D197, D520, the bodies, scopes and keys are fictional.</p>
+    <p>Evaluated in your browser on signed test credentials, as of <span id="evalTime">25 September 2026</span>; nothing is fetched. Codes such as PA1 stand for the paper’s letters (A). The 178 value is from the M375a certificate; RM197, RM520, the bodies, scopes and keys are fictional.</p>
     <p><a href="../../">Project</a> · <a href="../../docs/use-cases.html">How it works</a> · <a href="https://github.com/monavari/VC4QI">Code</a> · Mehran Monavari</p>
   </footer>
 </main>

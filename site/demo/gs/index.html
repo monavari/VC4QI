@@ -18,9 +18,7 @@
 <main>
   <nav class="storynav" id="storynav" aria-label="Story"></nav>
   <div class="stephead">
-    <p class="kicker" id="kicker"></p>
     <h1 id="title">GS certification on an actor board</h1>
-    <p class="acts" id="acts"></p>
     <p class="lead" id="lead"></p>
   </div>
 
@@ -29,9 +27,8 @@
     <p>Nothing in this step is evaluated. The table sketches what the manufacturer could reveal, and keep back, when it presents the product passport to the verifier.</p>
     <table id="presentTable"></table>
   </section>
-
-  <p class="legend" id="legend"><b>Lines</b> are links inside the credential they start from:<i></i>acts under <code>IssuedUnderPolicy</code><i class="rec"></i>recognized in <code>RecognitionPolicy</code>, no authority<i class="dot"></i>backed by <code>evidence</code><i class="dash"></i>handed over. Green holds, red fails, amber cannot be told. Click a credential or a line.</p>
   <div class="board" id="board" aria-live="polite"></div>
+  <p class="legend" id="legend"><span><i></i>grant <code>IssuedUnderPolicy</code></span><span><i class="dot"></i><code>evidence</code></span><span><i class="dash"></i>handed over</span><span><span class="g"></span>signed by an authority</span><span><span class="g ga"></span>signed by an actor</span><span>✓ holds · ✕ fails · ? cannot tell</span><span>Click a credential or a line.</span></p>
   <div class="band placeholder" id="band" hidden>
     <span class="tag">Not evaluated</span>
     <b>Recognition of the scheme owner</b>

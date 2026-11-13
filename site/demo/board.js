@@ -22,7 +22,7 @@ const typeOf = d => [d?.type].flat().filter(Boolean).at(-1) ?? '';
  * is a termsOfUse entry; its type says whether it is a grant or a recognition. */
 const LINK = {
   authority: {
-    verb: 'acts under', field: 'termsOfUse', path: 'termsOfUse[].authorizationCredential',
+    verb: 'is issued under', field: 'termsOfUse', path: 'termsOfUse[].authorizationCredential',
     lede: (f, t) => f + ' names ' + t + ' as the grant it was issued under. ' + t + ' grants; ' + f + ' uses that grant, and may not go beyond it.',
     checks: (f, t) => [
       t + ' is signed by its issuer, and its bytes match the digest ' + f + ' pins for it in relatedResource.',
@@ -95,6 +95,8 @@ export function fail(message) {
  *   objectAt(ctx) -> actorId           the column the physical object sits in,
  *   band(st) -> bool                   show the international-recognition note,
  *   panels: { name: ctx -> html }      pages drawn instead of the board (a step's `panel`),
+ *   codes: { A: 'PA1' }                the code a credential shows, by its identifier's last part
+ *                                       (display only; the signed credentials keep theirs),
  *   hideLocked: bool                   in guided steps, hide a locked control unless its value
  *                                       differs from the default or the spec says `always`,
  *   columns: css                        grid columns on wide screens (actors, then the verifier),
@@ -114,10 +116,15 @@ export async function mountBoard(api, cfg) {
 
   // Plain words first: a party's identifier becomes its name, a credential its code.
   const name = host => cfg.hosts[host] ?? host;
+  /** The code a credential shows (cfg.codes), from its identifier's last part. */
+  const disp = code => cfg.codes?.[code] ?? code;
+  const codeOfUri = uri => disp(short(uri));
+  /** An actor's monogram, coloured by its group (authority or actor). */
+  const badge = (id, sm = false) => { const a = actor(id); return "<span class='mono-badge" + (sm ? ' sm' : '') + (a?.group ? ' g-' + a.group : '') + "'>" + esc(a?.mono ?? id) + '</span>'; };
   const plain = text => String(text ?? '')
     .replace(/https:\/\/([a-z-]+)\.vc4qi\.example\/controller/g, (_, h) => name(h))
     .replace(/https:\/\/([a-z-]+)\.vc4qi\.example\/status\/(suspension\/)?[a-z0-9/]*/g, (_, h, sus) => name(h) + "'s " + (sus ? 'suspension' : 'revocation') + ' list')
-    .replace(/https:\/\/[a-z-]+\.vc4qi\.example\/credentials\/([A-Za-z0-9-]+)/g, '$1')
+    .replace(/https:\/\/[a-z-]+\.vc4qi\.example\/credentials\/([A-Za-z0-9-]+)/g, (_, c) => disp(c))
     .replace(/urn:vc4qi-example:[a-z]+:/g, '')
     .replace(/^./, c => c.toUpperCase());
 
@@ -171,11 +178,11 @@ export async function mountBoard(api, cfg) {
     ...(d?.evidence ?? []).map(e => e.id).filter(Boolean).map(to => ({ to, kind: 'support', policy: 'evidence' })),
   ];
   /** A credential by its full name and the paper's code: “Producer accreditation A”. */
-  const nameOf = (R, uri) => { const a = assetOf(R, uri); return a ? a.label + ' ' + short(uri) : short(uri); };
-  const cites = d => linksOf(d).map(l => short(l.to) + (l.kind === 'support' ? ' (evidence)' : ''));
+  const nameOf = (R, uri) => { const a = assetOf(R, uri); return a ? a.label + ' ' + codeOfUri(uri) : codeOfUri(uri); };
+  const cites = d => linksOf(d).map(l => codeOfUri(l.to) + (l.kind === 'support' ? ' (evidence)' : ''));
   // The link's own name: its policy type (IssuedUnderPolicy, RecognitionPolicy, a binding's
   // policy) or evidence.
-  const linkWords = (from, l) => '<b>' + esc(short(from)) + '</b> ' + LINK[l.kind].verb + ' <b>' + esc(short(l.to)) + "</b> <code>" + esc(l.policy ?? LINK[l.kind].field) + '</code>';
+  const linkWords = (from, l) => '<b>' + esc(codeOfUri(from)) + '</b> ' + LINK[l.kind].verb + ' <b>' + esc(codeOfUri(l.to)) + "</b> <code>" + esc(l.policy ?? LINK[l.kind].field) + '</code>';
   const noneAbove = code => code + ' names no authority above it: only a verifier that trusts its issuer relies on it.';
   const stateMark = s => s === 'unused' ? "<span class='state st-not_required'>not relied on</span>"
     : "<span class='state st-" + s + "'>" + (LABEL[s] ?? s) + '</span>';
@@ -202,22 +209,22 @@ export async function mountBoard(api, cfg) {
     const s = STORY[step];
     $('storynav').innerHTML = "<ol class='parts' aria-label='Parts'>" + cfg.parts.map(p => "<li><button type='button' data-part='" + p.id + "'"
         + (p.id === s.part ? " aria-current='step'" : '') + '>' + esc(p.label) + '</button></li>').join('') + '</ol>'
-      + "<div class='stepper'><button type='button' id='terms' class='terms'>Terms</button><span>Step " + (step + 1) + ' of ' + STORY.length + '</span>'
+      + "<div class='stepper'><span aria-label='Step " + (step + 1) + ' of ' + STORY.length + "'>" + (step + 1) + '/' + STORY.length + '</span>'
       + "<button type='button' id='prev'" + (step === 0 ? ' disabled' : '') + '>← Back</button>'
       + "<button type='button' id='next'" + (step === STORY.length - 1 ? ' disabled' : '') + '>Next →</button></div>';
+    // "Terms" sits in the top bar, so that the parts and the stepper fit one line.
+    if (!$('terms')) document.querySelector('.topbar .links')?.insertAdjacentHTML('beforeend', "<button type='button' id='terms' class='terms'>Terms</button>");
     $('storynav').querySelectorAll('[data-part]').forEach(b => b.addEventListener('click', () => goStep(STORY.findIndex(x => x.part === b.dataset.part))));
     $('prev').addEventListener('click', () => goStep(step - 1));
     $('next').addEventListener('click', () => goStep(step + 1));
-    $('terms').addEventListener('click', () => openSheet('Terms used here', "<dl class='map gloss'>"
-      + [...GLOSSARY, ...(cfg.glossary ?? [])].map(([k, v]) => '<dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd>').join('') + '</dl>'));
-    const part = cfg.parts.findIndex(p => p.id === s.part);
-    $('kicker').textContent = 'Part ' + (part + 1) + ' · ' + cfg.parts[part].label;
-    $('title').textContent = s.title; $('lead').textContent = s.text;
+    $('terms').onclick = () => openSheet('Terms used here', "<dl class='map gloss'>"
+      + [...GLOSSARY, ...(cfg.glossary ?? [])].map(([k, v]) => '<dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd>').join('') + '</dl>');
+    // One line of title and one sentence; the rest of the step's text folds into "More",
+    // which opens over the board, so opening it moves nothing.
+    $('title').textContent = s.title;
+    const [lead, ...more] = String(s.text).split(/(?<=\.) /);
+    $('lead').innerHTML = esc(lead) + (more.length ? " <details class='more'><summary>More</summary><p>" + esc(more.join(' ')) + '</p></details>' : '');
     document.title = s.title + ' · ' + cfg.name + ' · VC4QI';
-    const who = id => "<span class='who'><span class='mono-badge sm'>" + esc(actor(id).mono) + '</span>' + esc(actor(id).name) + '</span>';
-    // Up to three acting parties are named; with more, the outlined columns show them. The
-    // line keeps its height when empty, so the board does not move.
-    $('acts').innerHTML = s.part === 'play' || s.acts.length > 3 ? '' : s.acts.map(who).join("<span class='arrow' aria-label='to'>→</span>");
     $('presentation').hidden = !s.presentation;
     if (s.presentation) {
       $('presentTable').innerHTML = '<thead><tr><th>Credential</th><th>Reveal</th><th>Could stay hidden</th></tr></thead><tbody>'
@@ -248,17 +255,18 @@ export async function mountBoard(api, cfg) {
     if (missing) tags.push("<span class='tag'>not shown</span>");
     if (R.signedLive.includes(uri)) tags.push("<span class='tag t-live'>signed in this browser</span>");
     const about = a.about === 'object' ? '<b>' + esc(a.aboutLabel) + '</b>' : "<span class='who-inline'>" + esc(actor(a.about).mono) + '</span>';
+    const group = actor(a.actor)?.group;
     const foot = "<span class='foot'>signed by <span class='who-inline'>" + esc(actor(a.actor).mono) + '</span> · about ' + about
       + (d && cites(d).length ? "<span class='cites'>· cites " + esc(cites(d).join(', ')) + '</span>' : '') + '</span>';
     const sel = vertical ? selection ?? defaultSelection(mode) : selection;
     const selected = sel?.kind === 'card' && sel.code === a.code;
-    return "<button type='button' class='card " + a.kind + (state ? ' s-' + state : '') + (missing ? ' missing' : '') + (fresh ? ' fresh' : '')
+    return "<button type='button' class='card " + a.kind + (group ? ' by-' + group : '') + (state ? ' s-' + state : '') + (missing ? ' missing' : '') + (fresh ? ' fresh' : '')
       + (fresh && a.kind === 'claim' ? ' handover' : '') + (selected ? ' selected' : '') + (pending ? " pending' aria-hidden='true' tabindex='-1" : '')
       + "' data-code='" + esc(a.code) + "' data-uri='" + esc(uri) + "'>"
-      + "<span class='top'><span class='code'>" + esc(short(uri) || a.code) + "</span><span class='kind'>" + esc(a.label)
+      + "<span class='top'><span class='code'>" + esc(uri ? codeOfUri(uri) : disp(a.code)) + "</span><span class='kind'>" + esc(a.label)
       + (a.kind === 'evidence' ? " <span class='tag'>evidence</span>" : '') + (a.tag ? " <span class='tag'>" + esc(a.tag) + '</span>' : '') + '</span>'
       + (state ? "<span class='icon' aria-label='" + esc(LABEL[state]) + "'>" + ICON[state] + '</span>' : '') + '</span>'
-      + "<span class='type'>" + esc(typeOf(d)).replace(/([a-z])([A-Z])/g, '$1<wbr>$2') + '</span>'
+      + "<span class='type'>" + esc(typeOf(d)).replace(/([a-z])([A-Z])/g, '$1<wbr>$2') + "<span class='by' title='Signed by " + esc(actor(a.actor).name) + "'>" + esc(actor(a.actor).mono) + '</span></span>'
       + (d ? cfg.facts(a.code, d).map(l => "<span class='fact'>" + esc(l) + '</span>').join('') : '')
       + "<span class='tags'>" + tags.join('') + '</span>' + foot + '</button>';
   }
@@ -320,7 +328,7 @@ export async function mountBoard(api, cfg) {
       return [null, 'Status lists signed later cannot say what held at that time.'];
     }
     const gone = q.authentic.details.find(e => e.state === 'not_established' && /unavailable/.test(e.reason));
-    if (gone) return [null, short(gone.reason.split(':').slice(0, 2).join(':')) + ', which the chain cites, was not shown.'];
+    if (gone) return [null, codeOfUri(gone.reason.split(':').slice(0, 2).join(':')) + ', which the chain cites, was not shown.'];
     const open = ORDER.filter(k => q[k].state === 'not_established');
     return [null, open.length === 1 ? first(q[open[0]].summary) : 'Cannot tell whether it is ' + open.map(k => QUESTIONS[k].toLowerCase()).join(' or ') + '.'];
   }
@@ -362,7 +370,7 @@ export async function mountBoard(api, cfg) {
     };
     return "<section class='col" + (absent ? ' absent' : '') + (acting ? ' acting' : '') + (dim ? ' dim' : '') + "' data-actor='" + a.id + "'"
       + (absent ? " aria-hidden='true' inert" : " aria-label='" + esc(a.name) + "'") + '>'
-      + "<div class='colhead'><div class='name'><span class='mono-badge'>" + esc(a.mono) + '</span><h2>' + esc(a.name) + '</h2></div>'
+      + "<div class='colhead'><div class='name'>" + badge(a.id) + '<h2>' + esc(a.name) + '</h2></div>'
       + "<div class='pubs'>" + pubsHTML(a, st, mode) + "</div><div class='roles'></div></div>"
       + rows.map(row => "<div class='slot r" + row + "'>" + slot(row) + '</div>').join('')
       + "<div class='actions'>" + (cfg.actions[a.id] ?? []).map(spec => control(spec, st)).join('') + '</div></section>';
@@ -381,11 +389,11 @@ export async function mountBoard(api, cfg) {
     const extra = lane.extra && cfg.extras[lane.extra] ? "<div class='cell mid'>" + cfg.extras[lane.extra].html(ctx) + '</div>' : '';
     // No published-list pills here: a re-signed list shows as the pressed action and the
     // card's tag, so a lane head never changes height.
-    const who = lane.actors.map(id => "<div class='name'><span class='mono-badge'>" + esc(actor(id).mono) + '</span><h2>' + esc(actor(id).name) + '</h2></div>').join('');
-    const acts = (lane.actions ?? lane.actors).flatMap(id => cfg.actions[id] ?? []).map(spec => control(spec, st)).join('');
+    // A lane holds no controls: they are in the left column, so a lane never changes height.
+    const who = lane.actors.map(id => "<div class='name'>" + badge(id) + '<h2>' + esc(actor(id).name) + '</h2></div>').join('');
     return "<section class='lane" + (absent ? ' absent' : '') + (acting ? ' acting' : '') + (dim ? ' dim' : '') + "' data-lane='" + esc(lane.id) + "'"
       + (absent ? " aria-hidden='true' inert" : " aria-label='" + esc(lane.label) + "'") + '>'
-      + "<div class='lanehead'><p class='verb'>" + esc(lane.label) + '</p>' + who + "<div class='actions'>" + acts + '</div></div>'
+      + "<div class='lanehead'><p class='verb'>" + esc(lane.label) + '</p>' + who + '</div>'
       + "<div class='cells'>" + (lane.cells ?? []).map(cell).join('') + extra + '</div></section>';
   }
   const linkButton = (from, l, R, mode) => {
@@ -404,14 +412,18 @@ export async function mountBoard(api, cfg) {
     const sel = selection ?? defaultSelection(mode);
     const issued = mode === 'build' ? STORY[step].issues ?? [] : [];
     const chips = issued.length > 1 ? "<p class='newchips'>New in this step: " + issued.map(code => "<button type='button' class='code' data-card='" + esc(code) + "'>"
-      + esc(short(R.uris[code])) + '</button>').join(' ') + '</p>' : '';
+      + esc(codeOfUri(R.uris[code])) + '</button>').join(' ') + '</p>' : '';
     return chips + (sel.kind === 'card' ? detailHTML(sel.code, R, mode) : linkHTML(sel, R, mode));
   }
-  /** The left-hand policy check (vertical): the verdict, the six questions and the verifier's settings. */
+  /** The left-hand column (vertical): the verdict, the six questions, the verifier's settings,
+   * then what the other parties can do in this step, each under its monogram. */
   function checkHTML(R, mode) {
     const st = stateOf(STORY[step]);
-    return "<h2 class='sidehead'><span class='mono-badge sm'>V</span>Verifier</h2>" + verdictHTML(R, mode)
-      + "<div class='settings'>" + cfg.settings.map(spec => control(spec, st)).join('') + (note(st) ? "<p class='limit'>" + note(st) + '</p>' : '') + '</div>';
+    const acts = cfg.lanes.flatMap(l => l.actions ?? l.actors).filter((id, i, all) => all.indexOf(id) === i)
+      .map(id => [id, (cfg.actions[id] ?? []).map(spec => control(spec, st)).join('')]).filter(([, h]) => h);
+    return "<h2 class='sidehead'>" + badge('verifier', true) + 'Verifier</h2>' + verdictHTML(R, mode)
+      + "<div class='settings'>" + cfg.settings.map(spec => control(spec, st)).join('') + (note(st) ? "<p class='limit'>" + note(st) + '</p>' : '') + '</div>'
+      + (acts.length ? "<div class='doers'><h3>What the others can do</h3>" + acts.map(([id, h]) => "<div class='doer'><span class='who'>" + badge(id, true) + esc(actor(id).name) + "</span><div class='actions'>" + h + '</div></div>').join('') + '</div>' : '');
   }
 
   // ---------------------------------------------------------------- explaining a credential or a link
@@ -427,30 +439,33 @@ export async function mountBoard(api, cfg) {
     }
     return rows;
   }
+  // A section of the explainer folds; what the reader opened stays open from step to step.
+  const openSecs = new Set(['says']);
+  const sec = (id, title, body) => "<details class='sec' data-sec='" + id + "'" + (openSecs.has(id) ? ' open' : '') + '><summary><h3>' + title + '</h3></summary>' + body + '</details>';
   function detailHTML(code, R, mode) {
     const a = ASSETS.find(x => x.code === code), uri = R.uris[code], d = docOf(R, uri), type = typeOf(d);
     const node = R.graph.nodes.find(n => n.uri === uri);
     const missing = mode === 'evaluate' && cfg.withheld(stateOf(STORY[step])) === code;
-    let h = "<article class='detail'><header class='dhead'><span class='code'>" + esc(short(uri)) + '</span><b>' + esc(a.label) + "</b><code class='type'>" + esc(type) + '</code>'
+    let h = "<article class='detail'><header class='dhead'><span class='code'>" + esc(codeOfUri(uri)) + '</span><b>' + esc(a.label) + "</b><code class='type'>" + esc(type) + '</code>'
       + (mode === 'evaluate' ? stateMark(missing ? 'not_established' : node?.state ?? 'not_established') : '') + '</header>';
     if (cfg.types?.[type]) h += "<p class='lede'>" + esc(cfg.types[type]) + '</p>';
     if (missing) h += "<p class='lede'>The holder left it out: the verifier never saw it.</p>";
-    if (d && cfg.content) h += '<h3>What it says</h3>' + cfg.content(code, d, ctxOf(R, mode));
+    if (d && cfg.content) h += sec('says', 'What it says', cfg.content(code, d, ctxOf(R, mode)));
     const up = linksOf(d);
-    h += '<h3>Points to</h3>' + (up.length ? "<ul class='linklist'>" + up.map(l => '<li>' + linkButton(uri, l, R, mode) + '</li>').join('') + '</ul>'
-      : "<p class='none'>" + esc(noneAbove(short(uri))) + '</p>');
     const down = ASSETS.map(x => R.uris[x.code]).filter(u => u && u !== uri).flatMap(u => linksOf(docOf(R, u)).filter(l => l.to === uri).map(l => [u, l]));
-    if (down.length) h += '<h3>Pointed to by</h3>' + "<ul class='linklist'>" + down.map(([u, l]) => '<li>' + linkButton(u, l, R, mode) + '</li>').join('') + '</ul>';
-    h += '<h3>Envelope</h3>' + "<dl class='map'>" + mapping(a, uri, R).map(([k, v]) => '<dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd>').join('') + '</dl>';
+    h += sec('links', 'Links', (up.length ? "<ul class='linklist'>" + up.map(l => '<li>' + linkButton(uri, l, R, mode) + '</li>').join('') + '</ul>'
+      : "<p class='none'>" + esc(noneAbove(codeOfUri(uri))) + '</p>')
+      + (down.length ? "<p class='none'>Pointed to by</p><ul class='linklist'>" + down.map(([u, l]) => '<li>' + linkButton(u, l, R, mode) + '</li>').join('') + '</ul>' : ''));
+    h += sec('envelope', 'Envelope', "<dl class='map'>" + mapping(a, uri, R).map(([k, v]) => '<dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd>').join('') + '</dl>');
     if (mode === 'evaluate') {
       const groups = checksFor(uri, R);
-      h += '<h3>What the verifier checked</h3>' + (groups.length ? groups.map(g => "<p class='qhead'><b>" + QUESTIONS[g.q.id] + '</b> ' + stateMark(g.q.state) + '</p>' + traceHTML(g.rows)).join('')
+      h += sec('checked', 'What the verifier checked', groups.length ? groups.map(g => "<p class='qhead'><b>" + QUESTIONS[g.q.id] + '</b> ' + stateMark(g.q.state) + '</p>' + traceHTML(g.rows)).join('')
         : "<p class='none'>No check read it: the verifier did not need it.</p>");
     }
-    return h + "<details class='raw'><summary>Signed bytes</summary><pre>" + esc(R.texts[uri] ?? (textOf(R, uri) ? 'Not shown to the verifier.' : '')) + '</pre></details></article>';
+    return h + sec('bytes', 'Signed bytes', '<pre>' + esc(R.texts[uri] ?? (textOf(R, uri) ? 'Not shown to the verifier.' : '')) + '</pre>') + '</article>';
   }
   function linkHTML(sel, R, mode) {
-    const L = LINK[sel.linkKind], f = short(sel.from), t = short(sel.to);
+    const L = LINK[sel.linkKind], f = codeOfUri(sel.from), t = codeOfUri(sel.to);
     const fa = assetOf(R, sel.from), ta = assetOf(R, sel.to), fd = docOf(R, sel.from), td = docOf(R, sel.to);
     const e = R.graph.edges.find(x => x.from === sel.from && x.to === sel.to);
     const pin = (fd?.relatedResource ?? []).find(r => r.id === sel.to);
@@ -466,12 +481,11 @@ export async function mountBoard(api, cfg) {
       + '<dt>Points to</dt><dd>' + esc(t + ' · ' + (ta?.label ?? '') + ' (' + typeOf(td) + ')') + '</dd>'
       + (pin ? '<dt>Pinned by</dt><dd><code>relatedResource</code> ' + esc(pin.digestSRI.slice(0, 20)) + '…</dd>' : '')
       + (mode === 'evaluate' ? '<dt>Here</dt><dd>' + esc(edgeWords(e, t)) + '</dd>' : '') + '</dl>'
-      + "<details class='raw' open><summary>The link in " + esc(f) + "'s signed bytes</summary><pre>"
-      + esc(JSON.stringify({ [L.field]: [entry], ...(pin ? { relatedResource: [pin] } : {}) }, null, 2)) + '</pre></details>'
-      + '<h3>What a verifier checks on this link</h3><ul class="checks">' + L.checks(nameOf(R, sel.from), nameOf(R, sel.to)).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
+      + sec('json', 'The link as signed', '<pre>' + esc(JSON.stringify({ [L.field]: [entry], ...(pin ? { relatedResource: [pin] } : {}) }, null, 2)) + '</pre>')
+      + sec('linkchecks', 'What a verifier checks on it', '<ul class="checks">' + L.checks(nameOf(R, sel.from), nameOf(R, sel.to)).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>');
     if (mode === 'evaluate') {
       const rows = checksFor(sel.to, R).flatMap(g => g.rows).filter(x => x.gate >= 1);
-      h += '<h3>Checks run here that read ' + esc(t) + '</h3>' + (rows.length ? traceHTML(rows) : "<p class='none'>None: the verifier did not need " + esc(t) + '.</p>');
+      h += sec('linkrun', 'Checks run that read ' + esc(t), rows.length ? traceHTML(rows) : "<p class='none'>None: the verifier did not need " + esc(t) + '.</p>');
     }
     return h + '</article>';
   }
@@ -597,8 +611,8 @@ export async function mountBoard(api, cfg) {
       // A wide transparent copy of the line takes the click: explain the link, or (where the
       // holder may leave credentials out) leave that credential out.
       out.push(line.svg + "<path class='edge-hit' d='" + line.full + "' data-from='" + esc(e.from) + "' data-to='" + esc(e.to) + "' data-kind='" + e.kind + "'"
-        + (leaving ? " data-leave='" + esc(code) + "'" : '') + '><title>' + (leaving ? (left ? 'Show ' : 'Leave out ') + esc(code)
-        : esc(short(e.from)) + ' ' + LINK[e.kind].verb + ' ' + esc(short(e.to)) + ': click to explain') + '</title></path>');
+        + (leaving ? " data-leave='" + esc(code) + "'" : '') + '><title>' + (leaving ? (left ? 'Show ' : 'Leave out ') + esc(disp(code))
+        : esc(codeOfUri(e.from)) + ' ' + LINK[e.kind].verb + ' ' + esc(codeOfUri(e.to)) + ': click to explain') + '</title></path>');
     }
     for (const [from, to] of cfg.handovers(ctxOf(R, mode))) {
       if (to === 'verdict' && (vertical || !joined('verifier'))) continue;
@@ -650,6 +664,7 @@ export async function mountBoard(api, cfg) {
       show({ kind: 'link', from, to, linkKind });
     }));
     root.querySelectorAll('[data-card]').forEach(b => b.addEventListener('click', () => { if (b.dataset.card) show({ kind: 'card', code: b.dataset.card }); }));
+    root.querySelectorAll('details.sec').forEach(x => x.addEventListener('toggle', () => { if (x.open) openSecs.add(x.dataset.sec); else openSecs.delete(x.dataset.sec); }));
   }
   $('sheetClose').addEventListener('click', () => { const s = $('sheet'); if (s.close) s.close(); else s.removeAttribute('open'); });
   $('sheet').addEventListener('click', function (e) { if (e.target === this && this.close) this.close(); });
