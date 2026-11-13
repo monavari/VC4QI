@@ -407,7 +407,13 @@ def test_signed_fixtures_carry_no_legacy_wire_fields() -> None:
 
 
 @pytest.mark.parametrize(
-    "name", ["AuthorizedByPolicy", "RmAuthorizationPolicyV2", "rmAuthorizationPolicy"]
+    "name",
+    [
+        "AuthorizedByPolicy",
+        "IssuedUnderPolicyV2",
+        "issuedUnderPolicy",
+        "RmAuthorizationPolicy",
+    ],
 )
 def test_arbitrary_authorization_policy_name_is_not_accepted(name: str) -> None:
     document = doc(URI["D"])

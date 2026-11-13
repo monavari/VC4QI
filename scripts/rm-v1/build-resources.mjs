@@ -20,8 +20,9 @@ const CHECK = process.argv.includes('--check');
 const VC_V2 = 'https://www.w3.org/ns/credentials/v2';
 const RM_CONTEXT = 'https://vc4qi.example/contexts/rm/1';
 // Stand-in for the unpublished W3C Recognized Entities context (Working Draft of
-// 4 November 2026); hand-authored in resources/contexts.
-const RE_CONTEXT = 'https://vc4qi.example/contexts/recognized-entities/draft-20261104';
+// 12 November 2026); hand-authored in resources/contexts.
+const RE_CONTEXT = 'https://vc4qi.example/contexts/recognized-entities/draft-20261112';
+const RECOGNITION_TYPE = 'RecognizedEntityCredential';
 const SCHEMA_BASE = 'https://vc4qi.example/schemas/rm/1/';
 
 const iri = { type: 'string', format: 'uri' };
@@ -59,15 +60,30 @@ const relatedResource = nonemptySet(closed({
   id: iri,
   digestSRI: { type: 'string', pattern: '^sha384-[A-Za-z0-9+/]{64}$' },
 }));
-const authorizationPolicy = closed({
-  type: { const: 'RmAuthorizationPolicy' },
-  // A typed reference: routes select the reference by its declared type, and the
-  // resolved credential must have that type.
+// Every upward link is a termsOfUse entry, followed and pinned the same way; its type
+// says what it means (VCDM 2.0 section 5.5: the type definition determines the contents).
+// IssuedUnderPolicy: this credential was issued exercising the grant it names. A typed
+// reference: routes select it by its declared type, and the resolved credential must
+// have that type.
+const issuedUnderPolicy = closed({
+  type: { const: 'IssuedUnderPolicy' },
   authorizationCredential: closed({
     id: iri,
-    type: { enum: ['RmAccreditation', 'RmOperationalScope', 'RmLabAuthority', 'RecognizedEntityCredential'] },
+    type: { enum: ['RmAccreditation', 'RmOperationalScope', 'RmLabAuthority'] },
   }),
 });
+// RecognitionPolicy: this credential was issued while its issuer is recognized in the
+// credential it names (a W3C Recognized Entities credential). It confers no authority:
+// it lets a verifier that anchors the recognizer accept the issuer.
+const recognitionPolicy = closed({
+  type: { const: 'RecognitionPolicy' },
+  recognitionCredential: closed({ id: iri, type: { const: RECOGNITION_TYPE } }),
+});
+// The issuer of a recognized grant may mirror its recognition as issuer.recognizedIn
+// (W3C Recognized Entities discovery); when present it must name the same credential.
+const recognizedIssuer = {
+  oneOf: [iri, closed({ id: iri, recognizedIn: closed({ id: iri, type: { const: RECOGNITION_TYPE } }) }, ['id'])],
+};
 const studyReference = closed({
   id: iri,
   type: { const: 'RmStudyReference' },
@@ -104,13 +120,13 @@ const result = closed({
 });
 
 /** Common VCDM 2.0 envelope for one RM artifact type. */
-function credentialSchema(file, rmType, title, subject, extra = {}, requiredExtra = [], dependentRequired = undefined) {
+function credentialSchema(file, rmType, title, subject, extra = {}, requiredExtra = [], dependentRequired = undefined, issuer = iri) {
   const id = `${SCHEMA_BASE}${file}`;
   const properties = {
     '@context': { const: [VC_V2, RM_CONTEXT] },
     id: iri,
     type: { const: ['VerifiableCredential', rmType] },
-    issuer: iri,
+    issuer,
     validFrom: dateTime,
     validUntil: dateTime,
     credentialSchema: closed({ id: { const: id }, type: { const: 'JsonSchema' } }),
@@ -141,25 +157,26 @@ const grantSubject = (records, activities) => closed({
   scope: nonemptySet(records),
 });
 const ACT = 'https://vc4qi.example/bindings/rm/1#';
-// A grant may point up to the recognition of its issuer (termsOfUse → a Recognized
-// Entities credential), pinned by digest. Optional: a verifier that anchors the
-// accreditation body directly never follows it.
+// An accreditation body's grant may name the body's recognition (termsOfUse →
+// RecognitionPolicy → a Recognized Entities credential), pinned by digest. Optional: a
+// verifier that anchors the accreditation body directly never follows it.
 const upToRecognition = {
-  termsOfUse: { type: 'array', minItems: 1, maxItems: 4, items: authorizationPolicy },
+  termsOfUse: { type: 'array', minItems: 1, maxItems: 4, items: recognitionPolicy },
   relatedResource,
 };
+const issuedUnder = { type: 'array', minItems: 1, maxItems: 4, items: issuedUnderPolicy };
 const pinnedIfReferenced = { termsOfUse: ['relatedResource'] };
 
 const schemas = {
   'accreditation.json': credentialSchema(
     'accreditation.json', 'RmAccreditation', 'RM producer accreditation (A)',
     grantSubject(scopeRecord, [`${ACT}issueRmCertificate`, `${ACT}maintainRmScope`]),
-    upToRecognition, [], pinnedIfReferenced,
+    upToRecognition, [], pinnedIfReferenced, recognizedIssuer,
   ),
   'operational-scope.json': credentialSchema(
     'operational-scope.json', 'RmOperationalScope', 'RM operational scope (O)',
     grantSubject(scopeRecord, [`${ACT}issueRmCertificate`]),
-    { termsOfUse: { type: 'array', minItems: 1, maxItems: 4, items: authorizationPolicy }, relatedResource },
+    { termsOfUse: issuedUnder, relatedResource },
     ['relatedResource'],
   ),
   'certificate.json': credentialSchema(
@@ -179,7 +196,7 @@ const schemas = {
     {
       // Optional here: a missing authority or support reference is decided at gates
       // 5-6 (not established), not rejected as a structural error.
-      termsOfUse: { type: 'array', minItems: 1, maxItems: 4, items: authorizationPolicy },
+      termsOfUse: issuedUnder,
       evidence: nonemptySet(studyReference),
       relatedResource,
     },
@@ -195,13 +212,13 @@ const schemas = {
       matrixIri: iri,
       outcomeIri: iri,
     }),
-    { termsOfUse: { type: 'array', minItems: 1, maxItems: 4, items: authorizationPolicy }, relatedResource },
+    { termsOfUse: issuedUnder, relatedResource },
     ['relatedResource'],
   ),
   'lab-authority.json': credentialSchema(
     'lab-authority.json', 'RmLabAuthority', 'Study laboratory authority (H)',
     grantSubject(labScopeRecord, [`${ACT}issueRmStudy`]),
-    upToRecognition, [], pinnedIfReferenced,
+    upToRecognition, [], pinnedIfReferenced, recognizedIssuer,
   ),
   'status-list.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -226,10 +243,13 @@ const schemas = {
     }, ['@context', 'id', 'type', 'issuer', 'validFrom', 'validUntil', 'credentialSchema', 'credentialSubject']),
   },
   // One recognition of one accreditation body, as a W3C Recognized Entities credential
-  // (Working Draft of 4 November 2026) with a single subject: each recognition carries
+  // (Working Draft of 12 November 2026) with a single subject: each recognition carries
   // its own credential and status, rather than a list re-issued as members change.
-  // recognizedTo is optional here so that a recognition without actions is
-  // structurally valid; the evaluator does not accept it.
+  // recognizedTo names the action (accredit); registration records the body's entry in
+  // the register the recognizer keeps, with the main scopes (activity and normative
+  // document, the ILAC and IAF main scope; an RM binding extension term). recognizedTo
+  // is optional here so that a recognition without actions is structurally valid; the
+  // evaluator does not accept it.
   'recognized-entity.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     $id: `${SCHEMA_BASE}recognized-entity.json`,
@@ -253,13 +273,19 @@ const schemas = {
             type: { const: 'RecognizedAction' },
             action: { type: 'string', minLength: 1 },
             recognizedBy: iri,
+            validFrom: dateTime,
+            validUntil: dateTime,
+          }, ['type', 'action']),
+        },
+        registration: {
+          type: 'array',
+          items: closed({
+            id: iri,
             mainScope: closed({
               activity: { type: 'string', minLength: 1 },
               standard: closed({ id: iri, name: { type: 'string', minLength: 1 } }),
             }),
-            validFrom: dateTime,
-            validUntil: dateTime,
-          }, ['type', 'action']),
+          }, ['mainScope']),
         },
       }, ['id', 'type']),
       credentialStatus,
@@ -268,11 +294,17 @@ const schemas = {
       proof,
     }, ['@context', 'id', 'type', 'issuer', 'validFrom', 'validUntil', 'credentialSchema', 'credentialSubject', 'credentialStatus']),
   },
-  'authorization-policy.json': {
+  'issued-under-policy.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
-    $id: `${SCHEMA_BASE}authorization-policy.json`,
-    title: 'RM authorization policy entry in termsOfUse',
-    ...authorizationPolicy,
+    $id: `${SCHEMA_BASE}issued-under-policy.json`,
+    title: 'IssuedUnderPolicy entry in termsOfUse: issued exercising the named grant',
+    ...issuedUnderPolicy,
+  },
+  'recognition-policy.json': {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    $id: `${SCHEMA_BASE}recognition-policy.json`,
+    title: 'RecognitionPolicy entry in termsOfUse: issued while recognized in the named recognition (no authority)',
+    ...recognitionPolicy,
   },
   'study-reference.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -313,12 +345,12 @@ const entries = [
   },
   {
     uri: RE_CONTEXT,
-    path: 'bindings/experimental/rm-v1/resources/contexts/recognized-entities-draft-20261104.jsonld',
+    path: 'bindings/experimental/rm-v1/resources/contexts/recognized-entities-draft-20261112.jsonld',
     mediaType: 'application/ld+json',
     origin: 'VC4QI stand-in for the unpublished W3C Recognized Entities v1.0 context: terms expand to the '
-      + 'draft vocabulary of w3c/vc-recognized-entities@3961cf6 (Working Draft of 4 November 2026); '
-      + 'mainScope, activity and standard are RM binding extension terms',
-    version: 'draft-20261104',
+      + 'draft vocabulary of w3c/vc-recognized-entities@3961cf6 (Working Draft of 12 November 2026); '
+      + 'mainScope, activity and standard are RM binding extension terms, used inside registration',
+    version: 'draft-20261112',
   },
   ...Object.keys(schemas).map(file => ({
     uri: `${SCHEMA_BASE}${file}`,

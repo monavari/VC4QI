@@ -33,8 +33,42 @@
       ]
     },
     "issuer": {
-      "type": "string",
-      "format": "uri"
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uri"
+            },
+            "recognizedIn": {
+              "type": "object",
+              "required": [
+                "id",
+                "type"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "type": {
+                  "const": "RecognizedEntityCredential"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "validFrom": {
       "type": "string",
@@ -173,13 +207,13 @@
         "type": "object",
         "required": [
           "type",
-          "authorizationCredential"
+          "recognitionCredential"
         ],
         "properties": {
           "type": {
-            "const": "RmAuthorizationPolicy"
+            "const": "RecognitionPolicy"
           },
-          "authorizationCredential": {
+          "recognitionCredential": {
             "type": "object",
             "required": [
               "id",
@@ -191,12 +225,7 @@
                 "format": "uri"
               },
               "type": {
-                "enum": [
-                  "RmAccreditation",
-                  "RmOperationalScope",
-                  "RmLabAuthority",
-                  "RecognizedEntityCredential"
-                ]
+                "const": "RecognizedEntityCredential"
               }
             },
             "additionalProperties": false

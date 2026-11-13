@@ -151,10 +151,16 @@ function envelope(id: string, type: string, schemaFile: string, issuer: string,
   };
 }
 
-const policy = (id: string, type: string) => [{ type: 'RmAuthorizationPolicy', authorizationCredential: { id, type } }];
-// A grant issued by the NAB points up to the NAB's recognition, pinned by digest.
+// Every upward link is a termsOfUse entry; its type says what it means.
+// IssuedUnderPolicy: issued exercising the named grant (authority).
+const policy = (id: string, type: string) => [{ type: 'IssuedUnderPolicy', authorizationCredential: { id, type } }];
+// RecognitionPolicy: a grant issued by the NAB names the NAB's recognition, pinned by
+// digest. Recognition confers no authority: the NAB's authority is its national
+// appointment, which a verifier that anchors the NAB trusts directly. The issuer object
+// mirrors it as issuer.recognizedIn, for W3C Recognized Entities discovery.
 const underRecognition = (rText: string) => ({
-  termsOfUse: policy(RECOGNITION, 'RecognizedEntityCredential'),
+  issuer: { id: NAB, recognizedIn: { id: RECOGNITION, type: 'RecognizedEntityCredential' } },
+  termsOfUse: [{ type: 'RecognitionPolicy', recognitionCredential: { id: RECOGNITION, type: 'RecognizedEntityCredential' } }],
   relatedResource: integrity([RECOGNITION, rText]),
 });
 const integrity = (...refs: [string, string][]) =>
@@ -232,18 +238,15 @@ async function main() {
   }, null, 2)}\n`);
 
   // R: Global ACI's recognition of the NAB, one credential for one recognized body
-  // (the shape of a W3C Recognized Entities credential, Working Draft of 4 November
-  // 2026). The NAB is recognized to accredit for two main scopes (activity and
-  // normative document, as RFC 5141 ISO URNs) for the recognition period; Global ACI
-  // can suspend or revoke it through its own status entries. QI scope stays with the
-  // grants: recognition says what the NAB may accredit for, not what it accredited.
+  // (the shape of a W3C Recognized Entities credential, Working Draft of 12 November
+  // 2026). recognizedTo names the action (accredit); registration records the NAB's
+  // entry in the signatory register Global ACI keeps, with its two main scopes
+  // (activity and normative document, as RFC 5141 ISO URNs; the ILAC and IAF main
+  // scope, an RM binding extension term). Global ACI can suspend or revoke it through
+  // its own status entries. Recognition grants no authority and no QI scope: it tells a
+  // verifier that anchors Global ACI to accept the NAB for these main scopes.
   const mainScope = (activity: string, id: string, name: string) => ({ activity, standard: { id, name } });
-  const recognized = (scope: ReturnType<typeof mainScope>) => ({
-    type: 'RecognizedAction',
-    action: 'accredit',
-    recognizedBy: GACI,
-    mainScope: scope,
-  });
+  const signatory = 'https://global-aci.vc4qi.example/signatories/nab';
   const rText = record(RECOGNITION, 'credentials/R.json', 'application/vc', serialize(await sign({
     '@context': [VC_V2_CONTEXT, RECOGNIZED_ENTITIES_DRAFT_CONTEXT],
     id: RECOGNITION,
@@ -259,9 +262,10 @@ async function main() {
       id: NAB,
       type: 'RecognizedEntity',
       name: 'Fictional national accreditation body',
-      recognizedTo: [
-        recognized(mainScope('Reference material production', 'urn:iso:std:iso:17034:ed-1', 'ISO 17034:2016')),
-        recognized(mainScope('Testing', 'urn:iso:std:iso-iec:17025:ed-3', 'ISO/IEC 17025:2017')),
+      recognizedTo: [{ type: 'RecognizedAction', action: 'accredit', recognizedBy: GACI }],
+      registration: [
+        { id: `${signatory}#rm-production`, mainScope: mainScope('Reference material production', 'urn:iso:std:iso:17034:ed-1', 'ISO 17034:2016') },
+        { id: `${signatory}#testing`, mainScope: mainScope('Testing', 'urn:iso:std:iso-iec:17025:ed-3', 'ISO/IEC 17025:2017') },
       ],
     },
   }, gaci, '2024-01-01T00:00:00Z')), FIXTURE);

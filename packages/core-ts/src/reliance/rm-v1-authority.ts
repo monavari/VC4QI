@@ -7,14 +7,14 @@
 //   route      = AND(required bases)
 //
 // Authority is derived only by following the credential chain's own references
-// (termsOfUse → authorizationCredential). An authentic credential that nothing in
+// (termsOfUse → IssuedUnderPolicy → authorizationCredential). An authentic credential that nothing in
 // the chain references confers nothing (V07); a grant discovered by other means is
 // unsupported in this binding (V08). Provenance never establishes permission (V06).
 // The issuer of the top grant must be a configured anchor, or be recognized by one
 // through a recognition credential the grant points up to (recognized-entities.ts, E01-E03).
 import { semanticAnd, semanticOr } from './index.js';
 import type { RelianceProfile } from './profile.js';
-import { grantIssuerStanding } from './recognized-entities.js';
+import { grantIssuerStanding, issuerId } from './recognized-entities.js';
 import { containedIn, EXACT_CONCEPTS, type Concepts } from './rm-scope.js';
 import type { SemanticState } from './types.js';
 
@@ -71,7 +71,7 @@ const typeOf = (doc: Doc): string | undefined => (Array.isArray(doc.type) ? Stri
 export const permits = (doc: Doc, activity: string) => list(subjectOf(doc).permittedActivity).includes(activity);
 
 /** Credentials referenced by recognized authorization policies in `doc.termsOfUse`, with their declared types. */
-function policyReferences(doc: Doc, policyType = 'RmAuthorizationPolicy'): { id: string; type: unknown }[] {
+function policyReferences(doc: Doc, policyType = 'IssuedUnderPolicy'): { id: string; type: unknown }[] {
   return list(doc.termsOfUse)
     .filter(isObject)
     .filter(policy => policy.type === policyType && isObject(policy.authorizationCredential))
@@ -89,7 +89,7 @@ function policyReferences(doc: Doc, policyType = 'RmAuthorizationPolicy'): { id:
  */
 export function authorizingReference(
   id: string, doc: Doc, wantedType: string, lookup: NodeLookup, stack: readonly string[],
-  policyType = 'RmAuthorizationPolicy',
+  policyType = 'IssuedUnderPolicy',
 ): { basis: BasisResult; node?: NodeFacts & { document: Doc } } {
   const candidates = policyReferences(doc, policyType).filter(ref => ref.type === wantedType).map(ref => ref.id);
   if (candidates.length === 0) {
@@ -126,11 +126,12 @@ export function grantee(id: string, grant: Doc, actor: unknown, what: string): B
 }
 
 export function anchor(id: string, doc: Doc, purpose: string, profile: RelianceProfile): BasisResult {
-  const configured = profile.trustAnchors.find(a => a.id === doc.issuer);
-  if (configured === undefined) return unknown(id, `${String(doc.issuer)} is not a configured trust anchor.`, ['/issuer']);
+  const issuer = issuerId(doc.issuer);
+  const configured = profile.trustAnchors.find(a => a.id === issuer);
+  if (configured === undefined) return unknown(id, `${String(issuer)} is not a configured trust anchor.`, ['/issuer']);
   return configured.purposes.includes(purpose)
-    ? ok(id, `${String(doc.issuer)} is a configured anchor for ${purpose}.`, ['/issuer'])
-    : unknown(id, `${String(doc.issuer)} is an anchor, but not for ${purpose}.`, ['/issuer']);
+    ? ok(id, `${String(issuer)} is a configured anchor for ${purpose}.`, ['/issuer'])
+    : unknown(id, `${String(issuer)} is an anchor, but not for ${purpose}.`, ['/issuer']);
 }
 
 /**
@@ -172,8 +173,8 @@ function operationalScopeRoute(
   if (!ref.node) return route('operational-scope', bases, chain);
   const O = ref.node.document;
   chain.push(ref.node.uri);
-  bases.push(grantee('principal-binding', O, D.issuer, 'Operational scope O'));
-  bases.push(O.issuer === subjectOf(O).id
+  bases.push(grantee('principal-binding', O, issuerId(D.issuer), 'Operational scope O'));
+  bases.push(issuerId(O.issuer) === subjectOf(O).id
     ? ok('self-maintained-scope', 'O is issued by its own grantee.', ['/issuer'])
     : no('self-maintained-scope', 'O is not issued by its own grantee.', ['/issuer']));
   bases.push(permits(O, RM_ACTIVITIES.issueRmCertificate)
@@ -184,7 +185,7 @@ function operationalScopeRoute(
   if (!grant.node) return route('operational-scope', bases, chain);
   const A = grant.node.document;
   chain.push(grant.node.uri);
-  bases.push(grantee('accreditation-grantee', A, O.issuer, 'Accreditation A'));
+  bases.push(grantee('accreditation-grantee', A, issuerId(O.issuer), 'Accreditation A'));
   bases.push(permits(A, RM_ACTIVITIES.maintainRmScope) && permits(A, RM_ACTIVITIES.issueRmCertificate)
     ? ok('projection-permission', 'A permits maintaining an operational scope for RM certification.', ['/credentialSubject/permittedActivity'])
     : no('projection-permission', 'A does not permit maintaining an operational scope for RM certification.', ['/credentialSubject/permittedActivity']));
@@ -209,7 +210,7 @@ function directAccreditationRoute(
   if (!ref.node) return route('direct-accreditation', bases, chain);
   const A = ref.node.document;
   chain.push(ref.node.uri);
-  bases.push(grantee('principal-binding', A, D.issuer, 'Accreditation A'));
+  bases.push(grantee('principal-binding', A, issuerId(D.issuer), 'Accreditation A'));
   bases.push(permits(A, RM_ACTIVITIES.issueRmCertificate)
     ? ok('activity-permission', 'A permits issuing RM certificates.', ['/credentialSubject/permittedActivity'])
     : no('activity-permission', 'A does not permit issuing RM certificates.', ['/credentialSubject/permittedActivity']));
@@ -240,7 +241,7 @@ export const CERTIFICATE_ROUTES = Object.freeze({
  */
 function accreditationSuspension(target: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile): BasisResult {
   const id = 'restriction:accreditation-suspension';
-  const actor = target.document.issuer;
+  const actor = issuerId(target.document.issuer);
   const seen = new Set<string>([target.uri]);
   const queue: Doc[] = [target.document];
   const applicable: NodeFacts[] = [];
@@ -363,7 +364,7 @@ export function studyAuthority(
   if (!ref.node) return route('laboratory-authority', bases, chain);
   const H = ref.node.document;
   chain.push(ref.node.uri);
-  bases.push(grantee('laboratory-binding', H, S.issuer, 'Laboratory authority H'));
+  bases.push(grantee('laboratory-binding', H, issuerId(S.issuer), 'Laboratory authority H'));
   bases.push(permits(H, RM_ACTIVITIES.issueRmStudy)
     ? ok('study-permission', 'H permits issuing RM studies.', ['/credentialSubject/permittedActivity'])
     : no('study-permission', 'H does not permit issuing RM studies.', ['/credentialSubject/permittedActivity']));

@@ -143,15 +143,18 @@ def test_d197_authorized_and_rejected_only_by_the_guarded_rule() -> None:
 def test_e02_testing_only_contradicts_the_producer_route() -> None:
     def edit(document: dict[str, Any]) -> None:
         subject = _subject(document)
-        subject["recognizedTo"] = [
-            a
-            for a in subject["recognizedTo"]
-            if a["mainScope"]["activity"] != RM_PRODUCTION
+        subject["registration"] = [
+            e
+            for e in subject["registration"]
+            if e["mainScope"]["activity"] != RM_PRODUCTION
         ]
 
     result = run(recognition_with(edit))
     assert anchor(result).state == "contradicted"
-    assert "not to accredit for Reference material production" in anchor(result).reason
+    assert (
+        "registers https://nab.vc4qi.example/controller for Testing under "
+        "ISO/IEC 17025:2017, not for Reference material production"
+    ) in anchor(result).reason
     assert lab_anchor(result).state == "established"
     assert result.decision == "reject"
 
@@ -159,10 +162,10 @@ def test_e02_testing_only_contradicts_the_producer_route() -> None:
 def test_e02_laboratory_without_testing_contradicts_support() -> None:
     def edit(document: dict[str, Any]) -> None:
         subject = _subject(document)
-        subject["recognizedTo"] = [
-            a
-            for a in subject["recognizedTo"]
-            if a["mainScope"]["activity"] == RM_PRODUCTION
+        subject["registration"] = [
+            e
+            for e in subject["registration"]
+            if e["mainScope"]["activity"] == RM_PRODUCTION
         ]
 
     result = run(recognition_with(edit))
@@ -304,7 +307,10 @@ def test_unreferenced_recognition_confers_nothing_even_when_supplied() -> None:
         req, catalog_with(overrides), MANIFEST, GLOBAL_ACI
     ).result
     assert anchor(result).state == "not_established"
-    assert "points up to no RecognizedEntityCredential" in anchor(result).reason
+    assert (
+        "names no RecognizedEntityCredential in a RecognitionPolicy"
+        in anchor(result).reason
+    )
     assert lab_anchor(result).state == "established"
     assert result.decision == "not_established"
 
@@ -316,5 +322,47 @@ def test_reasons_match_typescript_for_the_accepted_case() -> None:
         "https://global-aci.vc4qi.example/controller (a configured anchor for "
         "recognize-accreditation-bodies) to accredit for Reference material production "
         "under ISO 17034:2016, in force at 2026-01-20T00:00:00Z, in "
-        "https://global-aci.vc4qi.example/credentials/R."
+        "https://global-aci.vc4qi.example/credentials/R. Recognition grants no "
+        "authority; it accepts the body for this verifier."
     )
+
+
+def test_recognized_in_naming_another_credential_contradicts() -> None:
+    accreditation = doc(URI["A"])
+    accreditation["issuer"]["recognizedIn"] = {
+        "id": "https://global-aci.vc4qi.example/credentials/R-other",
+        "type": "RecognizedEntityCredential",
+    }
+    result = run(reissue({URI["A"]: accreditation}))
+    assert anchor(result).state == "contradicted"
+    assert (
+        "recognizedIn names https://global-aci.vc4qi.example/credentials/R-other"
+        in anchor(result).reason
+    )
+    assert result.decision == "reject"
+
+
+def test_recognition_named_as_a_grant_is_no_recognition() -> None:
+    # A's schema admits only a RecognitionPolicy in its termsOfUse: the grant fails at
+    # gate 0 and the route never reaches a recognition.
+    accreditation = doc(URI["A"])
+    accreditation["termsOfUse"] = [
+        {
+            "type": "IssuedUnderPolicy",
+            "authorizationCredential": {"id": URI["R"], "type": "RmAccreditation"},
+        }
+    ]
+    del accreditation["issuer"]["recognizedIn"]
+    result = run(reissue({URI["A"]: accreditation}))
+    assert any(
+        t.predicate == "schema"
+        and t.node_use.startswith(f"{URI['A']} |")
+        and t.state != "established"
+        for t in result.trace
+    )
+    assert not any(
+        t.predicate == "route:operational-scope:trust-anchor"
+        and t.state == "established"
+        for t in result.trace
+    )
+    assert result.decision != "accept"

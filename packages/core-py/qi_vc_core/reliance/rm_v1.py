@@ -13,9 +13,9 @@ RM_V1_CONTEXT = "https://vc4qi.example/contexts/rm/1"
 RM_V1_VOCAB = "https://vc4qi.example/bindings/rm/1#"
 RM_V1_SCHEMA_BASE = "https://vc4qi.example/schemas/rm/1/"
 # Repository-owned stand-in for the unpublished W3C Recognized Entities context; its
-# terms expand to the Working Draft vocabulary of 4 November 2026 (mirrors rm-v1.ts).
+# terms expand to the Working Draft vocabulary of 12 November 2026 (mirrors rm-v1.ts).
 RECOGNIZED_ENTITIES_DRAFT_CONTEXT = (
-    "https://vc4qi.example/contexts/recognized-entities/draft-20261104"
+    "https://vc4qi.example/contexts/recognized-entities/draft-20261112"
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[4]

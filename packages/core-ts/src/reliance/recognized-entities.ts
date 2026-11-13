@@ -1,24 +1,30 @@
 // SPDX-License-Identifier: Apache-2.0
 // Recognition of an accreditation body by an arrangement anchor, one credential per
-// recognized body (a W3C Recognized Entities credential, Working Draft of 4 November
+// recognized body (a W3C Recognized Entities credential, Working Draft of 12 November
 // 2026, with a single subject). Browser-safe and pure: it reads only facts from nodes
 // whose gates 0-3 were already evaluated.
 //
-// The grant points up: its termsOfUse references the recognition of its own issuer
-// (an RmAuthorizationPolicy whose authorizationCredential has type
-// RecognizedEntityCredential), pinned by digest like every other link. The verifier's
-// profile names no recognition; it names the recognizer as an anchor for the
-// recognizer purpose and the action and main scope it requires. A recognition that
-// nothing in the chain references confers nothing.
-// A referenced recognition establishes that the grant's issuer is recognized only when:
+// Recognition is not authority. An accreditation body's authority is its national
+// appointment, which a verifier that anchors the body trusts directly; recognition
+// tells a verifier that anchors the recognizer to accept the body for a main scope.
+// The grant names its issuer's recognition in termsOfUse, as a RecognitionPolicy whose
+// recognitionCredential is a RecognizedEntityCredential, pinned by digest like every
+// other link (one rule for every upward link; the policy type says what it means). The
+// issuer object may mirror it as issuer.recognizedIn (W3C Recognized Entities
+// discovery); when present it must name the same credential. The verifier's profile
+// names no recognition; it names the recognizer as an anchor for the recognizer purpose
+// and the action and main scope it requires. A recognition that nothing in the chain
+// names confers nothing.
+// A named recognition establishes that the grant's issuer is recognized only when:
 //   - it is usable (protected, identified, valid, current status) and not suspended,
 //   - its issuer is a configured anchor for the recognizer purpose,
 //   - its subject is the grant's issuer, with stated actions
 //     (recognition without actions is not accepted),
-//   - one action is the required action for the required main scope (activity and
-//     normative document, compared exactly), recognized by the recognition's issuer,
-//   - and that action was in force at the activity time.
-// A recognition of another body, or for another main scope, contradicts (the handshake
+//   - one action is the required action, recognized by the recognition's issuer and in
+//     force at the activity time,
+//   - and its registration carries the required main scope (activity and normative
+//     document, compared exactly).
+// A recognition of another body, or without that main scope, contradicts (the handshake
 // is broken); a missing recognition, entry or time is not established. Recognition
 // carries no QI scope: the grant's own scope records, containment and the claim's
 // coverage are still decided by the routes.
@@ -63,14 +69,18 @@ export function recognitionRules(profile: RelianceProfile): RecognitionRules | '
   return { recognizerPurpose: raw.recognizerPurpose, action: raw.action, purposes };
 }
 
-/** Recognitions a grant points up to: termsOfUse policies referencing a RecognizedEntityCredential. */
+export const RECOGNITION_POLICY = 'RecognitionPolicy';
+/** Recognitions a grant names: termsOfUse RecognitionPolicy entries referencing a RecognizedEntityCredential. */
 export function recognitionReferences(grant: Doc): string[] {
   return list(grant.termsOfUse).filter(isObject)
-    .filter(policy => policy.type === 'RmAuthorizationPolicy' && isObject(policy.authorizationCredential)
-      && policy.authorizationCredential.type === RECOGNITION_TYPE)
-    .map(policy => (policy.authorizationCredential as Doc).id)
+    .filter(policy => policy.type === RECOGNITION_POLICY && isObject(policy.recognitionCredential)
+      && policy.recognitionCredential.type === RECOGNITION_TYPE)
+    .map(policy => (policy.recognitionCredential as Doc).id)
     .filter(nonempty);
 }
+/** The issuer object's issuer.recognizedIn mirror, when present. */
+export const recognizedIn = (issuer: unknown): string | undefined =>
+  isObject(issuer) && isObject(issuer.recognizedIn) && nonempty(issuer.recognizedIn.id) ? issuer.recognizedIn.id : undefined;
 
 const basis = (id: string, state: BasisResult['state'], reason: string, sources: string[]): BasisResult =>
   ({ id, state, reason, sources });
@@ -86,6 +96,7 @@ function fromRecognition(
   lookup: NodeLookup, profile: RelianceProfile,
 ): BasisResult {
   const sources = ['/termsOfUse', uri];
+  const scopeOf = (entry: Doc) => isObject(entry.mainScope) ? entry.mainScope : undefined;
   const node = lookup(uri);
   if (node === undefined) return basis(id, 'not_established', `Recognition ${uri} is unavailable.`, sources);
   if (node.usable !== 'established' || node.document === undefined) {
@@ -119,12 +130,18 @@ function fromRecognition(
       `${uri} recognizes ${entity} without recognized actions; this profile does not accept recognition without stated actions.`, sources);
   }
   const wantedLabel = `${wanted.activity} under ${wanted.standardId}`;
-  const matching = actions.filter(a => a.action === rules.action && isObject(a.mainScope)
-    && a.mainScope.activity === wanted.activity && isObject(a.mainScope.standard) && a.mainScope.standard.id === wanted.standardId);
+  const matching = actions.filter(a => a.action === rules.action);
   if (matching.length === 0) {
-    const offered = actions.map(a => `${String(a.action)} (${label(a.mainScope)})`).join(', ');
     return basis(id, 'contradicted',
-      `${uri} recognizes ${entity} for ${offered}, not to ${rules.action} for ${wantedLabel}.`, sources);
+      `${uri} recognizes ${entity} to ${actions.map(a => String(a.action)).join(', ')}, not to ${rules.action}.`, sources);
+  }
+  const registered = list(subject.registration).filter(isObject);
+  const scope = registered.map(scopeOf).find(m => m !== undefined && m.activity === wanted.activity
+    && isObject(m.standard) && m.standard.id === wanted.standardId);
+  if (scope === undefined) {
+    const offered = registered.map(e => label(scopeOf(e))).join(', ') || 'no main scope';
+    return basis(id, 'contradicted',
+      `${uri} registers ${entity} for ${offered}, not for ${wantedLabel}.`, sources);
   }
   const byIssuer = matching.filter(a => a.recognizedBy === undefined || a.recognizedBy === recognizer);
   if (byIssuer.length === 0) {
@@ -143,7 +160,7 @@ function fromRecognition(
   }
   return basis(id, 'established',
     `${entity} is recognized by ${String(recognizer)} (a configured anchor for ${rules.recognizerPurpose}) to ${rules.action} `
-      + `for ${label(inForce.mainScope)}, in force at ${at}, in ${uri}.`, sources);
+      + `for ${label(scope)}, in force at ${at}, in ${uri}. Recognition grants no authority; it accepts the body for this verifier.`, sources);
 }
 
 /**
@@ -176,7 +193,13 @@ export function grantIssuerStanding(
   const references = recognitionReferences(grant);
   if (references.length === 0) {
     return { basis: basis(id, 'not_established',
-      `${direct} The grant points up to no ${RECOGNITION_TYPE} in its termsOfUse.`, ['/issuer', '/termsOfUse']) };
+      `${direct} The grant names no ${RECOGNITION_TYPE} in a ${RECOGNITION_POLICY} of its termsOfUse.`, ['/issuer', '/termsOfUse']) };
+  }
+  const mirror = recognizedIn(grant.issuer);
+  if (mirror !== undefined && !references.includes(mirror)) {
+    return { basis: basis(id, 'contradicted',
+      `${direct} The issuer's recognizedIn names ${mirror}, but the grant's ${RECOGNITION_POLICY} names ${references.join(', ')}.`,
+      ['/issuer/recognizedIn', '/termsOfUse']) };
   }
   const answers = references.map(uri => ({ uri, result: fromRecognition(id, uri, issuer, wanted, rules, at, lookup, profile) }));
   const winner = answers.find(a => a.result.state === 'established');

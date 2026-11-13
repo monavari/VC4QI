@@ -19,7 +19,7 @@
     "@context": {
       "const": [
         "https://www.w3.org/ns/credentials/v2",
-        "https://vc4qi.example/contexts/recognized-entities/draft-20261104"
+        "https://vc4qi.example/contexts/recognized-entities/draft-20261112"
       ]
     },
     "id": {
@@ -115,6 +115,30 @@
                 "type": "string",
                 "format": "uri"
               },
+              "validFrom": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$"
+              },
+              "validUntil": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "registration": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "mainScope"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uri"
+              },
               "mainScope": {
                 "type": "object",
                 "required": [
@@ -146,14 +170,6 @@
                   }
                 },
                 "additionalProperties": false
-              },
-              "validFrom": {
-                "type": "string",
-                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$"
-              },
-              "validUntil": {
-                "type": "string",
-                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$"
               }
             },
             "additionalProperties": false

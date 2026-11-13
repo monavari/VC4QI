@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Any, Literal
 
 from .profile import RelianceProfile
-from .recognized_entities import grant_issuer_standing
+from .recognized_entities import grant_issuer_standing, issuer_id
 from .rm_scope import EXACT_CONCEPTS, Concepts, contained_in
 from .types import SemanticState, semantic_and, semantic_or
 
@@ -107,7 +107,7 @@ def _permits(doc: Doc, activity: str) -> bool:
 
 
 def _policy_references(
-    doc: Doc, policy_type: str = "RmAuthorizationPolicy"
+    doc: Doc, policy_type: str = "IssuedUnderPolicy"
 ) -> list[tuple[str, Any]]:
     """(id, declared type) of credentials referenced by recognized policies."""
     references: list[tuple[str, Any]] = []
@@ -129,7 +129,7 @@ def _authorizing_reference(
     wanted: str,
     lookup: NodeLookup,
     stack: tuple[str, ...],
-    policy_type: str = "RmAuthorizationPolicy",
+    policy_type: str = "IssuedUnderPolicy",
 ) -> tuple[BasisResult, NodeFacts | None]:
     """Select the reference by its declared type; the credential must match it."""
     candidates = [
@@ -201,7 +201,7 @@ def _grantee(basis_id: str, grant: Doc, actor: Any, what: str) -> BasisResult:
 def _anchor(
     basis_id: str, doc: Doc, purpose: str, profile: RelianceProfile
 ) -> BasisResult:
-    issuer = doc.get("issuer")
+    issuer = issuer_id(doc.get("issuer"))
     configured = next((a for a in profile.trust_anchors if a.id == issuer), None)
     if configured is None:
         return _unknown(
@@ -299,11 +299,13 @@ def _operational_scope_route(
     o = o_node.document
     chain.append(o_node.uri)
     bases.append(
-        _grantee("principal-binding", o, d.get("issuer"), "Operational scope O")
+        _grantee(
+            "principal-binding", o, issuer_id(d.get("issuer")), "Operational scope O"
+        )
     )
     bases.append(
         _ok("self-maintained-scope", "O is issued by its own grantee.", ("/issuer",))
-        if o.get("issuer") == _subject(o).get("id")
+        if issuer_id(o.get("issuer")) == _subject(o).get("id")
         else _no(
             "self-maintained-scope", "O is not issued by its own grantee.", ("/issuer",)
         )
@@ -326,7 +328,9 @@ def _operational_scope_route(
     a = a_node.document
     chain.append(a_node.uri)
     bases.append(
-        _grantee("accreditation-grantee", a, o.get("issuer"), "Accreditation A")
+        _grantee(
+            "accreditation-grantee", a, issuer_id(o.get("issuer")), "Accreditation A"
+        )
     )
     source = ("/credentialSubject/permittedActivity",)
     bases.append(
@@ -389,7 +393,9 @@ def _direct_accreditation_route(
         return _route("direct-accreditation", bases, chain)
     a = a_node.document
     chain.append(a_node.uri)
-    bases.append(_grantee("principal-binding", a, d.get("issuer"), "Accreditation A"))
+    bases.append(
+        _grantee("principal-binding", a, issuer_id(d.get("issuer")), "Accreditation A")
+    )
     bases.append(
         _activity(
             "activity-permission",
@@ -437,7 +443,7 @@ def _accreditation_suspension(
     """
     basis_id = "restriction:accreditation-suspension"
     assert target.document is not None
-    actor = target.document.get("issuer")
+    actor = issuer_id(target.document.get("issuer"))
     seen = {target.uri}
     queue: list[Doc] = [target.document]
     applicable: list[NodeFacts] = []
@@ -620,7 +626,12 @@ def study_authority(
     h = h_node.document
     chain.append(h_node.uri)
     bases.append(
-        _grantee("laboratory-binding", h, s_doc.get("issuer"), "Laboratory authority H")
+        _grantee(
+            "laboratory-binding",
+            h,
+            issuer_id(s_doc.get("issuer")),
+            "Laboratory authority H",
+        )
     )
     bases.append(
         _activity(

@@ -261,7 +261,7 @@ describe('I3 signed route composition under the two-route profile (C01-C07)', ()
     request({ profile: { id: twoRouteProfile.id, version: twoRouteProfile.version } }), twoRouteProfile);
   /** D re-issued citing both O (operational-scope route) and A2 (direct-accreditation route). */
   const citingA2 = (changed: Record<string, JsonObject> = {}) => reissue(changed, d => {
-    (d.termsOfUse as JsonObject[]).push({ type: 'RmAuthorizationPolicy',
+    (d.termsOfUse as JsonObject[]).push({ type: 'IssuedUnderPolicy',
       authorizationCredential: { id: URI.A2, type: 'RmAccreditation' } });
   });
   const trace = (result: Result, predicate: string) => result.trace.find(t => t.predicate === predicate);
@@ -366,7 +366,7 @@ describe('I3 cycles, shared nodes and roles (C12-C15, V06)', () => {
   const twoRoutes = (overrides: Record<string, string | null> = {}, req = request()) => run(overrides,
     { ...req, profile: { id: twoRouteProfile.id, version: twoRouteProfile.version } }, twoRouteProfile);
   const trace = (result: Result, predicate: string) => result.trace.find(t => t.predicate === predicate);
-  const policyFor = (id: string, type: string) => ({ type: 'RmAuthorizationPolicy', authorizationCredential: { id, type } });
+  const policyFor = (id: string, type: string) => ({ type: 'IssuedUnderPolicy', authorizationCredential: { id, type } });
 
   it('C12: an authorization cycle D -> O -> D is not accepted', async () => {
     const O = json(URI.O);

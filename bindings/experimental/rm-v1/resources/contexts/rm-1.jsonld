@@ -10,7 +10,8 @@
     "RmCertificate": "rm:RmCertificate",
     "RmStudy": "rm:RmStudy",
     "RmLabAuthority": "rm:RmLabAuthority",
-    "RmAuthorizationPolicy": "rm:RmAuthorizationPolicy",
+    "IssuedUnderPolicy": "rm:IssuedUnderPolicy",
+    "RecognitionPolicy": "rm:RecognitionPolicy",
     "RmStudyReference": "rm:RmStudyReference",
     "RecognizedEntityCredential": "https://www.w3.org/ns/credentials/recognized-entities#RecognizedEntityCredential",
 
@@ -27,6 +28,8 @@
     "unit": "rm:unit",
 
     "authorizationCredential": "rm:authorizationCredential",
+    "recognitionCredential": "rm:recognitionCredential",
+    "recognizedIn": "https://www.w3.org/ns/credentials/recognized-entities#recognizedIn",
     "activityTime": {"@id": "rm:activityTime", "@type": "xsd:dateTime"},
 
     "materials": {"@id": "rm:materials", "@container": "@list"},

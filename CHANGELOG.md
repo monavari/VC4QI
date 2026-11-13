@@ -27,6 +27,33 @@
   (`test-vectors/signed/status-archive/2026-01`). Freshness is judged at the time asked
   about; for current questions nothing changes. W3C Recognized Entities (draft of
   4 November 2026) evaluates validity windows at a past date but not status at that date.
+- **Recognition is not authority (RM).** An accreditation body's authority is its
+  national appointment; a recognition by an arrangement anchor tells a verifier that
+  trusts the anchor to accept the body, and grants nothing. Every upward link stays a
+  `termsOfUse` entry, followed and pinned by digest the same way, and its type now says
+  what it means: `IssuedUnderPolicy` (`authorizationCredential`, formerly
+  `RmAuthorizationPolicy`) for a grant, `RecognitionPolicy` (`recognitionCredential`)
+  for a recognition (VCDM 2.0 §5.5: "the procedures or policies that were used in
+  issuing"). A and H name R in a `RecognitionPolicy` and mirror it as
+  `issuer.recognizedIn` (W3C Recognized Entities), which must name the same credential;
+  a mismatch contradicts, and `recognizedIn` alone establishes nothing. R names the
+  action in `recognizedTo` and carries the main scopes in `registration` (the ILAC and
+  IAF main scope, an RM binding extension term; `mainScope` was never Recognized
+  Entities vocabulary). The stand-in context follows the Working Draft of 12 November
+  2026 (`draft-20261112`); earlier text naming a "Working Draft of 4 November 2026" was
+  wrong. Schemas (`issued-under-policy.json`, `recognition-policy.json`), fixtures,
+  evaluator (TypeScript and Python) and tests are updated; new tests cover a mismatched
+  mirror, `recognizedIn` without a policy, and a recognition named as a grant (rejected
+  at the schema).
+- **The vertical RM layout, rebuilt.** Three columns: the step and the verifier's policy
+  check on the left; the chain top to bottom in one place in the middle, with compact
+  cards and every control always in its lane; the selected credential on the right,
+  laid out for reading (a floating sheet on narrower screens). Recognition links are
+  drawn dash-dot and labelled with their policy type; credentials lead with a full name
+  and keep the paper's letter as a code; column descriptions and other unneeded text
+  are removed. Measured in Firefox at 1920×1080 and 1280×720: no credential moves
+  between steps in any layout, no console errors, and every example case gives its
+  expected verdict.
 - **The RM story opens with the credential's parts, and reconciles Recognized Entities
   with terms of use.** A first page lists each property of D178 (type, issuer,
   credentialSubject, validity, status, termsOfUse, evidence, relatedResource, proof)
