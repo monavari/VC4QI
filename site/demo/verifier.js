@@ -1,11 +1,11 @@
-var Nl = Object.defineProperty;
-var Ea = (e) => {
+var Dl = Object.defineProperty;
+var Ma = (e) => {
   throw TypeError(e);
 };
-var Dl = (e, t, n) => t in e ? Nl(e, t, { enumerable: !0, configurable: !0, writable: !0, value: n }) : e[t] = n;
-var ht = (e, t, n) => Dl(e, typeof t != "symbol" ? t + "" : t, n), ka = (e, t, n) => t.has(e) || Ea("Cannot " + n);
-var it = (e, t, n) => (ka(e, t, "read from private field"), n ? n.call(e) : t.get(e)), Dn = (e, t, n) => t.has(e) ? Ea("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, n), Rr = (e, t, n, i) => (ka(e, t, "write to private field"), i ? i.call(e, n) : t.set(e, n), n);
-const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://vc4qi.example/bindings/rm/1", version: "1", status: "experimental", owner: { name: "VC4QI repository fixture governance", source: "docs/bindings.md", authority: "local-research-fixture-only" }, installation: { status: "incomplete", reason: "Contexts, schemas, controller documents, signed A/H/O/S/D fixtures and status lists are pinned and verify in TypeScript and Python. The I1-I4 evaluators (protection, status, authority routes, support, claim mapping and coverage, conformity) and the current-reliance time rules are implemented, with a cross-language parity vector; an independent transformation vector is still required before selection.", pendingResources: [] }, carrierAndSchema: { model: "W3C Verifiable Credentials Data Model 2.0", modelContext: "https://www.w3.org/ns/credentials/v2", requiredContexts: ["https://www.w3.org/ns/credentials/v2", "https://vc4qi.example/contexts/rm/1"], credentialTypes: ["https://www.w3.org/2018/credentials#VerifiableCredential", "https://vc4qi.example/bindings/rm/1#RmAccreditation", "https://vc4qi.example/bindings/rm/1#RmOperationalScope", "https://vc4qi.example/bindings/rm/1#RmCertificate", "https://vc4qi.example/bindings/rm/1#RmStudy", "https://vc4qi.example/bindings/rm/1#RmLabAuthority", "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential", "https://www.w3.org/ns/credentials/recognized-entities#RecognizedEntityCredential"], schemaUris: ["https://vc4qi.example/schemas/rm/1/accreditation.json", "https://vc4qi.example/schemas/rm/1/operational-scope.json", "https://vc4qi.example/schemas/rm/1/certificate.json", "https://vc4qi.example/schemas/rm/1/study.json", "https://vc4qi.example/schemas/rm/1/lab-authority.json", "https://vc4qi.example/schemas/rm/1/authorization-policy.json", "https://vc4qi.example/schemas/rm/1/study-reference.json", "https://vc4qi.example/schemas/rm/1/status-list.json", "https://vc4qi.example/schemas/rm/1/recognized-entity.json"], statusListCarrier: "BitstringStatusListCredential with the VCDM 2.0 context only", recognitionCarrier: "RecognizedEntityCredential with the VCDM 2.0 context and https://vc4qi.example/contexts/recognized-entities/draft-20261104, a stand-in for the unpublished W3C Recognized Entities context (Working Draft of 4 November 2026)", composition: "exact-listed-context-and-schema-combinations-only", pinnedResourceIndex: "bindings/experimental/rm-v1/catalog.json", decimalEncoding: "JSON strings typed xsd:decimal for every quantity, bound and uncertainty", orderedCollections: ["materials", "materialPropertiesList", "results"] }, factMappings: [{ fact: "grantorOrActor", nativePath: "/issuer", expandedIri: "https://www.w3.org/2018/credentials#issuer" }, { fact: "grantee", nativePath: "/credentialSubject/id", expandedIri: "@id" }, { fact: "permittedActivity", nativePath: "/credentialSubject/permittedActivity", expandedIri: "https://vc4qi.example/bindings/rm/1#permittedActivity" }, { fact: "scopeRecords", nativePath: "/credentialSubject/scope", expandedIri: "https://vc4qi.example/bindings/rm/1#scope" }, { fact: "authorizingReference", nativePath: "/termsOfUse/*/authorizationCredential/id", expandedIri: "https://vc4qi.example/bindings/rm/1#authorizationCredential" }, { fact: "requiredStudy", nativePath: "/evidence/*/id", expandedIri: "https://www.w3.org/2018/credentials#evidence" }, { fact: "validFrom", nativePath: "/validFrom", expandedIri: "https://www.w3.org/2018/credentials#validFrom" }, { fact: "validUntil", nativePath: "/validUntil", expandedIri: "https://www.w3.org/2018/credentials#validUntil" }, { fact: "activityTime", nativePath: "/credentialSubject/activityTime", expandedIri: "https://vc4qi.example/bindings/rm/1#activityTime" }, { fact: "selectedResult", nativePath: "/credentialSubject/materialPropertiesList/*/results/*", expandedIri: "https://vc4qi.example/bindings/rm/1#results" }], cardinality: { credentialSubject: { minimum: 1, maximum: 1 }, material: { minimum: 1, maximum: 1 }, scopeRecords: { minimum: 1 }, selectedAuthorizingPoliciesPerUse: { minimum: 1, maximum: 1 }, authorizingReferenceSelection: "by-declared-reference-type-per-route; resolved credential type must match (else contradicted); several of one type not_established", supportReferences: { minimum: 1 }, multipleRecognizedDeclarations: "unsupported-unless-exact-deterministic-composition-is-listed", ambiguousSelection: "not_established" }, discoveryAndIntegrity: { referenceCarriers: ["termsOfUse", "evidence", "relatedResource", "credentialSchema"], discovery: "supplied-or-installed-static-catalog-only", unknownUri: "not_established", immutableRepresentation: "original-secured-bytes", digestAlgorithm: "sha384", digestEncoding: "SRI", digestInput: "exact-original-secured-bytes", recognitionReferences: "only a RecognizedEntityCredential that a grant references from its own termsOfUse (authorizationCredential of that type, pinned by digest); recognitions supplied by the holder but not referenced, issuer.recognizedIn and identifier-based discovery are unsupported", independentGrantBinding: "unsupported: authority is recognized only through termsOfUse authorizationCredential references on the credential chain; an authenticated grant found by other means establishes nothing (not_established)" }, recognizedTypes: { authorizationPolicy: "https://vc4qi.example/bindings/rm/1#RmAuthorizationPolicy", authorizationPolicyEstablishes: ["authorizing-reference-candidate"], supportEvidence: "https://vc4qi.example/bindings/rm/1#RmStudyReference", supportEvidenceEstablishes: ["support-reference-candidate"], nonEstablishingByItself: ["authority", "scope", "support-applicability", "conformity"] }, principalAndRights: { principalEqualityEvaluator: "https://vc4qi.example/evaluators/exact-identifier/1", identityAliases: "none", activities: { issueRmCertificate: "https://vc4qi.example/bindings/rm/1#issueRmCertificate", maintainRmScope: "https://vc4qi.example/bindings/rm/1#maintainRmScope", issueRmStudy: "https://vc4qi.example/bindings/rm/1#issueRmStudy" }, rules: ["A grantee equals the producer exercising certificate issuance and scope maintenance.", "O issuer and grantee equal that producer and O is contained by A.", "D issuer equals O grantee.", "S issuer equals H laboratory grantee.", "Commissioning a study grants no laboratory competence."] }, scopeAndMapping: { mappingVersion: "rm-experimental-mapping-1", recordEvaluator: "https://vc4qi.example/evaluators/rm-complete-record/1", quantityEvaluator: "https://vc4qi.example/evaluators/exact-mass-fraction/1", dimensions: ["matrixIri", "formIri", "propertyIri", "methodIri", "quantityKindIri", "range"], units: { "mg/kg": "1e-6", "kg/kg": "1" }, boundaries: "inclusive", missingOrEmptyRestrictedDimension: "not_established", recordCombination: "one-complete-record-per-claim-no-splicing", uncertainty: { requiredCoverageFactor: "2", nonnegative: !0, accreditationCeiling: "none" }, broader: [{ narrower: "https://vc4qi.example/bindings/rm/1#CuZn39Pb3", broader: "https://vc4qi.example/bindings/rm/1#CopperAlloys" }, { narrower: "https://vc4qi.example/bindings/rm/1#CopperAlloys", broader: "https://vc4qi.example/bindings/rm/1#NonFerrousMetalsAndAlloys" }, { narrower: "https://vc4qi.example/bindings/rm/1#Disc", broader: "https://vc4qi.example/bindings/rm/1#SolidForms" }, { narrower: "https://vc4qi.example/bindings/rm/1#As", broader: "https://vc4qi.example/bindings/rm/1#ElementContents" }, { narrower: "https://vc4qi.example/bindings/rm/1#Cu", broader: "https://vc4qi.example/bindings/rm/1#ElementContents" }, { narrower: "https://vc4qi.example/bindings/rm/1#Zn", broader: "https://vc4qi.example/bindings/rm/1#ElementContents" }, { narrower: "https://vc4qi.example/bindings/rm/1#Pb", broader: "https://vc4qi.example/bindings/rm/1#ElementContents" }], conceptHierarchy: "skos:broader assertions in broader, applied transitively: a scope record's matrix, form or property covers every narrower concept (an accreditation for non-ferrous metals and alloys and element contents contains arsenic in CuZn39Pb3 discs); methods and quantity kinds are exact; labels are never compared; malformed entries are ignored and never widen a scope", methodRevisions: [{ method: "https://vc4qi.example/bindings/rm/1#M2", revises: "https://vc4qi.example/bindings/rm/1#M1" }], methodSuccessionInterpretation: "verifier-profile mapping.methodSuccession: accept-successor | require-extension | none (none leaves a revised method not_established at gate 4)", claimCoverage: "the selected result, mapped at gate 4, must lie in one complete record of the route's own scope credential (O for operational-scope, A for direct-accreditation); no fallback to a parent grant", conformity: "verifier-profile requirements and decision rules, evaluated at gate 6 only after the claim is authorized; exact arithmetic reported in the requirement's unit", unsupported: ["asymmetric-uncertainty", "display-label-equality", "substring-matching", "implicit-method-succession"] }, routesAndRestrictions: { certificateRoute: ["O-authorizes-D", "A-authorizes-O-maintenance", "O-contained-by-A"], installedCertificateRoutes: { "operational-scope": ["O-authorizes-D", "A-authorizes-O-maintenance", "O-contained-by-A", "A-issuer-is-accreditation-anchor-or-recognized-for-main-scope"], "direct-accreditation": ["A-authorizes-D", "A-issuer-is-accreditation-anchor-or-recognized-for-main-scope"] }, recognition: "a grant issuer that is not a configured anchor for the purpose is accepted only through a usable, unsuspended recognition the grant references, whose issuer is an anchor for the recognizer purpose and whose subject is the grant issuer with the required action for the purpose's main scope (activity and normative document, exact), recognized by its issuer and in force at the activity time; a recognition of another body or another main scope contradicts; a missing recognition, entry or time is not_established; recognition never establishes QI scope", studyRoute: ["H-authorizes-S"], requiredSupport: ["S", "H"], globalRestrictions: ["applicable-suspension", "request-time-policy"], installedGlobalRestrictions: { "accreditation-suspension": "every usable anchor-issued RmAccreditation of the certificate issuer reached through the target's termsOfUse references, on any route, must carry a fresh issuer suspension status (Bitstring Status List, statusPurpose suspension) with its bit clear; missing or unreadable suspension status is not_established; unusable or unreferenced credentials are not restrictions" }, unusedAlternativeFailures: "diagnostic-only: only the target and the credentials on the selected route and support chains decide the request", routeComposition: "AND-within-route-OR-between-complete-routes", baselineAlternatives: 1, provenanceDoesNotEstablish: ["permission", "containment"] }, protectionTimeAndResolution: { proofSuites: ["eddsa-rdfc-2022"], proofPurpose: "assertionMethod", verificationMethodRule: "exact-installed-method-controlled-by-issuer-and-authorized-for-assertionMethod", safeJsonLd: !0, proofCollections: "unsupported-in-initial-slice", status: "authenticated-current-revocation-status-required-for-A-O-D-S-H; suspension entries on accreditations are read only by the accreditation-suspension restriction", statusMechanism: "W3C Bitstring Status List v1.0: multibase base64url GZIP encodedList, bounded decompression", statusAuthority: "status-list-issuer-equals-credential-issuer", validity: ["validFrom", "validUntil"], freshness: "verifier-profile maxAgeSeconds from the status list validFrom, judged at the activity time asked about; no default", historicalReliance: "status at an earlier activity time only from a status list of the same issuer in force and fresh at that time (kept, dated lists); a later list cannot establish it; no archive discovery", resolver: { network: !1, unknownUri: "refuse", budgets: ["maxResources", "maxDepth", "maxBytes"] }, installedEvaluatorsOnly: !0, issuerProvidedExecutableCode: !1 }, supportAndDisclosure: { objectApplicability: ["materialBatch", "activity", "method", "activityTime"], supportSubjectNeedNotEqualTargetIssuer: !0, mandatoryDisclosure: ["issuer", "credentialSubject/id", "activityTime", "selectedResult", "restrictions", "authorizingReference", "requiredStudy", "relatedResource", "proof"], missingMandatoryDisclosure: "not_established", presentationProtection: "separate-from-reliance", holderBinding: "unsupported-in-initial-slice" }, evidenceAndExclusions: { acceptanceLedger: "docs/acceptance-ledger.csv", testVectorRoots: ["testdata/regressions", "bindings/experimental/rm-v1/test-vectors"], unsupported: ["production-accreditation", "legal-effect", "physical-sample-truth", "public-example-namespace-resolution", "general-ontology-reasoning", "wallet-interoperability", "external-recognition-adapter", "timestamp-service"] } }, profiles: { "rm-verifier-1": { id: "https://vc4qi.example/profiles/rm-verifier", version: "1", status: "experimental", description: "Verifier-owned reliance profile for the experimental RM v1 binding. Fictional fixture configuration; not an external standard.", binding: { id: "https://vc4qi.example/bindings/rm/1", version: "1" }, trustAnchors: [{ id: "https://nab.vc4qi.example/controller", purposes: ["accredit-rm-producers", "accredit-rm-laboratories"] }], authority: { certificateRoutes: ["operational-scope"], globalRestrictions: ["accreditation-suspension"], maxRoutes: 8 }, credentialStatus: { required: !0, purposes: ["revocation"], maxAgeSeconds: 2592e3 }, mapping: { methodSuccession: "none" }, conformity: { requirements: [{ id: "as-mass-fraction-max-200-mg-per-kg", propertyIri: "https://vc4qi.example/bindings/rm/1#As", quantityKindIri: "https://vc4qi.example/bindings/rm/1#MassFraction", upperLimit: { value: "200", unit: "mg/kg" } }], decisionRules: [{ id: "guarded-acceptance-expanded-u", acceptWhen: "value-plus-expanded-uncertainty-at-most-limit" }, { id: "simple-acceptance", acceptWhen: "value-at-most-limit" }] } }, "rm-verifier-global-aci-1": { id: "https://vc4qi.example/profiles/rm-verifier-global-aci", version: "1", status: "experimental", description: "Fictional verifier abroad: its only trust anchor is a fictional stand-in for an arrangement anchor (Global ACI role), not the accreditation body. It accepts the accreditation body when an accreditation points up (termsOfUse) to that anchor's recognition of its issuer, a W3C Recognized Entities credential (Working Draft of 4 November 2026) with one subject, for the main scope each grant requires. It names no recognition itself. Otherwise identical to rm-verifier-1; not an external standard.", binding: { id: "https://vc4qi.example/bindings/rm/1", version: "1" }, trustAnchors: [{ id: "https://global-aci.vc4qi.example/controller", purposes: ["recognize-accreditation-bodies"] }], authority: { certificateRoutes: ["operational-scope"], globalRestrictions: ["accreditation-suspension"], maxRoutes: 8 }, credentialStatus: { required: !0, purposes: ["revocation"], maxAgeSeconds: 2592e3 }, mapping: { methodSuccession: "none" }, conformity: { requirements: [{ id: "as-mass-fraction-max-200-mg-per-kg", propertyIri: "https://vc4qi.example/bindings/rm/1#As", quantityKindIri: "https://vc4qi.example/bindings/rm/1#MassFraction", upperLimit: { value: "200", unit: "mg/kg" } }], decisionRules: [{ id: "guarded-acceptance-expanded-u", acceptWhen: "value-plus-expanded-uncertainty-at-most-limit" }, { id: "simple-acceptance", acceptWhen: "value-at-most-limit" }] }, bindingRules: { recognition: { recognizerPurpose: "recognize-accreditation-bodies", action: "accredit", purposes: { "accredit-rm-producers": { activity: "Reference material production", standardId: "urn:iso:std:iso:17034:ed-1" }, "accredit-rm-laboratories": { activity: "Testing", standardId: "urn:iso:std:iso-iec:17025:ed-3" } } } } }, "rm-verifier-two-routes-1": { id: "https://vc4qi.example/profiles/rm-verifier-two-routes", version: "1", status: "experimental", description: "Fictional verifier profile with two complete certificate routes, (operational scope within an accreditation) OR (direct accreditation), and the accreditation-suspension global restriction outside the OR. Exercises route composition (C01-C07); not an external standard.", binding: { id: "https://vc4qi.example/bindings/rm/1", version: "1" }, trustAnchors: [{ id: "https://nab.vc4qi.example/controller", purposes: ["accredit-rm-producers", "accredit-rm-laboratories"] }], authority: { certificateRoutes: ["operational-scope", "direct-accreditation"], globalRestrictions: ["accreditation-suspension"], maxRoutes: 8 }, credentialStatus: { required: !0, purposes: ["revocation"], maxAgeSeconds: 2592e3 }, mapping: { methodSuccession: "none" }, conformity: { requirements: [{ id: "as-mass-fraction-max-200-mg-per-kg", propertyIri: "https://vc4qi.example/bindings/rm/1#As", quantityKindIri: "https://vc4qi.example/bindings/rm/1#MassFraction", upperLimit: { value: "200", unit: "mg/kg" } }], decisionRules: [{ id: "guarded-acceptance-expanded-u", acceptWhen: "value-plus-expanded-uncertainty-at-most-limit" }, { id: "simple-acceptance", acceptWhen: "value-at-most-limit" }] } } }, files: [{ uri: "https://www.w3.org/ns/credentials/v2", mediaType: "application/ld+json", origin: "W3C Verifiable Credentials Data Model v2.0 context, vendored copy already used by the repository loader", version: "VCDM 2.0", digestSRI: "sha384-l/HrjlBCNWyAX91hr6LFV2Y3heB5Tcr6IeE4/Tje8YyzYBM8IhqjHWiWpr8+ZbYU", text: `{
+var zl = (e, t, n) => t in e ? Dl(e, t, { enumerable: !0, configurable: !0, writable: !0, value: n }) : e[t] = n;
+var ht = (e, t, n) => zl(e, typeof t != "symbol" ? t + "" : t, n), Oa = (e, t, n) => t.has(e) || Ma("Cannot " + n);
+var it = (e, t, n) => (Oa(e, t, "read from private field"), n ? n.call(e) : t.get(e)), Un = (e, t, n) => t.has(e) ? Ma("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, n), jr = (e, t, n, i) => (Oa(e, t, "write to private field"), i ? i.call(e, n) : t.set(e, n), n);
+const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://vc4qi.example/bindings/rm/1", version: "1", status: "experimental", owner: { name: "VC4QI repository fixture governance", source: "docs/bindings.md", authority: "local-research-fixture-only" }, installation: { status: "incomplete", reason: "Contexts, schemas, controller documents, signed A/H/O/S/D fixtures and status lists are pinned and verify in TypeScript and Python. The I1-I4 evaluators (protection, status, authority routes, support, claim mapping and coverage, conformity) and the current-reliance time rules are implemented, with a cross-language parity vector; an independent transformation vector is still required before selection.", pendingResources: [] }, carrierAndSchema: { model: "W3C Verifiable Credentials Data Model 2.0", modelContext: "https://www.w3.org/ns/credentials/v2", requiredContexts: ["https://www.w3.org/ns/credentials/v2", "https://vc4qi.example/contexts/rm/1"], credentialTypes: ["https://www.w3.org/2018/credentials#VerifiableCredential", "https://vc4qi.example/bindings/rm/1#RmAccreditation", "https://vc4qi.example/bindings/rm/1#RmOperationalScope", "https://vc4qi.example/bindings/rm/1#RmCertificate", "https://vc4qi.example/bindings/rm/1#RmStudy", "https://vc4qi.example/bindings/rm/1#RmLabAuthority", "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential", "https://www.w3.org/ns/credentials/recognized-entities#RecognizedEntityCredential"], schemaUris: ["https://vc4qi.example/schemas/rm/1/accreditation.json", "https://vc4qi.example/schemas/rm/1/operational-scope.json", "https://vc4qi.example/schemas/rm/1/certificate.json", "https://vc4qi.example/schemas/rm/1/study.json", "https://vc4qi.example/schemas/rm/1/lab-authority.json", "https://vc4qi.example/schemas/rm/1/issued-under-policy.json", "https://vc4qi.example/schemas/rm/1/recognition-policy.json", "https://vc4qi.example/schemas/rm/1/study-reference.json", "https://vc4qi.example/schemas/rm/1/status-list.json", "https://vc4qi.example/schemas/rm/1/recognized-entity.json"], statusListCarrier: "BitstringStatusListCredential with the VCDM 2.0 context only", recognitionCarrier: "RecognizedEntityCredential with the VCDM 2.0 context and https://vc4qi.example/contexts/recognized-entities/draft-20261112, a stand-in for the unpublished W3C Recognized Entities context (Working Draft of 12 November 2026); the main scopes are carried in registration (mainScope is an RM binding extension term)", composition: "exact-listed-context-and-schema-combinations-only", pinnedResourceIndex: "bindings/experimental/rm-v1/catalog.json", decimalEncoding: "JSON strings typed xsd:decimal for every quantity, bound and uncertainty", orderedCollections: ["materials", "materialPropertiesList", "results"] }, factMappings: [{ fact: "grantorOrActor", nativePath: "/issuer", expandedIri: "https://www.w3.org/2018/credentials#issuer" }, { fact: "grantee", nativePath: "/credentialSubject/id", expandedIri: "@id" }, { fact: "permittedActivity", nativePath: "/credentialSubject/permittedActivity", expandedIri: "https://vc4qi.example/bindings/rm/1#permittedActivity" }, { fact: "scopeRecords", nativePath: "/credentialSubject/scope", expandedIri: "https://vc4qi.example/bindings/rm/1#scope" }, { fact: "authorizingReference", nativePath: "/termsOfUse/*/authorizationCredential/id", expandedIri: "https://vc4qi.example/bindings/rm/1#authorizationCredential" }, { fact: "recognitionReference", nativePath: "/termsOfUse/*/recognitionCredential/id", expandedIri: "https://vc4qi.example/bindings/rm/1#recognitionCredential" }, { fact: "requiredStudy", nativePath: "/evidence/*/id", expandedIri: "https://www.w3.org/2018/credentials#evidence" }, { fact: "validFrom", nativePath: "/validFrom", expandedIri: "https://www.w3.org/2018/credentials#validFrom" }, { fact: "validUntil", nativePath: "/validUntil", expandedIri: "https://www.w3.org/2018/credentials#validUntil" }, { fact: "activityTime", nativePath: "/credentialSubject/activityTime", expandedIri: "https://vc4qi.example/bindings/rm/1#activityTime" }, { fact: "selectedResult", nativePath: "/credentialSubject/materialPropertiesList/*/results/*", expandedIri: "https://vc4qi.example/bindings/rm/1#results" }], cardinality: { credentialSubject: { minimum: 1, maximum: 1 }, material: { minimum: 1, maximum: 1 }, scopeRecords: { minimum: 1 }, selectedAuthorizingPoliciesPerUse: { minimum: 1, maximum: 1 }, authorizingReferenceSelection: "by-declared-reference-type-per-route; resolved credential type must match (else contradicted); several of one type not_established", supportReferences: { minimum: 1 }, multipleRecognizedDeclarations: "unsupported-unless-exact-deterministic-composition-is-listed", ambiguousSelection: "not_established" }, discoveryAndIntegrity: { referenceCarriers: ["termsOfUse", "evidence", "relatedResource", "credentialSchema"], discovery: "supplied-or-installed-static-catalog-only", unknownUri: "not_established", immutableRepresentation: "original-secured-bytes", digestAlgorithm: "sha384", digestEncoding: "SRI", digestInput: "exact-original-secured-bytes", recognitionReferences: "only a RecognizedEntityCredential that a grant references from its own termsOfUse (a RecognitionPolicy recognitionCredential, pinned by digest); issuer.recognizedIn may mirror it and must then name the same credential; recognitions supplied by the holder but not referenced, discovery through issuer.recognizedIn alone and identifier-based discovery are unsupported", independentGrantBinding: "unsupported: authority is recognized only through termsOfUse IssuedUnderPolicy authorizationCredential references on the credential chain; an authenticated grant found by other means establishes nothing (not_established); a RecognitionPolicy reference never establishes authority" }, recognizedTypes: { authorizationPolicy: "https://vc4qi.example/bindings/rm/1#IssuedUnderPolicy", authorizationPolicyEstablishes: ["authorizing-reference-candidate"], recognitionPolicy: "https://vc4qi.example/bindings/rm/1#RecognitionPolicy", recognitionPolicyEstablishes: ["recognition-reference-candidate"], supportEvidence: "https://vc4qi.example/bindings/rm/1#RmStudyReference", supportEvidenceEstablishes: ["support-reference-candidate"], nonEstablishingByItself: ["authority", "scope", "support-applicability", "conformity"] }, principalAndRights: { principalEqualityEvaluator: "https://vc4qi.example/evaluators/exact-identifier/1", identityAliases: "none", activities: { issueRmCertificate: "https://vc4qi.example/bindings/rm/1#issueRmCertificate", maintainRmScope: "https://vc4qi.example/bindings/rm/1#maintainRmScope", issueRmStudy: "https://vc4qi.example/bindings/rm/1#issueRmStudy" }, rules: ["A grantee equals the producer exercising certificate issuance and scope maintenance.", "O issuer and grantee equal that producer and O is contained by A.", "D issuer equals O grantee.", "S issuer equals H laboratory grantee.", "Commissioning a study grants no laboratory competence."] }, scopeAndMapping: { mappingVersion: "rm-experimental-mapping-1", recordEvaluator: "https://vc4qi.example/evaluators/rm-complete-record/1", quantityEvaluator: "https://vc4qi.example/evaluators/exact-mass-fraction/1", dimensions: ["matrixIri", "formIri", "propertyIri", "methodIri", "quantityKindIri", "range"], units: { "mg/kg": "1e-6", "kg/kg": "1" }, boundaries: "inclusive", missingOrEmptyRestrictedDimension: "not_established", recordCombination: "one-complete-record-per-claim-no-splicing", uncertainty: { requiredCoverageFactor: "2", nonnegative: !0, accreditationCeiling: "none" }, broader: [{ narrower: "https://vc4qi.example/bindings/rm/1#CuZn39Pb3", broader: "https://vc4qi.example/bindings/rm/1#CopperAlloys" }, { narrower: "https://vc4qi.example/bindings/rm/1#CopperAlloys", broader: "https://vc4qi.example/bindings/rm/1#NonFerrousMetalsAndAlloys" }, { narrower: "https://vc4qi.example/bindings/rm/1#Disc", broader: "https://vc4qi.example/bindings/rm/1#SolidForms" }, { narrower: "https://vc4qi.example/bindings/rm/1#As", broader: "https://vc4qi.example/bindings/rm/1#ElementContents" }, { narrower: "https://vc4qi.example/bindings/rm/1#Cu", broader: "https://vc4qi.example/bindings/rm/1#ElementContents" }, { narrower: "https://vc4qi.example/bindings/rm/1#Zn", broader: "https://vc4qi.example/bindings/rm/1#ElementContents" }, { narrower: "https://vc4qi.example/bindings/rm/1#Pb", broader: "https://vc4qi.example/bindings/rm/1#ElementContents" }], conceptHierarchy: "skos:broader assertions in broader, applied transitively: a scope record's matrix, form or property covers every narrower concept (an accreditation for non-ferrous metals and alloys and element contents contains arsenic in CuZn39Pb3 discs); methods and quantity kinds are exact; labels are never compared; malformed entries are ignored and never widen a scope", methodRevisions: [{ method: "https://vc4qi.example/bindings/rm/1#M2", revises: "https://vc4qi.example/bindings/rm/1#M1" }], methodSuccessionInterpretation: "verifier-profile mapping.methodSuccession: accept-successor | require-extension | none (none leaves a revised method not_established at gate 4)", claimCoverage: "the selected result, mapped at gate 4, must lie in one complete record of the route's own scope credential (O for operational-scope, A for direct-accreditation); no fallback to a parent grant", conformity: "verifier-profile requirements and decision rules, evaluated at gate 6 only after the claim is authorized; exact arithmetic reported in the requirement's unit", unsupported: ["asymmetric-uncertainty", "display-label-equality", "substring-matching", "implicit-method-succession"] }, routesAndRestrictions: { certificateRoute: ["O-authorizes-D", "A-authorizes-O-maintenance", "O-contained-by-A"], installedCertificateRoutes: { "operational-scope": ["O-authorizes-D", "A-authorizes-O-maintenance", "O-contained-by-A", "A-issuer-is-accreditation-anchor-or-recognized-for-main-scope"], "direct-accreditation": ["A-authorizes-D", "A-issuer-is-accreditation-anchor-or-recognized-for-main-scope"] }, recognition: "a grant issuer that is not a configured anchor for the purpose is accepted only through a usable, unsuspended recognition the grant names in a RecognitionPolicy, whose issuer is an anchor for the recognizer purpose and whose subject is the grant issuer, recognized by its issuer to perform the required action in force at the activity time, with the purpose's main scope (activity and normative document, exact) in its registration; a recognition of another body or without that main scope contradicts; an issuer.recognizedIn that names another credential contradicts; a missing recognition, entry or time is not_established; recognition never establishes authority or QI scope", studyRoute: ["H-authorizes-S"], requiredSupport: ["S", "H"], globalRestrictions: ["applicable-suspension", "request-time-policy"], installedGlobalRestrictions: { "accreditation-suspension": "every usable anchor-issued RmAccreditation of the certificate issuer reached through the target's termsOfUse references, on any route, must carry a fresh issuer suspension status (Bitstring Status List, statusPurpose suspension) with its bit clear; missing or unreadable suspension status is not_established; unusable or unreferenced credentials are not restrictions" }, unusedAlternativeFailures: "diagnostic-only: only the target and the credentials on the selected route and support chains decide the request", routeComposition: "AND-within-route-OR-between-complete-routes", baselineAlternatives: 1, provenanceDoesNotEstablish: ["permission", "containment"] }, protectionTimeAndResolution: { proofSuites: ["eddsa-rdfc-2022"], proofPurpose: "assertionMethod", verificationMethodRule: "exact-installed-method-controlled-by-issuer-and-authorized-for-assertionMethod", safeJsonLd: !0, proofCollections: "unsupported-in-initial-slice", status: "authenticated-current-revocation-status-required-for-A-O-D-S-H; suspension entries on accreditations are read only by the accreditation-suspension restriction", statusMechanism: "W3C Bitstring Status List v1.0: multibase base64url GZIP encodedList, bounded decompression", statusAuthority: "status-list-issuer-equals-credential-issuer", validity: ["validFrom", "validUntil"], freshness: "verifier-profile maxAgeSeconds from the status list validFrom, judged at the activity time asked about; no default", historicalReliance: "status at an earlier activity time only from a status list of the same issuer in force and fresh at that time (kept, dated lists); a later list cannot establish it; no archive discovery", resolver: { network: !1, unknownUri: "refuse", budgets: ["maxResources", "maxDepth", "maxBytes"] }, installedEvaluatorsOnly: !0, issuerProvidedExecutableCode: !1 }, supportAndDisclosure: { objectApplicability: ["materialBatch", "activity", "method", "activityTime"], supportSubjectNeedNotEqualTargetIssuer: !0, mandatoryDisclosure: ["issuer", "credentialSubject/id", "activityTime", "selectedResult", "restrictions", "authorizingReference", "requiredStudy", "relatedResource", "proof"], missingMandatoryDisclosure: "not_established", presentationProtection: "separate-from-reliance", holderBinding: "unsupported-in-initial-slice" }, evidenceAndExclusions: { acceptanceLedger: "docs/acceptance-ledger.csv", testVectorRoots: ["testdata/regressions", "bindings/experimental/rm-v1/test-vectors"], unsupported: ["production-accreditation", "legal-effect", "physical-sample-truth", "public-example-namespace-resolution", "general-ontology-reasoning", "wallet-interoperability", "external-recognition-adapter", "timestamp-service"] } }, profiles: { "rm-verifier-1": { id: "https://vc4qi.example/profiles/rm-verifier", version: "1", status: "experimental", description: "Verifier-owned reliance profile for the experimental RM v1 binding. Fictional fixture configuration; not an external standard.", binding: { id: "https://vc4qi.example/bindings/rm/1", version: "1" }, trustAnchors: [{ id: "https://nab.vc4qi.example/controller", purposes: ["accredit-rm-producers", "accredit-rm-laboratories"] }], authority: { certificateRoutes: ["operational-scope"], globalRestrictions: ["accreditation-suspension"], maxRoutes: 8 }, credentialStatus: { required: !0, purposes: ["revocation"], maxAgeSeconds: 2592e3 }, mapping: { methodSuccession: "none" }, conformity: { requirements: [{ id: "as-mass-fraction-max-200-mg-per-kg", propertyIri: "https://vc4qi.example/bindings/rm/1#As", quantityKindIri: "https://vc4qi.example/bindings/rm/1#MassFraction", upperLimit: { value: "200", unit: "mg/kg" } }], decisionRules: [{ id: "guarded-acceptance-expanded-u", acceptWhen: "value-plus-expanded-uncertainty-at-most-limit" }, { id: "simple-acceptance", acceptWhen: "value-at-most-limit" }] } }, "rm-verifier-global-aci-1": { id: "https://vc4qi.example/profiles/rm-verifier-global-aci", version: "1", status: "experimental", description: "Fictional verifier abroad: its only trust anchor is a fictional stand-in for an arrangement anchor (Global ACI role), not the accreditation body. It accepts the accreditation body when an accreditation points up (termsOfUse) to that anchor's recognition of its issuer, a W3C Recognized Entities credential (Working Draft of 4 November 2026) with one subject, for the main scope each grant requires. It names no recognition itself. Otherwise identical to rm-verifier-1; not an external standard.", binding: { id: "https://vc4qi.example/bindings/rm/1", version: "1" }, trustAnchors: [{ id: "https://global-aci.vc4qi.example/controller", purposes: ["recognize-accreditation-bodies"] }], authority: { certificateRoutes: ["operational-scope"], globalRestrictions: ["accreditation-suspension"], maxRoutes: 8 }, credentialStatus: { required: !0, purposes: ["revocation"], maxAgeSeconds: 2592e3 }, mapping: { methodSuccession: "none" }, conformity: { requirements: [{ id: "as-mass-fraction-max-200-mg-per-kg", propertyIri: "https://vc4qi.example/bindings/rm/1#As", quantityKindIri: "https://vc4qi.example/bindings/rm/1#MassFraction", upperLimit: { value: "200", unit: "mg/kg" } }], decisionRules: [{ id: "guarded-acceptance-expanded-u", acceptWhen: "value-plus-expanded-uncertainty-at-most-limit" }, { id: "simple-acceptance", acceptWhen: "value-at-most-limit" }] }, bindingRules: { recognition: { recognizerPurpose: "recognize-accreditation-bodies", action: "accredit", purposes: { "accredit-rm-producers": { activity: "Reference material production", standardId: "urn:iso:std:iso:17034:ed-1" }, "accredit-rm-laboratories": { activity: "Testing", standardId: "urn:iso:std:iso-iec:17025:ed-3" } } } } }, "rm-verifier-two-routes-1": { id: "https://vc4qi.example/profiles/rm-verifier-two-routes", version: "1", status: "experimental", description: "Fictional verifier profile with two complete certificate routes, (operational scope within an accreditation) OR (direct accreditation), and the accreditation-suspension global restriction outside the OR. Exercises route composition (C01-C07); not an external standard.", binding: { id: "https://vc4qi.example/bindings/rm/1", version: "1" }, trustAnchors: [{ id: "https://nab.vc4qi.example/controller", purposes: ["accredit-rm-producers", "accredit-rm-laboratories"] }], authority: { certificateRoutes: ["operational-scope", "direct-accreditation"], globalRestrictions: ["accreditation-suspension"], maxRoutes: 8 }, credentialStatus: { required: !0, purposes: ["revocation"], maxAgeSeconds: 2592e3 }, mapping: { methodSuccession: "none" }, conformity: { requirements: [{ id: "as-mass-fraction-max-200-mg-per-kg", propertyIri: "https://vc4qi.example/bindings/rm/1#As", quantityKindIri: "https://vc4qi.example/bindings/rm/1#MassFraction", upperLimit: { value: "200", unit: "mg/kg" } }], decisionRules: [{ id: "guarded-acceptance-expanded-u", acceptWhen: "value-plus-expanded-uncertainty-at-most-limit" }, { id: "simple-acceptance", acceptWhen: "value-at-most-limit" }] } } }, files: [{ uri: "https://www.w3.org/ns/credentials/v2", mediaType: "application/ld+json", origin: "W3C Verifiable Credentials Data Model v2.0 context, vendored copy already used by the repository loader", version: "VCDM 2.0", digestSRI: "sha384-l/HrjlBCNWyAX91hr6LFV2Y3heB5Tcr6IeE4/Tje8YyzYBM8IhqjHWiWpr8+ZbYU", text: `{
   "@context": {
     "@protected": true,
 
@@ -344,7 +344,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
       "@type": "@id"
     }
   }
-}` }, { uri: "https://vc4qi.example/contexts/rm/1", mediaType: "application/ld+json", origin: "VC4QI experimental RM binding (repository-owned fictional fixture)", version: "1", digestSRI: "sha384-VwRpUQQrgMZ+CLiaB2pQfnaxgx8hPz+MGv0AhG9PAb0HwJPkkU1Zz5h+jlQ8cJQp", text: `{
+}` }, { uri: "https://vc4qi.example/contexts/rm/1", mediaType: "application/ld+json", origin: "VC4QI experimental RM binding (repository-owned fictional fixture)", version: "1", digestSRI: "sha384-7Tvmx54G+gi7f7jExPY/xQNN2VJYDCwsAvHZ1t4Aos5aQb5PUR2Glq1T025b6R+N", text: `{
   "@context": {
     "@version": 1.1,
     "@protected": true,
@@ -356,7 +356,8 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "RmCertificate": "rm:RmCertificate",
     "RmStudy": "rm:RmStudy",
     "RmLabAuthority": "rm:RmLabAuthority",
-    "RmAuthorizationPolicy": "rm:RmAuthorizationPolicy",
+    "IssuedUnderPolicy": "rm:IssuedUnderPolicy",
+    "RecognitionPolicy": "rm:RecognitionPolicy",
     "RmStudyReference": "rm:RmStudyReference",
     "RecognizedEntityCredential": "https://www.w3.org/ns/credentials/recognized-entities#RecognizedEntityCredential",
 
@@ -373,6 +374,8 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "unit": "rm:unit",
 
     "authorizationCredential": "rm:authorizationCredential",
+    "recognitionCredential": "rm:recognitionCredential",
+    "recognizedIn": "https://www.w3.org/ns/credentials/recognized-entities#recognizedIn",
     "activityTime": {"@id": "rm:activityTime", "@type": "xsd:dateTime"},
 
     "materials": {"@id": "rm:materials", "@container": "@list"},
@@ -394,7 +397,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "coverageFactor": {"@id": "rm:coverageFactor", "@type": "xsd:decimal"}
   }
 }
-` }, { uri: "https://vc4qi.example/contexts/recognized-entities/draft-20261104", mediaType: "application/ld+json", origin: "VC4QI stand-in for the unpublished W3C Recognized Entities v1.0 context: terms expand to the draft vocabulary of w3c/vc-recognized-entities@3961cf6 (Working Draft of 4 November 2026); mainScope, activity and standard are RM binding extension terms", version: "draft-20261104", digestSRI: "sha384-pXFtmoWd7QX1pQQhUOo+tTKalbnl//y/XwGl9aZwEIJ9IRkOV0Iym/MPv8tR67cX", text: `{
+` }, { uri: "https://vc4qi.example/contexts/recognized-entities/draft-20261112", mediaType: "application/ld+json", origin: "VC4QI stand-in for the unpublished W3C Recognized Entities v1.0 context: terms expand to the draft vocabulary of w3c/vc-recognized-entities@3961cf6 (Working Draft of 12 November 2026); mainScope, activity and standard are RM binding extension terms, used inside registration", version: "draft-20261112", digestSRI: "sha384-pXFtmoWd7QX1pQQhUOo+tTKalbnl//y/XwGl9aZwEIJ9IRkOV0Iym/MPv8tR67cX", text: `{
   "@context": {
     "@version": 1.1,
     "@protected": true,
@@ -426,7 +429,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "standard": "rm:normativeDocument"
   }
 }
-` }, { uri: "https://vc4qi.example/schemas/rm/1/accreditation.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-bpFH6U6iG7GLw8MHMiXdCeuWV+FX7RT8bdz4yKVkVrwZRnCAxhp2XNmIDXeOXVVF", text: `{
+` }, { uri: "https://vc4qi.example/schemas/rm/1/accreditation.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-CaB4E5OvzhRCHSoGOdTb/xJ78Shh5g1BKaLnK0YgYP2ACrjDcEkwXFYWrintZIfH", text: `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vc4qi.example/schemas/rm/1/accreditation.json",
   "title": "RM producer accreditation (A)",
@@ -461,8 +464,42 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
       ]
     },
     "issuer": {
-      "type": "string",
-      "format": "uri"
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uri"
+            },
+            "recognizedIn": {
+              "type": "object",
+              "required": [
+                "id",
+                "type"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "type": {
+                  "const": "RecognizedEntityCredential"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "validFrom": {
       "type": "string",
@@ -601,13 +638,13 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
         "type": "object",
         "required": [
           "type",
-          "authorizationCredential"
+          "recognitionCredential"
         ],
         "properties": {
           "type": {
-            "const": "RmAuthorizationPolicy"
+            "const": "RecognitionPolicy"
           },
-          "authorizationCredential": {
+          "recognitionCredential": {
             "type": "object",
             "required": [
               "id",
@@ -619,12 +656,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
                 "format": "uri"
               },
               "type": {
-                "enum": [
-                  "RmAccreditation",
-                  "RmOperationalScope",
-                  "RmLabAuthority",
-                  "RecognizedEntityCredential"
-                ]
+                "const": "RecognizedEntityCredential"
               }
             },
             "additionalProperties": false
@@ -784,7 +816,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     ]
   }
 }
-` }, { uri: "https://vc4qi.example/schemas/rm/1/operational-scope.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-srYzEor4PtPpFBJUNpNW9GWUai+TZ9NN7Y/9jnwES2rpmNDZpwGjxVm4srOrbBOx", text: `{
+` }, { uri: "https://vc4qi.example/schemas/rm/1/operational-scope.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-c/qqDle2Y81pEMZpWKpBjkH58b73UAlmFv80S6tdCdSxpnw3tq2mzei5j91SHaxr", text: `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vc4qi.example/schemas/rm/1/operational-scope.json",
   "title": "RM operational scope (O)",
@@ -963,7 +995,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
         ],
         "properties": {
           "type": {
-            "const": "RmAuthorizationPolicy"
+            "const": "IssuedUnderPolicy"
           },
           "authorizationCredential": {
             "type": "object",
@@ -980,8 +1012,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
                 "enum": [
                   "RmAccreditation",
                   "RmOperationalScope",
-                  "RmLabAuthority",
-                  "RecognizedEntityCredential"
+                  "RmLabAuthority"
                 ]
               }
             },
@@ -1137,7 +1168,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   },
   "additionalProperties": false
 }
-` }, { uri: "https://vc4qi.example/schemas/rm/1/certificate.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-Vt/pwNDFx9piUWVQflP4CmFc5waC1LlMHJARPR5u0BFgwOQkbcRGenV0B+pfDusd", text: `{
+` }, { uri: "https://vc4qi.example/schemas/rm/1/certificate.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-oxjt0mTYvezg+RDAo4fNHqxfRSrnGgwQc4K7PdHELbmaoKNRR+JtdHrvcVuqKqQU", text: `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vc4qi.example/schemas/rm/1/certificate.json",
   "title": "RM certificate (D)",
@@ -1362,7 +1393,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
         ],
         "properties": {
           "type": {
-            "const": "RmAuthorizationPolicy"
+            "const": "IssuedUnderPolicy"
           },
           "authorizationCredential": {
             "type": "object",
@@ -1379,8 +1410,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
                 "enum": [
                   "RmAccreditation",
                   "RmOperationalScope",
-                  "RmLabAuthority",
-                  "RecognizedEntityCredential"
+                  "RmLabAuthority"
                 ]
               }
             },
@@ -1558,7 +1588,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   },
   "additionalProperties": false
 }
-` }, { uri: "https://vc4qi.example/schemas/rm/1/study.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-sSv/sqUj2lLp3M1SPJb6T1ELSUbw2jbYu6A5Rai4LfCv2C4nLiNIX4QuHxpFFHFX", text: `{
+` }, { uri: "https://vc4qi.example/schemas/rm/1/study.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-+FNIiwgXKwtVMG4EkihxvZAepXWywm2UZHBgUQJBHBM86SNrdYmpWzQtULEprGvo", text: `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vc4qi.example/schemas/rm/1/study.json",
   "title": "RM homogeneity/stability study (S)",
@@ -1671,7 +1701,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
         ],
         "properties": {
           "type": {
-            "const": "RmAuthorizationPolicy"
+            "const": "IssuedUnderPolicy"
           },
           "authorizationCredential": {
             "type": "object",
@@ -1688,8 +1718,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
                 "enum": [
                   "RmAccreditation",
                   "RmOperationalScope",
-                  "RmLabAuthority",
-                  "RecognizedEntityCredential"
+                  "RmLabAuthority"
                 ]
               }
             },
@@ -1845,7 +1874,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   },
   "additionalProperties": false
 }
-` }, { uri: "https://vc4qi.example/schemas/rm/1/lab-authority.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-EP6XN0+pB6Ldsfr3NMN+5/DfZkA1LnjsutyUh4vNPkHLB9DdGZbuUPK+Pvm2RT+0", text: `{
+` }, { uri: "https://vc4qi.example/schemas/rm/1/lab-authority.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-D1C69KmKpjzo6y+6sM54YjPSW770cmX0hX4ox16TTe8qkAKzLuKV0KslyqgIOzUV", text: `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vc4qi.example/schemas/rm/1/lab-authority.json",
   "title": "Study laboratory authority (H)",
@@ -1880,8 +1909,42 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
       ]
     },
     "issuer": {
-      "type": "string",
-      "format": "uri"
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uri"
+            },
+            "recognizedIn": {
+              "type": "object",
+              "required": [
+                "id",
+                "type"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "type": {
+                  "const": "RecognizedEntityCredential"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "validFrom": {
       "type": "string",
@@ -1983,13 +2046,13 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
         "type": "object",
         "required": [
           "type",
-          "authorizationCredential"
+          "recognitionCredential"
         ],
         "properties": {
           "type": {
-            "const": "RmAuthorizationPolicy"
+            "const": "RecognitionPolicy"
           },
-          "authorizationCredential": {
+          "recognitionCredential": {
             "type": "object",
             "required": [
               "id",
@@ -2001,12 +2064,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
                 "format": "uri"
               },
               "type": {
-                "enum": [
-                  "RmAccreditation",
-                  "RmOperationalScope",
-                  "RmLabAuthority",
-                  "RecognizedEntityCredential"
-                ]
+                "const": "RecognizedEntityCredential"
               }
             },
             "additionalProperties": false
@@ -2293,7 +2351,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   },
   "additionalProperties": false
 }
-` }, { uri: "https://vc4qi.example/schemas/rm/1/recognized-entity.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-HclROTVmfjrMlyMU7wNMToB3Kf3jURrmNTa3Hjs2csiyvWzrp3DfjsSiGB9qpW4P", text: `{
+` }, { uri: "https://vc4qi.example/schemas/rm/1/recognized-entity.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-sFClRNmToYjhcnlBg7R8TRniCaWqrgwMSOU5Q2HMgsmD2zZYD9O9owFKiCgs0YDP", text: `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vc4qi.example/schemas/rm/1/recognized-entity.json",
   "title": "Recognition of one accreditation body (W3C Recognized Entities credential)",
@@ -2314,7 +2372,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "@context": {
       "const": [
         "https://www.w3.org/ns/credentials/v2",
-        "https://vc4qi.example/contexts/recognized-entities/draft-20261104"
+        "https://vc4qi.example/contexts/recognized-entities/draft-20261112"
       ]
     },
     "id": {
@@ -2410,6 +2468,30 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
                 "type": "string",
                 "format": "uri"
               },
+              "validFrom": {
+                "type": "string",
+                "pattern": "^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d{1,9})?(Z|[+-]\\\\d{2}:\\\\d{2})$"
+              },
+              "validUntil": {
+                "type": "string",
+                "pattern": "^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d{1,9})?(Z|[+-]\\\\d{2}:\\\\d{2})$"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "registration": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "mainScope"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uri"
+              },
               "mainScope": {
                 "type": "object",
                 "required": [
@@ -2441,14 +2523,6 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
                   }
                 },
                 "additionalProperties": false
-              },
-              "validFrom": {
-                "type": "string",
-                "pattern": "^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d{1,9})?(Z|[+-]\\\\d{2}:\\\\d{2})$"
-              },
-              "validUntil": {
-                "type": "string",
-                "pattern": "^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d{1,9})?(Z|[+-]\\\\d{2}:\\\\d{2})$"
               }
             },
             "additionalProperties": false
@@ -2580,10 +2654,10 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   },
   "additionalProperties": false
 }
-` }, { uri: "https://vc4qi.example/schemas/rm/1/authorization-policy.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-9VE7+HJC6b5K4FOjhVmdBLNseICiptrcBaHBhfa73hHW9viD6tkvZ37ETr9zZAC0", text: `{
+` }, { uri: "https://vc4qi.example/schemas/rm/1/issued-under-policy.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-B3C1ByT+AZ5iZ6cuWenpM/4nPkpr3Cf++P66Wq/LQLBa8h+KeFbWKFEXmdoOR7cy", text: `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://vc4qi.example/schemas/rm/1/authorization-policy.json",
-  "title": "RM authorization policy entry in termsOfUse",
+  "$id": "https://vc4qi.example/schemas/rm/1/issued-under-policy.json",
+  "title": "IssuedUnderPolicy entry in termsOfUse: issued exercising the named grant",
   "type": "object",
   "required": [
     "type",
@@ -2591,7 +2665,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   ],
   "properties": {
     "type": {
-      "const": "RmAuthorizationPolicy"
+      "const": "IssuedUnderPolicy"
     },
     "authorizationCredential": {
       "type": "object",
@@ -2608,9 +2682,41 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
           "enum": [
             "RmAccreditation",
             "RmOperationalScope",
-            "RmLabAuthority",
-            "RecognizedEntityCredential"
+            "RmLabAuthority"
           ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
+` }, { uri: "https://vc4qi.example/schemas/rm/1/recognition-policy.json", mediaType: "application/schema+json", origin: "VC4QI experimental RM binding (generated by scripts/rm-v1/build-resources.mjs)", version: "1", digestSRI: "sha384-3vj/dbDfhgIrmDfJ8gMI0AghwsKSHUlVd/r8qFDVl2ijQlf8iQ7TqS0sfWrl6atZ", text: `{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vc4qi.example/schemas/rm/1/recognition-policy.json",
+  "title": "RecognitionPolicy entry in termsOfUse: issued while recognized in the named recognition (no authority)",
+  "type": "object",
+  "required": [
+    "type",
+    "recognitionCredential"
+  ],
+  "properties": {
+    "type": {
+      "const": "RecognitionPolicy"
+    },
+    "recognitionCredential": {
+      "type": "object",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "type": {
+          "const": "RecognizedEntityCredential"
         }
       },
       "additionalProperties": false
@@ -2884,10 +2990,10 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "proofValue": "z664VM8J2kLbvocdhnouVbiwL92xnnYfH3oQE2CiersaxjJkj8iFuHfc8WBnGwj7p9CqBpKJ6ere6hk63k8sPRWBL"
   }
 }
-` }, { uri: "https://global-aci.vc4qi.example/credentials/R", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-Y5cnA4RvEj1gjiAwioFhsPSjIHl4ubIyYbujR8JFeB/ahXw82W3M3U6XGmEncX0R", text: `{
+` }, { uri: "https://global-aci.vc4qi.example/credentials/R", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-Pmh6reOXT1OndxiX2EnDFxuUb/646dRTb4FE2HFcfENaCdT7AH+DyYzhbq9HvuU5", text: `{
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
-    "https://vc4qi.example/contexts/recognized-entities/draft-20261104"
+    "https://vc4qi.example/contexts/recognized-entities/draft-20261112"
   ],
   "id": "https://global-aci.vc4qi.example/credentials/R",
   "type": [
@@ -2915,7 +3021,12 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
       {
         "type": "RecognizedAction",
         "action": "accredit",
-        "recognizedBy": "https://global-aci.vc4qi.example/controller",
+        "recognizedBy": "https://global-aci.vc4qi.example/controller"
+      }
+    ],
+    "registration": [
+      {
+        "id": "https://global-aci.vc4qi.example/signatories/nab#rm-production",
         "mainScope": {
           "activity": "Reference material production",
           "standard": {
@@ -2925,9 +3036,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
         }
       },
       {
-        "type": "RecognizedAction",
-        "action": "accredit",
-        "recognizedBy": "https://global-aci.vc4qi.example/controller",
+        "id": "https://global-aci.vc4qi.example/signatories/nab#testing",
         "mainScope": {
           "activity": "Testing",
           "standard": {
@@ -2960,10 +3069,10 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "proofPurpose": "assertionMethod",
     "verificationMethod": "https://global-aci.vc4qi.example/controller#key-1",
     "created": "2024-01-01T00:00:00Z",
-    "proofValue": "z2vJAEMjowMVq829aUFKdYTtzZs7yJZmnFbzCiDvVkRU9JvCfZEYuDzRWuG9gtxyc8n7LXYxrwDme866ZWmmEvw6v"
+    "proofValue": "z5Ms64SxrGzFkjQpgNX627ZMv212TP46adfmoCvf99VnAA6z8DzdH1sRAgbrESsVUC4pkmpvywiKhcnLWTw8moo4K"
   }
 }
-` }, { uri: "https://nab.vc4qi.example/credentials/A", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-FzTvma4Juny0IB/FVNGxqmVEE5BP0czNgDVI/6Mp3P0KAikxgc/rbcyoKtqC2DoN", text: `{
+` }, { uri: "https://nab.vc4qi.example/credentials/A", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-objAaDFZcTNY7BjZe8TfU4oq+zVlkXfU9JC43YGoHUpc8+QkCFuHyHIYV6E+IFGc", text: `{
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
     "https://vc4qi.example/contexts/rm/1"
@@ -2973,7 +3082,13 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "VerifiableCredential",
     "RmAccreditation"
   ],
-  "issuer": "https://nab.vc4qi.example/controller",
+  "issuer": {
+    "id": "https://nab.vc4qi.example/controller",
+    "recognizedIn": {
+      "id": "https://global-aci.vc4qi.example/credentials/R",
+      "type": "RecognizedEntityCredential"
+    }
+  },
   "validFrom": "2025-01-01T00:00:00Z",
   "validUntil": "2030-01-01T00:00:00Z",
   "credentialSchema": {
@@ -3009,8 +3124,8 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   },
   "termsOfUse": [
     {
-      "type": "RmAuthorizationPolicy",
-      "authorizationCredential": {
+      "type": "RecognitionPolicy",
+      "recognitionCredential": {
         "id": "https://global-aci.vc4qi.example/credentials/R",
         "type": "RecognizedEntityCredential"
       }
@@ -3019,7 +3134,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   "relatedResource": [
     {
       "id": "https://global-aci.vc4qi.example/credentials/R",
-      "digestSRI": "sha384-Y5cnA4RvEj1gjiAwioFhsPSjIHl4ubIyYbujR8JFeB/ahXw82W3M3U6XGmEncX0R"
+      "digestSRI": "sha384-Pmh6reOXT1OndxiX2EnDFxuUb/646dRTb4FE2HFcfENaCdT7AH+DyYzhbq9HvuU5"
     }
   ],
   "credentialStatus": [
@@ -3044,10 +3159,10 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "proofPurpose": "assertionMethod",
     "verificationMethod": "https://nab.vc4qi.example/controller#key-1",
     "created": "2025-01-01T00:00:00Z",
-    "proofValue": "z2FgeRMxPsC7kCTWs3rjQLBBZbYYCekQBhiJY1M3vkogbNp6DajttbhfiivRZdKcLoW8Bvh9NaFnqnZwF7XmYGfns"
+    "proofValue": "zkv9HNq7TRLwTXcn1dt7UU3PdNr7wzBrSu4BrYPqRRTY55wkTdoppqqBe3efgikjPJDZxt2zVX29pNHXqUX2BGSc"
   }
 }
-` }, { uri: "https://nab.vc4qi.example/credentials/A2", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-wJwfOPm8RZkmiBdw2LsGTd+Z68p3fvov1uFo56RjrNwMjVIYzEpsJhYFc2rAlGn9", text: `{
+` }, { uri: "https://nab.vc4qi.example/credentials/A2", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-YS8EXAZaqyns235s4TwrlqHU8niV+wYmQ8tRw6vqu3ym5arDqDa4UZIzfHnwyVk7", text: `{
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
     "https://vc4qi.example/contexts/rm/1"
@@ -3057,7 +3172,13 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "VerifiableCredential",
     "RmAccreditation"
   ],
-  "issuer": "https://nab.vc4qi.example/controller",
+  "issuer": {
+    "id": "https://nab.vc4qi.example/controller",
+    "recognizedIn": {
+      "id": "https://global-aci.vc4qi.example/credentials/R",
+      "type": "RecognizedEntityCredential"
+    }
+  },
   "validFrom": "2025-01-01T00:00:00Z",
   "validUntil": "2030-01-01T00:00:00Z",
   "credentialSchema": {
@@ -3091,8 +3212,8 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   },
   "termsOfUse": [
     {
-      "type": "RmAuthorizationPolicy",
-      "authorizationCredential": {
+      "type": "RecognitionPolicy",
+      "recognitionCredential": {
         "id": "https://global-aci.vc4qi.example/credentials/R",
         "type": "RecognizedEntityCredential"
       }
@@ -3101,7 +3222,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   "relatedResource": [
     {
       "id": "https://global-aci.vc4qi.example/credentials/R",
-      "digestSRI": "sha384-Y5cnA4RvEj1gjiAwioFhsPSjIHl4ubIyYbujR8JFeB/ahXw82W3M3U6XGmEncX0R"
+      "digestSRI": "sha384-Pmh6reOXT1OndxiX2EnDFxuUb/646dRTb4FE2HFcfENaCdT7AH+DyYzhbq9HvuU5"
     }
   ],
   "credentialStatus": [
@@ -3126,10 +3247,10 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "proofPurpose": "assertionMethod",
     "verificationMethod": "https://nab.vc4qi.example/controller#key-1",
     "created": "2025-01-01T00:00:00Z",
-    "proofValue": "z5PWrpdqnjgZ2wfG6P8XxsmDGZKY2UpfDDYzj5hjX79E6A4kh28GPpqLXKRkkKod3J2TwU5mTrB328fhrSYWmCFUX"
+    "proofValue": "z613mWSkGdAJjZLKfkSSfQWMJ2ubFM2D2pk545oFYbTwhsijfzK3beBrqzK2gXnkwyC7MbtATRbjWbpSp9oKePp9b"
   }
 }
-` }, { uri: "https://nab.vc4qi.example/credentials/H", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-hWT3XPQG2SsEaSG8F3X8QRfkIApHzkXDe0ZZqmmnwAhly4878s3ZEknCKLMhjvDc", text: `{
+` }, { uri: "https://nab.vc4qi.example/credentials/H", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-HMu6oCJyK/ENQo80z4gAEVrp8xdfBFjd1mm3x6tVdD9Y4KwapyfpjrMZS63/scNN", text: `{
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
     "https://vc4qi.example/contexts/rm/1"
@@ -3139,7 +3260,13 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "VerifiableCredential",
     "RmLabAuthority"
   ],
-  "issuer": "https://nab.vc4qi.example/controller",
+  "issuer": {
+    "id": "https://nab.vc4qi.example/controller",
+    "recognizedIn": {
+      "id": "https://global-aci.vc4qi.example/credentials/R",
+      "type": "RecognizedEntityCredential"
+    }
+  },
   "validFrom": "2025-01-01T00:00:00Z",
   "validUntil": "2030-01-01T00:00:00Z",
   "credentialSchema": {
@@ -3166,8 +3293,8 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   },
   "termsOfUse": [
     {
-      "type": "RmAuthorizationPolicy",
-      "authorizationCredential": {
+      "type": "RecognitionPolicy",
+      "recognitionCredential": {
         "id": "https://global-aci.vc4qi.example/credentials/R",
         "type": "RecognizedEntityCredential"
       }
@@ -3176,7 +3303,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   "relatedResource": [
     {
       "id": "https://global-aci.vc4qi.example/credentials/R",
-      "digestSRI": "sha384-Y5cnA4RvEj1gjiAwioFhsPSjIHl4ubIyYbujR8JFeB/ahXw82W3M3U6XGmEncX0R"
+      "digestSRI": "sha384-Pmh6reOXT1OndxiX2EnDFxuUb/646dRTb4FE2HFcfENaCdT7AH+DyYzhbq9HvuU5"
     }
   ],
   "credentialStatus": {
@@ -3192,10 +3319,10 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "proofPurpose": "assertionMethod",
     "verificationMethod": "https://nab.vc4qi.example/controller#key-1",
     "created": "2025-01-01T00:00:00Z",
-    "proofValue": "z2zB9EbSBdLGxEoyB9MzDCQ3osgPCmActrM1UEeiznGY3Ehanw27cSFGXWfTcCs29mzoKtJ9jxNLiLu1nCHJzPnRk"
+    "proofValue": "z3x3LQqgzJ2WRqR8AxV5KVMLPRKhC478B2qd9UuTgFBHYMQXeGWG3KyG2HB3GcVnJjzsi5VB6xWEqH7JqVMe4EA2w"
   }
 }
-` }, { uri: "https://producer.vc4qi.example/credentials/O", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-SjmPo88jkHhXyRRTpW96K9A9nDOqOMz02RmqF5buMA0uGpp517HZjyqG3yje2yLc", text: `{
+` }, { uri: "https://producer.vc4qi.example/credentials/O", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-PVn7ouAOo2n+y0N+UPQSefONaIrGGNwkuvpiwZzMzm+9rkY77GJafHi+W7cuAcbC", text: `{
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
     "https://vc4qi.example/contexts/rm/1"
@@ -3239,7 +3366,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   },
   "termsOfUse": [
     {
-      "type": "RmAuthorizationPolicy",
+      "type": "IssuedUnderPolicy",
       "authorizationCredential": {
         "id": "https://nab.vc4qi.example/credentials/A",
         "type": "RmAccreditation"
@@ -3249,7 +3376,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   "relatedResource": [
     {
       "id": "https://nab.vc4qi.example/credentials/A",
-      "digestSRI": "sha384-FzTvma4Juny0IB/FVNGxqmVEE5BP0czNgDVI/6Mp3P0KAikxgc/rbcyoKtqC2DoN"
+      "digestSRI": "sha384-objAaDFZcTNY7BjZe8TfU4oq+zVlkXfU9JC43YGoHUpc8+QkCFuHyHIYV6E+IFGc"
     }
   ],
   "credentialStatus": {
@@ -3265,10 +3392,10 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "proofPurpose": "assertionMethod",
     "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
     "created": "2025-06-01T00:00:00Z",
-    "proofValue": "z2KD7JTekY2Wi4Nha86zSsZxHJS6hWSYExrKW2wmGZdbrsierMQZADcXQw7gWyw8vBdv533RfBukd11tU5UMavJY6"
+    "proofValue": "z2PEhYqnjdg3176KGY5xsdnMkTRS2Jjkn11FJPhHZibFVjBXvqzkRW5JPpRLKWsbGqQj55gQ9B7ZmsaVEiGwnYRqf"
   }
 }
-` }, { uri: "https://lab.vc4qi.example/credentials/S", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-6CI7/7PCp9w2yiVvGQglb2ETi9YxZ9pIsYaSqaBA2CbeVuB9TUXu3s7K6aW8XF1x", text: `{
+` }, { uri: "https://lab.vc4qi.example/credentials/S", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-fmVCrotMCY4xxwtFAI4aszfQYKws6Z8UbdsIrRkI8+k0avnog3k/EnfAvAdip9SQ", text: `{
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
     "https://vc4qi.example/contexts/rm/1"
@@ -3295,7 +3422,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   },
   "termsOfUse": [
     {
-      "type": "RmAuthorizationPolicy",
+      "type": "IssuedUnderPolicy",
       "authorizationCredential": {
         "id": "https://nab.vc4qi.example/credentials/H",
         "type": "RmLabAuthority"
@@ -3305,7 +3432,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   "relatedResource": [
     {
       "id": "https://nab.vc4qi.example/credentials/H",
-      "digestSRI": "sha384-hWT3XPQG2SsEaSG8F3X8QRfkIApHzkXDe0ZZqmmnwAhly4878s3ZEknCKLMhjvDc"
+      "digestSRI": "sha384-HMu6oCJyK/ENQo80z4gAEVrp8xdfBFjd1mm3x6tVdD9Y4KwapyfpjrMZS63/scNN"
     }
   ],
   "credentialStatus": {
@@ -3321,10 +3448,10 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "proofPurpose": "assertionMethod",
     "verificationMethod": "https://lab.vc4qi.example/controller#key-1",
     "created": "2026-01-15T00:00:00Z",
-    "proofValue": "znpc7fVKob4A3DYufVcFRuyfa3gE9XmJYsPuWnHmQiGdNGMFjHVKjqeGMkKqBc9EzNQ1boALGhUyDbfAozeM1iMS"
+    "proofValue": "z31DkGogzDKt72BeCB2cxKxyEDqBMhXyZzBw4zcccxBEQkAyX2KYqYTwuc7uKRGWMFsnKGfL5mXgx3zrcXkkkuB6D"
   }
 }
-` }, { uri: "https://producer.vc4qi.example/credentials/D178", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-G/s6nJbIX7CgrLjpX1pidIX2lMtk4djSBQozutszMi5pPb5qkyA7wl0kLQ99dOGj", text: `{
+` }, { uri: "https://producer.vc4qi.example/credentials/D178", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-5L2ODZisDC+Hjkn4MGOc++41IfzVf4pAOAALuwPVqKLnaIt6lUPtuP8zAtPxItnB", text: `{
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
     "https://vc4qi.example/contexts/rm/1"
@@ -3430,7 +3557,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   },
   "termsOfUse": [
     {
-      "type": "RmAuthorizationPolicy",
+      "type": "IssuedUnderPolicy",
       "authorizationCredential": {
         "id": "https://producer.vc4qi.example/credentials/O",
         "type": "RmOperationalScope"
@@ -3446,11 +3573,11 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   "relatedResource": [
     {
       "id": "https://producer.vc4qi.example/credentials/O",
-      "digestSRI": "sha384-SjmPo88jkHhXyRRTpW96K9A9nDOqOMz02RmqF5buMA0uGpp517HZjyqG3yje2yLc"
+      "digestSRI": "sha384-PVn7ouAOo2n+y0N+UPQSefONaIrGGNwkuvpiwZzMzm+9rkY77GJafHi+W7cuAcbC"
     },
     {
       "id": "https://lab.vc4qi.example/credentials/S",
-      "digestSRI": "sha384-6CI7/7PCp9w2yiVvGQglb2ETi9YxZ9pIsYaSqaBA2CbeVuB9TUXu3s7K6aW8XF1x"
+      "digestSRI": "sha384-fmVCrotMCY4xxwtFAI4aszfQYKws6Z8UbdsIrRkI8+k0avnog3k/EnfAvAdip9SQ"
     }
   ],
   "credentialStatus": {
@@ -3466,10 +3593,10 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "proofPurpose": "assertionMethod",
     "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
     "created": "2026-02-01T00:00:00Z",
-    "proofValue": "z5NQqzMufC5ccE2UG4fp4SahJWXMHcrMWYcLGN9eggZmz1iGyPjaEJs8PAmkpegEbtA2HUiRgsdrzyNMiqeQaSsLX"
+    "proofValue": "z2Jf3hXHN37YJAaXAq6qg6HoNpYQhKwxTazN3n8StEkviGuoXszaLZwANGUNRkrFcffPy8aX6R9FxAe5JsftGQRN3"
   }
 }
-` }, { uri: "https://producer.vc4qi.example/credentials/D197", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-b6Me/nldSs5s4mLGnPPkSx4nHvYl2oHecsP+UZrLWWGPJPN6tODlJrqKKN1pKQ82", text: `{
+` }, { uri: "https://producer.vc4qi.example/credentials/D197", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-w5Jy+2NEVcPgejwOnm2gj9SOD1CmimznWkhl5MKWdjX5vAYvGZJudqMUEpIImGP2", text: `{
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
     "https://vc4qi.example/contexts/rm/1"
@@ -3575,7 +3702,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   },
   "termsOfUse": [
     {
-      "type": "RmAuthorizationPolicy",
+      "type": "IssuedUnderPolicy",
       "authorizationCredential": {
         "id": "https://producer.vc4qi.example/credentials/O",
         "type": "RmOperationalScope"
@@ -3591,11 +3718,11 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   "relatedResource": [
     {
       "id": "https://producer.vc4qi.example/credentials/O",
-      "digestSRI": "sha384-SjmPo88jkHhXyRRTpW96K9A9nDOqOMz02RmqF5buMA0uGpp517HZjyqG3yje2yLc"
+      "digestSRI": "sha384-PVn7ouAOo2n+y0N+UPQSefONaIrGGNwkuvpiwZzMzm+9rkY77GJafHi+W7cuAcbC"
     },
     {
       "id": "https://lab.vc4qi.example/credentials/S",
-      "digestSRI": "sha384-6CI7/7PCp9w2yiVvGQglb2ETi9YxZ9pIsYaSqaBA2CbeVuB9TUXu3s7K6aW8XF1x"
+      "digestSRI": "sha384-fmVCrotMCY4xxwtFAI4aszfQYKws6Z8UbdsIrRkI8+k0avnog3k/EnfAvAdip9SQ"
     }
   ],
   "credentialStatus": {
@@ -3611,10 +3738,10 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "proofPurpose": "assertionMethod",
     "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
     "created": "2026-02-01T00:00:00Z",
-    "proofValue": "z4rDAih2DaDbbNRA1xK3Mbk8xBYKb4vH4pD5HaFq5VaTDbwxaLNJBvonCWRDiFRbs6MEkQ6VzaNKqEAcGnkpZ2L84"
+    "proofValue": "z5UAGFRar2kwFEXaxybELTrunCVoyhhpqbiqAWLYrs25grSP4VgR35wN7mfTxtyn5neGoLtTzXm9fBHoBC5RirZ4U"
   }
 }
-` }, { uri: "https://producer.vc4qi.example/credentials/D520", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-40yjRi3PZzEc3aedGkWxmuH5SyrQePAUAPT3F71q6I17+tVm8atwsM9hAU+DCelc", text: `{
+` }, { uri: "https://producer.vc4qi.example/credentials/D520", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", digestSRI: "sha384-OGxMRnqbeOOEZxfIP8AsTGUNKmae8v3Ks0fKnYE4I+3J4nfWeeno7KGpf+rMoYuB", text: `{
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
     "https://vc4qi.example/contexts/rm/1"
@@ -3720,7 +3847,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   },
   "termsOfUse": [
     {
-      "type": "RmAuthorizationPolicy",
+      "type": "IssuedUnderPolicy",
       "authorizationCredential": {
         "id": "https://producer.vc4qi.example/credentials/O",
         "type": "RmOperationalScope"
@@ -3736,11 +3863,11 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
   "relatedResource": [
     {
       "id": "https://producer.vc4qi.example/credentials/O",
-      "digestSRI": "sha384-SjmPo88jkHhXyRRTpW96K9A9nDOqOMz02RmqF5buMA0uGpp517HZjyqG3yje2yLc"
+      "digestSRI": "sha384-PVn7ouAOo2n+y0N+UPQSefONaIrGGNwkuvpiwZzMzm+9rkY77GJafHi+W7cuAcbC"
     },
     {
       "id": "https://lab.vc4qi.example/credentials/S",
-      "digestSRI": "sha384-6CI7/7PCp9w2yiVvGQglb2ETi9YxZ9pIsYaSqaBA2CbeVuB9TUXu3s7K6aW8XF1x"
+      "digestSRI": "sha384-fmVCrotMCY4xxwtFAI4aszfQYKws6Z8UbdsIrRkI8+k0avnog3k/EnfAvAdip9SQ"
     }
   ],
   "credentialStatus": {
@@ -3756,7 +3883,7 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
     "proofPurpose": "assertionMethod",
     "verificationMethod": "https://producer.vc4qi.example/controller#key-1",
     "created": "2026-02-01T00:00:00Z",
-    "proofValue": "z3r1vP4qEzVbbxg66aPExwxGA9zxm4Qi4xArETiV9mdH5vJ9aArxCqVA5xP5PBTJCyacn1vVPqN4RjWxN48csew7H"
+    "proofValue": "z8FBDP5GShNPvvGst4o4YCwmGmpe4dxqqXmbcTiDjv6jXvV2ECmndgoB25Y4Gsjk5worBPFVFJtFmkNtbQzCQdFZ"
   }
 }
 ` }], archive: [{ uri: "https://nab.vc4qi.example/status/1", mediaType: "application/vc", origin: "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)", version: "1", validFrom: "2026-01-01T00:00:00Z", validUntil: "2026-03-01T00:00:00Z", digestSRI: "sha384-7S4MCwH8AbLzHkOes8UlxgzJm7Gv8jCvFRvwaxcf8r66/x1t2Nm0c6CaWQcB2wjO", text: `{
@@ -10325,74 +10452,74 @@ const St = { rm: { manifest: { $schema: "./manifest.schema.json", id: "https://v
 }
 ` }] } };
 /*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-function zl(e) {
+function Ul(e) {
   return e instanceof Uint8Array || ArrayBuffer.isView(e) && e.constructor.name === "Uint8Array";
 }
-function na(e, ...t) {
-  if (!zl(e))
+function ra(e, ...t) {
+  if (!Ul(e))
     throw new Error("Uint8Array expected");
   if (t.length > 0 && !t.includes(e.length))
     throw new Error("Uint8Array expected of length " + t + ", got length=" + e.length);
 }
-function Ma(e, t = !0) {
+function La(e, t = !0) {
   if (e.destroyed)
     throw new Error("Hash instance has been destroyed");
   if (t && e.finished)
     throw new Error("Hash#digest() has already been called");
 }
 function Vl(e, t) {
-  na(e);
+  ra(e);
   const n = t.outputLen;
   if (e.length < n)
     throw new Error("digestInto() expects output buffer of length at least " + n);
 }
-function jn(...e) {
+function Pn(...e) {
   for (let t = 0; t < e.length; t++)
     e[t].fill(0);
 }
-function jr(e) {
+function $r(e) {
   return new DataView(e.buffer, e.byteOffset, e.byteLength);
 }
 function rt(e, t) {
   return e << 32 - t | e >>> t;
 }
-function Ul(e) {
+function Gl(e) {
   if (typeof e != "string")
     throw new Error("string expected");
   return new Uint8Array(new TextEncoder().encode(e));
 }
-function qd(e) {
-  return typeof e == "string" && (e = Ul(e)), na(e), e;
+function jd(e) {
+  return typeof e == "string" && (e = Gl(e)), ra(e), e;
 }
-class Gl {
+class Fl {
 }
-function ia(e) {
-  const t = (i) => e().update(qd(i)).digest(), n = e();
+function sa(e) {
+  const t = (i) => e().update(jd(i)).digest(), n = e();
   return t.outputLen = n.outputLen, t.blockLen = n.blockLen, t.create = () => e(), t;
 }
-function Fl(e, t, n, i) {
+function Bl(e, t, n, i) {
   if (typeof e.setBigUint64 == "function")
     return e.setBigUint64(t, n, i);
-  const o = BigInt(32), r = BigInt(4294967295), s = Number(n >> o & r), a = Number(n & r), c = i ? 4 : 0, d = i ? 0 : 4;
-  e.setUint32(t + c, s, i), e.setUint32(t + d, a, i);
-}
-function Bl(e, t, n) {
-  return e & t ^ ~e & n;
+  const o = BigInt(32), r = BigInt(4294967295), s = Number(n >> o & r), a = Number(n & r), c = i ? 4 : 0, l = i ? 0 : 4;
+  e.setUint32(t + c, s, i), e.setUint32(t + l, a, i);
 }
 function Zl(e, t, n) {
+  return e & t ^ ~e & n;
+}
+function Hl(e, t, n) {
   return e & t ^ e & n ^ t & n;
 }
-class Rd extends Gl {
+class $d extends Fl {
   constructor(t, n, i, o) {
-    super(), this.finished = !1, this.length = 0, this.pos = 0, this.destroyed = !1, this.blockLen = t, this.outputLen = n, this.padOffset = i, this.isLE = o, this.buffer = new Uint8Array(t), this.view = jr(this.buffer);
+    super(), this.finished = !1, this.length = 0, this.pos = 0, this.destroyed = !1, this.blockLen = t, this.outputLen = n, this.padOffset = i, this.isLE = o, this.buffer = new Uint8Array(t), this.view = $r(this.buffer);
   }
   update(t) {
-    Ma(this), t = qd(t), na(t);
+    La(this), t = jd(t), ra(t);
     const { view: n, buffer: i, blockLen: o } = this, r = t.length;
     for (let s = 0; s < r; ) {
       const a = Math.min(o - this.pos, r - s);
       if (a === o) {
-        const c = jr(t);
+        const c = $r(t);
         for (; o <= r - s; s += o)
           this.process(c, s);
         continue;
@@ -10402,21 +10529,21 @@ class Rd extends Gl {
     return this.length += t.length, this.roundClean(), this;
   }
   digestInto(t) {
-    Ma(this), Vl(t, this), this.finished = !0;
+    La(this), Vl(t, this), this.finished = !0;
     const { buffer: n, view: i, blockLen: o, isLE: r } = this;
     let { pos: s } = this;
-    n[s++] = 128, jn(this.buffer.subarray(s)), this.padOffset > o - s && (this.process(i, 0), s = 0);
+    n[s++] = 128, Pn(this.buffer.subarray(s)), this.padOffset > o - s && (this.process(i, 0), s = 0);
     for (let y = s; y < o; y++)
       n[y] = 0;
-    Fl(i, o - 8, BigInt(this.length * 8), r), this.process(i, 0);
-    const a = jr(t), c = this.outputLen;
+    Bl(i, o - 8, BigInt(this.length * 8), r), this.process(i, 0);
+    const a = $r(t), c = this.outputLen;
     if (c % 4)
       throw new Error("_sha2: outputLen should be aligned to 32bit");
-    const d = c / 4, p = this.get();
-    if (d > p.length)
+    const l = c / 4, u = this.get();
+    if (l > u.length)
       throw new Error("_sha2: outputLen bigger than state");
-    for (let y = 0; y < d; y++)
-      a.setUint32(4 * y, p[y], r);
+    for (let y = 0; y < l; y++)
+      a.setUint32(4 * y, u[y], r);
   }
   digest() {
     const { buffer: t, outputLen: n } = this;
@@ -10433,7 +10560,7 @@ class Rd extends Gl {
     return this._cloneInto();
   }
 }
-const qt = /* @__PURE__ */ Uint32Array.from([
+const Rt = /* @__PURE__ */ Uint32Array.from([
   1779033703,
   3144134277,
   1013904242,
@@ -10442,7 +10569,7 @@ const qt = /* @__PURE__ */ Uint32Array.from([
   2600822924,
   528734635,
   1541459225
-]), Ae = /* @__PURE__ */ Uint32Array.from([
+]), Ie = /* @__PURE__ */ Uint32Array.from([
   3418070365,
   3238371032,
   1654270250,
@@ -10459,7 +10586,7 @@ const qt = /* @__PURE__ */ Uint32Array.from([
   1694076839,
   1203062813,
   3204075428
-]), Ie = /* @__PURE__ */ Uint32Array.from([
+]), Ae = /* @__PURE__ */ Uint32Array.from([
   1779033703,
   4089235720,
   3144134277,
@@ -10476,25 +10603,25 @@ const qt = /* @__PURE__ */ Uint32Array.from([
   4215389547,
   1541459225,
   327033209
-]), zn = /* @__PURE__ */ BigInt(2 ** 32 - 1), Oa = /* @__PURE__ */ BigInt(32);
-function Hl(e, t = !1) {
-  return t ? { h: Number(e & zn), l: Number(e >> Oa & zn) } : { h: Number(e >> Oa & zn) | 0, l: Number(e & zn) | 0 };
-}
+]), Vn = /* @__PURE__ */ BigInt(2 ** 32 - 1), Na = /* @__PURE__ */ BigInt(32);
 function Jl(e, t = !1) {
+  return t ? { h: Number(e & Vn), l: Number(e >> Na & Vn) } : { h: Number(e >> Na & Vn) | 0, l: Number(e & Vn) | 0 };
+}
+function Kl(e, t = !1) {
   const n = e.length;
   let i = new Uint32Array(n), o = new Uint32Array(n);
   for (let r = 0; r < n; r++) {
-    const { h: s, l: a } = Hl(e[r], t);
+    const { h: s, l: a } = Jl(e[r], t);
     [i[r], o[r]] = [s, a];
   }
   return [i, o];
 }
-const La = (e, t, n) => e >>> n, Na = (e, t, n) => e << 32 - n | t >>> n, Qt = (e, t, n) => e >>> n | t << 32 - n, Wt = (e, t, n) => e << 32 - n | t >>> n, Vn = (e, t, n) => e << 64 - n | t >>> n - 32, Un = (e, t, n) => e >>> n - 32 | t << 64 - n;
+const Da = (e, t, n) => e >>> n, za = (e, t, n) => e << 32 - n | t >>> n, Wt = (e, t, n) => e >>> n | t << 32 - n, Xt = (e, t, n) => e << 32 - n | t >>> n, Gn = (e, t, n) => e << 64 - n | t >>> n - 32, Fn = (e, t, n) => e >>> n - 32 | t << 64 - n;
 function mt(e, t, n, i) {
   const o = (t >>> 0) + (i >>> 0);
   return { h: e + n + (o / 2 ** 32 | 0) | 0, l: o | 0 };
 }
-const Kl = (e, t, n) => (e >>> 0) + (t >>> 0) + (n >>> 0), Ql = (e, t, n, i) => t + n + i + (e / 2 ** 32 | 0) | 0, Wl = (e, t, n, i) => (e >>> 0) + (t >>> 0) + (n >>> 0) + (i >>> 0), Xl = (e, t, n, i, o) => t + n + i + o + (e / 2 ** 32 | 0) | 0, Yl = (e, t, n, i, o) => (e >>> 0) + (t >>> 0) + (n >>> 0) + (i >>> 0) + (o >>> 0), eu = (e, t, n, i, o, r) => t + n + i + o + r + (e / 2 ** 32 | 0) | 0, tu = /* @__PURE__ */ Uint32Array.from([
+const Ql = (e, t, n) => (e >>> 0) + (t >>> 0) + (n >>> 0), Wl = (e, t, n, i) => t + n + i + (e / 2 ** 32 | 0) | 0, Xl = (e, t, n, i) => (e >>> 0) + (t >>> 0) + (n >>> 0) + (i >>> 0), Yl = (e, t, n, i, o) => t + n + i + o + (e / 2 ** 32 | 0) | 0, eu = (e, t, n, i, o) => (e >>> 0) + (t >>> 0) + (n >>> 0) + (i >>> 0) + (o >>> 0), tu = (e, t, n, i, o, r) => t + n + i + o + r + (e / 2 ** 32 | 0) | 0, nu = /* @__PURE__ */ Uint32Array.from([
   1116352408,
   1899447441,
   3049323471,
@@ -10559,10 +10686,10 @@ const Kl = (e, t, n) => (e >>> 0) + (t >>> 0) + (n >>> 0), Ql = (e, t, n, i) => 
   2756734187,
   3204031479,
   3329325298
-]), Rt = /* @__PURE__ */ new Uint32Array(64);
-class nu extends Rd {
+]), jt = /* @__PURE__ */ new Uint32Array(64);
+class iu extends $d {
   constructor(t = 32) {
-    super(64, t, 8, !1), this.A = qt[0] | 0, this.B = qt[1] | 0, this.C = qt[2] | 0, this.D = qt[3] | 0, this.E = qt[4] | 0, this.F = qt[5] | 0, this.G = qt[6] | 0, this.H = qt[7] | 0;
+    super(64, t, 8, !1), this.A = Rt[0] | 0, this.B = Rt[1] | 0, this.C = Rt[2] | 0, this.D = Rt[3] | 0, this.E = Rt[4] | 0, this.F = Rt[5] | 0, this.G = Rt[6] | 0, this.H = Rt[7] | 0;
   }
   get() {
     const { A: t, B: n, C: i, D: o, E: r, F: s, G: a, H: c } = this;
@@ -10574,26 +10701,26 @@ class nu extends Rd {
   }
   process(t, n) {
     for (let y = 0; y < 16; y++, n += 4)
-      Rt[y] = t.getUint32(n, !1);
+      jt[y] = t.getUint32(n, !1);
     for (let y = 16; y < 64; y++) {
-      const f = Rt[y - 15], h = Rt[y - 2], w = rt(f, 7) ^ rt(f, 18) ^ f >>> 3, x = rt(h, 17) ^ rt(h, 19) ^ h >>> 10;
-      Rt[y] = x + Rt[y - 7] + w + Rt[y - 16] | 0;
+      const f = jt[y - 15], h = jt[y - 2], x = rt(f, 7) ^ rt(f, 18) ^ f >>> 3, w = rt(h, 17) ^ rt(h, 19) ^ h >>> 10;
+      jt[y] = w + jt[y - 7] + x + jt[y - 16] | 0;
     }
-    let { A: i, B: o, C: r, D: s, E: a, F: c, G: d, H: p } = this;
+    let { A: i, B: o, C: r, D: s, E: a, F: c, G: l, H: u } = this;
     for (let y = 0; y < 64; y++) {
-      const f = rt(a, 6) ^ rt(a, 11) ^ rt(a, 25), h = p + f + Bl(a, c, d) + tu[y] + Rt[y] | 0, x = (rt(i, 2) ^ rt(i, 13) ^ rt(i, 22)) + Zl(i, o, r) | 0;
-      p = d, d = c, c = a, a = s + h | 0, s = r, r = o, o = i, i = h + x | 0;
+      const f = rt(a, 6) ^ rt(a, 11) ^ rt(a, 25), h = u + f + Zl(a, c, l) + nu[y] + jt[y] | 0, w = (rt(i, 2) ^ rt(i, 13) ^ rt(i, 22)) + Hl(i, o, r) | 0;
+      u = l, l = c, c = a, a = s + h | 0, s = r, r = o, o = i, i = h + w | 0;
     }
-    i = i + this.A | 0, o = o + this.B | 0, r = r + this.C | 0, s = s + this.D | 0, a = a + this.E | 0, c = c + this.F | 0, d = d + this.G | 0, p = p + this.H | 0, this.set(i, o, r, s, a, c, d, p);
+    i = i + this.A | 0, o = o + this.B | 0, r = r + this.C | 0, s = s + this.D | 0, a = a + this.E | 0, c = c + this.F | 0, l = l + this.G | 0, u = u + this.H | 0, this.set(i, o, r, s, a, c, l, u);
   }
   roundClean() {
-    jn(Rt);
+    Pn(jt);
   }
   destroy() {
-    this.set(0, 0, 0, 0, 0, 0, 0, 0), jn(this.buffer);
+    this.set(0, 0, 0, 0, 0, 0, 0, 0), Pn(this.buffer);
   }
 }
-const jd = Jl([
+const Pd = Kl([
   "0x428a2f98d728ae22",
   "0x7137449123ef65cd",
   "0xb5c0fbcfec4d3b2f",
@@ -10674,50 +10801,50 @@ const jd = Jl([
   "0x597f299cfc657e2a",
   "0x5fcb6fab3ad6faec",
   "0x6c44198c4a475817"
-].map((e) => BigInt(e))), iu = jd[0], ru = jd[1], jt = /* @__PURE__ */ new Uint32Array(80), $t = /* @__PURE__ */ new Uint32Array(80);
-class $d extends Rd {
+].map((e) => BigInt(e))), ru = Pd[0], su = Pd[1], $t = /* @__PURE__ */ new Uint32Array(80), Pt = /* @__PURE__ */ new Uint32Array(80);
+class _d extends $d {
   constructor(t = 64) {
-    super(128, t, 16, !1), this.Ah = Ie[0] | 0, this.Al = Ie[1] | 0, this.Bh = Ie[2] | 0, this.Bl = Ie[3] | 0, this.Ch = Ie[4] | 0, this.Cl = Ie[5] | 0, this.Dh = Ie[6] | 0, this.Dl = Ie[7] | 0, this.Eh = Ie[8] | 0, this.El = Ie[9] | 0, this.Fh = Ie[10] | 0, this.Fl = Ie[11] | 0, this.Gh = Ie[12] | 0, this.Gl = Ie[13] | 0, this.Hh = Ie[14] | 0, this.Hl = Ie[15] | 0;
+    super(128, t, 16, !1), this.Ah = Ae[0] | 0, this.Al = Ae[1] | 0, this.Bh = Ae[2] | 0, this.Bl = Ae[3] | 0, this.Ch = Ae[4] | 0, this.Cl = Ae[5] | 0, this.Dh = Ae[6] | 0, this.Dl = Ae[7] | 0, this.Eh = Ae[8] | 0, this.El = Ae[9] | 0, this.Fh = Ae[10] | 0, this.Fl = Ae[11] | 0, this.Gh = Ae[12] | 0, this.Gl = Ae[13] | 0, this.Hh = Ae[14] | 0, this.Hl = Ae[15] | 0;
   }
   // prettier-ignore
   get() {
-    const { Ah: t, Al: n, Bh: i, Bl: o, Ch: r, Cl: s, Dh: a, Dl: c, Eh: d, El: p, Fh: y, Fl: f, Gh: h, Gl: w, Hh: x, Hl: v } = this;
-    return [t, n, i, o, r, s, a, c, d, p, y, f, h, w, x, v];
+    const { Ah: t, Al: n, Bh: i, Bl: o, Ch: r, Cl: s, Dh: a, Dl: c, Eh: l, El: u, Fh: y, Fl: f, Gh: h, Gl: x, Hh: w, Hl: v } = this;
+    return [t, n, i, o, r, s, a, c, l, u, y, f, h, x, w, v];
   }
   // prettier-ignore
-  set(t, n, i, o, r, s, a, c, d, p, y, f, h, w, x, v) {
-    this.Ah = t | 0, this.Al = n | 0, this.Bh = i | 0, this.Bl = o | 0, this.Ch = r | 0, this.Cl = s | 0, this.Dh = a | 0, this.Dl = c | 0, this.Eh = d | 0, this.El = p | 0, this.Fh = y | 0, this.Fl = f | 0, this.Gh = h | 0, this.Gl = w | 0, this.Hh = x | 0, this.Hl = v | 0;
+  set(t, n, i, o, r, s, a, c, l, u, y, f, h, x, w, v) {
+    this.Ah = t | 0, this.Al = n | 0, this.Bh = i | 0, this.Bl = o | 0, this.Ch = r | 0, this.Cl = s | 0, this.Dh = a | 0, this.Dl = c | 0, this.Eh = l | 0, this.El = u | 0, this.Fh = y | 0, this.Fl = f | 0, this.Gh = h | 0, this.Gl = x | 0, this.Hh = w | 0, this.Hl = v | 0;
   }
   process(t, n) {
     for (let m = 0; m < 16; m++, n += 4)
-      jt[m] = t.getUint32(n), $t[m] = t.getUint32(n += 4);
+      $t[m] = t.getUint32(n), Pt[m] = t.getUint32(n += 4);
     for (let m = 16; m < 80; m++) {
-      const l = jt[m - 15] | 0, u = $t[m - 15] | 0, b = Qt(l, u, 1) ^ Qt(l, u, 8) ^ La(l, u, 7), S = Wt(l, u, 1) ^ Wt(l, u, 8) ^ Na(l, u, 7), I = jt[m - 2] | 0, P = $t[m - 2] | 0, R = Qt(I, P, 19) ^ Vn(I, P, 61) ^ La(I, P, 6), E = Wt(I, P, 19) ^ Un(I, P, 61) ^ Na(I, P, 6), k = Wl(S, E, $t[m - 7], $t[m - 16]), M = Xl(k, b, R, jt[m - 7], jt[m - 16]);
-      jt[m] = M | 0, $t[m] = k | 0;
+      const d = $t[m - 15] | 0, p = Pt[m - 15] | 0, b = Wt(d, p, 1) ^ Wt(d, p, 8) ^ Da(d, p, 7), S = Xt(d, p, 1) ^ Xt(d, p, 8) ^ za(d, p, 7), A = $t[m - 2] | 0, P = Pt[m - 2] | 0, R = Wt(A, P, 19) ^ Gn(A, P, 61) ^ Da(A, P, 6), E = Xt(A, P, 19) ^ Fn(A, P, 61) ^ za(A, P, 6), k = Xl(S, E, Pt[m - 7], Pt[m - 16]), M = Yl(k, b, R, $t[m - 7], $t[m - 16]);
+      $t[m] = M | 0, Pt[m] = k | 0;
     }
-    let { Ah: i, Al: o, Bh: r, Bl: s, Ch: a, Cl: c, Dh: d, Dl: p, Eh: y, El: f, Fh: h, Fl: w, Gh: x, Gl: v, Hh: A, Hl: g } = this;
+    let { Ah: i, Al: o, Bh: r, Bl: s, Ch: a, Cl: c, Dh: l, Dl: u, Eh: y, El: f, Fh: h, Fl: x, Gh: w, Gl: v, Hh: I, Hl: g } = this;
     for (let m = 0; m < 80; m++) {
-      const l = Qt(y, f, 14) ^ Qt(y, f, 18) ^ Vn(y, f, 41), u = Wt(y, f, 14) ^ Wt(y, f, 18) ^ Un(y, f, 41), b = y & h ^ ~y & x, S = f & w ^ ~f & v, I = Yl(g, u, S, ru[m], $t[m]), P = eu(I, A, l, b, iu[m], jt[m]), R = I | 0, E = Qt(i, o, 28) ^ Vn(i, o, 34) ^ Vn(i, o, 39), k = Wt(i, o, 28) ^ Un(i, o, 34) ^ Un(i, o, 39), M = i & r ^ i & a ^ r & a, j = o & s ^ o & c ^ s & c;
-      A = x | 0, g = v | 0, x = h | 0, v = w | 0, h = y | 0, w = f | 0, { h: y, l: f } = mt(d | 0, p | 0, P | 0, R | 0), d = a | 0, p = c | 0, a = r | 0, c = s | 0, r = i | 0, s = o | 0;
-      const N = Kl(R, k, j);
-      i = Ql(N, P, E, M), o = N | 0;
+      const d = Wt(y, f, 14) ^ Wt(y, f, 18) ^ Gn(y, f, 41), p = Xt(y, f, 14) ^ Xt(y, f, 18) ^ Fn(y, f, 41), b = y & h ^ ~y & w, S = f & x ^ ~f & v, A = eu(g, p, S, su[m], Pt[m]), P = tu(A, I, d, b, ru[m], $t[m]), R = A | 0, E = Wt(i, o, 28) ^ Gn(i, o, 34) ^ Gn(i, o, 39), k = Xt(i, o, 28) ^ Fn(i, o, 34) ^ Fn(i, o, 39), M = i & r ^ i & a ^ r & a, j = o & s ^ o & c ^ s & c;
+      I = w | 0, g = v | 0, w = h | 0, v = x | 0, h = y | 0, x = f | 0, { h: y, l: f } = mt(l | 0, u | 0, P | 0, R | 0), l = a | 0, u = c | 0, a = r | 0, c = s | 0, r = i | 0, s = o | 0;
+      const N = Ql(R, k, j);
+      i = Wl(N, P, E, M), o = N | 0;
     }
-    ({ h: i, l: o } = mt(this.Ah | 0, this.Al | 0, i | 0, o | 0)), { h: r, l: s } = mt(this.Bh | 0, this.Bl | 0, r | 0, s | 0), { h: a, l: c } = mt(this.Ch | 0, this.Cl | 0, a | 0, c | 0), { h: d, l: p } = mt(this.Dh | 0, this.Dl | 0, d | 0, p | 0), { h: y, l: f } = mt(this.Eh | 0, this.El | 0, y | 0, f | 0), { h, l: w } = mt(this.Fh | 0, this.Fl | 0, h | 0, w | 0), { h: x, l: v } = mt(this.Gh | 0, this.Gl | 0, x | 0, v | 0), { h: A, l: g } = mt(this.Hh | 0, this.Hl | 0, A | 0, g | 0), this.set(i, o, r, s, a, c, d, p, y, f, h, w, x, v, A, g);
+    ({ h: i, l: o } = mt(this.Ah | 0, this.Al | 0, i | 0, o | 0)), { h: r, l: s } = mt(this.Bh | 0, this.Bl | 0, r | 0, s | 0), { h: a, l: c } = mt(this.Ch | 0, this.Cl | 0, a | 0, c | 0), { h: l, l: u } = mt(this.Dh | 0, this.Dl | 0, l | 0, u | 0), { h: y, l: f } = mt(this.Eh | 0, this.El | 0, y | 0, f | 0), { h, l: x } = mt(this.Fh | 0, this.Fl | 0, h | 0, x | 0), { h: w, l: v } = mt(this.Gh | 0, this.Gl | 0, w | 0, v | 0), { h: I, l: g } = mt(this.Hh | 0, this.Hl | 0, I | 0, g | 0), this.set(i, o, r, s, a, c, l, u, y, f, h, x, w, v, I, g);
   }
   roundClean() {
-    jn(jt, $t);
+    Pn($t, Pt);
   }
   destroy() {
-    jn(this.buffer), this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    Pn(this.buffer), this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   }
 }
-class su extends $d {
+class au extends _d {
   constructor() {
-    super(48), this.Ah = Ae[0] | 0, this.Al = Ae[1] | 0, this.Bh = Ae[2] | 0, this.Bl = Ae[3] | 0, this.Ch = Ae[4] | 0, this.Cl = Ae[5] | 0, this.Dh = Ae[6] | 0, this.Dl = Ae[7] | 0, this.Eh = Ae[8] | 0, this.El = Ae[9] | 0, this.Fh = Ae[10] | 0, this.Fl = Ae[11] | 0, this.Gh = Ae[12] | 0, this.Gl = Ae[13] | 0, this.Hh = Ae[14] | 0, this.Hl = Ae[15] | 0;
+    super(48), this.Ah = Ie[0] | 0, this.Al = Ie[1] | 0, this.Bh = Ie[2] | 0, this.Bl = Ie[3] | 0, this.Ch = Ie[4] | 0, this.Cl = Ie[5] | 0, this.Dh = Ie[6] | 0, this.Dl = Ie[7] | 0, this.Eh = Ie[8] | 0, this.El = Ie[9] | 0, this.Fh = Ie[10] | 0, this.Fl = Ie[11] | 0, this.Gh = Ie[12] | 0, this.Gl = Ie[13] | 0, this.Hh = Ie[14] | 0, this.Hl = Ie[15] | 0;
   }
 }
-const au = /* @__PURE__ */ ia(() => new nu()), ou = /* @__PURE__ */ ia(() => new $d()), cu = /* @__PURE__ */ ia(() => new su()), Pd = au, du = ou, lu = cu;
-class uu {
+const ou = /* @__PURE__ */ sa(() => new iu()), cu = /* @__PURE__ */ sa(() => new _d()), du = /* @__PURE__ */ sa(() => new au()), Td = ou, lu = cu, uu = du;
+class pu {
   constructor(t) {
     ht(this, "_chunks", []);
     ht(this, "_algo");
@@ -10733,25 +10860,25 @@ class uu {
     for (const s of this._chunks)
       i.set(s, o), o += s.length;
     let r;
-    return this._algo === "sha384" ? r = lu(i) : this._algo === "sha512" ? r = du(i) : r = Pd(i), t === "base64" ? btoa(String.fromCharCode(...r)) : t === "hex" ? Array.from(r).map((s) => s.toString(16).padStart(2, "0")).join("") : r;
+    return this._algo === "sha384" ? r = uu(i) : this._algo === "sha512" ? r = lu(i) : r = Td(i), t === "base64" ? btoa(String.fromCharCode(...r)) : t === "hex" ? Array.from(r).map((s) => s.toString(16).padStart(2, "0")).join("") : r;
   }
 }
-function Ls(e) {
-  return new uu(e);
+function Ns(e) {
+  return new pu(e);
 }
-class Ce extends Error {
+class Ee extends Error {
   constructor(t, n) {
     super(n), this.code = t, this.name = "CatalogError";
   }
 }
-function pu(e, t) {
+function fu(e, t) {
   if (e.trim().length === 0)
-    throw new Ce("INVALID_RESOURCE", `${t} must be nonempty.`);
+    throw new Ee("INVALID_RESOURCE", `${t} must be nonempty.`);
 }
-function ar(e) {
-  return `sha384-${Ls("sha384").update(e).digest("base64")}`;
+function or(e) {
+  return `sha384-${Ns("sha384").update(e).digest("base64")}`;
 }
-function Da(e) {
+function Ua(e) {
   const t = /* @__PURE__ */ new Map();
   return {
     get resolved() {
@@ -10762,69 +10889,69 @@ function Da(e) {
         try {
           t.set(n, e.resolve(n));
         } catch (o) {
-          if (!(o instanceof Ce)) throw o;
+          if (!(o instanceof Ee)) throw o;
           t.set(n, o);
         }
       const i = t.get(n);
-      if (i instanceof Ce) throw i;
+      if (i instanceof Ee) throw i;
       return { ...i, bytes: Uint8Array.from(i.bytes) };
     }
   };
 }
-var cn;
-class _d {
+var dn;
+class Cd {
   constructor(t) {
-    Dn(this, cn, /* @__PURE__ */ new Map());
+    Un(this, dn, /* @__PURE__ */ new Map());
     for (const n of t) {
       for (const [o, r] of Object.entries({
         uri: n.uri,
         mediaType: n.mediaType,
         origin: n.origin,
         version: n.version
-      })) pu(r, o);
-      if (it(this, cn).has(n.uri))
-        throw new Ce("DUPLICATE_RESOURCE", `Duplicate static resource: ${n.uri}`);
-      const i = ar(n.bytes);
+      })) fu(r, o);
+      if (it(this, dn).has(n.uri))
+        throw new Ee("DUPLICATE_RESOURCE", `Duplicate static resource: ${n.uri}`);
+      const i = or(n.bytes);
       if (i !== n.digestSRI)
-        throw new Ce(
+        throw new Ee(
           "INTEGRITY_MISMATCH",
           `Static resource ${n.uri} has ${i}; expected ${n.digestSRI}.`
         );
-      it(this, cn).set(n.uri, { ...n, bytes: Uint8Array.from(n.bytes) });
+      it(this, dn).set(n.uri, { ...n, bytes: Uint8Array.from(n.bytes) });
     }
   }
   openSession(t) {
     if (!Number.isSafeInteger(t.maxResources) || t.maxResources <= 0 || !Number.isSafeInteger(t.maxBytes) || t.maxBytes <= 0)
-      throw new Ce("INVALID_RESOURCE", "Catalog budgets must be positive safe integers.");
-    return new fu(it(this, cn), Object.freeze({ ...t }));
+      throw new Ee("INVALID_RESOURCE", "Catalog budgets must be positive safe integers.");
+    return new hu(it(this, dn), Object.freeze({ ...t }));
   }
 }
-cn = new WeakMap();
-var dn, ln;
-class fu {
+dn = new WeakMap();
+var ln, un;
+class hu {
   constructor(t, n) {
-    Dn(this, dn, 0);
-    Dn(this, ln, 0);
+    Un(this, ln, 0);
+    Un(this, un, 0);
     this.resources = t, this.budget = n;
   }
   get usage() {
-    return Object.freeze({ resources: it(this, dn), bytes: it(this, ln) });
+    return Object.freeze({ resources: it(this, ln), bytes: it(this, un) });
   }
   resolve(t) {
     const n = this.resources.get(t);
     if (!n)
-      throw new Ce("RESOURCE_NOT_FOUND", `Static resource is not installed: ${t}`);
-    if (it(this, dn) + 1 > this.budget.maxResources || it(this, ln) + n.bytes.byteLength > this.budget.maxBytes)
-      throw new Ce("RESOURCE_BUDGET_EXCEEDED", `Static resource budget exceeded at ${t}.`);
-    return Rr(this, dn, it(this, dn) + 1), Rr(this, ln, it(this, ln) + n.bytes.byteLength), { ...n, bytes: Uint8Array.from(n.bytes) };
+      throw new Ee("RESOURCE_NOT_FOUND", `Static resource is not installed: ${t}`);
+    if (it(this, ln) + 1 > this.budget.maxResources || it(this, un) + n.bytes.byteLength > this.budget.maxBytes)
+      throw new Ee("RESOURCE_BUDGET_EXCEEDED", `Static resource budget exceeded at ${t}.`);
+    return jr(this, ln, it(this, ln) + 1), jr(this, un, it(this, un) + n.bytes.byteLength), { ...n, bytes: Uint8Array.from(n.bytes) };
   }
 }
-dn = new WeakMap(), ln = new WeakMap();
-function Td(e) {
+ln = new WeakMap(), un = new WeakMap();
+function Ed(e) {
   return async (t) => {
     const n = e.resolve(t);
     if (n.mediaType !== "application/json" && n.mediaType !== "application/ld+json" && !n.mediaType.endsWith("+json"))
-      throw new Ce(
+      throw new Ee(
         "INVALID_RESOURCE",
         `JSON-LD resource ${t} has unsupported media type ${n.mediaType}.`
       );
@@ -10833,7 +10960,7 @@ function Td(e) {
       const o = new TextDecoder("utf-8", { fatal: !0 }).decode(n.bytes);
       i = JSON.parse(o);
     } catch (o) {
-      throw new Ce(
+      throw new Ee(
         "INVALID_RESOURCE",
         `JSON-LD resource ${t} is not valid UTF-8 JSON: ${String(o)}.`
       );
@@ -10841,7 +10968,7 @@ function Td(e) {
     return { contextUrl: null, document: i, documentUrl: t };
   };
 }
-const za = "https://vc4qi.example/bindings/rm/1", $r = [
+const Va = "https://vc4qi.example/bindings/rm/1", Pr = [
   "$schema",
   "id",
   "version",
@@ -10860,33 +10987,33 @@ const za = "https://vc4qi.example/bindings/rm/1", $r = [
   "supportAndDisclosure",
   "evidenceAndExclusions"
 ];
-function Gn(e) {
+function Bn(e) {
   return e !== null && typeof e == "object" && !Array.isArray(e);
 }
-function Cd(e) {
+function kd(e) {
   if (e !== null && typeof e == "object") {
-    for (const t of Object.values(e)) Cd(t);
+    for (const t of Object.values(e)) kd(t);
     Object.freeze(e);
   }
   return e;
 }
-function hu(e) {
-  if (!Gn(e)) throw new TypeError("Binding manifest must be an object.");
-  if (Object.keys(e).length !== $r.length || $r.some((n) => !Object.hasOwn(e, n)))
+function mu(e) {
+  if (!Bn(e)) throw new TypeError("Binding manifest must be an object.");
+  if (Object.keys(e).length !== Pr.length || Pr.some((n) => !Object.hasOwn(e, n)))
     throw new TypeError("Binding manifest must contain exactly the supported top-level categories.");
   if (typeof e.id != "string" || e.id.length === 0 || typeof e.version != "string" || e.version.length === 0 || e.status !== "experimental" && e.status !== "production")
     throw new TypeError("Binding manifest identity, version, or status is invalid.");
-  if (!Gn(e.installation) || e.installation.status !== "incomplete" && e.installation.status !== "installable" || typeof e.installation.reason != "string" || e.installation.reason.length === 0 || !Array.isArray(e.installation.pendingResources) || e.installation.pendingResources.some((n) => typeof n != "string" || n.length === 0))
+  if (!Bn(e.installation) || e.installation.status !== "incomplete" && e.installation.status !== "installable" || typeof e.installation.reason != "string" || e.installation.reason.length === 0 || !Array.isArray(e.installation.pendingResources) || e.installation.pendingResources.some((n) => typeof n != "string" || n.length === 0))
     throw new TypeError("Binding manifest installation state is invalid.");
-  if (!Array.isArray(e.factMappings) || e.factMappings.length === 0 || e.factMappings.some((n) => !Gn(n)))
+  if (!Array.isArray(e.factMappings) || e.factMappings.length === 0 || e.factMappings.some((n) => !Bn(n)))
     throw new TypeError("Binding manifest factMappings must be a nonempty object array.");
-  for (const n of $r.slice(4))
-    if (!(n === "installation" || n === "factMappings") && (!Gn(e[n]) || Object.keys(e[n]).length === 0))
+  for (const n of Pr.slice(4))
+    if (!(n === "installation" || n === "factMappings") && (!Bn(e[n]) || Object.keys(e[n]).length === 0))
       throw new TypeError(`Binding manifest ${n} must be a nonempty object.`);
-  return Cd(structuredClone(e));
+  return kd(structuredClone(e));
 }
-const Zt = "https://www.w3.org/ns/credentials/v2", mu = "https://vc4qi.example/contexts/rm/1", Dt = "https://vc4qi.example/schemas/rm/1/", yu = "https://vc4qi.example/contexts/recognized-entities/draft-20261104", Ed = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz", Ns = BigInt(58);
-function gu(e) {
+const Ht = "https://www.w3.org/ns/credentials/v2", yu = "https://vc4qi.example/contexts/rm/1", Ut = "https://vc4qi.example/schemas/rm/1/", gu = "https://vc4qi.example/contexts/recognized-entities/draft-20261112", Md = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz", Ds = BigInt(58);
+function vu(e) {
   if (e.length === 0) return "";
   let t = 0;
   for (const o of e) {
@@ -10898,12 +11025,12 @@ function gu(e) {
     n = n * 256n + BigInt(o);
   const i = [];
   for (; n > 0n; ) {
-    const o = Number(n % Ns);
-    n = n / Ns, i.unshift(o);
+    const o = Number(n % Ds);
+    n = n / Ds, i.unshift(o);
   }
-  return "1".repeat(t) + i.map((o) => Ed[o]).join("");
+  return "1".repeat(t) + i.map((o) => Md[o]).join("");
 }
-function vu(e) {
+function bu(e) {
   if (e.length === 0) return new Uint8Array(0);
   let t = 0;
   for (const s of e) {
@@ -10912,9 +11039,9 @@ function vu(e) {
   }
   let n = 0n;
   for (const s of e) {
-    const a = Ed.indexOf(s);
+    const a = Md.indexOf(s);
     if (a === -1) throw new Error(`Invalid base58btc character: '${s}'`);
-    n = n * Ns + BigInt(a);
+    n = n * Ds + BigInt(a);
   }
   const i = [];
   for (; n > 0n; )
@@ -10923,26 +11050,26 @@ function vu(e) {
   const o = Uint8Array.from(i), r = new Uint8Array(t + o.length);
   return r.set(o, t), r;
 }
-function bu(e) {
-  return "z" + gu(e);
+function wu(e) {
+  return "z" + vu(e);
 }
-function ra(e) {
+function aa(e) {
   if (!e.startsWith("z"))
     throw new Error(`Expected multibase base58btc prefix 'z', got '${e[0]}'`);
-  return vu(e.slice(1));
+  return bu(e.slice(1));
 }
-const Va = [237, 1], wu = ["revoked", "expires"];
+const Ga = [237, 1], xu = ["revoked", "expires"];
 function ve(e, t, n, i = {}) {
   return Object.freeze({ state: e, code: t, reason: n, ...i });
 }
-function Bi(e) {
+function Hi(e) {
   return e !== null && typeof e == "object" && !Array.isArray(e);
 }
-function xu(e) {
-  if (typeof e == "string" && e.length > 0) return e;
-  if (Bi(e) && typeof e.id == "string" && e.id.length > 0) return e.id;
-}
 function Su(e) {
+  if (typeof e == "string" && e.length > 0) return e;
+  if (Hi(e) && typeof e.id == "string" && e.id.length > 0) return e.id;
+}
+function Iu(e) {
   const t = e.indexOf("#");
   if (!(t <= 0 || t === e.length - 1)) {
     try {
@@ -10958,20 +11085,20 @@ function Au(e) {
   if (typeof e != "string" || !e.startsWith("z")) return;
   let t;
   try {
-    t = ra(e);
+    t = aa(e);
   } catch {
     return;
   }
-  if (!(t.length !== 34 || t[0] !== Va[0] || t[1] !== Va[1]))
+  if (!(t.length !== 34 || t[0] !== Ga[0] || t[1] !== Ga[1]))
     return t.slice(2);
 }
-function Iu(e, t, n) {
-  const i = xu(e);
+function qu(e, t, n) {
+  const i = Su(e);
   if (i === void 0)
     return ve("not_established", "ISSUER_MISSING", "The credential has no issuer identifier.");
   if (typeof t != "string")
     return ve("contradicted", "MALFORMED_METHOD", "The proof names no verification method.");
-  const o = Su(t);
+  const o = Iu(t);
   if (o === void 0)
     return ve(
       "contradicted",
@@ -10989,7 +11116,7 @@ function Iu(e, t, n) {
     const f = n.resolve(o);
     s = f.digestSRI, r = JSON.parse(new TextDecoder("utf-8", { fatal: !0 }).decode(f.bytes));
   } catch (f) {
-    return f instanceof Ce ? ve(
+    return f instanceof Ee ? ve(
       "not_established",
       "CONTROLLER_NOT_INSTALLED",
       `Controller document ${o} is not available: ${f.code}.`
@@ -10999,7 +11126,7 @@ function Iu(e, t, n) {
       `Controller document ${o} is not valid UTF-8 JSON.`
     );
   }
-  if (!Bi(r))
+  if (!Hi(r))
     return ve(
       "not_established",
       "INVALID_CONTROLLER_DOCUMENT",
@@ -11011,7 +11138,7 @@ function Iu(e, t, n) {
       "CONTROLLER_ID_MISMATCH",
       `Controller document at ${o} identifies itself as ${String(r.id)}.`
     );
-  const c = (Array.isArray(r.verificationMethod) ? r.verificationMethod : []).filter((f) => Bi(f) && f.id === t);
+  const c = (Array.isArray(r.verificationMethod) ? r.verificationMethod : []).filter((f) => Hi(f) && f.id === t);
   if (c.length === 0)
     return ve(
       "contradicted",
@@ -11024,27 +11151,27 @@ function Iu(e, t, n) {
       "METHOD_AMBIGUOUS",
       `${t} is listed more than once in its controller document.`
     );
-  const d = c[0];
-  if (d.type !== "Multikey")
+  const l = c[0];
+  if (l.type !== "Multikey")
     return ve(
       "not_established",
       "METHOD_TYPE_UNSUPPORTED",
-      `Verification method type ${String(d.type)} is not supported; Multikey is required.`
+      `Verification method type ${String(l.type)} is not supported; Multikey is required.`
     );
-  if (d.controller !== o)
+  if (l.controller !== o)
     return ve(
       "contradicted",
       "METHOD_CONTROLLER_MISMATCH",
-      `${t} is controlled by ${String(d.controller)}, not ${o}.`
+      `${t} is controlled by ${String(l.controller)}, not ${o}.`
     );
-  if (wu.some((f) => Object.hasOwn(d, f)))
+  if (xu.some((f) => Object.hasOwn(l, f)))
     return ve(
       "not_established",
       "METHOD_LIFECYCLE_UNSUPPORTED",
       "Key revocation/expiry metadata is not supported in the initial slice."
     );
-  const p = Au(d.publicKeyMultibase);
-  if (p === void 0)
+  const u = Au(l.publicKeyMultibase);
+  if (u === void 0)
     return ve(
       "contradicted",
       "INVALID_PUBLIC_KEY",
@@ -11055,8 +11182,8 @@ function Iu(e, t, n) {
     "established",
     "AUTHORIZED",
     `${t} is the issuer's Ed25519 assertion key.`,
-    { publicKey: p, verificationMethod: t, controllerDocumentDigest: s }
-  ) : y.some((f) => Bi(f) && f.id === t) ? ve(
+    { publicKey: u, verificationMethod: t, controllerDocumentDigest: s }
+  ) : y.some((f) => Hi(f) && f.id === t) ? ve(
     "not_established",
     "EMBEDDED_METHOD_UNSUPPORTED",
     "Embedded assertionMethod entries are not supported; a reference is required."
@@ -11066,43 +11193,43 @@ function Iu(e, t, n) {
     `${t} is not authorized for assertionMethod.`
   );
 }
-const Ua = ["accept-successor", "require-extension", "none"], qu = ["value-at-most-limit", "value-plus-expanded-uncertainty-at-most-limit"], Ru = /^(0|[1-9][0-9]*)(\.[0-9]+)?$/;
+const Fa = ["accept-successor", "require-extension", "none"], Ru = ["value-at-most-limit", "value-plus-expanded-uncertainty-at-most-limit"], ju = /^(0|[1-9][0-9]*)(\.[0-9]+)?$/;
 function Je(e) {
   return e !== null && typeof e == "object" && !Array.isArray(e);
 }
-const ze = (e) => typeof e == "string" && e.trim().length > 0, Pr = (e) => Array.isArray(e) && e.length > 0 && e.every(ze) && new Set(e).size === e.length;
-function or(e) {
+const ze = (e) => typeof e == "string" && e.trim().length > 0, _r = (e) => Array.isArray(e) && e.length > 0 && e.every(ze) && new Set(e).size === e.length;
+function cr(e) {
   if (!Je(e) || !ze(e.id) || !ze(e.version) || e.status !== "experimental" && e.status !== "production")
     throw new TypeError("Reliance profile identity, version or status is invalid.");
   const t = e.binding;
   if (!Je(t) || !ze(t.id) || !ze(t.version))
     throw new TypeError("Reliance profile must name exactly one binding and version.");
-  if (!Array.isArray(e.trustAnchors) || e.trustAnchors.some((d) => !Je(d) || !ze(d.id) || !Pr(d.purposes)))
+  if (!Array.isArray(e.trustAnchors) || e.trustAnchors.some((l) => !Je(l) || !ze(l.id) || !_r(l.purposes)))
     throw new TypeError("Reliance profile trustAnchors must list anchors with explicit purposes.");
   const n = e.authority;
-  if (!Je(n) || !Pr(n.certificateRoutes) || !Array.isArray(n.globalRestrictions) || !n.globalRestrictions.every(ze) || !Number.isSafeInteger(n.maxRoutes) || n.maxRoutes <= 0)
+  if (!Je(n) || !_r(n.certificateRoutes) || !Array.isArray(n.globalRestrictions) || !n.globalRestrictions.every(ze) || !Number.isSafeInteger(n.maxRoutes) || n.maxRoutes <= 0)
     throw new TypeError("Reliance profile authority needs certificateRoutes, globalRestrictions and a positive maxRoutes.");
   const i = e.credentialStatus;
-  if (!Je(i) || typeof i.required != "boolean" || !Pr(i.purposes) || !Number.isSafeInteger(i.maxAgeSeconds) || i.maxAgeSeconds <= 0)
+  if (!Je(i) || typeof i.required != "boolean" || !_r(i.purposes) || !Number.isSafeInteger(i.maxAgeSeconds) || i.maxAgeSeconds <= 0)
     throw new TypeError("Reliance profile credentialStatus needs required, purposes and a positive maxAgeSeconds.");
   const o = e.mapping;
-  if (!Je(o) || !Ua.includes(o.methodSuccession))
-    throw new TypeError(`Reliance profile mapping.methodSuccession must be one of ${Ua.join(", ")}.`);
+  if (!Je(o) || !Fa.includes(o.methodSuccession))
+    throw new TypeError(`Reliance profile mapping.methodSuccession must be one of ${Fa.join(", ")}.`);
   const r = e.conformity;
-  if (!Je(r) || !Array.isArray(r.requirements) || !Array.isArray(r.decisionRules) || r.requirements.some((d) => !Je(d) || !ze(d.id) || !ze(d.propertyIri) || !ze(d.quantityKindIri) || !Je(d.upperLimit) || typeof d.upperLimit.value != "string" || !Ru.test(d.upperLimit.value) || !ze(d.upperLimit.unit)) || r.decisionRules.some((d) => !Je(d) || !ze(d.id) || !qu.includes(d.acceptWhen)))
+  if (!Je(r) || !Array.isArray(r.requirements) || !Array.isArray(r.decisionRules) || r.requirements.some((l) => !Je(l) || !ze(l.id) || !ze(l.propertyIri) || !ze(l.quantityKindIri) || !Je(l.upperLimit) || typeof l.upperLimit.value != "string" || !ju.test(l.upperLimit.value) || !ze(l.upperLimit.unit)) || r.decisionRules.some((l) => !Je(l) || !ze(l.id) || !Ru.includes(l.acceptWhen)))
     throw new TypeError("Reliance profile conformity needs requirements (id, propertyIri, quantityKindIri, upperLimit) and decisionRules (id, acceptWhen).");
   if (e.bindingRules !== void 0 && !Je(e.bindingRules))
     throw new TypeError("Reliance profile bindingRules must be an object when present.");
-  const s = r.requirements, a = r.decisionRules, c = [...s.map((d) => d.id), ...a.map((d) => d.id)];
+  const s = r.requirements, a = r.decisionRules, c = [...s.map((l) => l.id), ...a.map((l) => l.id)];
   if (new Set(c).size !== c.length) throw new TypeError("Reliance profile conformity ids must be unique.");
   return Object.freeze({
     id: e.id,
     version: e.version,
     status: e.status,
     binding: Object.freeze({ id: t.id, version: t.version }),
-    trustAnchors: Object.freeze(e.trustAnchors.map((d) => Object.freeze({
-      id: d.id,
-      purposes: Object.freeze([...d.purposes])
+    trustAnchors: Object.freeze(e.trustAnchors.map((l) => Object.freeze({
+      id: l.id,
+      purposes: Object.freeze([...l.purposes])
     }))),
     authority: Object.freeze({
       certificateRoutes: Object.freeze([...n.certificateRoutes]),
@@ -11116,13 +11243,13 @@ function or(e) {
     }),
     mapping: Object.freeze({ methodSuccession: o.methodSuccession }),
     conformity: Object.freeze({
-      requirements: Object.freeze(s.map((d) => Object.freeze({
-        id: d.id,
-        propertyIri: d.propertyIri,
-        quantityKindIri: d.quantityKindIri,
-        upperLimit: Object.freeze({ value: d.upperLimit.value, unit: d.upperLimit.unit })
+      requirements: Object.freeze(s.map((l) => Object.freeze({
+        id: l.id,
+        propertyIri: l.propertyIri,
+        quantityKindIri: l.quantityKindIri,
+        upperLimit: Object.freeze({ value: l.upperLimit.value, unit: l.upperLimit.unit })
       }))),
-      decisionRules: Object.freeze(a.map((d) => Object.freeze({ id: d.id, acceptWhen: d.acceptWhen })))
+      decisionRules: Object.freeze(a.map((l) => Object.freeze({ id: l.id, acceptWhen: l.acceptWhen })))
     }),
     bindingRules: Object.freeze({ ...e.bindingRules })
   });
@@ -11131,28 +11258,28 @@ function ue(e, t) {
   if (e.trim().length === 0)
     throw new TypeError(`${t} must be a non-empty string.`);
 }
-function _r(e, t) {
+function Tr(e, t) {
   if (new Set(e).size !== e.length)
     throw new TypeError(`${t} must not contain duplicates.`);
 }
-function Ds(e, t) {
+function zs(e, t) {
   const n = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(Z|[+-]\d{2}:\d{2})$/.exec(e);
   if (!n)
     throw new TypeError(`${t} must be an ISO 8601 date-time with an explicit offset.`);
-  const [, i, o, r, s, a, c] = n, d = n[7], p = Number(i), y = Number(o), f = Number(r), h = Number(s), w = Number(a), x = Number(c), v = /* @__PURE__ */ new Date(0);
-  v.setUTCFullYear(p, y - 1, f), v.setUTCHours(0, 0, 0, 0);
-  const A = v.getUTCFullYear() !== p || v.getUTCMonth() !== y - 1 || v.getUTCDate() !== f, g = d === "Z" ? null : /^([+-])(\d{2}):(\d{2})$/.exec(d), m = g !== null && (Number(g[2]) > 23 || Number(g[3]) > 59);
-  if (p < 1 || A || h > 23 || w > 59 || x > 59 || m || !Number.isFinite(Date.parse(e)))
+  const [, i, o, r, s, a, c] = n, l = n[7], u = Number(i), y = Number(o), f = Number(r), h = Number(s), x = Number(a), w = Number(c), v = /* @__PURE__ */ new Date(0);
+  v.setUTCFullYear(u, y - 1, f), v.setUTCHours(0, 0, 0, 0);
+  const I = v.getUTCFullYear() !== u || v.getUTCMonth() !== y - 1 || v.getUTCDate() !== f, g = l === "Z" ? null : /^([+-])(\d{2}):(\d{2})$/.exec(l), m = g !== null && (Number(g[2]) > 23 || Number(g[3]) > 59);
+  if (u < 1 || I || h > 23 || x > 59 || w > 59 || m || !Number.isFinite(Date.parse(e)))
     throw new TypeError(`${t} must be a valid ISO 8601 date-time.`);
 }
-function Tr(e, t) {
+function Cr(e, t) {
   if (!Number.isSafeInteger(e) || e <= 0)
     throw new TypeError(`${t} must be a positive safe integer.`);
 }
-function Qi(e, t) {
+function Wi(e, t) {
   ue(e.id, `${t}.id`), ue(e.version, `${t}.version`);
 }
-function Wi(e) {
+function Xi(e) {
   return Object.freeze({ id: e.id, version: e.version });
 }
 function An(e) {
@@ -11168,15 +11295,15 @@ function An(e) {
     sourcePointers: Object.freeze([...e.sourcePointers])
   });
 }
-function ju(e) {
-  if (ue(e.requestId, "requestId"), ue(e.targetId, "targetId"), ue(e.purpose, "purpose"), ue(e.trustConfigId, "trustConfigId"), Qi(e.binding, "binding"), Qi(e.profile, "profile"), Ds(e.evaluationTime, "evaluationTime"), Ds(e.activityTime, "activityTime"), e.selectedClaims.length === 0)
+function $u(e) {
+  if (ue(e.requestId, "requestId"), ue(e.targetId, "targetId"), ue(e.purpose, "purpose"), ue(e.trustConfigId, "trustConfigId"), Wi(e.binding, "binding"), Wi(e.profile, "profile"), zs(e.evaluationTime, "evaluationTime"), zs(e.activityTime, "activityTime"), e.selectedClaims.length === 0)
     throw new TypeError("selectedClaims must contain at least one claim.");
   for (const [r, s] of e.selectedClaims.entries())
     ue(s.id, `selectedClaims[${r}].id`), ue(s.sourcePointer, `selectedClaims[${r}].sourcePointer`);
-  _r(e.selectedClaims.map((r) => r.id), "selected claim IDs"), _r(e.selectedClaims.map((r) => r.sourcePointer), "selected claim source pointers");
+  Tr(e.selectedClaims.map((r) => r.id), "selected claim IDs"), Tr(e.selectedClaims.map((r) => r.sourcePointer), "selected claim source pointers");
   for (const [r, s] of e.suppliedEvidence.entries())
     ue(s, `suppliedEvidence[${r}]`);
-  _r(e.suppliedEvidence, "suppliedEvidence"), Tr(e.resolverLimits.maxResources, "resolverLimits.maxResources"), Tr(e.resolverLimits.maxDepth, "resolverLimits.maxDepth"), Tr(e.resolverLimits.maxBytes, "resolverLimits.maxBytes"), e.conformity && (ue(e.conformity.requirementId, "conformity.requirementId"), ue(e.conformity.decisionRuleId, "conformity.decisionRuleId"));
+  Tr(e.suppliedEvidence, "suppliedEvidence"), Cr(e.resolverLimits.maxResources, "resolverLimits.maxResources"), Cr(e.resolverLimits.maxDepth, "resolverLimits.maxDepth"), Cr(e.resolverLimits.maxBytes, "resolverLimits.maxBytes"), e.conformity && (ue(e.conformity.requirementId, "conformity.requirementId"), ue(e.conformity.decisionRuleId, "conformity.decisionRuleId"));
   const t = Object.freeze(e.selectedClaims.map((r) => Object.freeze({
     id: r.id,
     sourcePointer: r.sourcePointer
@@ -11186,8 +11313,8 @@ function ju(e) {
     targetId: e.targetId,
     selectedClaims: t,
     purpose: e.purpose,
-    binding: Wi(e.binding),
-    profile: Wi(e.profile),
+    binding: Xi(e.binding),
+    profile: Xi(e.profile),
     trustConfigId: e.trustConfigId,
     evaluationTime: e.evaluationTime,
     activityTime: e.activityTime,
@@ -11196,7 +11323,7 @@ function ju(e) {
     ...o ? { conformity: o } : {}
   });
 }
-function $u(e, t) {
+function Pu(e, t) {
   if (!Number.isInteger(e.gate) || e.gate < 0 || e.gate > 6)
     throw new TypeError(`trace[${t}].gate must be a canonical gate number 0-6.`);
   ue(e.nodeUse, `trace[${t}].nodeUse`), ue(e.predicate, `trace[${t}].predicate`), ue(e.reason, `trace[${t}].reason`);
@@ -11216,15 +11343,15 @@ function $u(e, t) {
     sources: Object.freeze([...e.sources])
   });
 }
-function Pu(e, t) {
+function _u(e, t) {
   if (ue(e.uri, `resources[${t}].uri`), !/^sha384-[A-Za-z0-9+/]{64}$/.test(e.digestSRI))
     throw new TypeError(`resources[${t}].digestSRI must be a SHA-384 SRI value.`);
   if (!["static", "artifact", "status"].includes(e.kind) || !["catalog", "supplied"].includes(e.source))
     throw new TypeError(`resources[${t}] has an unsupported kind or source.`);
-  return Ds(e.observedAt, `resources[${t}].observedAt`), Object.freeze({ ...e });
+  return zs(e.observedAt, `resources[${t}].observedAt`), Object.freeze({ ...e });
 }
-function cr(e) {
-  if (ue(e.requestId, "requestId"), ue(e.targetId, "targetId"), Qi(e.binding, "binding"), Qi(e.profile, "profile"), e.artifactVerification.forEach((t, n) => ue(t.artifactId, `artifactVerification[${n}].artifactId`)), e.authorization.forEach((t, n) => ue(t.claimId, `authorization[${n}].claimId`)), e.support.forEach((t, n) => ue(t.obligationId, `support[${n}].obligationId`)), e.conformity.requested)
+function dr(e) {
+  if (ue(e.requestId, "requestId"), ue(e.targetId, "targetId"), Wi(e.binding, "binding"), Wi(e.profile, "profile"), e.artifactVerification.forEach((t, n) => ue(t.artifactId, `artifactVerification[${n}].artifactId`)), e.authorization.forEach((t, n) => ue(t.claimId, `authorization[${n}].claimId`)), e.support.forEach((t, n) => ue(t.obligationId, `support[${n}].obligationId`)), e.conformity.requested)
     ue(e.conformity.requirementId, "conformity.requirementId"), ue(e.conformity.decisionRuleId, "conformity.decisionRuleId");
   else if (e.conformity.requested !== !1 || e.conformity.execution !== "not_run")
     throw new TypeError("Unrequested conformity must have execution state not_run.");
@@ -11233,8 +11360,8 @@ function cr(e) {
   return Object.freeze({
     requestId: e.requestId,
     targetId: e.targetId,
-    binding: Wi(e.binding),
-    profile: Wi(e.profile),
+    binding: Xi(e.binding),
+    profile: Xi(e.profile),
     artifactVerification: Object.freeze(e.artifactVerification.map((t) => An({
       ...t
     }))),
@@ -11248,12 +11375,12 @@ function cr(e) {
     }))),
     conformity: e.conformity.requested ? An({ ...e.conformity }) : Object.freeze({ requested: !1, execution: "not_run" }),
     decision: e.decision,
-    trace: Object.freeze((e.trace ?? []).map($u)),
-    resources: Object.freeze((e.resources ?? []).map(Pu)),
+    trace: Object.freeze((e.trace ?? []).map(Pu)),
+    resources: Object.freeze((e.resources ?? []).map(_u)),
     limitations: Object.freeze([...e.limitations ?? []])
   });
 }
-function kd(e, t) {
+function Od(e, t) {
   if (e.length === 0)
     throw new TypeError(`${t} requires at least one semantic state.`);
   for (const n of e)
@@ -11261,20 +11388,20 @@ function kd(e, t) {
       throw new TypeError(`${t} received unsupported semantic state: ${String(n)}.`);
 }
 function xe(e) {
-  return kd(e, "semanticAnd"), e.includes("contradicted") ? "contradicted" : e.every((t) => t === "established") ? "established" : "not_established";
+  return Od(e, "semanticAnd"), e.includes("contradicted") ? "contradicted" : e.every((t) => t === "established") ? "established" : "not_established";
 }
-function fn(e) {
-  return kd(e, "semanticOr"), e.includes("established") ? "established" : e.every((t) => t === "contradicted") ? "contradicted" : "not_established";
+function hn(e) {
+  return Od(e, "semanticOr"), e.includes("established") ? "established" : e.every((t) => t === "contradicted") ? "contradicted" : "not_established";
 }
-function sa(e) {
+function oa(e) {
   const t = xe(e);
   return t === "established" ? "accept" : t === "contradicted" ? "reject" : "not_established";
 }
-var Ga = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {};
-function aa(e) {
+var Ba = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {};
+function ca(e) {
   return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default") ? e.default : e;
 }
-function _u(e) {
+function Tu(e) {
   if (Object.prototype.hasOwnProperty.call(e, "__esModule")) return e;
   var t = e.default;
   if (typeof t == "function") {
@@ -11293,9 +11420,9 @@ function _u(e) {
     });
   }), n;
 }
-var Fn = { exports: {} }, Cr = {}, yt = {}, zt = {}, Er = {}, kr = {}, Mr = {}, Fa;
-function Xi() {
-  return Fa || (Fa = 1, (function(e) {
+var Zn = { exports: {} }, Er = {}, yt = {}, Vt = {}, kr = {}, Mr = {}, Or = {}, Za;
+function Yi() {
+  return Za || (Za = 1, (function(e) {
     Object.defineProperty(e, "__esModule", { value: !0 }), e.regexpCode = e.getEsmExportName = e.getProperty = e.safeStringify = e.stringify = e.strConcat = e.addCodeArg = e.str = e._ = e.nil = e._Code = e.Name = e.IDENTIFIER = e._CodeOrName = void 0;
     class t {
     }
@@ -11332,98 +11459,98 @@ function Xi() {
       }
       get str() {
         var g;
-        return (g = this._str) !== null && g !== void 0 ? g : this._str = this._items.reduce((m, l) => `${m}${l}`, "");
+        return (g = this._str) !== null && g !== void 0 ? g : this._str = this._items.reduce((m, d) => `${m}${d}`, "");
       }
       get names() {
         var g;
-        return (g = this._names) !== null && g !== void 0 ? g : this._names = this._items.reduce((m, l) => (l instanceof n && (m[l.str] = (m[l.str] || 0) + 1), m), {});
+        return (g = this._names) !== null && g !== void 0 ? g : this._names = this._items.reduce((m, d) => (d instanceof n && (m[d.str] = (m[d.str] || 0) + 1), m), {});
       }
     }
     e._Code = i, e.nil = new i("");
-    function o(A, ...g) {
-      const m = [A[0]];
-      let l = 0;
-      for (; l < g.length; )
-        a(m, g[l]), m.push(A[++l]);
+    function o(I, ...g) {
+      const m = [I[0]];
+      let d = 0;
+      for (; d < g.length; )
+        a(m, g[d]), m.push(I[++d]);
       return new i(m);
     }
     e._ = o;
     const r = new i("+");
-    function s(A, ...g) {
-      const m = [h(A[0])];
-      let l = 0;
-      for (; l < g.length; )
-        m.push(r), a(m, g[l]), m.push(r, h(A[++l]));
+    function s(I, ...g) {
+      const m = [h(I[0])];
+      let d = 0;
+      for (; d < g.length; )
+        m.push(r), a(m, g[d]), m.push(r, h(I[++d]));
       return c(m), new i(m);
     }
     e.str = s;
-    function a(A, g) {
-      g instanceof i ? A.push(...g._items) : g instanceof n ? A.push(g) : A.push(y(g));
+    function a(I, g) {
+      g instanceof i ? I.push(...g._items) : g instanceof n ? I.push(g) : I.push(y(g));
     }
     e.addCodeArg = a;
-    function c(A) {
+    function c(I) {
       let g = 1;
-      for (; g < A.length - 1; ) {
-        if (A[g] === r) {
-          const m = d(A[g - 1], A[g + 1]);
+      for (; g < I.length - 1; ) {
+        if (I[g] === r) {
+          const m = l(I[g - 1], I[g + 1]);
           if (m !== void 0) {
-            A.splice(g - 1, 3, m);
+            I.splice(g - 1, 3, m);
             continue;
           }
-          A[g++] = "+";
+          I[g++] = "+";
         }
         g++;
       }
     }
-    function d(A, g) {
+    function l(I, g) {
       if (g === '""')
-        return A;
-      if (A === '""')
+        return I;
+      if (I === '""')
         return g;
-      if (typeof A == "string")
-        return g instanceof n || A[A.length - 1] !== '"' ? void 0 : typeof g != "string" ? `${A.slice(0, -1)}${g}"` : g[0] === '"' ? A.slice(0, -1) + g.slice(1) : void 0;
-      if (typeof g == "string" && g[0] === '"' && !(A instanceof n))
-        return `"${A}${g.slice(1)}`;
+      if (typeof I == "string")
+        return g instanceof n || I[I.length - 1] !== '"' ? void 0 : typeof g != "string" ? `${I.slice(0, -1)}${g}"` : g[0] === '"' ? I.slice(0, -1) + g.slice(1) : void 0;
+      if (typeof g == "string" && g[0] === '"' && !(I instanceof n))
+        return `"${I}${g.slice(1)}`;
     }
-    function p(A, g) {
-      return g.emptyStr() ? A : A.emptyStr() ? g : s`${A}${g}`;
+    function u(I, g) {
+      return g.emptyStr() ? I : I.emptyStr() ? g : s`${I}${g}`;
     }
-    e.strConcat = p;
-    function y(A) {
-      return typeof A == "number" || typeof A == "boolean" || A === null ? A : h(Array.isArray(A) ? A.join(",") : A);
+    e.strConcat = u;
+    function y(I) {
+      return typeof I == "number" || typeof I == "boolean" || I === null ? I : h(Array.isArray(I) ? I.join(",") : I);
     }
-    function f(A) {
-      return new i(h(A));
+    function f(I) {
+      return new i(h(I));
     }
     e.stringify = f;
-    function h(A) {
-      return JSON.stringify(A).replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
+    function h(I) {
+      return JSON.stringify(I).replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
     }
     e.safeStringify = h;
-    function w(A) {
-      return typeof A == "string" && e.IDENTIFIER.test(A) ? new i(`.${A}`) : o`[${A}]`;
+    function x(I) {
+      return typeof I == "string" && e.IDENTIFIER.test(I) ? new i(`.${I}`) : o`[${I}]`;
     }
-    e.getProperty = w;
-    function x(A) {
-      if (typeof A == "string" && e.IDENTIFIER.test(A))
-        return new i(`${A}`);
-      throw new Error(`CodeGen: invalid export name: ${A}, use explicit $id name mapping`);
+    e.getProperty = x;
+    function w(I) {
+      if (typeof I == "string" && e.IDENTIFIER.test(I))
+        return new i(`${I}`);
+      throw new Error(`CodeGen: invalid export name: ${I}, use explicit $id name mapping`);
     }
-    e.getEsmExportName = x;
-    function v(A) {
-      return new i(A.toString());
+    e.getEsmExportName = w;
+    function v(I) {
+      return new i(I.toString());
     }
     e.regexpCode = v;
-  })(Mr)), Mr;
+  })(Or)), Or;
 }
-var Or = {}, Ba;
-function Za() {
-  return Ba || (Ba = 1, (function(e) {
+var Lr = {}, Ha;
+function Ja() {
+  return Ha || (Ha = 1, (function(e) {
     Object.defineProperty(e, "__esModule", { value: !0 }), e.ValueScope = e.ValueScopeName = e.Scope = e.varKinds = e.UsedValueState = void 0;
-    const t = /* @__PURE__ */ Xi();
+    const t = /* @__PURE__ */ Yi();
     class n extends Error {
-      constructor(d) {
-        super(`CodeGen: "code" for ${d} not defined`), this.value = d.value;
+      constructor(l) {
+        super(`CodeGen: "code" for ${l} not defined`), this.value = l.value;
       }
     }
     var i;
@@ -11435,116 +11562,116 @@ function Za() {
       var: new t.Name("var")
     };
     class o {
-      constructor({ prefixes: d, parent: p } = {}) {
-        this._names = {}, this._prefixes = d, this._parent = p;
+      constructor({ prefixes: l, parent: u } = {}) {
+        this._names = {}, this._prefixes = l, this._parent = u;
       }
-      toName(d) {
-        return d instanceof t.Name ? d : this.name(d);
+      toName(l) {
+        return l instanceof t.Name ? l : this.name(l);
       }
-      name(d) {
-        return new t.Name(this._newName(d));
+      name(l) {
+        return new t.Name(this._newName(l));
       }
-      _newName(d) {
-        const p = this._names[d] || this._nameGroup(d);
-        return `${d}${p.index++}`;
+      _newName(l) {
+        const u = this._names[l] || this._nameGroup(l);
+        return `${l}${u.index++}`;
       }
-      _nameGroup(d) {
-        var p, y;
-        if (!((y = (p = this._parent) === null || p === void 0 ? void 0 : p._prefixes) === null || y === void 0) && y.has(d) || this._prefixes && !this._prefixes.has(d))
-          throw new Error(`CodeGen: prefix "${d}" is not allowed in this scope`);
-        return this._names[d] = { prefix: d, index: 0 };
+      _nameGroup(l) {
+        var u, y;
+        if (!((y = (u = this._parent) === null || u === void 0 ? void 0 : u._prefixes) === null || y === void 0) && y.has(l) || this._prefixes && !this._prefixes.has(l))
+          throw new Error(`CodeGen: prefix "${l}" is not allowed in this scope`);
+        return this._names[l] = { prefix: l, index: 0 };
       }
     }
     e.Scope = o;
     class r extends t.Name {
-      constructor(d, p) {
-        super(p), this.prefix = d;
+      constructor(l, u) {
+        super(u), this.prefix = l;
       }
-      setValue(d, { property: p, itemIndex: y }) {
-        this.value = d, this.scopePath = (0, t._)`.${new t.Name(p)}[${y}]`;
+      setValue(l, { property: u, itemIndex: y }) {
+        this.value = l, this.scopePath = (0, t._)`.${new t.Name(u)}[${y}]`;
       }
     }
     e.ValueScopeName = r;
     const s = (0, t._)`\n`;
     class a extends o {
-      constructor(d) {
-        super(d), this._values = {}, this._scope = d.scope, this.opts = { ...d, _n: d.lines ? s : t.nil };
+      constructor(l) {
+        super(l), this._values = {}, this._scope = l.scope, this.opts = { ...l, _n: l.lines ? s : t.nil };
       }
       get() {
         return this._scope;
       }
-      name(d) {
-        return new r(d, this._newName(d));
+      name(l) {
+        return new r(l, this._newName(l));
       }
-      value(d, p) {
+      value(l, u) {
         var y;
-        if (p.ref === void 0)
+        if (u.ref === void 0)
           throw new Error("CodeGen: ref must be passed in value");
-        const f = this.toName(d), { prefix: h } = f, w = (y = p.key) !== null && y !== void 0 ? y : p.ref;
-        let x = this._values[h];
-        if (x) {
-          const g = x.get(w);
+        const f = this.toName(l), { prefix: h } = f, x = (y = u.key) !== null && y !== void 0 ? y : u.ref;
+        let w = this._values[h];
+        if (w) {
+          const g = w.get(x);
           if (g)
             return g;
         } else
-          x = this._values[h] = /* @__PURE__ */ new Map();
-        x.set(w, f);
-        const v = this._scope[h] || (this._scope[h] = []), A = v.length;
-        return v[A] = p.ref, f.setValue(p, { property: h, itemIndex: A }), f;
+          w = this._values[h] = /* @__PURE__ */ new Map();
+        w.set(x, f);
+        const v = this._scope[h] || (this._scope[h] = []), I = v.length;
+        return v[I] = u.ref, f.setValue(u, { property: h, itemIndex: I }), f;
       }
-      getValue(d, p) {
-        const y = this._values[d];
+      getValue(l, u) {
+        const y = this._values[l];
         if (y)
-          return y.get(p);
+          return y.get(u);
       }
-      scopeRefs(d, p = this._values) {
-        return this._reduceValues(p, (y) => {
+      scopeRefs(l, u = this._values) {
+        return this._reduceValues(u, (y) => {
           if (y.scopePath === void 0)
             throw new Error(`CodeGen: name "${y}" has no value`);
-          return (0, t._)`${d}${y.scopePath}`;
+          return (0, t._)`${l}${y.scopePath}`;
         });
       }
-      scopeCode(d = this._values, p, y) {
-        return this._reduceValues(d, (f) => {
+      scopeCode(l = this._values, u, y) {
+        return this._reduceValues(l, (f) => {
           if (f.value === void 0)
             throw new Error(`CodeGen: name "${f}" has no value`);
           return f.value.code;
-        }, p, y);
+        }, u, y);
       }
-      _reduceValues(d, p, y = {}, f) {
+      _reduceValues(l, u, y = {}, f) {
         let h = t.nil;
-        for (const w in d) {
-          const x = d[w];
-          if (!x)
+        for (const x in l) {
+          const w = l[x];
+          if (!w)
             continue;
-          const v = y[w] = y[w] || /* @__PURE__ */ new Map();
-          x.forEach((A) => {
-            if (v.has(A))
+          const v = y[x] = y[x] || /* @__PURE__ */ new Map();
+          w.forEach((I) => {
+            if (v.has(I))
               return;
-            v.set(A, i.Started);
-            let g = p(A);
+            v.set(I, i.Started);
+            let g = u(I);
             if (g) {
               const m = this.opts.es5 ? e.varKinds.var : e.varKinds.const;
-              h = (0, t._)`${h}${m} ${A} = ${g};${this.opts._n}`;
-            } else if (g = f?.(A))
+              h = (0, t._)`${h}${m} ${I} = ${g};${this.opts._n}`;
+            } else if (g = f?.(I))
               h = (0, t._)`${h}${g}${this.opts._n}`;
             else
-              throw new n(A);
-            v.set(A, i.Completed);
+              throw new n(I);
+            v.set(I, i.Completed);
           });
         }
         return h;
       }
     }
     e.ValueScope = a;
-  })(Or)), Or;
+  })(Lr)), Lr;
 }
-var Ha;
+var Ka;
 function te() {
-  return Ha || (Ha = 1, (function(e) {
+  return Ka || (Ka = 1, (function(e) {
     Object.defineProperty(e, "__esModule", { value: !0 }), e.or = e.and = e.not = e.CodeGen = e.operators = e.varKinds = e.ValueScopeName = e.ValueScope = e.Scope = e.Name = e.regexpCode = e.stringify = e.getProperty = e.nil = e.strConcat = e.str = e._ = void 0;
-    const t = /* @__PURE__ */ Xi(), n = /* @__PURE__ */ Za();
-    var i = /* @__PURE__ */ Xi();
+    const t = /* @__PURE__ */ Yi(), n = /* @__PURE__ */ Ja();
+    var i = /* @__PURE__ */ Yi();
     Object.defineProperty(e, "_", { enumerable: !0, get: function() {
       return i._;
     } }), Object.defineProperty(e, "str", { enumerable: !0, get: function() {
@@ -11562,7 +11689,7 @@ function te() {
     } }), Object.defineProperty(e, "Name", { enumerable: !0, get: function() {
       return i.Name;
     } });
-    var o = /* @__PURE__ */ Za();
+    var o = /* @__PURE__ */ Ja();
     Object.defineProperty(e, "Scope", { enumerable: !0, get: function() {
       return o.Scope;
     } }), Object.defineProperty(e, "ValueScope", { enumerable: !0, get: function() {
@@ -11631,7 +11758,7 @@ function te() {
         return `${this.lhs} ${this.op}= ${this.rhs};` + $;
       }
     }
-    class d extends r {
+    class l extends r {
       constructor($) {
         super(), this.label = $, this.names = {};
       }
@@ -11639,7 +11766,7 @@ function te() {
         return `${this.label}:` + $;
       }
     }
-    class p extends r {
+    class u extends r {
       constructor($) {
         super(), this.label = $, this.names = {};
       }
@@ -11704,17 +11831,17 @@ function te() {
         return this.nodes.reduce(($, q) => k($, q.names), {});
       }
     }
-    class w extends h {
+    class x extends h {
       render($) {
         return "{" + $._n + super.render($) + "}" + $._n;
       }
     }
-    class x extends h {
+    class w extends h {
     }
-    class v extends w {
+    class v extends x {
     }
     v.kind = "else";
-    class A extends w {
+    class I extends x {
       constructor($, q) {
         super(q), this.condition = $;
       }
@@ -11733,7 +11860,7 @@ function te() {
           q = this.else = Array.isArray(C) ? new v(C) : C;
         }
         if (q)
-          return $ === !1 ? q instanceof A ? q : q.nodes : this.nodes.length ? this : new A(_($), q instanceof A ? [q] : q.nodes);
+          return $ === !1 ? q instanceof I ? q : q.nodes : this.nodes.length ? this : new I(_($), q instanceof I ? [q] : q.nodes);
         if (!($ === !1 || !this.nodes.length))
           return this;
       }
@@ -11747,8 +11874,8 @@ function te() {
         return M($, this.condition), this.else && k($, this.else.names), $;
       }
     }
-    A.kind = "if";
-    class g extends w {
+    I.kind = "if";
+    class g extends x {
     }
     g.kind = "for";
     class m extends g {
@@ -11766,7 +11893,7 @@ function te() {
         return k(super.names, this.iteration.names);
       }
     }
-    class l extends g {
+    class d extends g {
       constructor($, q, C, z) {
         super(), this.varKind = $, this.name = q, this.from = C, this.to = z;
       }
@@ -11779,7 +11906,7 @@ function te() {
         return M($, this.to);
       }
     }
-    class u extends g {
+    class p extends g {
       constructor($, q, C, z) {
         super(), this.loop = $, this.varKind = q, this.name = C, this.iterable = z;
       }
@@ -11794,7 +11921,7 @@ function te() {
         return k(super.names, this.iterable.names);
       }
     }
-    class b extends w {
+    class b extends x {
       constructor($, q, C) {
         super(), this.name = $, this.args = q, this.async = C;
       }
@@ -11809,7 +11936,7 @@ function te() {
       }
     }
     S.kind = "return";
-    class I extends w {
+    class A extends x {
       render($) {
         let q = "try" + super.render($);
         return this.catch && (q += this.catch.render($)), this.finally && (q += this.finally.render($)), q;
@@ -11827,7 +11954,7 @@ function te() {
         return this.catch && k($, this.catch.names), this.finally && k($, this.finally.names), $;
       }
     }
-    class P extends w {
+    class P extends x {
       constructor($) {
         super(), this.error = $;
       }
@@ -11836,7 +11963,7 @@ function te() {
       }
     }
     P.kind = "catch";
-    class R extends w {
+    class R extends x {
       render($) {
         return "finally" + super.render($);
       }
@@ -11845,7 +11972,7 @@ function te() {
     class E {
       constructor($, q = {}) {
         this._values = {}, this._blockStarts = [], this._constants = {}, this.opts = { ...q, _n: q.lines ? `
-` : "" }, this._extScope = $, this._scope = new n.Scope({ parent: $ }), this._nodes = [new x()];
+` : "" }, this._extScope = $, this._scope = new n.Scope({ parent: $ }), this._nodes = [new w()];
       }
       toString() {
         return this._root.render(this.opts);
@@ -11911,7 +12038,7 @@ function te() {
       }
       // `if` clause (or statement if `thenBody` and, optionally, `elseBody` are passed)
       if($, q, C) {
-        if (this._blockNode(new A($)), q && C)
+        if (this._blockNode(new I($)), q && C)
           this.code(q).else().code(C).endIf();
         else if (q)
           this.code(q).endIf();
@@ -11921,7 +12048,7 @@ function te() {
       }
       // `else if` clause - invalid without `if` or after `else` clauses
       elseIf($) {
-        return this._elseNode(new A($));
+        return this._elseNode(new I($));
       }
       // `else` clause - only valid after `if` or `else if` clauses
       else() {
@@ -11929,7 +12056,7 @@ function te() {
       }
       // end `if` statement (needed if gen.if was used only with condition)
       endIf() {
-        return this._endBlockNode(A, v);
+        return this._endBlockNode(I, v);
       }
       _for($, q) {
         return this._blockNode($), q && this.code(q).endFor(), this;
@@ -11941,7 +12068,7 @@ function te() {
       // `for` statement for a range of values
       forRange($, q, C, z, H = this.opts.es5 ? n.varKinds.var : n.varKinds.let) {
         const Q = this._scope.toName($);
-        return this._for(new l(H, Q, q, C), () => z(Q));
+        return this._for(new d(H, Q, q, C), () => z(Q));
       }
       // `for-of` statement (in es5 mode replace with a normal for loop)
       forOf($, q, C, z = n.varKinds.const) {
@@ -11952,7 +12079,7 @@ function te() {
             this.var(H, (0, t._)`${Q}[${J}]`), C(H);
           });
         }
-        return this._for(new u("of", z, H, q), () => C(H));
+        return this._for(new p("of", z, H, q), () => C(H));
       }
       // `for-in` statement.
       // With option `ownProperties` replaced with a `for-of` loop for object keys
@@ -11960,7 +12087,7 @@ function te() {
         if (this.opts.ownProperties)
           return this.forOf($, (0, t._)`Object.keys(${q})`, C);
         const H = this._scope.toName($);
-        return this._for(new u("in", z, H, q), () => C(H));
+        return this._for(new p("in", z, H, q), () => C(H));
       }
       // end `for` loop
       endFor() {
@@ -11968,11 +12095,11 @@ function te() {
       }
       // `label` statement
       label($) {
-        return this._leafNode(new d($));
+        return this._leafNode(new l($));
       }
       // `break` statement
       break($) {
-        return this._leafNode(new p($));
+        return this._leafNode(new u($));
       }
       // `return` statement
       return($) {
@@ -11985,7 +12112,7 @@ function te() {
       try($, q, C) {
         if (!q && !C)
           throw new Error('CodeGen: "try" without "catch" and "finally"');
-        const z = new I();
+        const z = new A();
         if (this._blockNode(z), this.code($), q) {
           const H = this.name("e");
           this._currNode = z.catch = new P(H), q(H);
@@ -12036,7 +12163,7 @@ function te() {
       }
       _elseNode($) {
         const q = this._currNode;
-        if (!(q instanceof A))
+        if (!(q instanceof I))
           throw new Error('CodeGen: "else" without "if"');
         return this._currNode = q.else = $, this;
       }
@@ -12080,7 +12207,7 @@ function te() {
         D[q] = (D[q] || 0) - ($[q] || 0);
     }
     function _(D) {
-      return typeof D == "boolean" || typeof D == "number" || D === null ? !D : (0, t._)`!${V(D)}`;
+      return typeof D == "boolean" || typeof D == "number" || D === null ? !D : (0, t._)`!${U(D)}`;
     }
     e.not = _;
     const G = O(e.operators.AND);
@@ -12094,158 +12221,158 @@ function te() {
     }
     e.or = T;
     function O(D) {
-      return ($, q) => $ === t.nil ? q : q === t.nil ? $ : (0, t._)`${V($)} ${D} ${V(q)}`;
+      return ($, q) => $ === t.nil ? q : q === t.nil ? $ : (0, t._)`${U($)} ${D} ${U(q)}`;
     }
-    function V(D) {
+    function U(D) {
       return D instanceof t.Name ? D : (0, t._)`(${D})`;
     }
-  })(kr)), kr;
+  })(Mr)), Mr;
 }
-var ne = {}, Ja;
+var ne = {}, Qa;
 function ie() {
-  if (Ja) return ne;
-  Ja = 1, Object.defineProperty(ne, "__esModule", { value: !0 }), ne.checkStrictMode = ne.getErrorPath = ne.Type = ne.useFunc = ne.setEvaluated = ne.evaluatedPropsToName = ne.mergeEvaluated = ne.eachItem = ne.unescapeJsonPointer = ne.escapeJsonPointer = ne.escapeFragment = ne.unescapeFragment = ne.schemaRefOrVal = ne.schemaHasRulesButRef = ne.schemaHasRules = ne.checkUnknownRules = ne.alwaysValidSchema = ne.toHash = void 0;
-  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ Xi();
-  function n(u) {
+  if (Qa) return ne;
+  Qa = 1, Object.defineProperty(ne, "__esModule", { value: !0 }), ne.checkStrictMode = ne.getErrorPath = ne.Type = ne.useFunc = ne.setEvaluated = ne.evaluatedPropsToName = ne.mergeEvaluated = ne.eachItem = ne.unescapeJsonPointer = ne.escapeJsonPointer = ne.escapeFragment = ne.unescapeFragment = ne.schemaRefOrVal = ne.schemaHasRulesButRef = ne.schemaHasRules = ne.checkUnknownRules = ne.alwaysValidSchema = ne.toHash = void 0;
+  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ Yi();
+  function n(p) {
     const b = {};
-    for (const S of u)
+    for (const S of p)
       b[S] = !0;
     return b;
   }
   ne.toHash = n;
-  function i(u, b) {
-    return typeof b == "boolean" ? b : Object.keys(b).length === 0 ? !0 : (o(u, b), !r(b, u.self.RULES.all));
+  function i(p, b) {
+    return typeof b == "boolean" ? b : Object.keys(b).length === 0 ? !0 : (o(p, b), !r(b, p.self.RULES.all));
   }
   ne.alwaysValidSchema = i;
-  function o(u, b = u.schema) {
-    const { opts: S, self: I } = u;
+  function o(p, b = p.schema) {
+    const { opts: S, self: A } = p;
     if (!S.strictSchema || typeof b == "boolean")
       return;
-    const P = I.RULES.keywords;
+    const P = A.RULES.keywords;
     for (const R in b)
-      P[R] || l(u, `unknown keyword: "${R}"`);
+      P[R] || d(p, `unknown keyword: "${R}"`);
   }
   ne.checkUnknownRules = o;
-  function r(u, b) {
-    if (typeof u == "boolean")
-      return !u;
-    for (const S in u)
+  function r(p, b) {
+    if (typeof p == "boolean")
+      return !p;
+    for (const S in p)
       if (b[S])
         return !0;
     return !1;
   }
   ne.schemaHasRules = r;
-  function s(u, b) {
-    if (typeof u == "boolean")
-      return !u;
-    for (const S in u)
+  function s(p, b) {
+    if (typeof p == "boolean")
+      return !p;
+    for (const S in p)
       if (S !== "$ref" && b.all[S])
         return !0;
     return !1;
   }
   ne.schemaHasRulesButRef = s;
-  function a({ topSchemaRef: u, schemaPath: b }, S, I, P) {
+  function a({ topSchemaRef: p, schemaPath: b }, S, A, P) {
     if (!P) {
       if (typeof S == "number" || typeof S == "boolean")
         return S;
       if (typeof S == "string")
         return (0, e._)`${S}`;
     }
-    return (0, e._)`${u}${b}${(0, e.getProperty)(I)}`;
+    return (0, e._)`${p}${b}${(0, e.getProperty)(A)}`;
   }
   ne.schemaRefOrVal = a;
-  function c(u) {
-    return y(decodeURIComponent(u));
+  function c(p) {
+    return y(decodeURIComponent(p));
   }
   ne.unescapeFragment = c;
-  function d(u) {
-    return encodeURIComponent(p(u));
+  function l(p) {
+    return encodeURIComponent(u(p));
   }
-  ne.escapeFragment = d;
-  function p(u) {
-    return typeof u == "number" ? `${u}` : u.replace(/~/g, "~0").replace(/\//g, "~1");
+  ne.escapeFragment = l;
+  function u(p) {
+    return typeof p == "number" ? `${p}` : p.replace(/~/g, "~0").replace(/\//g, "~1");
   }
-  ne.escapeJsonPointer = p;
-  function y(u) {
-    return u.replace(/~1/g, "/").replace(/~0/g, "~");
+  ne.escapeJsonPointer = u;
+  function y(p) {
+    return p.replace(/~1/g, "/").replace(/~0/g, "~");
   }
   ne.unescapeJsonPointer = y;
-  function f(u, b) {
-    if (Array.isArray(u))
-      for (const S of u)
+  function f(p, b) {
+    if (Array.isArray(p))
+      for (const S of p)
         b(S);
     else
-      b(u);
+      b(p);
   }
   ne.eachItem = f;
-  function h({ mergeNames: u, mergeToName: b, mergeValues: S, resultToName: I }) {
+  function h({ mergeNames: p, mergeToName: b, mergeValues: S, resultToName: A }) {
     return (P, R, E, k) => {
-      const M = E === void 0 ? R : E instanceof e.Name ? (R instanceof e.Name ? u(P, R, E) : b(P, R, E), E) : R instanceof e.Name ? (b(P, E, R), R) : S(R, E);
-      return k === e.Name && !(M instanceof e.Name) ? I(P, M) : M;
+      const M = E === void 0 ? R : E instanceof e.Name ? (R instanceof e.Name ? p(P, R, E) : b(P, R, E), E) : R instanceof e.Name ? (b(P, E, R), R) : S(R, E);
+      return k === e.Name && !(M instanceof e.Name) ? A(P, M) : M;
     };
   }
   ne.mergeEvaluated = {
     props: h({
-      mergeNames: (u, b, S) => u.if((0, e._)`${S} !== true && ${b} !== undefined`, () => {
-        u.if((0, e._)`${b} === true`, () => u.assign(S, !0), () => u.assign(S, (0, e._)`${S} || {}`).code((0, e._)`Object.assign(${S}, ${b})`));
+      mergeNames: (p, b, S) => p.if((0, e._)`${S} !== true && ${b} !== undefined`, () => {
+        p.if((0, e._)`${b} === true`, () => p.assign(S, !0), () => p.assign(S, (0, e._)`${S} || {}`).code((0, e._)`Object.assign(${S}, ${b})`));
       }),
-      mergeToName: (u, b, S) => u.if((0, e._)`${S} !== true`, () => {
-        b === !0 ? u.assign(S, !0) : (u.assign(S, (0, e._)`${S} || {}`), x(u, S, b));
+      mergeToName: (p, b, S) => p.if((0, e._)`${S} !== true`, () => {
+        b === !0 ? p.assign(S, !0) : (p.assign(S, (0, e._)`${S} || {}`), w(p, S, b));
       }),
-      mergeValues: (u, b) => u === !0 ? !0 : { ...u, ...b },
-      resultToName: w
+      mergeValues: (p, b) => p === !0 ? !0 : { ...p, ...b },
+      resultToName: x
     }),
     items: h({
-      mergeNames: (u, b, S) => u.if((0, e._)`${S} !== true && ${b} !== undefined`, () => u.assign(S, (0, e._)`${b} === true ? true : ${S} > ${b} ? ${S} : ${b}`)),
-      mergeToName: (u, b, S) => u.if((0, e._)`${S} !== true`, () => u.assign(S, b === !0 ? !0 : (0, e._)`${S} > ${b} ? ${S} : ${b}`)),
-      mergeValues: (u, b) => u === !0 ? !0 : Math.max(u, b),
-      resultToName: (u, b) => u.var("items", b)
+      mergeNames: (p, b, S) => p.if((0, e._)`${S} !== true && ${b} !== undefined`, () => p.assign(S, (0, e._)`${b} === true ? true : ${S} > ${b} ? ${S} : ${b}`)),
+      mergeToName: (p, b, S) => p.if((0, e._)`${S} !== true`, () => p.assign(S, b === !0 ? !0 : (0, e._)`${S} > ${b} ? ${S} : ${b}`)),
+      mergeValues: (p, b) => p === !0 ? !0 : Math.max(p, b),
+      resultToName: (p, b) => p.var("items", b)
     })
   };
-  function w(u, b) {
+  function x(p, b) {
     if (b === !0)
-      return u.var("props", !0);
-    const S = u.var("props", (0, e._)`{}`);
-    return b !== void 0 && x(u, S, b), S;
+      return p.var("props", !0);
+    const S = p.var("props", (0, e._)`{}`);
+    return b !== void 0 && w(p, S, b), S;
   }
-  ne.evaluatedPropsToName = w;
-  function x(u, b, S) {
-    Object.keys(S).forEach((I) => u.assign((0, e._)`${b}${(0, e.getProperty)(I)}`, !0));
+  ne.evaluatedPropsToName = x;
+  function w(p, b, S) {
+    Object.keys(S).forEach((A) => p.assign((0, e._)`${b}${(0, e.getProperty)(A)}`, !0));
   }
-  ne.setEvaluated = x;
+  ne.setEvaluated = w;
   const v = {};
-  function A(u, b) {
-    return u.scopeValue("func", {
+  function I(p, b) {
+    return p.scopeValue("func", {
       ref: b,
       code: v[b.code] || (v[b.code] = new t._Code(b.code))
     });
   }
-  ne.useFunc = A;
+  ne.useFunc = I;
   var g;
-  (function(u) {
-    u[u.Num = 0] = "Num", u[u.Str = 1] = "Str";
+  (function(p) {
+    p[p.Num = 0] = "Num", p[p.Str = 1] = "Str";
   })(g || (ne.Type = g = {}));
-  function m(u, b, S) {
-    if (u instanceof e.Name) {
-      const I = b === g.Num;
-      return S ? I ? (0, e._)`"[" + ${u} + "]"` : (0, e._)`"['" + ${u} + "']"` : I ? (0, e._)`"/" + ${u}` : (0, e._)`"/" + ${u}.replace(/~/g, "~0").replace(/\\//g, "~1")`;
+  function m(p, b, S) {
+    if (p instanceof e.Name) {
+      const A = b === g.Num;
+      return S ? A ? (0, e._)`"[" + ${p} + "]"` : (0, e._)`"['" + ${p} + "']"` : A ? (0, e._)`"/" + ${p}` : (0, e._)`"/" + ${p}.replace(/~/g, "~0").replace(/\\//g, "~1")`;
     }
-    return S ? (0, e.getProperty)(u).toString() : "/" + p(u);
+    return S ? (0, e.getProperty)(p).toString() : "/" + u(p);
   }
   ne.getErrorPath = m;
-  function l(u, b, S = u.opts.strictSchema) {
+  function d(p, b, S = p.opts.strictSchema) {
     if (S) {
       if (b = `strict mode: ${b}`, S === !0)
         throw new Error(b);
-      u.self.logger.warn(b);
+      p.self.logger.warn(b);
     }
   }
-  return ne.checkStrictMode = l, ne;
+  return ne.checkStrictMode = d, ne;
 }
-var Bn = {}, Ka;
+var Hn = {}, Wa;
 function et() {
-  if (Ka) return Bn;
-  Ka = 1, Object.defineProperty(Bn, "__esModule", { value: !0 });
+  if (Wa) return Hn;
+  Wa = 1, Object.defineProperty(Hn, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ te(), t = {
     // validation function arguments
     data: new e.Name("data"),
@@ -12275,50 +12402,50 @@ function et() {
     jsonLen: new e.Name("jsonLen"),
     jsonPart: new e.Name("jsonPart")
   };
-  return Bn.default = t, Bn;
+  return Hn.default = t, Hn;
 }
-var Qa;
-function dr() {
-  return Qa || (Qa = 1, (function(e) {
+var Xa;
+function lr() {
+  return Xa || (Xa = 1, (function(e) {
     Object.defineProperty(e, "__esModule", { value: !0 }), e.extendErrors = e.resetErrorsCount = e.reportExtraError = e.reportError = e.keyword$DataError = e.keywordError = void 0;
     const t = /* @__PURE__ */ te(), n = /* @__PURE__ */ ie(), i = /* @__PURE__ */ et();
     e.keywordError = {
       message: ({ keyword: v }) => (0, t.str)`must pass "${v}" keyword validation`
     }, e.keyword$DataError = {
-      message: ({ keyword: v, schemaType: A }) => A ? (0, t.str)`"${v}" keyword must be ${A} ($data)` : (0, t.str)`"${v}" keyword is invalid ($data)`
+      message: ({ keyword: v, schemaType: I }) => I ? (0, t.str)`"${v}" keyword must be ${I} ($data)` : (0, t.str)`"${v}" keyword is invalid ($data)`
     };
-    function o(v, A = e.keywordError, g, m) {
-      const { it: l } = v, { gen: u, compositeRule: b, allErrors: S } = l, I = y(v, A, g);
-      m ?? (b || S) ? c(u, I) : d(l, (0, t._)`[${I}]`);
+    function o(v, I = e.keywordError, g, m) {
+      const { it: d } = v, { gen: p, compositeRule: b, allErrors: S } = d, A = y(v, I, g);
+      m ?? (b || S) ? c(p, A) : l(d, (0, t._)`[${A}]`);
     }
     e.reportError = o;
-    function r(v, A = e.keywordError, g) {
-      const { it: m } = v, { gen: l, compositeRule: u, allErrors: b } = m, S = y(v, A, g);
-      c(l, S), u || b || d(m, i.default.vErrors);
+    function r(v, I = e.keywordError, g) {
+      const { it: m } = v, { gen: d, compositeRule: p, allErrors: b } = m, S = y(v, I, g);
+      c(d, S), p || b || l(m, i.default.vErrors);
     }
     e.reportExtraError = r;
-    function s(v, A) {
-      v.assign(i.default.errors, A), v.if((0, t._)`${i.default.vErrors} !== null`, () => v.if(A, () => v.assign((0, t._)`${i.default.vErrors}.length`, A), () => v.assign(i.default.vErrors, null)));
+    function s(v, I) {
+      v.assign(i.default.errors, I), v.if((0, t._)`${i.default.vErrors} !== null`, () => v.if(I, () => v.assign((0, t._)`${i.default.vErrors}.length`, I), () => v.assign(i.default.vErrors, null)));
     }
     e.resetErrorsCount = s;
-    function a({ gen: v, keyword: A, schemaValue: g, data: m, errsCount: l, it: u }) {
-      if (l === void 0)
+    function a({ gen: v, keyword: I, schemaValue: g, data: m, errsCount: d, it: p }) {
+      if (d === void 0)
         throw new Error("ajv implementation error");
       const b = v.name("err");
-      v.forRange("i", l, i.default.errors, (S) => {
-        v.const(b, (0, t._)`${i.default.vErrors}[${S}]`), v.if((0, t._)`${b}.instancePath === undefined`, () => v.assign((0, t._)`${b}.instancePath`, (0, t.strConcat)(i.default.instancePath, u.errorPath))), v.assign((0, t._)`${b}.schemaPath`, (0, t.str)`${u.errSchemaPath}/${A}`), u.opts.verbose && (v.assign((0, t._)`${b}.schema`, g), v.assign((0, t._)`${b}.data`, m));
+      v.forRange("i", d, i.default.errors, (S) => {
+        v.const(b, (0, t._)`${i.default.vErrors}[${S}]`), v.if((0, t._)`${b}.instancePath === undefined`, () => v.assign((0, t._)`${b}.instancePath`, (0, t.strConcat)(i.default.instancePath, p.errorPath))), v.assign((0, t._)`${b}.schemaPath`, (0, t.str)`${p.errSchemaPath}/${I}`), p.opts.verbose && (v.assign((0, t._)`${b}.schema`, g), v.assign((0, t._)`${b}.data`, m));
       });
     }
     e.extendErrors = a;
-    function c(v, A) {
-      const g = v.const("err", A);
+    function c(v, I) {
+      const g = v.const("err", I);
       v.if((0, t._)`${i.default.vErrors} === null`, () => v.assign(i.default.vErrors, (0, t._)`[${g}]`), (0, t._)`${i.default.vErrors}.push(${g})`), v.code((0, t._)`${i.default.errors}++`);
     }
-    function d(v, A) {
-      const { gen: g, validateName: m, schemaEnv: l } = v;
-      l.$async ? g.throw((0, t._)`new ${v.ValidationError}(${A})`) : (g.assign((0, t._)`${m}.errors`, A), g.return(!1));
+    function l(v, I) {
+      const { gen: g, validateName: m, schemaEnv: d } = v;
+      d.$async ? g.throw((0, t._)`new ${v.ValidationError}(${I})`) : (g.assign((0, t._)`${m}.errors`, I), g.return(!1));
     }
-    const p = {
+    const u = {
       keyword: new t.Name("keyword"),
       schemaPath: new t.Name("schemaPath"),
       // also used in JTD errors
@@ -12328,53 +12455,53 @@ function dr() {
       schema: new t.Name("schema"),
       parentSchema: new t.Name("parentSchema")
     };
-    function y(v, A, g) {
+    function y(v, I, g) {
       const { createErrors: m } = v.it;
-      return m === !1 ? (0, t._)`{}` : f(v, A, g);
+      return m === !1 ? (0, t._)`{}` : f(v, I, g);
     }
-    function f(v, A, g = {}) {
-      const { gen: m, it: l } = v, u = [
-        h(l, g),
-        w(v, g)
+    function f(v, I, g = {}) {
+      const { gen: m, it: d } = v, p = [
+        h(d, g),
+        x(v, g)
       ];
-      return x(v, A, u), m.object(...u);
+      return w(v, I, p), m.object(...p);
     }
-    function h({ errorPath: v }, { instancePath: A }) {
-      const g = A ? (0, t.str)`${v}${(0, n.getErrorPath)(A, n.Type.Str)}` : v;
+    function h({ errorPath: v }, { instancePath: I }) {
+      const g = I ? (0, t.str)`${v}${(0, n.getErrorPath)(I, n.Type.Str)}` : v;
       return [i.default.instancePath, (0, t.strConcat)(i.default.instancePath, g)];
     }
-    function w({ keyword: v, it: { errSchemaPath: A } }, { schemaPath: g, parentSchema: m }) {
-      let l = m ? A : (0, t.str)`${A}/${v}`;
-      return g && (l = (0, t.str)`${l}${(0, n.getErrorPath)(g, n.Type.Str)}`), [p.schemaPath, l];
+    function x({ keyword: v, it: { errSchemaPath: I } }, { schemaPath: g, parentSchema: m }) {
+      let d = m ? I : (0, t.str)`${I}/${v}`;
+      return g && (d = (0, t.str)`${d}${(0, n.getErrorPath)(g, n.Type.Str)}`), [u.schemaPath, d];
     }
-    function x(v, { params: A, message: g }, m) {
-      const { keyword: l, data: u, schemaValue: b, it: S } = v, { opts: I, propertyName: P, topSchemaRef: R, schemaPath: E } = S;
-      m.push([p.keyword, l], [p.params, typeof A == "function" ? A(v) : A || (0, t._)`{}`]), I.messages && m.push([p.message, typeof g == "function" ? g(v) : g]), I.verbose && m.push([p.schema, b], [p.parentSchema, (0, t._)`${R}${E}`], [i.default.data, u]), P && m.push([p.propertyName, P]);
+    function w(v, { params: I, message: g }, m) {
+      const { keyword: d, data: p, schemaValue: b, it: S } = v, { opts: A, propertyName: P, topSchemaRef: R, schemaPath: E } = S;
+      m.push([u.keyword, d], [u.params, typeof I == "function" ? I(v) : I || (0, t._)`{}`]), A.messages && m.push([u.message, typeof g == "function" ? g(v) : g]), A.verbose && m.push([u.schema, b], [u.parentSchema, (0, t._)`${R}${E}`], [i.default.data, p]), P && m.push([u.propertyName, P]);
     }
-  })(Er)), Er;
+  })(kr)), kr;
 }
-var Wa;
-function Tu() {
-  if (Wa) return zt;
-  Wa = 1, Object.defineProperty(zt, "__esModule", { value: !0 }), zt.boolOrEmptySchema = zt.topBoolOrEmptySchema = void 0;
-  const e = /* @__PURE__ */ dr(), t = /* @__PURE__ */ te(), n = /* @__PURE__ */ et(), i = {
+var Ya;
+function Cu() {
+  if (Ya) return Vt;
+  Ya = 1, Object.defineProperty(Vt, "__esModule", { value: !0 }), Vt.boolOrEmptySchema = Vt.topBoolOrEmptySchema = void 0;
+  const e = /* @__PURE__ */ lr(), t = /* @__PURE__ */ te(), n = /* @__PURE__ */ et(), i = {
     message: "boolean schema is false"
   };
   function o(a) {
-    const { gen: c, schema: d, validateName: p } = a;
-    d === !1 ? s(a, !1) : typeof d == "object" && d.$async === !0 ? c.return(n.default.data) : (c.assign((0, t._)`${p}.errors`, null), c.return(!0));
+    const { gen: c, schema: l, validateName: u } = a;
+    l === !1 ? s(a, !1) : typeof l == "object" && l.$async === !0 ? c.return(n.default.data) : (c.assign((0, t._)`${u}.errors`, null), c.return(!0));
   }
-  zt.topBoolOrEmptySchema = o;
+  Vt.topBoolOrEmptySchema = o;
   function r(a, c) {
-    const { gen: d, schema: p } = a;
-    p === !1 ? (d.var(c, !1), s(a)) : d.var(c, !0);
+    const { gen: l, schema: u } = a;
+    u === !1 ? (l.var(c, !1), s(a)) : l.var(c, !0);
   }
-  zt.boolOrEmptySchema = r;
+  Vt.boolOrEmptySchema = r;
   function s(a, c) {
-    const { gen: d, data: p } = a, y = {
-      gen: d,
+    const { gen: l, data: u } = a, y = {
+      gen: l,
       keyword: "false schema",
-      data: p,
+      data: u,
       schema: !1,
       schemaCode: !1,
       schemaValue: !1,
@@ -12383,17 +12510,17 @@ function Tu() {
     };
     (0, e.reportError)(y, i, void 0, c);
   }
-  return zt;
+  return Vt;
 }
-var be = {}, Vt = {}, Xa;
-function Md() {
-  if (Xa) return Vt;
-  Xa = 1, Object.defineProperty(Vt, "__esModule", { value: !0 }), Vt.getRules = Vt.isJSONType = void 0;
+var be = {}, Gt = {}, eo;
+function Ld() {
+  if (eo) return Gt;
+  eo = 1, Object.defineProperty(Gt, "__esModule", { value: !0 }), Gt.getRules = Gt.isJSONType = void 0;
   const e = ["string", "number", "integer", "boolean", "null", "object", "array"], t = new Set(e);
   function n(o) {
     return typeof o == "string" && t.has(o);
   }
-  Vt.isJSONType = n;
+  Gt.isJSONType = n;
   function i() {
     const o = {
       number: { type: "number", rules: [] },
@@ -12409,12 +12536,12 @@ function Md() {
       keywords: {}
     };
   }
-  return Vt.getRules = i, Vt;
+  return Gt.getRules = i, Gt;
 }
-var gt = {}, Ya;
-function Od() {
-  if (Ya) return gt;
-  Ya = 1, Object.defineProperty(gt, "__esModule", { value: !0 }), gt.shouldUseRule = gt.shouldUseGroup = gt.schemaHasRulesForType = void 0;
+var gt = {}, to;
+function Nd() {
+  if (to) return gt;
+  to = 1, Object.defineProperty(gt, "__esModule", { value: !0 }), gt.shouldUseRule = gt.shouldUseGroup = gt.schemaHasRulesForType = void 0;
   function e({ schema: i, self: o }, r) {
     const s = o.RULES.types[r];
     return s && s !== !0 && t(i, s);
@@ -12430,11 +12557,11 @@ function Od() {
   }
   return gt.shouldUseRule = n, gt;
 }
-var eo;
-function Yi() {
-  if (eo) return be;
-  eo = 1, Object.defineProperty(be, "__esModule", { value: !0 }), be.reportTypeError = be.checkDataTypes = be.checkDataType = be.coerceAndCheckDataType = be.getJSONTypes = be.getSchemaTypes = be.DataType = void 0;
-  const e = /* @__PURE__ */ Md(), t = /* @__PURE__ */ Od(), n = /* @__PURE__ */ dr(), i = /* @__PURE__ */ te(), o = /* @__PURE__ */ ie();
+var no;
+function er() {
+  if (no) return be;
+  no = 1, Object.defineProperty(be, "__esModule", { value: !0 }), be.reportTypeError = be.checkDataTypes = be.checkDataType = be.coerceAndCheckDataType = be.getJSONTypes = be.getSchemaTypes = be.DataType = void 0;
+  const e = /* @__PURE__ */ Ld(), t = /* @__PURE__ */ Nd(), n = /* @__PURE__ */ lr(), i = /* @__PURE__ */ te(), o = /* @__PURE__ */ ie();
   var r;
   (function(g) {
     g[g.Correct = 0] = "Correct", g[g.Wrong = 1] = "Wrong";
@@ -12460,58 +12587,58 @@ function Yi() {
   }
   be.getJSONTypes = a;
   function c(g, m) {
-    const { gen: l, data: u, opts: b } = g, S = p(m, b.coerceTypes), I = m.length > 0 && !(S.length === 0 && m.length === 1 && (0, t.schemaHasRulesForType)(g, m[0]));
-    if (I) {
-      const P = w(m, u, b.strictNumbers, r.Wrong);
-      l.if(P, () => {
+    const { gen: d, data: p, opts: b } = g, S = u(m, b.coerceTypes), A = m.length > 0 && !(S.length === 0 && m.length === 1 && (0, t.schemaHasRulesForType)(g, m[0]));
+    if (A) {
+      const P = x(m, p, b.strictNumbers, r.Wrong);
+      d.if(P, () => {
         S.length ? y(g, m, S) : v(g);
       });
     }
-    return I;
+    return A;
   }
   be.coerceAndCheckDataType = c;
-  const d = /* @__PURE__ */ new Set(["string", "number", "integer", "boolean", "null"]);
-  function p(g, m) {
-    return m ? g.filter((l) => d.has(l) || m === "array" && l === "array") : [];
+  const l = /* @__PURE__ */ new Set(["string", "number", "integer", "boolean", "null"]);
+  function u(g, m) {
+    return m ? g.filter((d) => l.has(d) || m === "array" && d === "array") : [];
   }
-  function y(g, m, l) {
-    const { gen: u, data: b, opts: S } = g, I = u.let("dataType", (0, i._)`typeof ${b}`), P = u.let("coerced", (0, i._)`undefined`);
-    S.coerceTypes === "array" && u.if((0, i._)`${I} == 'object' && Array.isArray(${b}) && ${b}.length == 1`, () => u.assign(b, (0, i._)`${b}[0]`).assign(I, (0, i._)`typeof ${b}`).if(w(m, b, S.strictNumbers), () => u.assign(P, b))), u.if((0, i._)`${P} !== undefined`);
-    for (const E of l)
-      (d.has(E) || E === "array" && S.coerceTypes === "array") && R(E);
-    u.else(), v(g), u.endIf(), u.if((0, i._)`${P} !== undefined`, () => {
-      u.assign(b, P), f(g, P);
+  function y(g, m, d) {
+    const { gen: p, data: b, opts: S } = g, A = p.let("dataType", (0, i._)`typeof ${b}`), P = p.let("coerced", (0, i._)`undefined`);
+    S.coerceTypes === "array" && p.if((0, i._)`${A} == 'object' && Array.isArray(${b}) && ${b}.length == 1`, () => p.assign(b, (0, i._)`${b}[0]`).assign(A, (0, i._)`typeof ${b}`).if(x(m, b, S.strictNumbers), () => p.assign(P, b))), p.if((0, i._)`${P} !== undefined`);
+    for (const E of d)
+      (l.has(E) || E === "array" && S.coerceTypes === "array") && R(E);
+    p.else(), v(g), p.endIf(), p.if((0, i._)`${P} !== undefined`, () => {
+      p.assign(b, P), f(g, P);
     });
     function R(E) {
       switch (E) {
         case "string":
-          u.elseIf((0, i._)`${I} == "number" || ${I} == "boolean"`).assign(P, (0, i._)`"" + ${b}`).elseIf((0, i._)`${b} === null`).assign(P, (0, i._)`""`);
+          p.elseIf((0, i._)`${A} == "number" || ${A} == "boolean"`).assign(P, (0, i._)`"" + ${b}`).elseIf((0, i._)`${b} === null`).assign(P, (0, i._)`""`);
           return;
         case "number":
-          u.elseIf((0, i._)`${I} == "boolean" || ${b} === null
-              || (${I} == "string" && ${b} && ${b} == +${b})`).assign(P, (0, i._)`+${b}`);
+          p.elseIf((0, i._)`${A} == "boolean" || ${b} === null
+              || (${A} == "string" && ${b} && ${b} == +${b})`).assign(P, (0, i._)`+${b}`);
           return;
         case "integer":
-          u.elseIf((0, i._)`${I} === "boolean" || ${b} === null
-              || (${I} === "string" && ${b} && ${b} == +${b} && !(${b} % 1))`).assign(P, (0, i._)`+${b}`);
+          p.elseIf((0, i._)`${A} === "boolean" || ${b} === null
+              || (${A} === "string" && ${b} && ${b} == +${b} && !(${b} % 1))`).assign(P, (0, i._)`+${b}`);
           return;
         case "boolean":
-          u.elseIf((0, i._)`${b} === "false" || ${b} === 0 || ${b} === null`).assign(P, !1).elseIf((0, i._)`${b} === "true" || ${b} === 1`).assign(P, !0);
+          p.elseIf((0, i._)`${b} === "false" || ${b} === 0 || ${b} === null`).assign(P, !1).elseIf((0, i._)`${b} === "true" || ${b} === 1`).assign(P, !0);
           return;
         case "null":
-          u.elseIf((0, i._)`${b} === "" || ${b} === 0 || ${b} === false`), u.assign(P, null);
+          p.elseIf((0, i._)`${b} === "" || ${b} === 0 || ${b} === false`), p.assign(P, null);
           return;
         case "array":
-          u.elseIf((0, i._)`${I} === "string" || ${I} === "number"
-              || ${I} === "boolean" || ${b} === null`).assign(P, (0, i._)`[${b}]`);
+          p.elseIf((0, i._)`${A} === "string" || ${A} === "number"
+              || ${A} === "boolean" || ${b} === null`).assign(P, (0, i._)`[${b}]`);
       }
     }
   }
-  function f({ gen: g, parentData: m, parentDataProperty: l }, u) {
-    g.if((0, i._)`${m} !== undefined`, () => g.assign((0, i._)`${m}[${l}]`, u));
+  function f({ gen: g, parentData: m, parentDataProperty: d }, p) {
+    g.if((0, i._)`${m} !== undefined`, () => g.assign((0, i._)`${m}[${d}]`, p));
   }
-  function h(g, m, l, u = r.Correct) {
-    const b = u === r.Correct ? i.operators.EQ : i.operators.NEQ;
+  function h(g, m, d, p = r.Correct) {
+    const b = p === r.Correct ? i.operators.EQ : i.operators.NEQ;
     let S;
     switch (g) {
       case "null":
@@ -12523,102 +12650,102 @@ function Yi() {
         S = (0, i._)`${m} && typeof ${m} == "object" && !Array.isArray(${m})`;
         break;
       case "integer":
-        S = I((0, i._)`!(${m} % 1) && !isNaN(${m})`);
+        S = A((0, i._)`!(${m} % 1) && !isNaN(${m})`);
         break;
       case "number":
-        S = I();
+        S = A();
         break;
       default:
         return (0, i._)`typeof ${m} ${b} ${g}`;
     }
-    return u === r.Correct ? S : (0, i.not)(S);
-    function I(P = i.nil) {
-      return (0, i.and)((0, i._)`typeof ${m} == "number"`, P, l ? (0, i._)`isFinite(${m})` : i.nil);
+    return p === r.Correct ? S : (0, i.not)(S);
+    function A(P = i.nil) {
+      return (0, i.and)((0, i._)`typeof ${m} == "number"`, P, d ? (0, i._)`isFinite(${m})` : i.nil);
     }
   }
   be.checkDataType = h;
-  function w(g, m, l, u) {
+  function x(g, m, d, p) {
     if (g.length === 1)
-      return h(g[0], m, l, u);
+      return h(g[0], m, d, p);
     let b;
     const S = (0, o.toHash)(g);
     if (S.array && S.object) {
-      const I = (0, i._)`typeof ${m} != "object"`;
-      b = S.null ? I : (0, i._)`!${m} || ${I}`, delete S.null, delete S.array, delete S.object;
+      const A = (0, i._)`typeof ${m} != "object"`;
+      b = S.null ? A : (0, i._)`!${m} || ${A}`, delete S.null, delete S.array, delete S.object;
     } else
       b = i.nil;
     S.number && delete S.integer;
-    for (const I in S)
-      b = (0, i.and)(b, h(I, m, l, u));
+    for (const A in S)
+      b = (0, i.and)(b, h(A, m, d, p));
     return b;
   }
-  be.checkDataTypes = w;
-  const x = {
+  be.checkDataTypes = x;
+  const w = {
     message: ({ schema: g }) => `must be ${g}`,
     params: ({ schema: g, schemaValue: m }) => typeof g == "string" ? (0, i._)`{type: ${g}}` : (0, i._)`{type: ${m}}`
   };
   function v(g) {
-    const m = A(g);
-    (0, n.reportError)(m, x);
+    const m = I(g);
+    (0, n.reportError)(m, w);
   }
   be.reportTypeError = v;
-  function A(g) {
-    const { gen: m, data: l, schema: u } = g, b = (0, o.schemaRefOrVal)(g, u, "type");
+  function I(g) {
+    const { gen: m, data: d, schema: p } = g, b = (0, o.schemaRefOrVal)(g, p, "type");
     return {
       gen: m,
       keyword: "type",
-      data: l,
-      schema: u.type,
+      data: d,
+      schema: p.type,
       schemaCode: b,
       schemaValue: b,
-      parentSchema: u,
+      parentSchema: p,
       params: {},
       it: g
     };
   }
   return be;
 }
-var mn = {}, to;
-function Cu() {
-  if (to) return mn;
-  to = 1, Object.defineProperty(mn, "__esModule", { value: !0 }), mn.assignDefaults = void 0;
+var yn = {}, io;
+function Eu() {
+  if (io) return yn;
+  io = 1, Object.defineProperty(yn, "__esModule", { value: !0 }), yn.assignDefaults = void 0;
   const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie();
   function n(o, r) {
     const { properties: s, items: a } = o.schema;
     if (r === "object" && s)
       for (const c in s)
         i(o, c, s[c].default);
-    else r === "array" && Array.isArray(a) && a.forEach((c, d) => i(o, d, c.default));
+    else r === "array" && Array.isArray(a) && a.forEach((c, l) => i(o, l, c.default));
   }
-  mn.assignDefaults = n;
+  yn.assignDefaults = n;
   function i(o, r, s) {
-    const { gen: a, compositeRule: c, data: d, opts: p } = o;
+    const { gen: a, compositeRule: c, data: l, opts: u } = o;
     if (s === void 0)
       return;
-    const y = (0, e._)`${d}${(0, e.getProperty)(r)}`;
+    const y = (0, e._)`${l}${(0, e.getProperty)(r)}`;
     if (c) {
       (0, t.checkStrictMode)(o, `default is ignored for: ${y}`);
       return;
     }
     let f = (0, e._)`${y} === undefined`;
-    p.useDefaults === "empty" && (f = (0, e._)`${f} || ${y} === null || ${y} === ""`), a.if(f, (0, e._)`${y} = ${(0, e.stringify)(s)}`);
+    u.useDefaults === "empty" && (f = (0, e._)`${f} || ${y} === null || ${y} === ""`), a.if(f, (0, e._)`${y} = ${(0, e.stringify)(s)}`);
   }
-  return mn;
+  return yn;
 }
-var Ke = {}, ae = {}, no;
+var Ke = {}, ae = {}, ro;
 function tt() {
-  if (no) return ae;
-  no = 1, Object.defineProperty(ae, "__esModule", { value: !0 }), ae.validateUnion = ae.validateArray = ae.usePattern = ae.callValidateCode = ae.schemaProperties = ae.allSchemaProperties = ae.noPropertyInData = ae.propertyInData = ae.isOwnProperty = ae.hasPropFunc = ae.reportMissingProp = ae.checkMissingProp = ae.checkReportMissingProp = void 0;
+  if (ro) return ae;
+  ro = 1, Object.defineProperty(ae, "__esModule", { value: !0 }), ae.validateUnion = ae.validateArray = ae.usePattern = ae.callValidateCode = ae.schemaProperties = ae.allSchemaProperties = ae.noPropertyInData = ae.propertyInData = ae.isOwnProperty = ae.hasPropFunc = ae.reportMissingProp = ae.checkMissingProp = ae.checkReportMissingProp = void 0;
   const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), n = /* @__PURE__ */ et(), i = /* @__PURE__ */ ie();
   function o(g, m) {
-    const { gen: l, data: u, it: b } = g;
-    l.if(p(l, u, m, b.opts.ownProperties), () => {
+    const { gen: d, data: p, it: b } = g;
+    d.if(u(d, p, m, b.opts.ownProperties), () => {
       g.setParams({ missingProperty: (0, e._)`${m}` }, !0), g.error();
     });
   }
   ae.checkReportMissingProp = o;
-  function r({ gen: g, data: m, it: { opts: l } }, u, b) {
-    return (0, e.or)(...u.map((S) => (0, e.and)(p(g, m, S, l.ownProperties), (0, e._)`${b} = ${S}`)));
+  function r({ gen: g, data: m, it: { opts: d } }, p, b) {
+    return (0, e.or)(...p.map((S) => (0, e.and)(u(g, m, S, d.ownProperties), (0, e._)`${b} = ${S}`)));
   }
   ae.checkMissingProp = r;
   function s(g, m) {
@@ -12633,62 +12760,62 @@ function tt() {
     });
   }
   ae.hasPropFunc = a;
-  function c(g, m, l) {
-    return (0, e._)`${a(g)}.call(${m}, ${l})`;
+  function c(g, m, d) {
+    return (0, e._)`${a(g)}.call(${m}, ${d})`;
   }
   ae.isOwnProperty = c;
-  function d(g, m, l, u) {
-    const b = (0, e._)`${m}${(0, e.getProperty)(l)} !== undefined`;
-    return u ? (0, e._)`${b} && ${c(g, m, l)}` : b;
+  function l(g, m, d, p) {
+    const b = (0, e._)`${m}${(0, e.getProperty)(d)} !== undefined`;
+    return p ? (0, e._)`${b} && ${c(g, m, d)}` : b;
   }
-  ae.propertyInData = d;
-  function p(g, m, l, u) {
-    const b = (0, e._)`${m}${(0, e.getProperty)(l)} === undefined`;
-    return u ? (0, e.or)(b, (0, e.not)(c(g, m, l))) : b;
+  ae.propertyInData = l;
+  function u(g, m, d, p) {
+    const b = (0, e._)`${m}${(0, e.getProperty)(d)} === undefined`;
+    return p ? (0, e.or)(b, (0, e.not)(c(g, m, d))) : b;
   }
-  ae.noPropertyInData = p;
+  ae.noPropertyInData = u;
   function y(g) {
     return g ? Object.keys(g).filter((m) => m !== "__proto__") : [];
   }
   ae.allSchemaProperties = y;
   function f(g, m) {
-    return y(m).filter((l) => !(0, t.alwaysValidSchema)(g, m[l]));
+    return y(m).filter((d) => !(0, t.alwaysValidSchema)(g, m[d]));
   }
   ae.schemaProperties = f;
-  function h({ schemaCode: g, data: m, it: { gen: l, topSchemaRef: u, schemaPath: b, errorPath: S }, it: I }, P, R, E) {
-    const k = E ? (0, e._)`${g}, ${m}, ${u}${b}` : m, M = [
+  function h({ schemaCode: g, data: m, it: { gen: d, topSchemaRef: p, schemaPath: b, errorPath: S }, it: A }, P, R, E) {
+    const k = E ? (0, e._)`${g}, ${m}, ${p}${b}` : m, M = [
       [n.default.instancePath, (0, e.strConcat)(n.default.instancePath, S)],
-      [n.default.parentData, I.parentData],
-      [n.default.parentDataProperty, I.parentDataProperty],
+      [n.default.parentData, A.parentData],
+      [n.default.parentDataProperty, A.parentDataProperty],
       [n.default.rootData, n.default.rootData]
     ];
-    I.opts.dynamicRef && M.push([n.default.dynamicAnchors, n.default.dynamicAnchors]);
-    const j = (0, e._)`${k}, ${l.object(...M)}`;
+    A.opts.dynamicRef && M.push([n.default.dynamicAnchors, n.default.dynamicAnchors]);
+    const j = (0, e._)`${k}, ${d.object(...M)}`;
     return R !== e.nil ? (0, e._)`${P}.call(${R}, ${j})` : (0, e._)`${P}(${j})`;
   }
   ae.callValidateCode = h;
-  const w = (0, e._)`new RegExp`;
-  function x({ gen: g, it: { opts: m } }, l) {
-    const u = m.unicodeRegExp ? "u" : "", { regExp: b } = m.code, S = b(l, u);
+  const x = (0, e._)`new RegExp`;
+  function w({ gen: g, it: { opts: m } }, d) {
+    const p = m.unicodeRegExp ? "u" : "", { regExp: b } = m.code, S = b(d, p);
     return g.scopeValue("pattern", {
       key: S.toString(),
       ref: S,
-      code: (0, e._)`${b.code === "new RegExp" ? w : (0, i.useFunc)(g, b)}(${l}, ${u})`
+      code: (0, e._)`${b.code === "new RegExp" ? x : (0, i.useFunc)(g, b)}(${d}, ${p})`
     });
   }
-  ae.usePattern = x;
+  ae.usePattern = w;
   function v(g) {
-    const { gen: m, data: l, keyword: u, it: b } = g, S = m.name("valid");
+    const { gen: m, data: d, keyword: p, it: b } = g, S = m.name("valid");
     if (b.allErrors) {
       const P = m.let("valid", !0);
-      return I(() => m.assign(P, !1)), P;
+      return A(() => m.assign(P, !1)), P;
     }
-    return m.var(S, !0), I(() => m.break()), S;
-    function I(P) {
-      const R = m.const("len", (0, e._)`${l}.length`);
+    return m.var(S, !0), A(() => m.break()), S;
+    function A(P) {
+      const R = m.const("len", (0, e._)`${d}.length`);
       m.forRange("i", 0, R, (E) => {
         g.subschema({
-          keyword: u,
+          keyword: p,
           dataProp: E,
           dataPropType: t.Type.Num
         }, S), m.if((0, e.not)(S), P);
@@ -12696,49 +12823,49 @@ function tt() {
     }
   }
   ae.validateArray = v;
-  function A(g) {
-    const { gen: m, schema: l, keyword: u, it: b } = g;
-    if (!Array.isArray(l))
+  function I(g) {
+    const { gen: m, schema: d, keyword: p, it: b } = g;
+    if (!Array.isArray(d))
       throw new Error("ajv implementation error");
-    if (l.some((R) => (0, t.alwaysValidSchema)(b, R)) && !b.opts.unevaluated)
+    if (d.some((R) => (0, t.alwaysValidSchema)(b, R)) && !b.opts.unevaluated)
       return;
-    const I = m.let("valid", !1), P = m.name("_valid");
-    m.block(() => l.forEach((R, E) => {
+    const A = m.let("valid", !1), P = m.name("_valid");
+    m.block(() => d.forEach((R, E) => {
       const k = g.subschema({
-        keyword: u,
+        keyword: p,
         schemaProp: E,
         compositeRule: !0
       }, P);
-      m.assign(I, (0, e._)`${I} || ${P}`), g.mergeValidEvaluated(k, P) || m.if((0, e.not)(I));
-    })), g.result(I, () => g.reset(), () => g.error(!0));
+      m.assign(A, (0, e._)`${A} || ${P}`), g.mergeValidEvaluated(k, P) || m.if((0, e.not)(A));
+    })), g.result(A, () => g.reset(), () => g.error(!0));
   }
-  return ae.validateUnion = A, ae;
+  return ae.validateUnion = I, ae;
 }
-var io;
-function Eu() {
-  if (io) return Ke;
-  io = 1, Object.defineProperty(Ke, "__esModule", { value: !0 }), Ke.validateKeywordUsage = Ke.validSchemaType = Ke.funcKeywordCode = Ke.macroKeywordCode = void 0;
-  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ et(), n = /* @__PURE__ */ tt(), i = /* @__PURE__ */ dr();
+var so;
+function ku() {
+  if (so) return Ke;
+  so = 1, Object.defineProperty(Ke, "__esModule", { value: !0 }), Ke.validateKeywordUsage = Ke.validSchemaType = Ke.funcKeywordCode = Ke.macroKeywordCode = void 0;
+  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ et(), n = /* @__PURE__ */ tt(), i = /* @__PURE__ */ lr();
   function o(f, h) {
-    const { gen: w, keyword: x, schema: v, parentSchema: A, it: g } = f, m = h.macro.call(g.self, v, A, g), l = d(w, x, m);
+    const { gen: x, keyword: w, schema: v, parentSchema: I, it: g } = f, m = h.macro.call(g.self, v, I, g), d = l(x, w, m);
     g.opts.validateSchema !== !1 && g.self.validateSchema(m, !0);
-    const u = w.name("valid");
+    const p = x.name("valid");
     f.subschema({
       schema: m,
       schemaPath: e.nil,
-      errSchemaPath: `${g.errSchemaPath}/${x}`,
-      topSchemaRef: l,
+      errSchemaPath: `${g.errSchemaPath}/${w}`,
+      topSchemaRef: d,
       compositeRule: !0
-    }, u), f.pass(u, () => f.error(!0));
+    }, p), f.pass(p, () => f.error(!0));
   }
   Ke.macroKeywordCode = o;
   function r(f, h) {
-    var w;
-    const { gen: x, keyword: v, schema: A, parentSchema: g, $data: m, it: l } = f;
-    c(l, h);
-    const u = !m && h.compile ? h.compile.call(l.self, A, g, l) : h.validate, b = d(x, v, u), S = x.let("valid");
-    f.block$data(S, I), f.ok((w = h.valid) !== null && w !== void 0 ? w : S);
-    function I() {
+    var x;
+    const { gen: w, keyword: v, schema: I, parentSchema: g, $data: m, it: d } = f;
+    c(d, h);
+    const p = !m && h.compile ? h.compile.call(d.self, I, g, d) : h.validate, b = l(w, v, p), S = w.let("valid");
+    f.block$data(S, A), f.ok((x = h.valid) !== null && x !== void 0 ? x : S);
+    function A() {
       if (h.errors === !1)
         E(), h.modifying && s(f), k(() => f.error());
       else {
@@ -12747,68 +12874,68 @@ function Eu() {
       }
     }
     function P() {
-      const M = x.let("ruleErrs", null);
-      return x.try(() => E((0, e._)`await `), (j) => x.assign(S, !1).if((0, e._)`${j} instanceof ${l.ValidationError}`, () => x.assign(M, (0, e._)`${j}.errors`), () => x.throw(j))), M;
+      const M = w.let("ruleErrs", null);
+      return w.try(() => E((0, e._)`await `), (j) => w.assign(S, !1).if((0, e._)`${j} instanceof ${d.ValidationError}`, () => w.assign(M, (0, e._)`${j}.errors`), () => w.throw(j))), M;
     }
     function R() {
       const M = (0, e._)`${b}.errors`;
-      return x.assign(M, null), E(e.nil), M;
+      return w.assign(M, null), E(e.nil), M;
     }
     function E(M = h.async ? (0, e._)`await ` : e.nil) {
-      const j = l.opts.passContext ? t.default.this : t.default.self, N = !("compile" in h && !m || h.schema === !1);
-      x.assign(S, (0, e._)`${M}${(0, n.callValidateCode)(f, b, j, N)}`, h.modifying);
+      const j = d.opts.passContext ? t.default.this : t.default.self, N = !("compile" in h && !m || h.schema === !1);
+      w.assign(S, (0, e._)`${M}${(0, n.callValidateCode)(f, b, j, N)}`, h.modifying);
     }
     function k(M) {
       var j;
-      x.if((0, e.not)((j = h.valid) !== null && j !== void 0 ? j : S), M);
+      w.if((0, e.not)((j = h.valid) !== null && j !== void 0 ? j : S), M);
     }
   }
   Ke.funcKeywordCode = r;
   function s(f) {
-    const { gen: h, data: w, it: x } = f;
-    h.if(x.parentData, () => h.assign(w, (0, e._)`${x.parentData}[${x.parentDataProperty}]`));
+    const { gen: h, data: x, it: w } = f;
+    h.if(w.parentData, () => h.assign(x, (0, e._)`${w.parentData}[${w.parentDataProperty}]`));
   }
   function a(f, h) {
-    const { gen: w } = f;
-    w.if((0, e._)`Array.isArray(${h})`, () => {
-      w.assign(t.default.vErrors, (0, e._)`${t.default.vErrors} === null ? ${h} : ${t.default.vErrors}.concat(${h})`).assign(t.default.errors, (0, e._)`${t.default.vErrors}.length`), (0, i.extendErrors)(f);
+    const { gen: x } = f;
+    x.if((0, e._)`Array.isArray(${h})`, () => {
+      x.assign(t.default.vErrors, (0, e._)`${t.default.vErrors} === null ? ${h} : ${t.default.vErrors}.concat(${h})`).assign(t.default.errors, (0, e._)`${t.default.vErrors}.length`), (0, i.extendErrors)(f);
     }, () => f.error());
   }
   function c({ schemaEnv: f }, h) {
     if (h.async && !f.$async)
       throw new Error("async keyword in sync schema");
   }
-  function d(f, h, w) {
-    if (w === void 0)
+  function l(f, h, x) {
+    if (x === void 0)
       throw new Error(`keyword "${h}" failed to compile`);
-    return f.scopeValue("keyword", typeof w == "function" ? { ref: w } : { ref: w, code: (0, e.stringify)(w) });
+    return f.scopeValue("keyword", typeof x == "function" ? { ref: x } : { ref: x, code: (0, e.stringify)(x) });
   }
-  function p(f, h, w = !1) {
-    return !h.length || h.some((x) => x === "array" ? Array.isArray(f) : x === "object" ? f && typeof f == "object" && !Array.isArray(f) : typeof f == x || w && typeof f > "u");
+  function u(f, h, x = !1) {
+    return !h.length || h.some((w) => w === "array" ? Array.isArray(f) : w === "object" ? f && typeof f == "object" && !Array.isArray(f) : typeof f == w || x && typeof f > "u");
   }
-  Ke.validSchemaType = p;
-  function y({ schema: f, opts: h, self: w, errSchemaPath: x }, v, A) {
-    if (Array.isArray(v.keyword) ? !v.keyword.includes(A) : v.keyword !== A)
+  Ke.validSchemaType = u;
+  function y({ schema: f, opts: h, self: x, errSchemaPath: w }, v, I) {
+    if (Array.isArray(v.keyword) ? !v.keyword.includes(I) : v.keyword !== I)
       throw new Error("ajv implementation error");
     const g = v.dependencies;
     if (g?.some((m) => !Object.prototype.hasOwnProperty.call(f, m)))
-      throw new Error(`parent schema must have dependencies of ${A}: ${g.join(",")}`);
-    if (v.validateSchema && !v.validateSchema(f[A])) {
-      const l = `keyword "${A}" value is invalid at path "${x}": ` + w.errorsText(v.validateSchema.errors);
+      throw new Error(`parent schema must have dependencies of ${I}: ${g.join(",")}`);
+    if (v.validateSchema && !v.validateSchema(f[I])) {
+      const d = `keyword "${I}" value is invalid at path "${w}": ` + x.errorsText(v.validateSchema.errors);
       if (h.validateSchema === "log")
-        w.logger.error(l);
+        x.logger.error(d);
       else
-        throw new Error(l);
+        throw new Error(d);
     }
   }
   return Ke.validateKeywordUsage = y, Ke;
 }
-var vt = {}, ro;
-function ku() {
-  if (ro) return vt;
-  ro = 1, Object.defineProperty(vt, "__esModule", { value: !0 }), vt.extendSubschemaMode = vt.extendSubschemaData = vt.getSubschema = void 0;
+var vt = {}, ao;
+function Mu() {
+  if (ao) return vt;
+  ao = 1, Object.defineProperty(vt, "__esModule", { value: !0 }), vt.extendSubschemaMode = vt.extendSubschemaData = vt.getSubschema = void 0;
   const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie();
-  function n(r, { keyword: s, schemaProp: a, schema: c, schemaPath: d, errSchemaPath: p, topSchemaRef: y }) {
+  function n(r, { keyword: s, schemaProp: a, schema: c, schemaPath: l, errSchemaPath: u, topSchemaRef: y }) {
     if (s !== void 0 && c !== void 0)
       throw new Error('both "keyword" and "schema" passed, only one allowed');
     if (s !== void 0) {
@@ -12824,44 +12951,44 @@ function ku() {
       };
     }
     if (c !== void 0) {
-      if (d === void 0 || p === void 0 || y === void 0)
+      if (l === void 0 || u === void 0 || y === void 0)
         throw new Error('"schemaPath", "errSchemaPath" and "topSchemaRef" are required with "schema"');
       return {
         schema: c,
-        schemaPath: d,
+        schemaPath: l,
         topSchemaRef: y,
-        errSchemaPath: p
+        errSchemaPath: u
       };
     }
     throw new Error('either "keyword" or "schema" must be passed');
   }
   vt.getSubschema = n;
-  function i(r, s, { dataProp: a, dataPropType: c, data: d, dataTypes: p, propertyName: y }) {
-    if (d !== void 0 && a !== void 0)
+  function i(r, s, { dataProp: a, dataPropType: c, data: l, dataTypes: u, propertyName: y }) {
+    if (l !== void 0 && a !== void 0)
       throw new Error('both "data" and "dataProp" passed, only one allowed');
     const { gen: f } = s;
     if (a !== void 0) {
-      const { errorPath: w, dataPathArr: x, opts: v } = s, A = f.let("data", (0, e._)`${s.data}${(0, e.getProperty)(a)}`, !0);
-      h(A), r.errorPath = (0, e.str)`${w}${(0, t.getErrorPath)(a, c, v.jsPropertySyntax)}`, r.parentDataProperty = (0, e._)`${a}`, r.dataPathArr = [...x, r.parentDataProperty];
+      const { errorPath: x, dataPathArr: w, opts: v } = s, I = f.let("data", (0, e._)`${s.data}${(0, e.getProperty)(a)}`, !0);
+      h(I), r.errorPath = (0, e.str)`${x}${(0, t.getErrorPath)(a, c, v.jsPropertySyntax)}`, r.parentDataProperty = (0, e._)`${a}`, r.dataPathArr = [...w, r.parentDataProperty];
     }
-    if (d !== void 0) {
-      const w = d instanceof e.Name ? d : f.let("data", d, !0);
-      h(w), y !== void 0 && (r.propertyName = y);
+    if (l !== void 0) {
+      const x = l instanceof e.Name ? l : f.let("data", l, !0);
+      h(x), y !== void 0 && (r.propertyName = y);
     }
-    p && (r.dataTypes = p);
-    function h(w) {
-      r.data = w, r.dataLevel = s.dataLevel + 1, r.dataTypes = [], s.definedProperties = /* @__PURE__ */ new Set(), r.parentData = s.data, r.dataNames = [...s.dataNames, w];
+    u && (r.dataTypes = u);
+    function h(x) {
+      r.data = x, r.dataLevel = s.dataLevel + 1, r.dataTypes = [], s.definedProperties = /* @__PURE__ */ new Set(), r.parentData = s.data, r.dataNames = [...s.dataNames, x];
     }
   }
   vt.extendSubschemaData = i;
-  function o(r, { jtdDiscriminator: s, jtdMetadata: a, compositeRule: c, createErrors: d, allErrors: p }) {
-    c !== void 0 && (r.compositeRule = c), d !== void 0 && (r.createErrors = d), p !== void 0 && (r.allErrors = p), r.jtdDiscriminator = s, r.jtdMetadata = a;
+  function o(r, { jtdDiscriminator: s, jtdMetadata: a, compositeRule: c, createErrors: l, allErrors: u }) {
+    c !== void 0 && (r.compositeRule = c), l !== void 0 && (r.createErrors = l), u !== void 0 && (r.allErrors = u), r.jtdDiscriminator = s, r.jtdMetadata = a;
   }
   return vt.extendSubschemaMode = o, vt;
 }
-var Re = {}, Lr, so;
-function Ld() {
-  return so || (so = 1, Lr = function e(t, n) {
+var je = {}, Nr, oo;
+function Dd() {
+  return oo || (oo = 1, Nr = function e(t, n) {
     if (t === n) return !0;
     if (t && n && typeof t == "object" && typeof n == "object") {
       if (t.constructor !== n.constructor) return !1;
@@ -12885,13 +13012,13 @@ function Ld() {
       return !0;
     }
     return t !== t && n !== n;
-  }), Lr;
+  }), Nr;
 }
-var Nr = { exports: {} }, ao;
-function Mu() {
-  if (ao) return Nr.exports;
-  ao = 1;
-  var e = Nr.exports = function(i, o, r) {
+var Dr = { exports: {} }, co;
+function Ou() {
+  if (co) return Dr.exports;
+  co = 1;
+  var e = Dr.exports = function(i, o, r) {
     typeof o == "function" && (r = o, o = {}), r = o.cb || r;
     var s = typeof r == "function" ? r : r.pre || function() {
     }, a = r.post || function() {
@@ -12939,34 +13066,34 @@ function Mu() {
     maxProperties: !0,
     minProperties: !0
   };
-  function t(i, o, r, s, a, c, d, p, y, f) {
+  function t(i, o, r, s, a, c, l, u, y, f) {
     if (s && typeof s == "object" && !Array.isArray(s)) {
-      o(s, a, c, d, p, y, f);
+      o(s, a, c, l, u, y, f);
       for (var h in s) {
-        var w = s[h];
-        if (Array.isArray(w)) {
+        var x = s[h];
+        if (Array.isArray(x)) {
           if (h in e.arrayKeywords)
-            for (var x = 0; x < w.length; x++)
-              t(i, o, r, w[x], a + "/" + h + "/" + x, c, a, h, s, x);
+            for (var w = 0; w < x.length; w++)
+              t(i, o, r, x[w], a + "/" + h + "/" + w, c, a, h, s, w);
         } else if (h in e.propsKeywords) {
-          if (w && typeof w == "object")
-            for (var v in w)
-              t(i, o, r, w[v], a + "/" + h + "/" + n(v), c, a, h, s, v);
-        } else (h in e.keywords || i.allKeys && !(h in e.skipKeywords)) && t(i, o, r, w, a + "/" + h, c, a, h, s);
+          if (x && typeof x == "object")
+            for (var v in x)
+              t(i, o, r, x[v], a + "/" + h + "/" + n(v), c, a, h, s, v);
+        } else (h in e.keywords || i.allKeys && !(h in e.skipKeywords)) && t(i, o, r, x, a + "/" + h, c, a, h, s);
       }
-      r(s, a, c, d, p, y, f);
+      r(s, a, c, l, u, y, f);
     }
   }
   function n(i) {
     return i.replace(/~/g, "~0").replace(/\//g, "~1");
   }
-  return Nr.exports;
+  return Dr.exports;
 }
-var oo;
-function lr() {
-  if (oo) return Re;
-  oo = 1, Object.defineProperty(Re, "__esModule", { value: !0 }), Re.getSchemaRefs = Re.resolveUrl = Re.normalizeId = Re._getFullPath = Re.getFullPath = Re.inlineRef = void 0;
-  const e = /* @__PURE__ */ ie(), t = Ld(), n = Mu(), i = /* @__PURE__ */ new Set([
+var lo;
+function ur() {
+  if (lo) return je;
+  lo = 1, Object.defineProperty(je, "__esModule", { value: !0 }), je.getSchemaRefs = je.resolveUrl = je.normalizeId = je._getFullPath = je.getFullPath = je.inlineRef = void 0;
+  const e = /* @__PURE__ */ ie(), t = Dd(), n = Ou(), i = /* @__PURE__ */ new Set([
     "type",
     "format",
     "pattern",
@@ -12984,10 +13111,10 @@ function lr() {
     "enum",
     "const"
   ]);
-  function o(x, v = !0) {
-    return typeof x == "boolean" ? !0 : v === !0 ? !s(x) : v ? a(x) <= v : !1;
+  function o(w, v = !0) {
+    return typeof w == "boolean" ? !0 : v === !0 ? !s(w) : v ? a(w) <= v : !1;
   }
-  Re.inlineRef = o;
+  je.inlineRef = o;
   const r = /* @__PURE__ */ new Set([
     "$ref",
     "$recursiveRef",
@@ -12995,63 +13122,63 @@ function lr() {
     "$dynamicRef",
     "$dynamicAnchor"
   ]);
-  function s(x) {
-    for (const v in x) {
+  function s(w) {
+    for (const v in w) {
       if (r.has(v))
         return !0;
-      const A = x[v];
-      if (Array.isArray(A) && A.some(s) || typeof A == "object" && s(A))
+      const I = w[v];
+      if (Array.isArray(I) && I.some(s) || typeof I == "object" && s(I))
         return !0;
     }
     return !1;
   }
-  function a(x) {
+  function a(w) {
     let v = 0;
-    for (const A in x) {
-      if (A === "$ref")
+    for (const I in w) {
+      if (I === "$ref")
         return 1 / 0;
-      if (v++, !i.has(A) && (typeof x[A] == "object" && (0, e.eachItem)(x[A], (g) => v += a(g)), v === 1 / 0))
+      if (v++, !i.has(I) && (typeof w[I] == "object" && (0, e.eachItem)(w[I], (g) => v += a(g)), v === 1 / 0))
         return 1 / 0;
     }
     return v;
   }
-  function c(x, v = "", A) {
-    A !== !1 && (v = y(v));
-    const g = x.parse(v);
-    return d(x, g);
+  function c(w, v = "", I) {
+    I !== !1 && (v = y(v));
+    const g = w.parse(v);
+    return l(w, g);
   }
-  Re.getFullPath = c;
-  function d(x, v) {
-    return x.serialize(v).split("#")[0] + "#";
+  je.getFullPath = c;
+  function l(w, v) {
+    return w.serialize(v).split("#")[0] + "#";
   }
-  Re._getFullPath = d;
-  const p = /#\/?$/;
-  function y(x) {
-    return x ? x.replace(p, "") : "";
+  je._getFullPath = l;
+  const u = /#\/?$/;
+  function y(w) {
+    return w ? w.replace(u, "") : "";
   }
-  Re.normalizeId = y;
-  function f(x, v, A) {
-    return A = y(A), x.resolve(v, A);
+  je.normalizeId = y;
+  function f(w, v, I) {
+    return I = y(I), w.resolve(v, I);
   }
-  Re.resolveUrl = f;
+  je.resolveUrl = f;
   const h = /^[a-z_][-a-z0-9._]*$/i;
-  function w(x, v) {
-    if (typeof x == "boolean")
+  function x(w, v) {
+    if (typeof w == "boolean")
       return {};
-    const { schemaId: A, uriResolver: g } = this.opts, m = y(x[A] || v), l = { "": m }, u = c(g, m, !1), b = {}, S = /* @__PURE__ */ new Set();
-    return n(x, { allKeys: !0 }, (R, E, k, M) => {
+    const { schemaId: I, uriResolver: g } = this.opts, m = y(w[I] || v), d = { "": m }, p = c(g, m, !1), b = {}, S = /* @__PURE__ */ new Set();
+    return n(w, { allKeys: !0 }, (R, E, k, M) => {
       if (M === void 0)
         return;
-      const j = u + E;
-      let N = l[M];
-      typeof R[A] == "string" && (N = _.call(this, R[A])), G.call(this, R.$anchor), G.call(this, R.$dynamicAnchor), l[E] = N;
+      const j = p + E;
+      let N = d[M];
+      typeof R[I] == "string" && (N = _.call(this, R[I])), G.call(this, R.$anchor), G.call(this, R.$dynamicAnchor), d[E] = N;
       function _(L) {
         const B = this.opts.uriResolver.resolve;
         if (L = y(N ? B(N, L) : L), S.has(L))
           throw P(L);
         S.add(L);
         let T = this.refs[L];
-        return typeof T == "string" && (T = this.refs[T]), typeof T == "object" ? I(R, T.schema, L) : L !== y(j) && (L[0] === "#" ? (I(R, b[L], L), b[L] = R) : this.refs[L] = j), L;
+        return typeof T == "string" && (T = this.refs[T]), typeof T == "object" ? A(R, T.schema, L) : L !== y(j) && (L[0] === "#" ? (A(R, b[L], L), b[L] = R) : this.refs[L] = j), L;
       }
       function G(L) {
         if (typeof L == "string") {
@@ -13061,7 +13188,7 @@ function lr() {
         }
       }
     }), b;
-    function I(R, E, k) {
+    function A(R, E, k) {
       if (E !== void 0 && !t(R, E))
         throw P(k);
     }
@@ -13069,183 +13196,183 @@ function lr() {
       return new Error(`reference "${R}" resolves to more than one schema`);
     }
   }
-  return Re.getSchemaRefs = w, Re;
+  return je.getSchemaRefs = x, je;
 }
-var co;
-function En() {
-  if (co) return yt;
-  co = 1, Object.defineProperty(yt, "__esModule", { value: !0 }), yt.getData = yt.KeywordCxt = yt.validateFunctionCode = void 0;
-  const e = /* @__PURE__ */ Tu(), t = /* @__PURE__ */ Yi(), n = /* @__PURE__ */ Od(), i = /* @__PURE__ */ Yi(), o = /* @__PURE__ */ Cu(), r = /* @__PURE__ */ Eu(), s = /* @__PURE__ */ ku(), a = /* @__PURE__ */ te(), c = /* @__PURE__ */ et(), d = /* @__PURE__ */ lr(), p = /* @__PURE__ */ ie(), y = /* @__PURE__ */ dr();
-  function f(U) {
-    if (u(U) && (S(U), l(U))) {
-      v(U);
+var uo;
+function Mn() {
+  if (uo) return yt;
+  uo = 1, Object.defineProperty(yt, "__esModule", { value: !0 }), yt.getData = yt.KeywordCxt = yt.validateFunctionCode = void 0;
+  const e = /* @__PURE__ */ Cu(), t = /* @__PURE__ */ er(), n = /* @__PURE__ */ Nd(), i = /* @__PURE__ */ er(), o = /* @__PURE__ */ Eu(), r = /* @__PURE__ */ ku(), s = /* @__PURE__ */ Mu(), a = /* @__PURE__ */ te(), c = /* @__PURE__ */ et(), l = /* @__PURE__ */ ur(), u = /* @__PURE__ */ ie(), y = /* @__PURE__ */ lr();
+  function f(V) {
+    if (p(V) && (S(V), d(V))) {
+      v(V);
       return;
     }
-    h(U, () => (0, e.topBoolOrEmptySchema)(U));
+    h(V, () => (0, e.topBoolOrEmptySchema)(V));
   }
   yt.validateFunctionCode = f;
-  function h({ gen: U, validateName: F, schema: Z, schemaEnv: K, opts: W }, ee) {
-    W.code.es5 ? U.func(F, (0, a._)`${c.default.data}, ${c.default.valCxt}`, K.$async, () => {
-      U.code((0, a._)`"use strict"; ${g(Z, W)}`), x(U, W), U.code(ee);
-    }) : U.func(F, (0, a._)`${c.default.data}, ${w(W)}`, K.$async, () => U.code(g(Z, W)).code(ee));
+  function h({ gen: V, validateName: F, schema: Z, schemaEnv: K, opts: W }, ee) {
+    W.code.es5 ? V.func(F, (0, a._)`${c.default.data}, ${c.default.valCxt}`, K.$async, () => {
+      V.code((0, a._)`"use strict"; ${g(Z, W)}`), w(V, W), V.code(ee);
+    }) : V.func(F, (0, a._)`${c.default.data}, ${x(W)}`, K.$async, () => V.code(g(Z, W)).code(ee));
   }
-  function w(U) {
-    return (0, a._)`{${c.default.instancePath}="", ${c.default.parentData}, ${c.default.parentDataProperty}, ${c.default.rootData}=${c.default.data}${U.dynamicRef ? (0, a._)`, ${c.default.dynamicAnchors}={}` : a.nil}}={}`;
+  function x(V) {
+    return (0, a._)`{${c.default.instancePath}="", ${c.default.parentData}, ${c.default.parentDataProperty}, ${c.default.rootData}=${c.default.data}${V.dynamicRef ? (0, a._)`, ${c.default.dynamicAnchors}={}` : a.nil}}={}`;
   }
-  function x(U, F) {
-    U.if(c.default.valCxt, () => {
-      U.var(c.default.instancePath, (0, a._)`${c.default.valCxt}.${c.default.instancePath}`), U.var(c.default.parentData, (0, a._)`${c.default.valCxt}.${c.default.parentData}`), U.var(c.default.parentDataProperty, (0, a._)`${c.default.valCxt}.${c.default.parentDataProperty}`), U.var(c.default.rootData, (0, a._)`${c.default.valCxt}.${c.default.rootData}`), F.dynamicRef && U.var(c.default.dynamicAnchors, (0, a._)`${c.default.valCxt}.${c.default.dynamicAnchors}`);
+  function w(V, F) {
+    V.if(c.default.valCxt, () => {
+      V.var(c.default.instancePath, (0, a._)`${c.default.valCxt}.${c.default.instancePath}`), V.var(c.default.parentData, (0, a._)`${c.default.valCxt}.${c.default.parentData}`), V.var(c.default.parentDataProperty, (0, a._)`${c.default.valCxt}.${c.default.parentDataProperty}`), V.var(c.default.rootData, (0, a._)`${c.default.valCxt}.${c.default.rootData}`), F.dynamicRef && V.var(c.default.dynamicAnchors, (0, a._)`${c.default.valCxt}.${c.default.dynamicAnchors}`);
     }, () => {
-      U.var(c.default.instancePath, (0, a._)`""`), U.var(c.default.parentData, (0, a._)`undefined`), U.var(c.default.parentDataProperty, (0, a._)`undefined`), U.var(c.default.rootData, c.default.data), F.dynamicRef && U.var(c.default.dynamicAnchors, (0, a._)`{}`);
+      V.var(c.default.instancePath, (0, a._)`""`), V.var(c.default.parentData, (0, a._)`undefined`), V.var(c.default.parentDataProperty, (0, a._)`undefined`), V.var(c.default.rootData, c.default.data), F.dynamicRef && V.var(c.default.dynamicAnchors, (0, a._)`{}`);
     });
   }
-  function v(U) {
-    const { schema: F, opts: Z, gen: K } = U;
-    h(U, () => {
-      Z.$comment && F.$comment && M(U), R(U), K.let(c.default.vErrors, null), K.let(c.default.errors, 0), Z.unevaluated && A(U), I(U), j(U);
+  function v(V) {
+    const { schema: F, opts: Z, gen: K } = V;
+    h(V, () => {
+      Z.$comment && F.$comment && M(V), R(V), K.let(c.default.vErrors, null), K.let(c.default.errors, 0), Z.unevaluated && I(V), A(V), j(V);
     });
   }
-  function A(U) {
-    const { gen: F, validateName: Z } = U;
-    U.evaluated = F.const("evaluated", (0, a._)`${Z}.evaluated`), F.if((0, a._)`${U.evaluated}.dynamicProps`, () => F.assign((0, a._)`${U.evaluated}.props`, (0, a._)`undefined`)), F.if((0, a._)`${U.evaluated}.dynamicItems`, () => F.assign((0, a._)`${U.evaluated}.items`, (0, a._)`undefined`));
+  function I(V) {
+    const { gen: F, validateName: Z } = V;
+    V.evaluated = F.const("evaluated", (0, a._)`${Z}.evaluated`), F.if((0, a._)`${V.evaluated}.dynamicProps`, () => F.assign((0, a._)`${V.evaluated}.props`, (0, a._)`undefined`)), F.if((0, a._)`${V.evaluated}.dynamicItems`, () => F.assign((0, a._)`${V.evaluated}.items`, (0, a._)`undefined`));
   }
-  function g(U, F) {
-    const Z = typeof U == "object" && U[F.schemaId];
+  function g(V, F) {
+    const Z = typeof V == "object" && V[F.schemaId];
     return Z && (F.code.source || F.code.process) ? (0, a._)`/*# sourceURL=${Z} */` : a.nil;
   }
-  function m(U, F) {
-    if (u(U) && (S(U), l(U))) {
-      b(U, F);
+  function m(V, F) {
+    if (p(V) && (S(V), d(V))) {
+      b(V, F);
       return;
     }
-    (0, e.boolOrEmptySchema)(U, F);
+    (0, e.boolOrEmptySchema)(V, F);
   }
-  function l({ schema: U, self: F }) {
-    if (typeof U == "boolean")
-      return !U;
-    for (const Z in U)
+  function d({ schema: V, self: F }) {
+    if (typeof V == "boolean")
+      return !V;
+    for (const Z in V)
       if (F.RULES.all[Z])
         return !0;
     return !1;
   }
-  function u(U) {
-    return typeof U.schema != "boolean";
+  function p(V) {
+    return typeof V.schema != "boolean";
   }
-  function b(U, F) {
-    const { schema: Z, gen: K, opts: W } = U;
-    W.$comment && Z.$comment && M(U), E(U), k(U);
+  function b(V, F) {
+    const { schema: Z, gen: K, opts: W } = V;
+    W.$comment && Z.$comment && M(V), E(V), k(V);
     const ee = K.const("_errs", c.default.errors);
-    I(U, ee), K.var(F, (0, a._)`${ee} === ${c.default.errors}`);
+    A(V, ee), K.var(F, (0, a._)`${ee} === ${c.default.errors}`);
   }
-  function S(U) {
-    (0, p.checkUnknownRules)(U), P(U);
+  function S(V) {
+    (0, u.checkUnknownRules)(V), P(V);
   }
-  function I(U, F) {
-    if (U.opts.jtd)
-      return _(U, [], !1, F);
-    const Z = (0, t.getSchemaTypes)(U.schema), K = (0, t.coerceAndCheckDataType)(U, Z);
-    _(U, Z, !K, F);
+  function A(V, F) {
+    if (V.opts.jtd)
+      return _(V, [], !1, F);
+    const Z = (0, t.getSchemaTypes)(V.schema), K = (0, t.coerceAndCheckDataType)(V, Z);
+    _(V, Z, !K, F);
   }
-  function P(U) {
-    const { schema: F, errSchemaPath: Z, opts: K, self: W } = U;
-    F.$ref && K.ignoreKeywordsWithRef && (0, p.schemaHasRulesButRef)(F, W.RULES) && W.logger.warn(`$ref: keywords ignored in schema at path "${Z}"`);
+  function P(V) {
+    const { schema: F, errSchemaPath: Z, opts: K, self: W } = V;
+    F.$ref && K.ignoreKeywordsWithRef && (0, u.schemaHasRulesButRef)(F, W.RULES) && W.logger.warn(`$ref: keywords ignored in schema at path "${Z}"`);
   }
-  function R(U) {
-    const { schema: F, opts: Z } = U;
-    F.default !== void 0 && Z.useDefaults && Z.strictSchema && (0, p.checkStrictMode)(U, "default is ignored in the schema root");
+  function R(V) {
+    const { schema: F, opts: Z } = V;
+    F.default !== void 0 && Z.useDefaults && Z.strictSchema && (0, u.checkStrictMode)(V, "default is ignored in the schema root");
   }
-  function E(U) {
-    const F = U.schema[U.opts.schemaId];
-    F && (U.baseId = (0, d.resolveUrl)(U.opts.uriResolver, U.baseId, F));
+  function E(V) {
+    const F = V.schema[V.opts.schemaId];
+    F && (V.baseId = (0, l.resolveUrl)(V.opts.uriResolver, V.baseId, F));
   }
-  function k(U) {
-    if (U.schema.$async && !U.schemaEnv.$async)
+  function k(V) {
+    if (V.schema.$async && !V.schemaEnv.$async)
       throw new Error("async schema in sync schema");
   }
-  function M({ gen: U, schemaEnv: F, schema: Z, errSchemaPath: K, opts: W }) {
+  function M({ gen: V, schemaEnv: F, schema: Z, errSchemaPath: K, opts: W }) {
     const ee = Z.$comment;
     if (W.$comment === !0)
-      U.code((0, a._)`${c.default.self}.logger.log(${ee})`);
+      V.code((0, a._)`${c.default.self}.logger.log(${ee})`);
     else if (typeof W.$comment == "function") {
-      const re = (0, a.str)`${K}/$comment`, Se = U.scopeValue("root", { ref: F.root });
-      U.code((0, a._)`${c.default.self}.opts.$comment(${ee}, ${re}, ${Se}.schema)`);
+      const re = (0, a.str)`${K}/$comment`, Se = V.scopeValue("root", { ref: F.root });
+      V.code((0, a._)`${c.default.self}.opts.$comment(${ee}, ${re}, ${Se}.schema)`);
     }
   }
-  function j(U) {
-    const { gen: F, schemaEnv: Z, validateName: K, ValidationError: W, opts: ee } = U;
-    Z.$async ? F.if((0, a._)`${c.default.errors} === 0`, () => F.return(c.default.data), () => F.throw((0, a._)`new ${W}(${c.default.vErrors})`)) : (F.assign((0, a._)`${K}.errors`, c.default.vErrors), ee.unevaluated && N(U), F.return((0, a._)`${c.default.errors} === 0`));
+  function j(V) {
+    const { gen: F, schemaEnv: Z, validateName: K, ValidationError: W, opts: ee } = V;
+    Z.$async ? F.if((0, a._)`${c.default.errors} === 0`, () => F.return(c.default.data), () => F.throw((0, a._)`new ${W}(${c.default.vErrors})`)) : (F.assign((0, a._)`${K}.errors`, c.default.vErrors), ee.unevaluated && N(V), F.return((0, a._)`${c.default.errors} === 0`));
   }
-  function N({ gen: U, evaluated: F, props: Z, items: K }) {
-    Z instanceof a.Name && U.assign((0, a._)`${F}.props`, Z), K instanceof a.Name && U.assign((0, a._)`${F}.items`, K);
+  function N({ gen: V, evaluated: F, props: Z, items: K }) {
+    Z instanceof a.Name && V.assign((0, a._)`${F}.props`, Z), K instanceof a.Name && V.assign((0, a._)`${F}.items`, K);
   }
-  function _(U, F, Z, K) {
-    const { gen: W, schema: ee, data: re, allErrors: Se, opts: he, self: ye } = U, { RULES: fe } = ye;
-    if (ee.$ref && (he.ignoreKeywordsWithRef || !(0, p.schemaHasRulesButRef)(ee, fe))) {
-      W.block(() => z(U, "$ref", fe.all.$ref.definition));
+  function _(V, F, Z, K) {
+    const { gen: W, schema: ee, data: re, allErrors: Se, opts: me, self: ge } = V, { RULES: fe } = ge;
+    if (ee.$ref && (me.ignoreKeywordsWithRef || !(0, u.schemaHasRulesButRef)(ee, fe))) {
+      W.block(() => z(V, "$ref", fe.all.$ref.definition));
       return;
     }
-    he.jtd || L(U, F), W.block(() => {
+    me.jtd || L(V, F), W.block(() => {
       for (const De of fe.rules)
         nt(De);
       nt(fe.post);
     });
     function nt(De) {
-      (0, n.shouldUseGroup)(ee, De) && (De.type ? (W.if((0, i.checkDataType)(De.type, re, he.strictNumbers)), G(U, De), F.length === 1 && F[0] === De.type && Z && (W.else(), (0, i.reportTypeError)(U)), W.endIf()) : G(U, De), Se || W.if((0, a._)`${c.default.errors} === ${K || 0}`));
+      (0, n.shouldUseGroup)(ee, De) && (De.type ? (W.if((0, i.checkDataType)(De.type, re, me.strictNumbers)), G(V, De), F.length === 1 && F[0] === De.type && Z && (W.else(), (0, i.reportTypeError)(V)), W.endIf()) : G(V, De), Se || W.if((0, a._)`${c.default.errors} === ${K || 0}`));
     }
   }
-  function G(U, F) {
-    const { gen: Z, schema: K, opts: { useDefaults: W } } = U;
-    W && (0, o.assignDefaults)(U, F.type), Z.block(() => {
+  function G(V, F) {
+    const { gen: Z, schema: K, opts: { useDefaults: W } } = V;
+    W && (0, o.assignDefaults)(V, F.type), Z.block(() => {
       for (const ee of F.rules)
-        (0, n.shouldUseRule)(K, ee) && z(U, ee.keyword, ee.definition, F.type);
+        (0, n.shouldUseRule)(K, ee) && z(V, ee.keyword, ee.definition, F.type);
     });
   }
-  function L(U, F) {
-    U.schemaEnv.meta || !U.opts.strictTypes || (B(U, F), U.opts.allowUnionTypes || T(U, F), O(U, U.dataTypes));
+  function L(V, F) {
+    V.schemaEnv.meta || !V.opts.strictTypes || (B(V, F), V.opts.allowUnionTypes || T(V, F), O(V, V.dataTypes));
   }
-  function B(U, F) {
+  function B(V, F) {
     if (F.length) {
-      if (!U.dataTypes.length) {
-        U.dataTypes = F;
+      if (!V.dataTypes.length) {
+        V.dataTypes = F;
         return;
       }
       F.forEach((Z) => {
-        D(U.dataTypes, Z) || q(U, `type "${Z}" not allowed by context "${U.dataTypes.join(",")}"`);
-      }), $(U, F);
+        D(V.dataTypes, Z) || q(V, `type "${Z}" not allowed by context "${V.dataTypes.join(",")}"`);
+      }), $(V, F);
     }
   }
-  function T(U, F) {
-    F.length > 1 && !(F.length === 2 && F.includes("null")) && q(U, "use allowUnionTypes to allow union type keyword");
+  function T(V, F) {
+    F.length > 1 && !(F.length === 2 && F.includes("null")) && q(V, "use allowUnionTypes to allow union type keyword");
   }
-  function O(U, F) {
-    const Z = U.self.RULES.all;
+  function O(V, F) {
+    const Z = V.self.RULES.all;
     for (const K in Z) {
       const W = Z[K];
-      if (typeof W == "object" && (0, n.shouldUseRule)(U.schema, W)) {
+      if (typeof W == "object" && (0, n.shouldUseRule)(V.schema, W)) {
         const { type: ee } = W.definition;
-        ee.length && !ee.some((re) => V(F, re)) && q(U, `missing type "${ee.join(",")}" for keyword "${K}"`);
+        ee.length && !ee.some((re) => U(F, re)) && q(V, `missing type "${ee.join(",")}" for keyword "${K}"`);
       }
     }
   }
-  function V(U, F) {
-    return U.includes(F) || F === "number" && U.includes("integer");
+  function U(V, F) {
+    return V.includes(F) || F === "number" && V.includes("integer");
   }
-  function D(U, F) {
-    return U.includes(F) || F === "integer" && U.includes("number");
+  function D(V, F) {
+    return V.includes(F) || F === "integer" && V.includes("number");
   }
-  function $(U, F) {
+  function $(V, F) {
     const Z = [];
-    for (const K of U.dataTypes)
+    for (const K of V.dataTypes)
       D(F, K) ? Z.push(K) : F.includes("integer") && K === "number" && Z.push("integer");
-    U.dataTypes = Z;
+    V.dataTypes = Z;
   }
-  function q(U, F) {
-    const Z = U.schemaEnv.baseId + U.errSchemaPath;
-    F += ` at "${Z}" (strictTypes)`, (0, p.checkStrictMode)(U, F, U.opts.strictTypes);
+  function q(V, F) {
+    const Z = V.schemaEnv.baseId + V.errSchemaPath;
+    F += ` at "${Z}" (strictTypes)`, (0, u.checkStrictMode)(V, F, V.opts.strictTypes);
   }
   class C {
     constructor(F, Z, K) {
-      if ((0, r.validateKeywordUsage)(F, Z, K), this.gen = F.gen, this.allErrors = F.allErrors, this.keyword = K, this.data = F.data, this.schema = F.schema[K], this.$data = Z.$data && F.opts.$data && this.schema && this.schema.$data, this.schemaValue = (0, p.schemaRefOrVal)(F, this.schema, K, this.$data), this.schemaType = Z.schemaType, this.parentSchema = F.schema, this.params = {}, this.it = F, this.def = Z, this.$data)
+      if ((0, r.validateKeywordUsage)(F, Z, K), this.gen = F.gen, this.allErrors = F.allErrors, this.keyword = K, this.data = F.data, this.schema = F.schema[K], this.$data = Z.$data && F.opts.$data && this.schema && this.schema.$data, this.schemaValue = (0, u.schemaRefOrVal)(F, this.schema, K, this.$data), this.schemaType = Z.schemaType, this.parentSchema = F.schema, this.params = {}, this.it = F, this.def = Z, this.$data)
         this.schemaCode = F.gen.const("vSchema", J(this.$data, F));
       else if (this.schemaCode = this.schemaValue, !(0, r.validSchemaType)(this.schema, Z.schemaType, Z.allowUndefined))
         throw new Error(`${K} value must be ${JSON.stringify(Z.schemaType)}`);
@@ -13315,15 +13442,15 @@ function En() {
         if (K.length) {
           if (!(Z instanceof a.Name))
             throw new Error("ajv implementation error");
-          const he = Array.isArray(K) ? K : [K];
-          return (0, a._)`${(0, i.checkDataTypes)(he, Z, ee.opts.strictNumbers, i.DataType.Wrong)}`;
+          const me = Array.isArray(K) ? K : [K];
+          return (0, a._)`${(0, i.checkDataTypes)(me, Z, ee.opts.strictNumbers, i.DataType.Wrong)}`;
         }
         return a.nil;
       }
       function Se() {
         if (W.validateSchema) {
-          const he = F.scopeValue("validate$data", { ref: W.validateSchema });
-          return (0, a._)`!${he}(${Z})`;
+          const me = F.scopeValue("validate$data", { ref: W.validateSchema });
+          return (0, a._)`!${me}(${Z})`;
         }
         return a.nil;
       }
@@ -13336,7 +13463,7 @@ function En() {
     }
     mergeEvaluated(F, Z) {
       const { it: K, gen: W } = this;
-      K.opts.unevaluated && (K.props !== !0 && F.props !== void 0 && (K.props = p.mergeEvaluated.props(W, F.props, K.props, Z)), K.items !== !0 && F.items !== void 0 && (K.items = p.mergeEvaluated.items(W, F.items, K.items, Z)));
+      K.opts.unevaluated && (K.props !== !0 && F.props !== void 0 && (K.props = u.mergeEvaluated.props(W, F.props, K.props, Z)), K.items !== !0 && F.items !== void 0 && (K.items = u.mergeEvaluated.items(W, F.items, K.items, Z)));
     }
     mergeValidEvaluated(F, Z) {
       const { it: K, gen: W } = this;
@@ -13345,94 +13472,94 @@ function En() {
     }
   }
   yt.KeywordCxt = C;
-  function z(U, F, Z, K) {
-    const W = new C(U, Z, F);
+  function z(V, F, Z, K) {
+    const W = new C(V, Z, F);
     "code" in Z ? Z.code(W, K) : W.$data && Z.validate ? (0, r.funcKeywordCode)(W, Z) : "macro" in Z ? (0, r.macroKeywordCode)(W, Z) : (Z.compile || Z.validate) && (0, r.funcKeywordCode)(W, Z);
   }
   const H = /^\/(?:[^~]|~0|~1)*$/, Q = /^([0-9]+)(#|\/(?:[^~]|~0|~1)*)?$/;
-  function J(U, { dataLevel: F, dataNames: Z, dataPathArr: K }) {
+  function J(V, { dataLevel: F, dataNames: Z, dataPathArr: K }) {
     let W, ee;
-    if (U === "")
+    if (V === "")
       return c.default.rootData;
-    if (U[0] === "/") {
-      if (!H.test(U))
-        throw new Error(`Invalid JSON-pointer: ${U}`);
-      W = U, ee = c.default.rootData;
+    if (V[0] === "/") {
+      if (!H.test(V))
+        throw new Error(`Invalid JSON-pointer: ${V}`);
+      W = V, ee = c.default.rootData;
     } else {
-      const ye = Q.exec(U);
-      if (!ye)
-        throw new Error(`Invalid JSON-pointer: ${U}`);
-      const fe = +ye[1];
-      if (W = ye[2], W === "#") {
+      const ge = Q.exec(V);
+      if (!ge)
+        throw new Error(`Invalid JSON-pointer: ${V}`);
+      const fe = +ge[1];
+      if (W = ge[2], W === "#") {
         if (fe >= F)
-          throw new Error(he("property/index", fe));
+          throw new Error(me("property/index", fe));
         return K[F - fe];
       }
       if (fe > F)
-        throw new Error(he("data", fe));
+        throw new Error(me("data", fe));
       if (ee = Z[F - fe], !W)
         return ee;
     }
     let re = ee;
     const Se = W.split("/");
-    for (const ye of Se)
-      ye && (ee = (0, a._)`${ee}${(0, a.getProperty)((0, p.unescapeJsonPointer)(ye))}`, re = (0, a._)`${re} && ${ee}`);
+    for (const ge of Se)
+      ge && (ee = (0, a._)`${ee}${(0, a.getProperty)((0, u.unescapeJsonPointer)(ge))}`, re = (0, a._)`${re} && ${ee}`);
     return re;
-    function he(ye, fe) {
-      return `Cannot access ${ye} ${fe} levels up, current level is ${F}`;
+    function me(ge, fe) {
+      return `Cannot access ${ge} ${fe} levels up, current level is ${F}`;
     }
   }
   return yt.getData = J, yt;
 }
-var Zn = {}, lo;
-function ur() {
-  if (lo) return Zn;
-  lo = 1, Object.defineProperty(Zn, "__esModule", { value: !0 });
+var Jn = {}, po;
+function pr() {
+  if (po) return Jn;
+  po = 1, Object.defineProperty(Jn, "__esModule", { value: !0 });
   class e extends Error {
     constructor(n) {
       super("validation failed"), this.errors = n, this.ajv = this.validation = !0;
     }
   }
-  return Zn.default = e, Zn;
+  return Jn.default = e, Jn;
 }
-var Hn = {}, uo;
-function kn() {
-  if (uo) return Hn;
-  uo = 1, Object.defineProperty(Hn, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ lr();
+var Kn = {}, fo;
+function On() {
+  if (fo) return Kn;
+  fo = 1, Object.defineProperty(Kn, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ ur();
   class t extends Error {
     constructor(i, o, r, s) {
       super(s || `can't resolve reference ${r} from id ${o}`), this.missingRef = (0, e.resolveUrl)(i, o, r), this.missingSchema = (0, e.normalizeId)((0, e.getFullPath)(i, this.missingRef));
     }
   }
-  return Hn.default = t, Hn;
+  return Kn.default = t, Kn;
 }
-var Ee = {}, po;
-function pr() {
-  if (po) return Ee;
-  po = 1, Object.defineProperty(Ee, "__esModule", { value: !0 }), Ee.resolveSchema = Ee.getCompilingSchema = Ee.resolveRef = Ee.compileSchema = Ee.SchemaEnv = void 0;
-  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ur(), n = /* @__PURE__ */ et(), i = /* @__PURE__ */ lr(), o = /* @__PURE__ */ ie(), r = /* @__PURE__ */ En();
+var ke = {}, ho;
+function fr() {
+  if (ho) return ke;
+  ho = 1, Object.defineProperty(ke, "__esModule", { value: !0 }), ke.resolveSchema = ke.getCompilingSchema = ke.resolveRef = ke.compileSchema = ke.SchemaEnv = void 0;
+  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ pr(), n = /* @__PURE__ */ et(), i = /* @__PURE__ */ ur(), o = /* @__PURE__ */ ie(), r = /* @__PURE__ */ Mn();
   class s {
-    constructor(A) {
+    constructor(I) {
       var g;
       this.refs = {}, this.dynamicAnchors = {};
       let m;
-      typeof A.schema == "object" && (m = A.schema), this.schema = A.schema, this.schemaId = A.schemaId, this.root = A.root || this, this.baseId = (g = A.baseId) !== null && g !== void 0 ? g : (0, i.normalizeId)(m?.[A.schemaId || "$id"]), this.schemaPath = A.schemaPath, this.localRefs = A.localRefs, this.meta = A.meta, this.$async = m?.$async, this.refs = {};
+      typeof I.schema == "object" && (m = I.schema), this.schema = I.schema, this.schemaId = I.schemaId, this.root = I.root || this, this.baseId = (g = I.baseId) !== null && g !== void 0 ? g : (0, i.normalizeId)(m?.[I.schemaId || "$id"]), this.schemaPath = I.schemaPath, this.localRefs = I.localRefs, this.meta = I.meta, this.$async = m?.$async, this.refs = {};
     }
   }
-  Ee.SchemaEnv = s;
+  ke.SchemaEnv = s;
   function a(v) {
-    const A = p.call(this, v);
-    if (A)
-      return A;
-    const g = (0, i.getFullPath)(this.opts.uriResolver, v.root.baseId), { es5: m, lines: l } = this.opts.code, { ownProperties: u } = this.opts, b = new e.CodeGen(this.scope, { es5: m, lines: l, ownProperties: u });
+    const I = u.call(this, v);
+    if (I)
+      return I;
+    const g = (0, i.getFullPath)(this.opts.uriResolver, v.root.baseId), { es5: m, lines: d } = this.opts.code, { ownProperties: p } = this.opts, b = new e.CodeGen(this.scope, { es5: m, lines: d, ownProperties: p });
     let S;
     v.$async && (S = b.scopeValue("Error", {
       ref: t.default,
       code: (0, e._)`require("ajv/dist/runtime/validation_error").default`
     }));
-    const I = b.scopeName("validate");
-    v.validateName = I;
+    const A = b.scopeName("validate");
+    v.validateName = A;
     const P = {
       gen: b,
       allErrors: this.opts.allErrors,
@@ -13446,7 +13573,7 @@ function pr() {
       dataTypes: [],
       definedProperties: /* @__PURE__ */ new Set(),
       topSchemaRef: b.scopeValue("schema", this.opts.code.source === !0 ? { ref: v.schema, code: (0, e.stringify)(v.schema) } : { ref: v.schema }),
-      validateName: I,
+      validateName: A,
       ValidationError: S,
       schema: v.schema,
       schemaEnv: v,
@@ -13464,7 +13591,7 @@ function pr() {
       const E = b.toString();
       R = `${b.scopeRefs(n.default.scope)}return ${E}`, this.opts.code.process && (R = this.opts.code.process(R, v));
       const M = new Function(`${n.default.self}`, `${n.default.scope}`, R)(this, this.scope.get());
-      if (this.scope.value(I, { ref: M }), M.errors = null, M.schema = v.schema, M.schemaEnv = v, v.$async && (M.$async = !0), this.opts.code.source === !0 && (M.source = { validateName: I, validateCode: E, scopeValues: b._values }), this.opts.unevaluated) {
+      if (this.scope.value(A, { ref: M }), M.errors = null, M.schema = v.schema, M.schemaEnv = v, v.$async && (M.$async = !0), this.opts.code.source === !0 && (M.source = { validateName: A, validateCode: E, scopeValues: b._values }), this.opts.unevaluated) {
         const { props: j, items: N } = P;
         M.evaluated = {
           props: j instanceof e.Name ? void 0 : j,
@@ -13480,117 +13607,117 @@ function pr() {
       this._compilations.delete(v);
     }
   }
-  Ee.compileSchema = a;
-  function c(v, A, g) {
+  ke.compileSchema = a;
+  function c(v, I, g) {
     var m;
-    g = (0, i.resolveUrl)(this.opts.uriResolver, A, g);
-    const l = v.refs[g];
-    if (l)
-      return l;
-    let u = f.call(this, v, g);
-    if (u === void 0) {
+    g = (0, i.resolveUrl)(this.opts.uriResolver, I, g);
+    const d = v.refs[g];
+    if (d)
+      return d;
+    let p = f.call(this, v, g);
+    if (p === void 0) {
       const b = (m = v.localRefs) === null || m === void 0 ? void 0 : m[g], { schemaId: S } = this.opts;
-      b && (u = new s({ schema: b, schemaId: S, root: v, baseId: A }));
+      b && (p = new s({ schema: b, schemaId: S, root: v, baseId: I }));
     }
-    if (u !== void 0)
-      return v.refs[g] = d.call(this, u);
+    if (p !== void 0)
+      return v.refs[g] = l.call(this, p);
   }
-  Ee.resolveRef = c;
-  function d(v) {
+  ke.resolveRef = c;
+  function l(v) {
     return (0, i.inlineRef)(v.schema, this.opts.inlineRefs) ? v.schema : v.validate ? v : a.call(this, v);
   }
-  function p(v) {
-    for (const A of this._compilations)
-      if (y(A, v))
-        return A;
+  function u(v) {
+    for (const I of this._compilations)
+      if (y(I, v))
+        return I;
   }
-  Ee.getCompilingSchema = p;
-  function y(v, A) {
-    return v.schema === A.schema && v.root === A.root && v.baseId === A.baseId;
+  ke.getCompilingSchema = u;
+  function y(v, I) {
+    return v.schema === I.schema && v.root === I.root && v.baseId === I.baseId;
   }
-  function f(v, A) {
+  function f(v, I) {
     let g;
-    for (; typeof (g = this.refs[A]) == "string"; )
-      A = g;
-    return g || this.schemas[A] || h.call(this, v, A);
+    for (; typeof (g = this.refs[I]) == "string"; )
+      I = g;
+    return g || this.schemas[I] || h.call(this, v, I);
   }
-  function h(v, A) {
-    const g = this.opts.uriResolver.parse(A), m = (0, i._getFullPath)(this.opts.uriResolver, g);
-    let l = (0, i.getFullPath)(this.opts.uriResolver, v.baseId, void 0);
-    if (Object.keys(v.schema).length > 0 && m === l)
-      return x.call(this, g, v);
-    const u = (0, i.normalizeId)(m), b = this.refs[u] || this.schemas[u];
+  function h(v, I) {
+    const g = this.opts.uriResolver.parse(I), m = (0, i._getFullPath)(this.opts.uriResolver, g);
+    let d = (0, i.getFullPath)(this.opts.uriResolver, v.baseId, void 0);
+    if (Object.keys(v.schema).length > 0 && m === d)
+      return w.call(this, g, v);
+    const p = (0, i.normalizeId)(m), b = this.refs[p] || this.schemas[p];
     if (typeof b == "string") {
       const S = h.call(this, v, b);
-      return typeof S?.schema != "object" ? void 0 : x.call(this, g, S);
+      return typeof S?.schema != "object" ? void 0 : w.call(this, g, S);
     }
     if (typeof b?.schema == "object") {
-      if (b.validate || a.call(this, b), u === (0, i.normalizeId)(A)) {
-        const { schema: S } = b, { schemaId: I } = this.opts, P = S[I];
-        return P && (l = (0, i.resolveUrl)(this.opts.uriResolver, l, P)), new s({ schema: S, schemaId: I, root: v, baseId: l });
+      if (b.validate || a.call(this, b), p === (0, i.normalizeId)(I)) {
+        const { schema: S } = b, { schemaId: A } = this.opts, P = S[A];
+        return P && (d = (0, i.resolveUrl)(this.opts.uriResolver, d, P)), new s({ schema: S, schemaId: A, root: v, baseId: d });
       }
-      return x.call(this, g, b);
+      return w.call(this, g, b);
     }
   }
-  Ee.resolveSchema = h;
-  const w = /* @__PURE__ */ new Set([
+  ke.resolveSchema = h;
+  const x = /* @__PURE__ */ new Set([
     "properties",
     "patternProperties",
     "enum",
     "dependencies",
     "definitions"
   ]);
-  function x(v, { baseId: A, schema: g, root: m }) {
-    var l;
-    if (((l = v.fragment) === null || l === void 0 ? void 0 : l[0]) !== "/")
+  function w(v, { baseId: I, schema: g, root: m }) {
+    var d;
+    if (((d = v.fragment) === null || d === void 0 ? void 0 : d[0]) !== "/")
       return;
     for (const S of v.fragment.slice(1).split("/")) {
       if (typeof g == "boolean")
         return;
-      const I = g[(0, o.unescapeFragment)(S)];
-      if (I === void 0)
+      const A = g[(0, o.unescapeFragment)(S)];
+      if (A === void 0)
         return;
-      g = I;
+      g = A;
       const P = typeof g == "object" && g[this.opts.schemaId];
-      !w.has(S) && P && (A = (0, i.resolveUrl)(this.opts.uriResolver, A, P));
+      !x.has(S) && P && (I = (0, i.resolveUrl)(this.opts.uriResolver, I, P));
     }
-    let u;
+    let p;
     if (typeof g != "boolean" && g.$ref && !(0, o.schemaHasRulesButRef)(g, this.RULES)) {
-      const S = (0, i.resolveUrl)(this.opts.uriResolver, A, g.$ref);
-      u = h.call(this, m, S);
+      const S = (0, i.resolveUrl)(this.opts.uriResolver, I, g.$ref);
+      p = h.call(this, m, S);
     }
     const { schemaId: b } = this.opts;
-    if (u = u || new s({ schema: g, schemaId: b, root: m, baseId: A }), u.schema !== u.root.schema)
-      return u;
+    if (p = p || new s({ schema: g, schemaId: b, root: m, baseId: I }), p.schema !== p.root.schema)
+      return p;
   }
-  return Ee;
+  return ke;
 }
-const Ou = "https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#", Lu = "Meta-schema for $data reference (JSON AnySchema extension proposal)", Nu = "object", Du = ["$data"], zu = { $data: { type: "string", anyOf: [{ format: "relative-json-pointer" }, { format: "json-pointer" }] } }, Vu = !1, Uu = {
-  $id: Ou,
-  description: Lu,
-  type: Nu,
-  required: Du,
-  properties: zu,
+const Lu = "https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#", Nu = "Meta-schema for $data reference (JSON AnySchema extension proposal)", Du = "object", zu = ["$data"], Uu = { $data: { type: "string", anyOf: [{ format: "relative-json-pointer" }, { format: "json-pointer" }] } }, Vu = !1, Gu = {
+  $id: Lu,
+  description: Nu,
+  type: Du,
+  required: zu,
+  properties: Uu,
   additionalProperties: Vu
 };
-var Jn = {}, yn = { exports: {} }, Dr, fo;
-function Nd() {
-  if (fo) return Dr;
-  fo = 1;
+var Qn = {}, gn = { exports: {} }, zr, mo;
+function zd() {
+  if (mo) return zr;
+  mo = 1;
   const e = RegExp.prototype.test.bind(/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/iu), t = RegExp.prototype.test.bind(/^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)$/u);
   function n(f) {
-    let h = "", w = 0, x = 0;
-    for (x = 0; x < f.length; x++)
-      if (w = f[x].charCodeAt(0), w !== 48) {
-        if (!(w >= 48 && w <= 57 || w >= 65 && w <= 70 || w >= 97 && w <= 102))
+    let h = "", x = 0, w = 0;
+    for (w = 0; w < f.length; w++)
+      if (x = f[w].charCodeAt(0), x !== 48) {
+        if (!(x >= 48 && x <= 57 || x >= 65 && x <= 70 || x >= 97 && x <= 102))
           return "";
-        h += f[x];
+        h += f[w];
         break;
       }
-    for (x += 1; x < f.length; x++) {
-      if (w = f[x].charCodeAt(0), !(w >= 48 && w <= 57 || w >= 65 && w <= 70 || w >= 97 && w <= 102))
+    for (w += 1; w < f.length; w++) {
+      if (x = f[w].charCodeAt(0), !(x >= 48 && x <= 57 || x >= 65 && x <= 70 || x >= 97 && x <= 102))
         return "";
-      h += f[x];
+      h += f[w];
     }
     return h;
   }
@@ -13598,43 +13725,43 @@ function Nd() {
   function o(f) {
     return f.length = 0, !0;
   }
-  function r(f, h, w) {
+  function r(f, h, x) {
     if (f.length) {
-      const x = n(f);
-      if (x !== "")
-        h.push(x);
+      const w = n(f);
+      if (w !== "")
+        h.push(w);
       else
-        return w.error = !0, !1;
+        return x.error = !0, !1;
       f.length = 0;
     }
     return !0;
   }
   function s(f) {
     let h = 0;
-    const w = { error: !1, address: "", zone: "" }, x = [], v = [];
-    let A = !1, g = !1, m = r;
-    for (let l = 0; l < f.length; l++) {
-      const u = f[l];
-      if (!(u === "[" || u === "]"))
-        if (u === ":") {
-          if (A === !0 && (g = !0), !m(v, x, w))
+    const x = { error: !1, address: "", zone: "" }, w = [], v = [];
+    let I = !1, g = !1, m = r;
+    for (let d = 0; d < f.length; d++) {
+      const p = f[d];
+      if (!(p === "[" || p === "]"))
+        if (p === ":") {
+          if (I === !0 && (g = !0), !m(v, w, x))
             break;
           if (++h > 7) {
-            w.error = !0;
+            x.error = !0;
             break;
           }
-          l > 0 && f[l - 1] === ":" && (A = !0), x.push(":");
+          d > 0 && f[d - 1] === ":" && (I = !0), w.push(":");
           continue;
-        } else if (u === "%") {
-          if (!m(v, x, w))
+        } else if (p === "%") {
+          if (!m(v, w, x))
             break;
           m = o;
         } else {
-          v.push(u);
+          v.push(p);
           continue;
         }
     }
-    return v.length && (m === o ? w.zone = v.join("") : g ? x.push(v.join("")) : x.push(n(v))), w.address = x.join(""), w;
+    return v.length && (m === o ? x.zone = v.join("") : g ? w.push(v.join("")) : w.push(n(v))), x.address = w.join(""), x;
   }
   function a(f) {
     if (c(f, ":") < 2)
@@ -13643,29 +13770,29 @@ function Nd() {
     if (h.error)
       return { host: f, isIPV6: !1 };
     {
-      let w = h.address, x = h.address;
-      return h.zone && (w += "%" + h.zone, x += "%25" + h.zone), { host: w, isIPV6: !0, escapedHost: x };
+      let x = h.address, w = h.address;
+      return h.zone && (x += "%" + h.zone, w += "%25" + h.zone), { host: x, isIPV6: !0, escapedHost: w };
     }
   }
   function c(f, h) {
-    let w = 0;
-    for (let x = 0; x < f.length; x++)
-      f[x] === h && w++;
-    return w;
+    let x = 0;
+    for (let w = 0; w < f.length; w++)
+      f[w] === h && x++;
+    return x;
   }
-  function d(f) {
+  function l(f) {
     let h = f;
-    const w = [];
-    let x = -1, v = 0;
+    const x = [];
+    let w = -1, v = 0;
     for (; v = h.length; ) {
       if (v === 1) {
         if (h === ".")
           break;
         if (h === "/") {
-          w.push("/");
+          x.push("/");
           break;
         } else {
-          w.push(h);
+          x.push(h);
           break;
         }
       } else if (v === 2) {
@@ -13677,11 +13804,11 @@ function Nd() {
             continue;
           }
         } else if (h[0] === "/" && (h[1] === "." || h[1] === "/")) {
-          w.push("/");
+          x.push("/");
           break;
         }
       } else if (v === 3 && h === "/..") {
-        w.length !== 0 && w.pop(), w.push("/");
+        x.length !== 0 && x.pop(), x.push("/");
         break;
       }
       if (h[0] === ".") {
@@ -13699,50 +13826,50 @@ function Nd() {
           h = h.slice(2);
           continue;
         } else if (h[2] === "." && h[3] === "/") {
-          h = h.slice(3), w.length !== 0 && w.pop();
+          h = h.slice(3), x.length !== 0 && x.pop();
           continue;
         }
       }
-      if ((x = h.indexOf("/", 1)) === -1) {
-        w.push(h);
+      if ((w = h.indexOf("/", 1)) === -1) {
+        x.push(h);
         break;
       } else
-        w.push(h.slice(0, x)), h = h.slice(x);
+        x.push(h.slice(0, w)), h = h.slice(w);
     }
-    return w.join("");
+    return x.join("");
   }
-  function p(f, h) {
-    const w = h !== !0 ? escape : unescape;
-    return f.scheme !== void 0 && (f.scheme = w(f.scheme)), f.userinfo !== void 0 && (f.userinfo = w(f.userinfo)), f.host !== void 0 && (f.host = w(f.host)), f.path !== void 0 && (f.path = w(f.path)), f.query !== void 0 && (f.query = w(f.query)), f.fragment !== void 0 && (f.fragment = w(f.fragment)), f;
+  function u(f, h) {
+    const x = h !== !0 ? escape : unescape;
+    return f.scheme !== void 0 && (f.scheme = x(f.scheme)), f.userinfo !== void 0 && (f.userinfo = x(f.userinfo)), f.host !== void 0 && (f.host = x(f.host)), f.path !== void 0 && (f.path = x(f.path)), f.query !== void 0 && (f.query = x(f.query)), f.fragment !== void 0 && (f.fragment = x(f.fragment)), f;
   }
   function y(f) {
     const h = [];
     if (f.userinfo !== void 0 && (h.push(f.userinfo), h.push("@")), f.host !== void 0) {
-      let w = unescape(f.host);
-      if (!t(w)) {
-        const x = a(w);
-        x.isIPV6 === !0 ? w = `[${x.escapedHost}]` : w = f.host;
+      let x = unescape(f.host);
+      if (!t(x)) {
+        const w = a(x);
+        w.isIPV6 === !0 ? x = `[${w.escapedHost}]` : x = f.host;
       }
-      h.push(w);
+      h.push(x);
     }
     return (typeof f.port == "number" || typeof f.port == "string") && (h.push(":"), h.push(String(f.port))), h.length ? h.join("") : void 0;
   }
-  return Dr = {
+  return zr = {
     nonSimpleDomain: i,
     recomposeAuthority: y,
-    normalizeComponentEncoding: p,
-    removeDotSegments: d,
+    normalizeComponentEncoding: u,
+    removeDotSegments: l,
     isIPv4: t,
     isUUID: e,
     normalizeIPv6: a,
     stringArrayToHexStripped: n
-  }, Dr;
+  }, zr;
 }
-var zr, ho;
-function Gu() {
-  if (ho) return zr;
-  ho = 1;
-  const { isUUID: e } = Nd(), t = /([\da-z][\d\-a-z]{0,31}):((?:[\w!$'()*+,\-.:;=@]|%[\da-f]{2})+)/iu, n = (
+var Ur, yo;
+function Fu() {
+  if (yo) return Ur;
+  yo = 1;
+  const { isUUID: e } = zd(), t = /([\da-z][\d\-a-z]{0,31}):((?:[\w!$'()*+,\-.:;=@]|%[\da-f]{2})+)/iu, n = (
     /** @type {const} */
     [
       "http",
@@ -13753,60 +13880,60 @@ function Gu() {
       "urn:uuid"
     ]
   );
-  function i(u) {
+  function i(p) {
     return n.indexOf(
       /** @type {*} */
-      u
+      p
     ) !== -1;
   }
-  function o(u) {
-    return u.secure === !0 ? !0 : u.secure === !1 ? !1 : u.scheme ? u.scheme.length === 3 && (u.scheme[0] === "w" || u.scheme[0] === "W") && (u.scheme[1] === "s" || u.scheme[1] === "S") && (u.scheme[2] === "s" || u.scheme[2] === "S") : !1;
+  function o(p) {
+    return p.secure === !0 ? !0 : p.secure === !1 ? !1 : p.scheme ? p.scheme.length === 3 && (p.scheme[0] === "w" || p.scheme[0] === "W") && (p.scheme[1] === "s" || p.scheme[1] === "S") && (p.scheme[2] === "s" || p.scheme[2] === "S") : !1;
   }
-  function r(u) {
-    return u.host || (u.error = u.error || "HTTP URIs must have a host."), u;
+  function r(p) {
+    return p.host || (p.error = p.error || "HTTP URIs must have a host."), p;
   }
-  function s(u) {
-    const b = String(u.scheme).toLowerCase() === "https";
-    return (u.port === (b ? 443 : 80) || u.port === "") && (u.port = void 0), u.path || (u.path = "/"), u;
+  function s(p) {
+    const b = String(p.scheme).toLowerCase() === "https";
+    return (p.port === (b ? 443 : 80) || p.port === "") && (p.port = void 0), p.path || (p.path = "/"), p;
   }
-  function a(u) {
-    return u.secure = o(u), u.resourceName = (u.path || "/") + (u.query ? "?" + u.query : ""), u.path = void 0, u.query = void 0, u;
+  function a(p) {
+    return p.secure = o(p), p.resourceName = (p.path || "/") + (p.query ? "?" + p.query : ""), p.path = void 0, p.query = void 0, p;
   }
-  function c(u) {
-    if ((u.port === (o(u) ? 443 : 80) || u.port === "") && (u.port = void 0), typeof u.secure == "boolean" && (u.scheme = u.secure ? "wss" : "ws", u.secure = void 0), u.resourceName) {
-      const [b, S] = u.resourceName.split("?");
-      u.path = b && b !== "/" ? b : void 0, u.query = S, u.resourceName = void 0;
+  function c(p) {
+    if ((p.port === (o(p) ? 443 : 80) || p.port === "") && (p.port = void 0), typeof p.secure == "boolean" && (p.scheme = p.secure ? "wss" : "ws", p.secure = void 0), p.resourceName) {
+      const [b, S] = p.resourceName.split("?");
+      p.path = b && b !== "/" ? b : void 0, p.query = S, p.resourceName = void 0;
     }
-    return u.fragment = void 0, u;
+    return p.fragment = void 0, p;
   }
-  function d(u, b) {
-    if (!u.path)
-      return u.error = "URN can not be parsed", u;
-    const S = u.path.match(t);
+  function l(p, b) {
+    if (!p.path)
+      return p.error = "URN can not be parsed", p;
+    const S = p.path.match(t);
     if (S) {
-      const I = b.scheme || u.scheme || "urn";
-      u.nid = S[1].toLowerCase(), u.nss = S[2];
-      const P = `${I}:${b.nid || u.nid}`, R = l(P);
-      u.path = void 0, R && (u = R.parse(u, b));
+      const A = b.scheme || p.scheme || "urn";
+      p.nid = S[1].toLowerCase(), p.nss = S[2];
+      const P = `${A}:${b.nid || p.nid}`, R = d(P);
+      p.path = void 0, R && (p = R.parse(p, b));
     } else
-      u.error = u.error || "URN can not be parsed.";
-    return u;
+      p.error = p.error || "URN can not be parsed.";
+    return p;
   }
-  function p(u, b) {
-    if (u.nid === void 0)
+  function u(p, b) {
+    if (p.nid === void 0)
       throw new Error("URN without nid cannot be serialized");
-    const S = b.scheme || u.scheme || "urn", I = u.nid.toLowerCase(), P = `${S}:${b.nid || I}`, R = l(P);
-    R && (u = R.serialize(u, b));
-    const E = u, k = u.nss;
-    return E.path = `${I || b.nid}:${k}`, b.skipEscape = !0, E;
+    const S = b.scheme || p.scheme || "urn", A = p.nid.toLowerCase(), P = `${S}:${b.nid || A}`, R = d(P);
+    R && (p = R.serialize(p, b));
+    const E = p, k = p.nss;
+    return E.path = `${A || b.nid}:${k}`, b.skipEscape = !0, E;
   }
-  function y(u, b) {
-    const S = u;
+  function y(p, b) {
+    const S = p;
     return S.uuid = S.nss, S.nss = void 0, !b.tolerant && (!S.uuid || !e(S.uuid)) && (S.error = S.error || "UUID is not valid."), S;
   }
-  function f(u) {
-    const b = u;
-    return b.nss = (u.uuid || "").toLowerCase(), b;
+  function f(p) {
+    const b = p;
+    return b.nss = (p.uuid || "").toLowerCase(), b;
   }
   const h = (
     /** @type {SchemeHandler} */
@@ -13816,7 +13943,7 @@ function Gu() {
       parse: r,
       serialize: s
     }
-  ), w = (
+  ), x = (
     /** @type {SchemeHandler} */
     {
       scheme: "https",
@@ -13824,7 +13951,7 @@ function Gu() {
       parse: r,
       serialize: s
     }
-  ), x = (
+  ), w = (
     /** @type {SchemeHandler} */
     {
       scheme: "ws",
@@ -13836,23 +13963,23 @@ function Gu() {
     /** @type {SchemeHandler} */
     {
       scheme: "wss",
-      domainHost: x.domainHost,
-      parse: x.parse,
-      serialize: x.serialize
+      domainHost: w.domainHost,
+      parse: w.parse,
+      serialize: w.serialize
     }
   ), m = (
     /** @type {Record<SchemeName, SchemeHandler>} */
     {
       http: h,
-      https: w,
-      ws: x,
+      https: x,
+      ws: w,
       wss: v,
       urn: (
         /** @type {SchemeHandler} */
         {
           scheme: "urn",
-          parse: d,
-          serialize: p,
+          parse: l,
+          serialize: u,
           skipNormalize: !0
         }
       ),
@@ -13868,44 +13995,44 @@ function Gu() {
     }
   );
   Object.setPrototypeOf(m, null);
-  function l(u) {
-    return u && (m[
+  function d(p) {
+    return p && (m[
       /** @type {SchemeName} */
-      u
+      p
     ] || m[
       /** @type {SchemeName} */
-      u.toLowerCase()
+      p.toLowerCase()
     ]) || void 0;
   }
-  return zr = {
+  return Ur = {
     wsIsSecure: o,
     SCHEMES: m,
     isValidSchemeName: i,
-    getSchemeHandler: l
-  }, zr;
+    getSchemeHandler: d
+  }, Ur;
 }
-var mo;
-function Fu() {
-  if (mo) return yn.exports;
-  mo = 1;
-  const { normalizeIPv6: e, removeDotSegments: t, recomposeAuthority: n, normalizeComponentEncoding: i, isIPv4: o, nonSimpleDomain: r } = Nd(), { SCHEMES: s, getSchemeHandler: a } = Gu();
-  function c(v, A) {
+var go;
+function Bu() {
+  if (go) return gn.exports;
+  go = 1;
+  const { normalizeIPv6: e, removeDotSegments: t, recomposeAuthority: n, normalizeComponentEncoding: i, isIPv4: o, nonSimpleDomain: r } = zd(), { SCHEMES: s, getSchemeHandler: a } = Fu();
+  function c(v, I) {
     return typeof v == "string" ? v = /** @type {T} */
-    f(w(v, A), A) : typeof v == "object" && (v = /** @type {T} */
-    w(f(v, A), A)), v;
+    f(x(v, I), I) : typeof v == "object" && (v = /** @type {T} */
+    x(f(v, I), I)), v;
   }
-  function d(v, A, g) {
-    const m = g ? Object.assign({ scheme: "null" }, g) : { scheme: "null" }, l = p(w(v, m), w(A, m), m, !0);
-    return m.skipEscape = !0, f(l, m);
+  function l(v, I, g) {
+    const m = g ? Object.assign({ scheme: "null" }, g) : { scheme: "null" }, d = u(x(v, m), x(I, m), m, !0);
+    return m.skipEscape = !0, f(d, m);
   }
-  function p(v, A, g, m) {
-    const l = {};
-    return m || (v = w(f(v, g), g), A = w(f(A, g), g)), g = g || {}, !g.tolerant && A.scheme ? (l.scheme = A.scheme, l.userinfo = A.userinfo, l.host = A.host, l.port = A.port, l.path = t(A.path || ""), l.query = A.query) : (A.userinfo !== void 0 || A.host !== void 0 || A.port !== void 0 ? (l.userinfo = A.userinfo, l.host = A.host, l.port = A.port, l.path = t(A.path || ""), l.query = A.query) : (A.path ? (A.path[0] === "/" ? l.path = t(A.path) : ((v.userinfo !== void 0 || v.host !== void 0 || v.port !== void 0) && !v.path ? l.path = "/" + A.path : v.path ? l.path = v.path.slice(0, v.path.lastIndexOf("/") + 1) + A.path : l.path = A.path, l.path = t(l.path)), l.query = A.query) : (l.path = v.path, A.query !== void 0 ? l.query = A.query : l.query = v.query), l.userinfo = v.userinfo, l.host = v.host, l.port = v.port), l.scheme = v.scheme), l.fragment = A.fragment, l;
+  function u(v, I, g, m) {
+    const d = {};
+    return m || (v = x(f(v, g), g), I = x(f(I, g), g)), g = g || {}, !g.tolerant && I.scheme ? (d.scheme = I.scheme, d.userinfo = I.userinfo, d.host = I.host, d.port = I.port, d.path = t(I.path || ""), d.query = I.query) : (I.userinfo !== void 0 || I.host !== void 0 || I.port !== void 0 ? (d.userinfo = I.userinfo, d.host = I.host, d.port = I.port, d.path = t(I.path || ""), d.query = I.query) : (I.path ? (I.path[0] === "/" ? d.path = t(I.path) : ((v.userinfo !== void 0 || v.host !== void 0 || v.port !== void 0) && !v.path ? d.path = "/" + I.path : v.path ? d.path = v.path.slice(0, v.path.lastIndexOf("/") + 1) + I.path : d.path = I.path, d.path = t(d.path)), d.query = I.query) : (d.path = v.path, I.query !== void 0 ? d.query = I.query : d.query = v.query), d.userinfo = v.userinfo, d.host = v.host, d.port = v.port), d.scheme = v.scheme), d.fragment = I.fragment, d;
   }
-  function y(v, A, g) {
-    return typeof v == "string" ? (v = unescape(v), v = f(i(w(v, g), !0), { ...g, skipEscape: !0 })) : typeof v == "object" && (v = f(i(v, !0), { ...g, skipEscape: !0 })), typeof A == "string" ? (A = unescape(A), A = f(i(w(A, g), !0), { ...g, skipEscape: !0 })) : typeof A == "object" && (A = f(i(A, !0), { ...g, skipEscape: !0 })), v.toLowerCase() === A.toLowerCase();
+  function y(v, I, g) {
+    return typeof v == "string" ? (v = unescape(v), v = f(i(x(v, g), !0), { ...g, skipEscape: !0 })) : typeof v == "object" && (v = f(i(v, !0), { ...g, skipEscape: !0 })), typeof I == "string" ? (I = unescape(I), I = f(i(x(I, g), !0), { ...g, skipEscape: !0 })) : typeof I == "object" && (I = f(i(I, !0), { ...g, skipEscape: !0 })), v.toLowerCase() === I.toLowerCase();
   }
-  function f(v, A) {
+  function f(v, I) {
     const g = {
       host: v.host,
       scheme: v.scheme,
@@ -13921,18 +14048,18 @@ function Fu() {
       resourceName: v.resourceName,
       secure: v.secure,
       error: ""
-    }, m = Object.assign({}, A), l = [], u = a(m.scheme || g.scheme);
-    u && u.serialize && u.serialize(g, m), g.path !== void 0 && (m.skipEscape ? g.path = unescape(g.path) : (g.path = escape(g.path), g.scheme !== void 0 && (g.path = g.path.split("%3A").join(":")))), m.reference !== "suffix" && g.scheme && l.push(g.scheme, ":");
+    }, m = Object.assign({}, I), d = [], p = a(m.scheme || g.scheme);
+    p && p.serialize && p.serialize(g, m), g.path !== void 0 && (m.skipEscape ? g.path = unescape(g.path) : (g.path = escape(g.path), g.scheme !== void 0 && (g.path = g.path.split("%3A").join(":")))), m.reference !== "suffix" && g.scheme && d.push(g.scheme, ":");
     const b = n(g);
-    if (b !== void 0 && (m.reference !== "suffix" && l.push("//"), l.push(b), g.path && g.path[0] !== "/" && l.push("/")), g.path !== void 0) {
+    if (b !== void 0 && (m.reference !== "suffix" && d.push("//"), d.push(b), g.path && g.path[0] !== "/" && d.push("/")), g.path !== void 0) {
       let S = g.path;
-      !m.absolutePath && (!u || !u.absolutePath) && (S = t(S)), b === void 0 && S[0] === "/" && S[1] === "/" && (S = "/%2F" + S.slice(2)), l.push(S);
+      !m.absolutePath && (!p || !p.absolutePath) && (S = t(S)), b === void 0 && S[0] === "/" && S[1] === "/" && (S = "/%2F" + S.slice(2)), d.push(S);
     }
-    return g.query !== void 0 && l.push("?", g.query), g.fragment !== void 0 && l.push("#", g.fragment), l.join("");
+    return g.query !== void 0 && d.push("?", g.query), g.fragment !== void 0 && d.push("#", g.fragment), d.join("");
   }
   const h = /^(?:([^#/:?]+):)?(?:\/\/((?:([^#/?@]*)@)?(\[[^#/?\]]+\]|[^#/:?]*)(?::(\d*))?))?([^#?]*)(?:\?([^#]*))?(?:#((?:.|[\n\r])*))?/u;
-  function w(v, A) {
-    const g = Object.assign({}, A), m = {
+  function x(v, I) {
+    const g = Object.assign({}, I), m = {
       scheme: void 0,
       userinfo: void 0,
       host: "",
@@ -13941,19 +14068,19 @@ function Fu() {
       query: void 0,
       fragment: void 0
     };
-    let l = !1;
+    let d = !1;
     g.reference === "suffix" && (g.scheme ? v = g.scheme + ":" + v : v = "//" + v);
-    const u = v.match(h);
-    if (u) {
-      if (m.scheme = u[1], m.userinfo = u[3], m.host = u[4], m.port = parseInt(u[5], 10), m.path = u[6] || "", m.query = u[7], m.fragment = u[8], isNaN(m.port) && (m.port = u[5]), m.host)
+    const p = v.match(h);
+    if (p) {
+      if (m.scheme = p[1], m.userinfo = p[3], m.host = p[4], m.port = parseInt(p[5], 10), m.path = p[6] || "", m.query = p[7], m.fragment = p[8], isNaN(m.port) && (m.port = p[5]), m.host)
         if (o(m.host) === !1) {
-          const I = e(m.host);
-          m.host = I.host.toLowerCase(), l = I.isIPV6;
+          const A = e(m.host);
+          m.host = A.host.toLowerCase(), d = A.isIPV6;
         } else
-          l = !0;
+          d = !0;
       m.scheme === void 0 && m.userinfo === void 0 && m.host === void 0 && m.port === void 0 && m.query === void 0 && !m.path ? m.reference = "same-document" : m.scheme === void 0 ? m.reference = "relative" : m.fragment === void 0 ? m.reference = "absolute" : m.reference = "uri", g.reference && g.reference !== "suffix" && g.reference !== m.reference && (m.error = m.error || "URI is not a " + g.reference + " reference.");
       const b = a(g.scheme || m.scheme);
-      if (!g.unicodeSupport && (!b || !b.unicodeSupport) && m.host && (g.domainHost || b && b.domainHost) && l === !1 && r(m.host))
+      if (!g.unicodeSupport && (!b || !b.unicodeSupport) && m.host && (g.domainHost || b && b.domainHost) && d === !1 && r(m.host))
         try {
           m.host = URL.domainToASCII(m.host.toLowerCase());
         } catch (S) {
@@ -13964,29 +14091,29 @@ function Fu() {
       m.error = m.error || "URI can not be parsed.";
     return m;
   }
-  const x = {
+  const w = {
     SCHEMES: s,
     normalize: c,
-    resolve: d,
-    resolveComponent: p,
+    resolve: l,
+    resolveComponent: u,
     equal: y,
     serialize: f,
-    parse: w
+    parse: x
   };
-  return yn.exports = x, yn.exports.default = x, yn.exports.fastUri = x, yn.exports;
+  return gn.exports = w, gn.exports.default = w, gn.exports.fastUri = w, gn.exports;
 }
-var yo;
-function Bu() {
-  if (yo) return Jn;
-  yo = 1, Object.defineProperty(Jn, "__esModule", { value: !0 });
-  const e = Fu();
-  return e.code = 'require("ajv/dist/runtime/uri").default', Jn.default = e, Jn;
+var vo;
+function Zu() {
+  if (vo) return Qn;
+  vo = 1, Object.defineProperty(Qn, "__esModule", { value: !0 });
+  const e = Bu();
+  return e.code = 'require("ajv/dist/runtime/uri").default', Qn.default = e, Qn;
 }
-var go;
-function Dd() {
-  return go || (go = 1, (function(e) {
+var bo;
+function Ud() {
+  return bo || (bo = 1, (function(e) {
     Object.defineProperty(e, "__esModule", { value: !0 }), e.CodeGen = e.Name = e.nil = e.stringify = e.str = e._ = e.KeywordCxt = void 0;
-    var t = /* @__PURE__ */ En();
+    var t = /* @__PURE__ */ Mn();
     Object.defineProperty(e, "KeywordCxt", { enumerable: !0, get: function() {
       return t.KeywordCxt;
     } });
@@ -14004,9 +14131,9 @@ function Dd() {
     } }), Object.defineProperty(e, "CodeGen", { enumerable: !0, get: function() {
       return n.CodeGen;
     } });
-    const i = /* @__PURE__ */ ur(), o = /* @__PURE__ */ kn(), r = /* @__PURE__ */ Md(), s = /* @__PURE__ */ pr(), a = /* @__PURE__ */ te(), c = /* @__PURE__ */ lr(), d = /* @__PURE__ */ Yi(), p = /* @__PURE__ */ ie(), y = Uu, f = /* @__PURE__ */ Bu(), h = (T, O) => new RegExp(T, O);
+    const i = /* @__PURE__ */ pr(), o = /* @__PURE__ */ On(), r = /* @__PURE__ */ Ld(), s = /* @__PURE__ */ fr(), a = /* @__PURE__ */ te(), c = /* @__PURE__ */ ur(), l = /* @__PURE__ */ er(), u = /* @__PURE__ */ ie(), y = Gu, f = /* @__PURE__ */ Zu(), h = (T, O) => new RegExp(T, O);
     h.code = "new RegExp";
-    const w = ["removeAdditional", "useDefaults", "coerceTypes"], x = /* @__PURE__ */ new Set([
+    const x = ["removeAdditional", "useDefaults", "coerceTypes"], w = /* @__PURE__ */ new Set([
       "validate",
       "serialize",
       "parse",
@@ -14036,77 +14163,77 @@ function Dd() {
       cache: "Map is used as cache, schema object as key.",
       serialize: "Map is used as cache, schema object as key.",
       ajvErrors: "It is default now."
-    }, A = {
+    }, I = {
       ignoreKeywordsWithRef: "",
       jsPropertySyntax: "",
       unicode: '"minLength"/"maxLength" account for unicode characters by default.'
     }, g = 200;
     function m(T) {
-      var O, V, D, $, q, C, z, H, Q, J, U, F, Z, K, W, ee, re, Se, he, ye, fe, nt, De, Ar, Ir;
-      const hn = T.strict, qr = (O = T.code) === null || O === void 0 ? void 0 : O.optimize, Ta = qr === !0 || qr === void 0 ? 1 : qr || 0, Ca = (D = (V = T.code) === null || V === void 0 ? void 0 : V.regExp) !== null && D !== void 0 ? D : h, Ll = ($ = T.uriResolver) !== null && $ !== void 0 ? $ : f.default;
+      var O, U, D, $, q, C, z, H, Q, J, V, F, Z, K, W, ee, re, Se, me, ge, fe, nt, De, Ar, qr;
+      const mn = T.strict, Rr = (O = T.code) === null || O === void 0 ? void 0 : O.optimize, Ea = Rr === !0 || Rr === void 0 ? 1 : Rr || 0, ka = (D = (U = T.code) === null || U === void 0 ? void 0 : U.regExp) !== null && D !== void 0 ? D : h, Nl = ($ = T.uriResolver) !== null && $ !== void 0 ? $ : f.default;
       return {
-        strictSchema: (C = (q = T.strictSchema) !== null && q !== void 0 ? q : hn) !== null && C !== void 0 ? C : !0,
-        strictNumbers: (H = (z = T.strictNumbers) !== null && z !== void 0 ? z : hn) !== null && H !== void 0 ? H : !0,
-        strictTypes: (J = (Q = T.strictTypes) !== null && Q !== void 0 ? Q : hn) !== null && J !== void 0 ? J : "log",
-        strictTuples: (F = (U = T.strictTuples) !== null && U !== void 0 ? U : hn) !== null && F !== void 0 ? F : "log",
-        strictRequired: (K = (Z = T.strictRequired) !== null && Z !== void 0 ? Z : hn) !== null && K !== void 0 ? K : !1,
-        code: T.code ? { ...T.code, optimize: Ta, regExp: Ca } : { optimize: Ta, regExp: Ca },
+        strictSchema: (C = (q = T.strictSchema) !== null && q !== void 0 ? q : mn) !== null && C !== void 0 ? C : !0,
+        strictNumbers: (H = (z = T.strictNumbers) !== null && z !== void 0 ? z : mn) !== null && H !== void 0 ? H : !0,
+        strictTypes: (J = (Q = T.strictTypes) !== null && Q !== void 0 ? Q : mn) !== null && J !== void 0 ? J : "log",
+        strictTuples: (F = (V = T.strictTuples) !== null && V !== void 0 ? V : mn) !== null && F !== void 0 ? F : "log",
+        strictRequired: (K = (Z = T.strictRequired) !== null && Z !== void 0 ? Z : mn) !== null && K !== void 0 ? K : !1,
+        code: T.code ? { ...T.code, optimize: Ea, regExp: ka } : { optimize: Ea, regExp: ka },
         loopRequired: (W = T.loopRequired) !== null && W !== void 0 ? W : g,
         loopEnum: (ee = T.loopEnum) !== null && ee !== void 0 ? ee : g,
         meta: (re = T.meta) !== null && re !== void 0 ? re : !0,
         messages: (Se = T.messages) !== null && Se !== void 0 ? Se : !0,
-        inlineRefs: (he = T.inlineRefs) !== null && he !== void 0 ? he : !0,
-        schemaId: (ye = T.schemaId) !== null && ye !== void 0 ? ye : "$id",
+        inlineRefs: (me = T.inlineRefs) !== null && me !== void 0 ? me : !0,
+        schemaId: (ge = T.schemaId) !== null && ge !== void 0 ? ge : "$id",
         addUsedSchema: (fe = T.addUsedSchema) !== null && fe !== void 0 ? fe : !0,
         validateSchema: (nt = T.validateSchema) !== null && nt !== void 0 ? nt : !0,
         validateFormats: (De = T.validateFormats) !== null && De !== void 0 ? De : !0,
         unicodeRegExp: (Ar = T.unicodeRegExp) !== null && Ar !== void 0 ? Ar : !0,
-        int32range: (Ir = T.int32range) !== null && Ir !== void 0 ? Ir : !0,
-        uriResolver: Ll
+        int32range: (qr = T.int32range) !== null && qr !== void 0 ? qr : !0,
+        uriResolver: Nl
       };
     }
-    class l {
+    class d {
       constructor(O = {}) {
         this.schemas = {}, this.refs = {}, this.formats = /* @__PURE__ */ Object.create(null), this._compilations = /* @__PURE__ */ new Set(), this._loading = {}, this._cache = /* @__PURE__ */ new Map(), O = this.opts = { ...O, ...m(O) };
-        const { es5: V, lines: D } = this.opts.code;
-        this.scope = new a.ValueScope({ scope: {}, prefixes: x, es5: V, lines: D }), this.logger = k(O.logger);
+        const { es5: U, lines: D } = this.opts.code;
+        this.scope = new a.ValueScope({ scope: {}, prefixes: w, es5: U, lines: D }), this.logger = k(O.logger);
         const $ = O.validateFormats;
-        O.validateFormats = !1, this.RULES = (0, r.getRules)(), u.call(this, v, O, "NOT SUPPORTED"), u.call(this, A, O, "DEPRECATED", "warn"), this._metaOpts = R.call(this), O.formats && I.call(this), this._addVocabularies(), this._addDefaultMetaSchema(), O.keywords && P.call(this, O.keywords), typeof O.meta == "object" && this.addMetaSchema(O.meta), S.call(this), O.validateFormats = $;
+        O.validateFormats = !1, this.RULES = (0, r.getRules)(), p.call(this, v, O, "NOT SUPPORTED"), p.call(this, I, O, "DEPRECATED", "warn"), this._metaOpts = R.call(this), O.formats && A.call(this), this._addVocabularies(), this._addDefaultMetaSchema(), O.keywords && P.call(this, O.keywords), typeof O.meta == "object" && this.addMetaSchema(O.meta), S.call(this), O.validateFormats = $;
       }
       _addVocabularies() {
         this.addKeyword("$async");
       }
       _addDefaultMetaSchema() {
-        const { $data: O, meta: V, schemaId: D } = this.opts;
+        const { $data: O, meta: U, schemaId: D } = this.opts;
         let $ = y;
-        D === "id" && ($ = { ...y }, $.id = $.$id, delete $.$id), V && O && this.addMetaSchema($, $[D], !1);
+        D === "id" && ($ = { ...y }, $.id = $.$id, delete $.$id), U && O && this.addMetaSchema($, $[D], !1);
       }
       defaultMeta() {
-        const { meta: O, schemaId: V } = this.opts;
-        return this.opts.defaultMeta = typeof O == "object" ? O[V] || O : void 0;
+        const { meta: O, schemaId: U } = this.opts;
+        return this.opts.defaultMeta = typeof O == "object" ? O[U] || O : void 0;
       }
-      validate(O, V) {
+      validate(O, U) {
         let D;
         if (typeof O == "string") {
           if (D = this.getSchema(O), !D)
             throw new Error(`no schema with key or ref "${O}"`);
         } else
           D = this.compile(O);
-        const $ = D(V);
+        const $ = D(U);
         return "$async" in D || (this.errors = D.errors), $;
       }
-      compile(O, V) {
-        const D = this._addSchema(O, V);
+      compile(O, U) {
+        const D = this._addSchema(O, U);
         return D.validate || this._compileSchemaEnv(D);
       }
-      compileAsync(O, V) {
+      compileAsync(O, U) {
         if (typeof this.opts.loadSchema != "function")
           throw new Error("options.loadSchema should be a function");
         const { loadSchema: D } = this.opts;
-        return $.call(this, O, V);
-        async function $(J, U) {
+        return $.call(this, O, U);
+        async function $(J, V) {
           await q.call(this, J.$schema);
-          const F = this._addSchema(J, U);
+          const F = this._addSchema(J, V);
           return F.validate || C.call(this, F);
         }
         async function q(J) {
@@ -14115,24 +14242,24 @@ function Dd() {
         async function C(J) {
           try {
             return this._compileSchemaEnv(J);
-          } catch (U) {
-            if (!(U instanceof o.default))
-              throw U;
-            return z.call(this, U), await H.call(this, U.missingSchema), C.call(this, J);
+          } catch (V) {
+            if (!(V instanceof o.default))
+              throw V;
+            return z.call(this, V), await H.call(this, V.missingSchema), C.call(this, J);
           }
         }
-        function z({ missingSchema: J, missingRef: U }) {
+        function z({ missingSchema: J, missingRef: V }) {
           if (this.refs[J])
-            throw new Error(`AnySchema ${J} is loaded but ${U} cannot be resolved`);
+            throw new Error(`AnySchema ${J} is loaded but ${V} cannot be resolved`);
         }
         async function H(J) {
-          const U = await Q.call(this, J);
-          this.refs[J] || await q.call(this, U.$schema), this.refs[J] || this.addSchema(U, J, V);
+          const V = await Q.call(this, J);
+          this.refs[J] || await q.call(this, V.$schema), this.refs[J] || this.addSchema(V, J, U);
         }
         async function Q(J) {
-          const U = this._loading[J];
-          if (U)
-            return U;
+          const V = this._loading[J];
+          if (V)
+            return V;
           try {
             return await (this._loading[J] = D(J));
           } finally {
@@ -14141,7 +14268,7 @@ function Dd() {
         }
       }
       // Adds schema to the instance
-      addSchema(O, V, D, $ = this.opts.validateSchema) {
+      addSchema(O, U, D, $ = this.opts.validateSchema) {
         if (Array.isArray(O)) {
           for (const C of O)
             this.addSchema(C, void 0, D, $);
@@ -14153,15 +14280,15 @@ function Dd() {
           if (q = O[C], q !== void 0 && typeof q != "string")
             throw new Error(`schema ${C} must be string`);
         }
-        return V = (0, c.normalizeId)(V || q), this._checkUnique(V), this.schemas[V] = this._addSchema(O, D, V, $, !0), this;
+        return U = (0, c.normalizeId)(U || q), this._checkUnique(U), this.schemas[U] = this._addSchema(O, D, U, $, !0), this;
       }
       // Add schema that will be used to validate other schemas
       // options in META_IGNORE_OPTIONS are alway set to false
-      addMetaSchema(O, V, D = this.opts.validateSchema) {
-        return this.addSchema(O, V, !0, D), this;
+      addMetaSchema(O, U, D = this.opts.validateSchema) {
+        return this.addSchema(O, U, !0, D), this;
       }
       //  Validate schema against its meta-schema
-      validateSchema(O, V) {
+      validateSchema(O, U) {
         if (typeof O == "boolean")
           return !0;
         let D;
@@ -14170,7 +14297,7 @@ function Dd() {
         if (D = D || this.opts.defaultMeta || this.defaultMeta(), !D)
           return this.logger.warn("meta-schema not available"), this.errors = null, !0;
         const $ = this.validate(D, O);
-        if (!$ && V) {
+        if (!$ && U) {
           const q = "schema is invalid: " + this.errorsText();
           if (this.opts.validateSchema === "log")
             this.logger.error(q);
@@ -14182,16 +14309,16 @@ function Dd() {
       // Get compiled schema by `key` or `ref`.
       // (`key` that was passed to `addSchema` or full schema reference - `schema.$id` or resolved id)
       getSchema(O) {
-        let V;
-        for (; typeof (V = b.call(this, O)) == "string"; )
-          O = V;
-        if (V === void 0) {
+        let U;
+        for (; typeof (U = b.call(this, O)) == "string"; )
+          O = U;
+        if (U === void 0) {
           const { schemaId: D } = this.opts, $ = new s.SchemaEnv({ schema: {}, schemaId: D });
-          if (V = s.resolveSchema.call(this, $, O), !V)
+          if (U = s.resolveSchema.call(this, $, O), !U)
             return;
-          this.refs[O] = V;
+          this.refs[O] = U;
         }
-        return V.validate || this._compileSchemaEnv(V);
+        return U.validate || this._compileSchemaEnv(U);
       }
       // Remove cached schema(s).
       // If no parameter is passed all schemas but meta-schemas are removed.
@@ -14204,12 +14331,12 @@ function Dd() {
           case "undefined":
             return this._removeAllSchemas(this.schemas), this._removeAllSchemas(this.refs), this._cache.clear(), this;
           case "string": {
-            const V = b.call(this, O);
-            return typeof V == "object" && this._cache.delete(V.schema), delete this.schemas[O], delete this.refs[O], this;
+            const U = b.call(this, O);
+            return typeof U == "object" && this._cache.delete(U.schema), delete this.schemas[O], delete this.refs[O], this;
           }
           case "object": {
-            const V = O;
-            this._cache.delete(V);
+            const U = O;
+            this._cache.delete(U);
             let D = O[this.opts.schemaId];
             return D && (D = (0, c.normalizeId)(D), delete this.schemas[D], delete this.refs[D]), this;
           }
@@ -14219,54 +14346,54 @@ function Dd() {
       }
       // add "vocabulary" - a collection of keywords
       addVocabulary(O) {
-        for (const V of O)
-          this.addKeyword(V);
+        for (const U of O)
+          this.addKeyword(U);
         return this;
       }
-      addKeyword(O, V) {
+      addKeyword(O, U) {
         let D;
         if (typeof O == "string")
-          D = O, typeof V == "object" && (this.logger.warn("these parameters are deprecated, see docs for addKeyword"), V.keyword = D);
-        else if (typeof O == "object" && V === void 0) {
-          if (V = O, D = V.keyword, Array.isArray(D) && !D.length)
+          D = O, typeof U == "object" && (this.logger.warn("these parameters are deprecated, see docs for addKeyword"), U.keyword = D);
+        else if (typeof O == "object" && U === void 0) {
+          if (U = O, D = U.keyword, Array.isArray(D) && !D.length)
             throw new Error("addKeywords: keyword must be string or non-empty array");
         } else
           throw new Error("invalid addKeywords parameters");
-        if (j.call(this, D, V), !V)
-          return (0, p.eachItem)(D, (q) => N.call(this, q)), this;
-        G.call(this, V);
+        if (j.call(this, D, U), !U)
+          return (0, u.eachItem)(D, (q) => N.call(this, q)), this;
+        G.call(this, U);
         const $ = {
-          ...V,
-          type: (0, d.getJSONTypes)(V.type),
-          schemaType: (0, d.getJSONTypes)(V.schemaType)
+          ...U,
+          type: (0, l.getJSONTypes)(U.type),
+          schemaType: (0, l.getJSONTypes)(U.schemaType)
         };
-        return (0, p.eachItem)(D, $.type.length === 0 ? (q) => N.call(this, q, $) : (q) => $.type.forEach((C) => N.call(this, q, $, C))), this;
+        return (0, u.eachItem)(D, $.type.length === 0 ? (q) => N.call(this, q, $) : (q) => $.type.forEach((C) => N.call(this, q, $, C))), this;
       }
       getKeyword(O) {
-        const V = this.RULES.all[O];
-        return typeof V == "object" ? V.definition : !!V;
+        const U = this.RULES.all[O];
+        return typeof U == "object" ? U.definition : !!U;
       }
       // Remove keyword
       removeKeyword(O) {
-        const { RULES: V } = this;
-        delete V.keywords[O], delete V.all[O];
-        for (const D of V.rules) {
+        const { RULES: U } = this;
+        delete U.keywords[O], delete U.all[O];
+        for (const D of U.rules) {
           const $ = D.rules.findIndex((q) => q.keyword === O);
           $ >= 0 && D.rules.splice($, 1);
         }
         return this;
       }
       // Add format
-      addFormat(O, V) {
-        return typeof V == "string" && (V = new RegExp(V)), this.formats[O] = V, this;
+      addFormat(O, U) {
+        return typeof U == "string" && (U = new RegExp(U)), this.formats[O] = U, this;
       }
-      errorsText(O = this.errors, { separator: V = ", ", dataVar: D = "data" } = {}) {
-        return !O || O.length === 0 ? "No errors" : O.map(($) => `${D}${$.instancePath} ${$.message}`).reduce(($, q) => $ + V + q);
+      errorsText(O = this.errors, { separator: U = ", ", dataVar: D = "data" } = {}) {
+        return !O || O.length === 0 ? "No errors" : O.map(($) => `${D}${$.instancePath} ${$.message}`).reduce(($, q) => $ + U + q);
       }
-      $dataMetaSchema(O, V) {
+      $dataMetaSchema(O, U) {
         const D = this.RULES.all;
         O = JSON.parse(JSON.stringify(O));
-        for (const $ of V) {
+        for (const $ of U) {
           const q = $.split("/").slice(1);
           let C = O;
           for (const z of q)
@@ -14281,13 +14408,13 @@ function Dd() {
         }
         return O;
       }
-      _removeAllSchemas(O, V) {
+      _removeAllSchemas(O, U) {
         for (const D in O) {
           const $ = O[D];
-          (!V || V.test(D)) && (typeof $ == "string" ? delete O[D] : $ && !$.meta && (this._cache.delete($.schema), delete O[D]));
+          (!U || U.test(D)) && (typeof $ == "string" ? delete O[D] : $ && !$.meta && (this._cache.delete($.schema), delete O[D]));
         }
       }
-      _addSchema(O, V, D, $ = this.opts.validateSchema, q = this.opts.addUsedSchema) {
+      _addSchema(O, U, D, $ = this.opts.validateSchema, q = this.opts.addUsedSchema) {
         let C;
         const { schemaId: z } = this.opts;
         if (typeof O == "object")
@@ -14303,7 +14430,7 @@ function Dd() {
           return H;
         D = (0, c.normalizeId)(C || D);
         const Q = c.getSchemaRefs.call(this, O, D);
-        return H = new s.SchemaEnv({ schema: O, schemaId: z, meta: V, baseId: D, localRefs: Q }), this._cache.set(H.schema, H), q && !D.startsWith("#") && (D && this._checkUnique(D), this.refs[D] = H), $ && this.validateSchema(O, !0), H;
+        return H = new s.SchemaEnv({ schema: O, schemaId: z, meta: U, baseId: D, localRefs: Q }), this._cache.set(H.schema, H), q && !D.startsWith("#") && (D && this._checkUnique(D), this.refs[D] = H), $ && this.validateSchema(O, !0), H;
       }
       _checkUnique(O) {
         if (this.schemas[O] || this.refs[O])
@@ -14315,20 +14442,20 @@ function Dd() {
         return O.validate;
       }
       _compileMetaSchema(O) {
-        const V = this.opts;
+        const U = this.opts;
         this.opts = this._metaOpts;
         try {
           s.compileSchema.call(this, O);
         } finally {
-          this.opts = V;
+          this.opts = U;
         }
       }
     }
-    l.ValidationError = i.default, l.MissingRefError = o.default, e.default = l;
-    function u(T, O, V, D = "error") {
+    d.ValidationError = i.default, d.MissingRefError = o.default, e.default = d;
+    function p(T, O, U, D = "error") {
       for (const $ in T) {
         const q = $;
-        q in O && this.logger[D](`${V}: option ${$}. ${T[q]}`);
+        q in O && this.logger[D](`${U}: option ${$}. ${T[q]}`);
       }
     }
     function b(T) {
@@ -14343,7 +14470,7 @@ function Dd() {
           for (const O in T)
             this.addSchema(T[O], O);
     }
-    function I() {
+    function A() {
       for (const T in this.opts.formats) {
         const O = this.opts.formats[T];
         O && this.addFormat(T, O);
@@ -14356,13 +14483,13 @@ function Dd() {
       }
       this.logger.warn("keywords option as map is deprecated, pass array");
       for (const O in T) {
-        const V = T[O];
-        V.keyword || (V.keyword = O), this.addKeyword(V);
+        const U = T[O];
+        U.keyword || (U.keyword = O), this.addKeyword(U);
       }
     }
     function R() {
       const T = { ...this.opts };
-      for (const O of w)
+      for (const O of x)
         delete T[O];
       return T;
     }
@@ -14381,37 +14508,37 @@ function Dd() {
     }
     const M = /^[a-z_$][a-z0-9_$:-]*$/i;
     function j(T, O) {
-      const { RULES: V } = this;
-      if ((0, p.eachItem)(T, (D) => {
-        if (V.keywords[D])
+      const { RULES: U } = this;
+      if ((0, u.eachItem)(T, (D) => {
+        if (U.keywords[D])
           throw new Error(`Keyword ${D} is already defined`);
         if (!M.test(D))
           throw new Error(`Keyword ${D} has invalid name`);
       }), !!O && O.$data && !("code" in O || "validate" in O))
         throw new Error('$data keyword must have "code" or "validate" function');
     }
-    function N(T, O, V) {
+    function N(T, O, U) {
       var D;
       const $ = O?.post;
-      if (V && $)
+      if (U && $)
         throw new Error('keyword with "post" flag cannot have "type"');
       const { RULES: q } = this;
-      let C = $ ? q.post : q.rules.find(({ type: H }) => H === V);
-      if (C || (C = { type: V, rules: [] }, q.rules.push(C)), q.keywords[T] = !0, !O)
+      let C = $ ? q.post : q.rules.find(({ type: H }) => H === U);
+      if (C || (C = { type: U, rules: [] }, q.rules.push(C)), q.keywords[T] = !0, !O)
         return;
       const z = {
         keyword: T,
         definition: {
           ...O,
-          type: (0, d.getJSONTypes)(O.type),
-          schemaType: (0, d.getJSONTypes)(O.schemaType)
+          type: (0, l.getJSONTypes)(O.type),
+          schemaType: (0, l.getJSONTypes)(O.schemaType)
         }
       };
       O.before ? _.call(this, C, z, O.before) : C.rules.push(z), q.all[T] = z, (D = O.implements) === null || D === void 0 || D.forEach((H) => this.addKeyword(H));
     }
-    function _(T, O, V) {
-      const D = T.rules.findIndex(($) => $.keyword === V);
-      D >= 0 ? T.rules.splice(D, 0, O) : (T.rules.push(O), this.logger.warn(`rule ${V} is not defined`));
+    function _(T, O, U) {
+      const D = T.rules.findIndex(($) => $.keyword === U);
+      D >= 0 ? T.rules.splice(D, 0, O) : (T.rules.push(O), this.logger.warn(`rule ${U} is not defined`));
     }
     function G(T) {
       let { metaSchema: O } = T;
@@ -14423,112 +14550,112 @@ function Dd() {
     function B(T) {
       return { anyOf: [T, L] };
     }
-  })(Cr)), Cr;
+  })(Er)), Er;
 }
-var Kn = {}, Qn = {}, Wn = {}, vo;
-function Zu() {
-  if (vo) return Wn;
-  vo = 1, Object.defineProperty(Wn, "__esModule", { value: !0 });
+var Wn = {}, Xn = {}, Yn = {}, wo;
+function Hu() {
+  if (wo) return Yn;
+  wo = 1, Object.defineProperty(Yn, "__esModule", { value: !0 });
   const e = {
     keyword: "id",
     code() {
       throw new Error('NOT SUPPORTED: keyword "id", use "$id" for schema ID');
     }
   };
-  return Wn.default = e, Wn;
+  return Yn.default = e, Yn;
 }
-var Pt = {}, bo;
-function oa() {
-  if (bo) return Pt;
-  bo = 1, Object.defineProperty(Pt, "__esModule", { value: !0 }), Pt.callRef = Pt.getValidate = void 0;
-  const e = /* @__PURE__ */ kn(), t = /* @__PURE__ */ tt(), n = /* @__PURE__ */ te(), i = /* @__PURE__ */ et(), o = /* @__PURE__ */ pr(), r = /* @__PURE__ */ ie(), s = {
+var _t = {}, xo;
+function da() {
+  if (xo) return _t;
+  xo = 1, Object.defineProperty(_t, "__esModule", { value: !0 }), _t.callRef = _t.getValidate = void 0;
+  const e = /* @__PURE__ */ On(), t = /* @__PURE__ */ tt(), n = /* @__PURE__ */ te(), i = /* @__PURE__ */ et(), o = /* @__PURE__ */ fr(), r = /* @__PURE__ */ ie(), s = {
     keyword: "$ref",
     schemaType: "string",
-    code(d) {
-      const { gen: p, schema: y, it: f } = d, { baseId: h, schemaEnv: w, validateName: x, opts: v, self: A } = f, { root: g } = w;
+    code(l) {
+      const { gen: u, schema: y, it: f } = l, { baseId: h, schemaEnv: x, validateName: w, opts: v, self: I } = f, { root: g } = x;
       if ((y === "#" || y === "#/") && h === g.baseId)
-        return l();
-      const m = o.resolveRef.call(A, g, h, y);
+        return d();
+      const m = o.resolveRef.call(I, g, h, y);
       if (m === void 0)
         throw new e.default(f.opts.uriResolver, h, y);
       if (m instanceof o.SchemaEnv)
-        return u(m);
+        return p(m);
       return b(m);
-      function l() {
-        if (w === g)
-          return c(d, x, w, w.$async);
-        const S = p.scopeValue("root", { ref: g });
-        return c(d, (0, n._)`${S}.validate`, g, g.$async);
+      function d() {
+        if (x === g)
+          return c(l, w, x, x.$async);
+        const S = u.scopeValue("root", { ref: g });
+        return c(l, (0, n._)`${S}.validate`, g, g.$async);
       }
-      function u(S) {
-        const I = a(d, S);
-        c(d, I, S, S.$async);
+      function p(S) {
+        const A = a(l, S);
+        c(l, A, S, S.$async);
       }
       function b(S) {
-        const I = p.scopeValue("schema", v.code.source === !0 ? { ref: S, code: (0, n.stringify)(S) } : { ref: S }), P = p.name("valid"), R = d.subschema({
+        const A = u.scopeValue("schema", v.code.source === !0 ? { ref: S, code: (0, n.stringify)(S) } : { ref: S }), P = u.name("valid"), R = l.subschema({
           schema: S,
           dataTypes: [],
           schemaPath: n.nil,
-          topSchemaRef: I,
+          topSchemaRef: A,
           errSchemaPath: y
         }, P);
-        d.mergeEvaluated(R), d.ok(P);
+        l.mergeEvaluated(R), l.ok(P);
       }
     }
   };
-  function a(d, p) {
-    const { gen: y } = d;
-    return p.validate ? y.scopeValue("validate", { ref: p.validate }) : (0, n._)`${y.scopeValue("wrapper", { ref: p })}.validate`;
+  function a(l, u) {
+    const { gen: y } = l;
+    return u.validate ? y.scopeValue("validate", { ref: u.validate }) : (0, n._)`${y.scopeValue("wrapper", { ref: u })}.validate`;
   }
-  Pt.getValidate = a;
-  function c(d, p, y, f) {
-    const { gen: h, it: w } = d, { allErrors: x, schemaEnv: v, opts: A } = w, g = A.passContext ? i.default.this : n.nil;
-    f ? m() : l();
+  _t.getValidate = a;
+  function c(l, u, y, f) {
+    const { gen: h, it: x } = l, { allErrors: w, schemaEnv: v, opts: I } = x, g = I.passContext ? i.default.this : n.nil;
+    f ? m() : d();
     function m() {
       if (!v.$async)
         throw new Error("async schema referenced by sync schema");
       const S = h.let("valid");
       h.try(() => {
-        h.code((0, n._)`await ${(0, t.callValidateCode)(d, p, g)}`), b(p), x || h.assign(S, !0);
-      }, (I) => {
-        h.if((0, n._)`!(${I} instanceof ${w.ValidationError})`, () => h.throw(I)), u(I), x || h.assign(S, !1);
-      }), d.ok(S);
+        h.code((0, n._)`await ${(0, t.callValidateCode)(l, u, g)}`), b(u), w || h.assign(S, !0);
+      }, (A) => {
+        h.if((0, n._)`!(${A} instanceof ${x.ValidationError})`, () => h.throw(A)), p(A), w || h.assign(S, !1);
+      }), l.ok(S);
     }
-    function l() {
-      d.result((0, t.callValidateCode)(d, p, g), () => b(p), () => u(p));
+    function d() {
+      l.result((0, t.callValidateCode)(l, u, g), () => b(u), () => p(u));
     }
-    function u(S) {
-      const I = (0, n._)`${S}.errors`;
-      h.assign(i.default.vErrors, (0, n._)`${i.default.vErrors} === null ? ${I} : ${i.default.vErrors}.concat(${I})`), h.assign(i.default.errors, (0, n._)`${i.default.vErrors}.length`);
+    function p(S) {
+      const A = (0, n._)`${S}.errors`;
+      h.assign(i.default.vErrors, (0, n._)`${i.default.vErrors} === null ? ${A} : ${i.default.vErrors}.concat(${A})`), h.assign(i.default.errors, (0, n._)`${i.default.vErrors}.length`);
     }
     function b(S) {
-      var I;
-      if (!w.opts.unevaluated)
+      var A;
+      if (!x.opts.unevaluated)
         return;
-      const P = (I = y?.validate) === null || I === void 0 ? void 0 : I.evaluated;
-      if (w.props !== !0)
+      const P = (A = y?.validate) === null || A === void 0 ? void 0 : A.evaluated;
+      if (x.props !== !0)
         if (P && !P.dynamicProps)
-          P.props !== void 0 && (w.props = r.mergeEvaluated.props(h, P.props, w.props));
+          P.props !== void 0 && (x.props = r.mergeEvaluated.props(h, P.props, x.props));
         else {
           const R = h.var("props", (0, n._)`${S}.evaluated.props`);
-          w.props = r.mergeEvaluated.props(h, R, w.props, n.Name);
+          x.props = r.mergeEvaluated.props(h, R, x.props, n.Name);
         }
-      if (w.items !== !0)
+      if (x.items !== !0)
         if (P && !P.dynamicItems)
-          P.items !== void 0 && (w.items = r.mergeEvaluated.items(h, P.items, w.items));
+          P.items !== void 0 && (x.items = r.mergeEvaluated.items(h, P.items, x.items));
         else {
           const R = h.var("items", (0, n._)`${S}.evaluated.items`);
-          w.items = r.mergeEvaluated.items(h, R, w.items, n.Name);
+          x.items = r.mergeEvaluated.items(h, R, x.items, n.Name);
         }
     }
   }
-  return Pt.callRef = c, Pt.default = s, Pt;
+  return _t.callRef = c, _t.default = s, _t;
 }
-var wo;
-function zd() {
-  if (wo) return Qn;
-  wo = 1, Object.defineProperty(Qn, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ Zu(), t = /* @__PURE__ */ oa(), n = [
+var So;
+function Vd() {
+  if (So) return Xn;
+  So = 1, Object.defineProperty(Xn, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ Hu(), t = /* @__PURE__ */ da(), n = [
     "$schema",
     "$id",
     "$defs",
@@ -14538,12 +14665,12 @@ function zd() {
     e.default,
     t.default
   ];
-  return Qn.default = n, Qn;
+  return Xn.default = n, Xn;
 }
-var Xn = {}, Yn = {}, xo;
-function Hu() {
-  if (xo) return Yn;
-  xo = 1, Object.defineProperty(Yn, "__esModule", { value: !0 });
+var ei = {}, ti = {}, Io;
+function Ju() {
+  if (Io) return ti;
+  Io = 1, Object.defineProperty(ti, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ te(), t = e.operators, n = {
     maximum: { okStr: "<=", ok: t.LTE, fail: t.GT },
     minimum: { okStr: ">=", ok: t.GTE, fail: t.LT },
@@ -14563,12 +14690,12 @@ function Hu() {
       r.fail$data((0, e._)`${a} ${n[s].fail} ${c} || isNaN(${a})`);
     }
   };
-  return Yn.default = o, Yn;
+  return ti.default = o, ti;
 }
-var ei = {}, So;
-function Ju() {
-  if (So) return ei;
-  So = 1, Object.defineProperty(ei, "__esModule", { value: !0 });
+var ni = {}, Ao;
+function Ku() {
+  if (Ao) return ni;
+  Ao = 1, Object.defineProperty(ni, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ te(), n = {
     keyword: "multipleOf",
     type: "number",
@@ -14579,16 +14706,16 @@ function Ju() {
       params: ({ schemaCode: i }) => (0, e._)`{multipleOf: ${i}}`
     },
     code(i) {
-      const { gen: o, data: r, schemaCode: s, it: a } = i, c = a.opts.multipleOfPrecision, d = o.let("res"), p = c ? (0, e._)`Math.abs(Math.round(${d}) - ${d}) > 1e-${c}` : (0, e._)`${d} !== parseInt(${d})`;
-      i.fail$data((0, e._)`(${s} === 0 || (${d} = ${r}/${s}, ${p}))`);
+      const { gen: o, data: r, schemaCode: s, it: a } = i, c = a.opts.multipleOfPrecision, l = o.let("res"), u = c ? (0, e._)`Math.abs(Math.round(${l}) - ${l}) > 1e-${c}` : (0, e._)`${l} !== parseInt(${l})`;
+      i.fail$data((0, e._)`(${s} === 0 || (${l} = ${r}/${s}, ${u}))`);
     }
   };
-  return ei.default = n, ei;
+  return ni.default = n, ni;
 }
-var ti = {}, ni = {}, Ao;
-function Ku() {
-  if (Ao) return ni;
-  Ao = 1, Object.defineProperty(ni, "__esModule", { value: !0 });
+var ii = {}, ri = {}, qo;
+function Qu() {
+  if (qo) return ri;
+  qo = 1, Object.defineProperty(ri, "__esModule", { value: !0 });
   function e(t) {
     const n = t.length;
     let i = 0, o = 0, r;
@@ -14596,13 +14723,13 @@ function Ku() {
       i++, r = t.charCodeAt(o++), r >= 55296 && r <= 56319 && o < n && (r = t.charCodeAt(o), (r & 64512) === 56320 && o++);
     return i;
   }
-  return ni.default = e, e.code = 'require("ajv/dist/runtime/ucs2length").default', ni;
+  return ri.default = e, e.code = 'require("ajv/dist/runtime/ucs2length").default', ri;
 }
-var Io;
-function Qu() {
-  if (Io) return ti;
-  Io = 1, Object.defineProperty(ti, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), n = /* @__PURE__ */ Ku(), o = {
+var Ro;
+function Wu() {
+  if (Ro) return ii;
+  Ro = 1, Object.defineProperty(ii, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), n = /* @__PURE__ */ Qu(), o = {
     keyword: ["maxLength", "minLength"],
     type: "string",
     schemaType: "number",
@@ -14615,16 +14742,16 @@ function Qu() {
       params: ({ schemaCode: r }) => (0, e._)`{limit: ${r}}`
     },
     code(r) {
-      const { keyword: s, data: a, schemaCode: c, it: d } = r, p = s === "maxLength" ? e.operators.GT : e.operators.LT, y = d.opts.unicode === !1 ? (0, e._)`${a}.length` : (0, e._)`${(0, t.useFunc)(r.gen, n.default)}(${a})`;
-      r.fail$data((0, e._)`${y} ${p} ${c}`);
+      const { keyword: s, data: a, schemaCode: c, it: l } = r, u = s === "maxLength" ? e.operators.GT : e.operators.LT, y = l.opts.unicode === !1 ? (0, e._)`${a}.length` : (0, e._)`${(0, t.useFunc)(r.gen, n.default)}(${a})`;
+      r.fail$data((0, e._)`${y} ${u} ${c}`);
     }
   };
-  return ti.default = o, ti;
+  return ii.default = o, ii;
 }
-var ii = {}, qo;
-function Wu() {
-  if (qo) return ii;
-  qo = 1, Object.defineProperty(ii, "__esModule", { value: !0 });
+var si = {}, jo;
+function Xu() {
+  if (jo) return si;
+  jo = 1, Object.defineProperty(si, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ tt(), t = /* @__PURE__ */ ie(), n = /* @__PURE__ */ te(), o = {
     keyword: "pattern",
     type: "string",
@@ -14635,22 +14762,22 @@ function Wu() {
       params: ({ schemaCode: r }) => (0, n._)`{pattern: ${r}}`
     },
     code(r) {
-      const { gen: s, data: a, $data: c, schema: d, schemaCode: p, it: y } = r, f = y.opts.unicodeRegExp ? "u" : "";
+      const { gen: s, data: a, $data: c, schema: l, schemaCode: u, it: y } = r, f = y.opts.unicodeRegExp ? "u" : "";
       if (c) {
-        const { regExp: h } = y.opts.code, w = h.code === "new RegExp" ? (0, n._)`new RegExp` : (0, t.useFunc)(s, h), x = s.let("valid");
-        s.try(() => s.assign(x, (0, n._)`${w}(${p}, ${f}).test(${a})`), () => s.assign(x, !1)), r.fail$data((0, n._)`!${x}`);
+        const { regExp: h } = y.opts.code, x = h.code === "new RegExp" ? (0, n._)`new RegExp` : (0, t.useFunc)(s, h), w = s.let("valid");
+        s.try(() => s.assign(w, (0, n._)`${x}(${u}, ${f}).test(${a})`), () => s.assign(w, !1)), r.fail$data((0, n._)`!${w}`);
       } else {
-        const h = (0, e.usePattern)(r, d);
+        const h = (0, e.usePattern)(r, l);
         r.fail$data((0, n._)`!${h}.test(${a})`);
       }
     }
   };
-  return ii.default = o, ii;
+  return si.default = o, si;
 }
-var ri = {}, Ro;
-function Xu() {
-  if (Ro) return ri;
-  Ro = 1, Object.defineProperty(ri, "__esModule", { value: !0 });
+var ai = {}, $o;
+function Yu() {
+  if ($o) return ai;
+  $o = 1, Object.defineProperty(ai, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ te(), n = {
     keyword: ["maxProperties", "minProperties"],
     type: "object",
@@ -14668,12 +14795,12 @@ function Xu() {
       i.fail$data((0, e._)`Object.keys(${r}).length ${a} ${s}`);
     }
   };
-  return ri.default = n, ri;
+  return ai.default = n, ai;
 }
-var si = {}, jo;
-function Yu() {
-  if (jo) return si;
-  jo = 1, Object.defineProperty(si, "__esModule", { value: !0 });
+var oi = {}, Po;
+function ep() {
+  if (Po) return oi;
+  Po = 1, Object.defineProperty(oi, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ tt(), t = /* @__PURE__ */ te(), n = /* @__PURE__ */ ie(), o = {
     keyword: "required",
     type: "object",
@@ -14684,53 +14811,53 @@ function Yu() {
       params: ({ params: { missingProperty: r } }) => (0, t._)`{missingProperty: ${r}}`
     },
     code(r) {
-      const { gen: s, schema: a, schemaCode: c, data: d, $data: p, it: y } = r, { opts: f } = y;
-      if (!p && a.length === 0)
+      const { gen: s, schema: a, schemaCode: c, data: l, $data: u, it: y } = r, { opts: f } = y;
+      if (!u && a.length === 0)
         return;
       const h = a.length >= f.loopRequired;
-      if (y.allErrors ? w() : x(), f.strictRequired) {
+      if (y.allErrors ? x() : w(), f.strictRequired) {
         const g = r.parentSchema.properties, { definedProperties: m } = r.it;
-        for (const l of a)
-          if (g?.[l] === void 0 && !m.has(l)) {
-            const u = y.schemaEnv.baseId + y.errSchemaPath, b = `required property "${l}" is not defined at "${u}" (strictRequired)`;
+        for (const d of a)
+          if (g?.[d] === void 0 && !m.has(d)) {
+            const p = y.schemaEnv.baseId + y.errSchemaPath, b = `required property "${d}" is not defined at "${p}" (strictRequired)`;
             (0, n.checkStrictMode)(y, b, y.opts.strictRequired);
           }
       }
-      function w() {
-        if (h || p)
+      function x() {
+        if (h || u)
           r.block$data(t.nil, v);
         else
           for (const g of a)
             (0, e.checkReportMissingProp)(r, g);
       }
-      function x() {
+      function w() {
         const g = s.let("missing");
-        if (h || p) {
+        if (h || u) {
           const m = s.let("valid", !0);
-          r.block$data(m, () => A(g, m)), r.ok(m);
+          r.block$data(m, () => I(g, m)), r.ok(m);
         } else
           s.if((0, e.checkMissingProp)(r, a, g)), (0, e.reportMissingProp)(r, g), s.else();
       }
       function v() {
         s.forOf("prop", c, (g) => {
-          r.setParams({ missingProperty: g }), s.if((0, e.noPropertyInData)(s, d, g, f.ownProperties), () => r.error());
+          r.setParams({ missingProperty: g }), s.if((0, e.noPropertyInData)(s, l, g, f.ownProperties), () => r.error());
         });
       }
-      function A(g, m) {
+      function I(g, m) {
         r.setParams({ missingProperty: g }), s.forOf(g, c, () => {
-          s.assign(m, (0, e.propertyInData)(s, d, g, f.ownProperties)), s.if((0, t.not)(m), () => {
+          s.assign(m, (0, e.propertyInData)(s, l, g, f.ownProperties)), s.if((0, t.not)(m), () => {
             r.error(), s.break();
           });
         }, t.nil);
       }
     }
   };
-  return si.default = o, si;
+  return oi.default = o, oi;
 }
-var ai = {}, $o;
-function ep() {
-  if ($o) return ai;
-  $o = 1, Object.defineProperty(ai, "__esModule", { value: !0 });
+var ci = {}, _o;
+function tp() {
+  if (_o) return ci;
+  _o = 1, Object.defineProperty(ci, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ te(), n = {
     keyword: ["maxItems", "minItems"],
     type: "array",
@@ -14748,20 +14875,20 @@ function ep() {
       i.fail$data((0, e._)`${r}.length ${a} ${s}`);
     }
   };
-  return ai.default = n, ai;
+  return ci.default = n, ci;
 }
-var oi = {}, ci = {}, Po;
-function ca() {
-  if (Po) return ci;
-  Po = 1, Object.defineProperty(ci, "__esModule", { value: !0 });
-  const e = Ld();
-  return e.code = 'require("ajv/dist/runtime/equal").default', ci.default = e, ci;
+var di = {}, li = {}, To;
+function la() {
+  if (To) return li;
+  To = 1, Object.defineProperty(li, "__esModule", { value: !0 });
+  const e = Dd();
+  return e.code = 'require("ajv/dist/runtime/equal").default', li.default = e, li;
 }
-var _o;
-function tp() {
-  if (_o) return oi;
-  _o = 1, Object.defineProperty(oi, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ Yi(), t = /* @__PURE__ */ te(), n = /* @__PURE__ */ ie(), i = /* @__PURE__ */ ca(), r = {
+var Co;
+function np() {
+  if (Co) return di;
+  Co = 1, Object.defineProperty(di, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ er(), t = /* @__PURE__ */ te(), n = /* @__PURE__ */ ie(), i = /* @__PURE__ */ la(), r = {
     keyword: "uniqueItems",
     type: "array",
     schemaType: "boolean",
@@ -14771,41 +14898,41 @@ function tp() {
       params: ({ params: { i: s, j: a } }) => (0, t._)`{i: ${s}, j: ${a}}`
     },
     code(s) {
-      const { gen: a, data: c, $data: d, schema: p, parentSchema: y, schemaCode: f, it: h } = s;
-      if (!d && !p)
+      const { gen: a, data: c, $data: l, schema: u, parentSchema: y, schemaCode: f, it: h } = s;
+      if (!l && !u)
         return;
-      const w = a.let("valid"), x = y.items ? (0, e.getSchemaTypes)(y.items) : [];
-      s.block$data(w, v, (0, t._)`${f} === false`), s.ok(w);
+      const x = a.let("valid"), w = y.items ? (0, e.getSchemaTypes)(y.items) : [];
+      s.block$data(x, v, (0, t._)`${f} === false`), s.ok(x);
       function v() {
-        const l = a.let("i", (0, t._)`${c}.length`), u = a.let("j");
-        s.setParams({ i: l, j: u }), a.assign(w, !0), a.if((0, t._)`${l} > 1`, () => (A() ? g : m)(l, u));
+        const d = a.let("i", (0, t._)`${c}.length`), p = a.let("j");
+        s.setParams({ i: d, j: p }), a.assign(x, !0), a.if((0, t._)`${d} > 1`, () => (I() ? g : m)(d, p));
       }
-      function A() {
-        return x.length > 0 && !x.some((l) => l === "object" || l === "array");
+      function I() {
+        return w.length > 0 && !w.some((d) => d === "object" || d === "array");
       }
-      function g(l, u) {
-        const b = a.name("item"), S = (0, e.checkDataTypes)(x, b, h.opts.strictNumbers, e.DataType.Wrong), I = a.const("indices", (0, t._)`{}`);
-        a.for((0, t._)`;${l}--;`, () => {
-          a.let(b, (0, t._)`${c}[${l}]`), a.if(S, (0, t._)`continue`), x.length > 1 && a.if((0, t._)`typeof ${b} == "string"`, (0, t._)`${b} += "_"`), a.if((0, t._)`typeof ${I}[${b}] == "number"`, () => {
-            a.assign(u, (0, t._)`${I}[${b}]`), s.error(), a.assign(w, !1).break();
-          }).code((0, t._)`${I}[${b}] = ${l}`);
+      function g(d, p) {
+        const b = a.name("item"), S = (0, e.checkDataTypes)(w, b, h.opts.strictNumbers, e.DataType.Wrong), A = a.const("indices", (0, t._)`{}`);
+        a.for((0, t._)`;${d}--;`, () => {
+          a.let(b, (0, t._)`${c}[${d}]`), a.if(S, (0, t._)`continue`), w.length > 1 && a.if((0, t._)`typeof ${b} == "string"`, (0, t._)`${b} += "_"`), a.if((0, t._)`typeof ${A}[${b}] == "number"`, () => {
+            a.assign(p, (0, t._)`${A}[${b}]`), s.error(), a.assign(x, !1).break();
+          }).code((0, t._)`${A}[${b}] = ${d}`);
         });
       }
-      function m(l, u) {
+      function m(d, p) {
         const b = (0, n.useFunc)(a, i.default), S = a.name("outer");
-        a.label(S).for((0, t._)`;${l}--;`, () => a.for((0, t._)`${u} = ${l}; ${u}--;`, () => a.if((0, t._)`${b}(${c}[${l}], ${c}[${u}])`, () => {
-          s.error(), a.assign(w, !1).break(S);
+        a.label(S).for((0, t._)`;${d}--;`, () => a.for((0, t._)`${p} = ${d}; ${p}--;`, () => a.if((0, t._)`${b}(${c}[${d}], ${c}[${p}])`, () => {
+          s.error(), a.assign(x, !1).break(S);
         })));
       }
     }
   };
-  return oi.default = r, oi;
+  return di.default = r, di;
 }
-var di = {}, To;
-function np() {
-  if (To) return di;
-  To = 1, Object.defineProperty(di, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), n = /* @__PURE__ */ ca(), o = {
+var ui = {}, Eo;
+function ip() {
+  if (Eo) return ui;
+  Eo = 1, Object.defineProperty(ui, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), n = /* @__PURE__ */ la(), o = {
     keyword: "const",
     $data: !0,
     error: {
@@ -14813,17 +14940,17 @@ function np() {
       params: ({ schemaCode: r }) => (0, e._)`{allowedValue: ${r}}`
     },
     code(r) {
-      const { gen: s, data: a, $data: c, schemaCode: d, schema: p } = r;
-      c || p && typeof p == "object" ? r.fail$data((0, e._)`!${(0, t.useFunc)(s, n.default)}(${a}, ${d})`) : r.fail((0, e._)`${p} !== ${a}`);
+      const { gen: s, data: a, $data: c, schemaCode: l, schema: u } = r;
+      c || u && typeof u == "object" ? r.fail$data((0, e._)`!${(0, t.useFunc)(s, n.default)}(${a}, ${l})`) : r.fail((0, e._)`${u} !== ${a}`);
     }
   };
-  return di.default = o, di;
+  return ui.default = o, ui;
 }
-var li = {}, Co;
-function ip() {
-  if (Co) return li;
-  Co = 1, Object.defineProperty(li, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), n = /* @__PURE__ */ ca(), o = {
+var pi = {}, ko;
+function rp() {
+  if (ko) return pi;
+  ko = 1, Object.defineProperty(pi, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), n = /* @__PURE__ */ la(), o = {
     keyword: "enum",
     schemaType: "array",
     $data: !0,
@@ -14832,38 +14959,38 @@ function ip() {
       params: ({ schemaCode: r }) => (0, e._)`{allowedValues: ${r}}`
     },
     code(r) {
-      const { gen: s, data: a, $data: c, schema: d, schemaCode: p, it: y } = r;
-      if (!c && d.length === 0)
+      const { gen: s, data: a, $data: c, schema: l, schemaCode: u, it: y } = r;
+      if (!c && l.length === 0)
         throw new Error("enum must have non-empty array");
-      const f = d.length >= y.opts.loopEnum;
+      const f = l.length >= y.opts.loopEnum;
       let h;
-      const w = () => h ?? (h = (0, t.useFunc)(s, n.default));
-      let x;
+      const x = () => h ?? (h = (0, t.useFunc)(s, n.default));
+      let w;
       if (f || c)
-        x = s.let("valid"), r.block$data(x, v);
+        w = s.let("valid"), r.block$data(w, v);
       else {
-        if (!Array.isArray(d))
+        if (!Array.isArray(l))
           throw new Error("ajv implementation error");
-        const g = s.const("vSchema", p);
-        x = (0, e.or)(...d.map((m, l) => A(g, l)));
+        const g = s.const("vSchema", u);
+        w = (0, e.or)(...l.map((m, d) => I(g, d)));
       }
-      r.pass(x);
+      r.pass(w);
       function v() {
-        s.assign(x, !1), s.forOf("v", p, (g) => s.if((0, e._)`${w()}(${a}, ${g})`, () => s.assign(x, !0).break()));
+        s.assign(w, !1), s.forOf("v", u, (g) => s.if((0, e._)`${x()}(${a}, ${g})`, () => s.assign(w, !0).break()));
       }
-      function A(g, m) {
-        const l = d[m];
-        return typeof l == "object" && l !== null ? (0, e._)`${w()}(${a}, ${g}[${m}])` : (0, e._)`${a} === ${l}`;
+      function I(g, m) {
+        const d = l[m];
+        return typeof d == "object" && d !== null ? (0, e._)`${x()}(${a}, ${g}[${m}])` : (0, e._)`${a} === ${d}`;
       }
     }
   };
-  return li.default = o, li;
+  return pi.default = o, pi;
 }
-var Eo;
-function Vd() {
-  if (Eo) return Xn;
-  Eo = 1, Object.defineProperty(Xn, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ Hu(), t = /* @__PURE__ */ Ju(), n = /* @__PURE__ */ Qu(), i = /* @__PURE__ */ Wu(), o = /* @__PURE__ */ Xu(), r = /* @__PURE__ */ Yu(), s = /* @__PURE__ */ ep(), a = /* @__PURE__ */ tp(), c = /* @__PURE__ */ np(), d = /* @__PURE__ */ ip(), p = [
+var Mo;
+function Gd() {
+  if (Mo) return ei;
+  Mo = 1, Object.defineProperty(ei, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ Ju(), t = /* @__PURE__ */ Ku(), n = /* @__PURE__ */ Wu(), i = /* @__PURE__ */ Xu(), o = /* @__PURE__ */ Yu(), r = /* @__PURE__ */ ep(), s = /* @__PURE__ */ tp(), a = /* @__PURE__ */ np(), c = /* @__PURE__ */ ip(), l = /* @__PURE__ */ rp(), u = [
     // number
     e.default,
     t.default,
@@ -14880,14 +15007,14 @@ function Vd() {
     { keyword: "type", schemaType: ["string", "array"] },
     { keyword: "nullable", schemaType: "boolean" },
     c.default,
-    d.default
+    l.default
   ];
-  return Xn.default = p, Xn;
+  return ei.default = u, ei;
 }
-var ui = {}, Xt = {}, ko;
-function Ud() {
-  if (ko) return Xt;
-  ko = 1, Object.defineProperty(Xt, "__esModule", { value: !0 }), Xt.validateAdditionalItems = void 0;
+var fi = {}, Yt = {}, Oo;
+function Fd() {
+  if (Oo) return Yt;
+  Oo = 1, Object.defineProperty(Yt, "__esModule", { value: !0 }), Yt.validateAdditionalItems = void 0;
   const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), i = {
     keyword: "additionalItems",
     type: "array",
@@ -14907,27 +15034,27 @@ function Ud() {
     }
   };
   function o(r, s) {
-    const { gen: a, schema: c, data: d, keyword: p, it: y } = r;
+    const { gen: a, schema: c, data: l, keyword: u, it: y } = r;
     y.items = !0;
-    const f = a.const("len", (0, e._)`${d}.length`);
+    const f = a.const("len", (0, e._)`${l}.length`);
     if (c === !1)
       r.setParams({ len: s.length }), r.pass((0, e._)`${f} <= ${s.length}`);
     else if (typeof c == "object" && !(0, t.alwaysValidSchema)(y, c)) {
-      const w = a.var("valid", (0, e._)`${f} <= ${s.length}`);
-      a.if((0, e.not)(w), () => h(w)), r.ok(w);
+      const x = a.var("valid", (0, e._)`${f} <= ${s.length}`);
+      a.if((0, e.not)(x), () => h(x)), r.ok(x);
     }
-    function h(w) {
-      a.forRange("i", s.length, f, (x) => {
-        r.subschema({ keyword: p, dataProp: x, dataPropType: t.Type.Num }, w), y.allErrors || a.if((0, e.not)(w), () => a.break());
+    function h(x) {
+      a.forRange("i", s.length, f, (w) => {
+        r.subschema({ keyword: u, dataProp: w, dataPropType: t.Type.Num }, x), y.allErrors || a.if((0, e.not)(x), () => a.break());
       });
     }
   }
-  return Xt.validateAdditionalItems = o, Xt.default = i, Xt;
+  return Yt.validateAdditionalItems = o, Yt.default = i, Yt;
 }
-var pi = {}, Yt = {}, Mo;
-function Gd() {
-  if (Mo) return Yt;
-  Mo = 1, Object.defineProperty(Yt, "__esModule", { value: !0 }), Yt.validateTuple = void 0;
+var hi = {}, en = {}, Lo;
+function Bd() {
+  if (Lo) return en;
+  Lo = 1, Object.defineProperty(en, "__esModule", { value: !0 }), en.validateTuple = void 0;
   const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), n = /* @__PURE__ */ tt(), i = {
     keyword: "items",
     type: "array",
@@ -14941,44 +15068,44 @@ function Gd() {
     }
   };
   function o(r, s, a = r.schema) {
-    const { gen: c, parentSchema: d, data: p, keyword: y, it: f } = r;
-    x(d), f.opts.unevaluated && a.length && f.items !== !0 && (f.items = t.mergeEvaluated.items(c, a.length, f.items));
-    const h = c.name("valid"), w = c.const("len", (0, e._)`${p}.length`);
-    a.forEach((v, A) => {
-      (0, t.alwaysValidSchema)(f, v) || (c.if((0, e._)`${w} > ${A}`, () => r.subschema({
+    const { gen: c, parentSchema: l, data: u, keyword: y, it: f } = r;
+    w(l), f.opts.unevaluated && a.length && f.items !== !0 && (f.items = t.mergeEvaluated.items(c, a.length, f.items));
+    const h = c.name("valid"), x = c.const("len", (0, e._)`${u}.length`);
+    a.forEach((v, I) => {
+      (0, t.alwaysValidSchema)(f, v) || (c.if((0, e._)`${x} > ${I}`, () => r.subschema({
         keyword: y,
-        schemaProp: A,
-        dataProp: A
+        schemaProp: I,
+        dataProp: I
       }, h)), r.ok(h));
     });
-    function x(v) {
-      const { opts: A, errSchemaPath: g } = f, m = a.length, l = m === v.minItems && (m === v.maxItems || v[s] === !1);
-      if (A.strictTuples && !l) {
-        const u = `"${y}" is ${m}-tuple, but minItems or maxItems/${s} are not specified or different at path "${g}"`;
-        (0, t.checkStrictMode)(f, u, A.strictTuples);
+    function w(v) {
+      const { opts: I, errSchemaPath: g } = f, m = a.length, d = m === v.minItems && (m === v.maxItems || v[s] === !1);
+      if (I.strictTuples && !d) {
+        const p = `"${y}" is ${m}-tuple, but minItems or maxItems/${s} are not specified or different at path "${g}"`;
+        (0, t.checkStrictMode)(f, p, I.strictTuples);
       }
     }
   }
-  return Yt.validateTuple = o, Yt.default = i, Yt;
+  return en.validateTuple = o, en.default = i, en;
 }
-var Oo;
-function rp() {
-  if (Oo) return pi;
-  Oo = 1, Object.defineProperty(pi, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ Gd(), t = {
+var No;
+function sp() {
+  if (No) return hi;
+  No = 1, Object.defineProperty(hi, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ Bd(), t = {
     keyword: "prefixItems",
     type: "array",
     schemaType: ["array"],
     before: "uniqueItems",
     code: (n) => (0, e.validateTuple)(n, "items")
   };
-  return pi.default = t, pi;
+  return hi.default = t, hi;
 }
-var fi = {}, Lo;
-function sp() {
-  if (Lo) return fi;
-  Lo = 1, Object.defineProperty(fi, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), n = /* @__PURE__ */ tt(), i = /* @__PURE__ */ Ud(), r = {
+var mi = {}, Do;
+function ap() {
+  if (Do) return mi;
+  Do = 1, Object.defineProperty(mi, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), n = /* @__PURE__ */ tt(), i = /* @__PURE__ */ Fd(), r = {
     keyword: "items",
     type: "array",
     schemaType: ["object", "boolean"],
@@ -14988,16 +15115,16 @@ function sp() {
       params: ({ params: { len: s } }) => (0, e._)`{limit: ${s}}`
     },
     code(s) {
-      const { schema: a, parentSchema: c, it: d } = s, { prefixItems: p } = c;
-      d.items = !0, !(0, t.alwaysValidSchema)(d, a) && (p ? (0, i.validateAdditionalItems)(s, p) : s.ok((0, n.validateArray)(s)));
+      const { schema: a, parentSchema: c, it: l } = s, { prefixItems: u } = c;
+      l.items = !0, !(0, t.alwaysValidSchema)(l, a) && (u ? (0, i.validateAdditionalItems)(s, u) : s.ok((0, n.validateArray)(s)));
     }
   };
-  return fi.default = r, fi;
+  return mi.default = r, mi;
 }
-var hi = {}, No;
-function ap() {
-  if (No) return hi;
-  No = 1, Object.defineProperty(hi, "__esModule", { value: !0 });
+var yi = {}, zo;
+function op() {
+  if (zo) return yi;
+  zo = 1, Object.defineProperty(yi, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), i = {
     keyword: "contains",
     type: "array",
@@ -15009,62 +15136,62 @@ function ap() {
       params: ({ params: { min: o, max: r } }) => r === void 0 ? (0, e._)`{minContains: ${o}}` : (0, e._)`{minContains: ${o}, maxContains: ${r}}`
     },
     code(o) {
-      const { gen: r, schema: s, parentSchema: a, data: c, it: d } = o;
-      let p, y;
+      const { gen: r, schema: s, parentSchema: a, data: c, it: l } = o;
+      let u, y;
       const { minContains: f, maxContains: h } = a;
-      d.opts.next ? (p = f === void 0 ? 1 : f, y = h) : p = 1;
-      const w = r.const("len", (0, e._)`${c}.length`);
-      if (o.setParams({ min: p, max: y }), y === void 0 && p === 0) {
-        (0, t.checkStrictMode)(d, '"minContains" == 0 without "maxContains": "contains" keyword ignored');
+      l.opts.next ? (u = f === void 0 ? 1 : f, y = h) : u = 1;
+      const x = r.const("len", (0, e._)`${c}.length`);
+      if (o.setParams({ min: u, max: y }), y === void 0 && u === 0) {
+        (0, t.checkStrictMode)(l, '"minContains" == 0 without "maxContains": "contains" keyword ignored');
         return;
       }
-      if (y !== void 0 && p > y) {
-        (0, t.checkStrictMode)(d, '"minContains" > "maxContains" is always invalid'), o.fail();
+      if (y !== void 0 && u > y) {
+        (0, t.checkStrictMode)(l, '"minContains" > "maxContains" is always invalid'), o.fail();
         return;
       }
-      if ((0, t.alwaysValidSchema)(d, s)) {
-        let m = (0, e._)`${w} >= ${p}`;
-        y !== void 0 && (m = (0, e._)`${m} && ${w} <= ${y}`), o.pass(m);
+      if ((0, t.alwaysValidSchema)(l, s)) {
+        let m = (0, e._)`${x} >= ${u}`;
+        y !== void 0 && (m = (0, e._)`${m} && ${x} <= ${y}`), o.pass(m);
         return;
       }
-      d.items = !0;
-      const x = r.name("valid");
-      y === void 0 && p === 1 ? A(x, () => r.if(x, () => r.break())) : p === 0 ? (r.let(x, !0), y !== void 0 && r.if((0, e._)`${c}.length > 0`, v)) : (r.let(x, !1), v()), o.result(x, () => o.reset());
+      l.items = !0;
+      const w = r.name("valid");
+      y === void 0 && u === 1 ? I(w, () => r.if(w, () => r.break())) : u === 0 ? (r.let(w, !0), y !== void 0 && r.if((0, e._)`${c}.length > 0`, v)) : (r.let(w, !1), v()), o.result(w, () => o.reset());
       function v() {
-        const m = r.name("_valid"), l = r.let("count", 0);
-        A(m, () => r.if(m, () => g(l)));
+        const m = r.name("_valid"), d = r.let("count", 0);
+        I(m, () => r.if(m, () => g(d)));
       }
-      function A(m, l) {
-        r.forRange("i", 0, w, (u) => {
+      function I(m, d) {
+        r.forRange("i", 0, x, (p) => {
           o.subschema({
             keyword: "contains",
-            dataProp: u,
+            dataProp: p,
             dataPropType: t.Type.Num,
             compositeRule: !0
-          }, m), l();
+          }, m), d();
         });
       }
       function g(m) {
-        r.code((0, e._)`${m}++`), y === void 0 ? r.if((0, e._)`${m} >= ${p}`, () => r.assign(x, !0).break()) : (r.if((0, e._)`${m} > ${y}`, () => r.assign(x, !1).break()), p === 1 ? r.assign(x, !0) : r.if((0, e._)`${m} >= ${p}`, () => r.assign(x, !0)));
+        r.code((0, e._)`${m}++`), y === void 0 ? r.if((0, e._)`${m} >= ${u}`, () => r.assign(w, !0).break()) : (r.if((0, e._)`${m} > ${y}`, () => r.assign(w, !1).break()), u === 1 ? r.assign(w, !0) : r.if((0, e._)`${m} >= ${u}`, () => r.assign(w, !0)));
       }
     }
   };
-  return hi.default = i, hi;
+  return yi.default = i, yi;
 }
-var Vr = {}, Do;
-function da() {
-  return Do || (Do = 1, (function(e) {
+var Vr = {}, Uo;
+function ua() {
+  return Uo || (Uo = 1, (function(e) {
     Object.defineProperty(e, "__esModule", { value: !0 }), e.validateSchemaDeps = e.validatePropertyDeps = e.error = void 0;
     const t = /* @__PURE__ */ te(), n = /* @__PURE__ */ ie(), i = /* @__PURE__ */ tt();
     e.error = {
-      message: ({ params: { property: c, depsCount: d, deps: p } }) => {
-        const y = d === 1 ? "property" : "properties";
-        return (0, t.str)`must have ${y} ${p} when property ${c} is present`;
+      message: ({ params: { property: c, depsCount: l, deps: u } }) => {
+        const y = l === 1 ? "property" : "properties";
+        return (0, t.str)`must have ${y} ${u} when property ${c} is present`;
       },
-      params: ({ params: { property: c, depsCount: d, deps: p, missingProperty: y } }) => (0, t._)`{property: ${c},
+      params: ({ params: { property: c, depsCount: l, deps: u, missingProperty: y } }) => (0, t._)`{property: ${c},
     missingProperty: ${y},
-    depsCount: ${d},
-    deps: ${p}}`
+    depsCount: ${l},
+    deps: ${u}}`
       // TODO change to reference
     };
     const o = {
@@ -15073,61 +15200,61 @@ function da() {
       schemaType: "object",
       error: e.error,
       code(c) {
-        const [d, p] = r(c);
-        s(c, d), a(c, p);
+        const [l, u] = r(c);
+        s(c, l), a(c, u);
       }
     };
     function r({ schema: c }) {
-      const d = {}, p = {};
+      const l = {}, u = {};
       for (const y in c) {
         if (y === "__proto__")
           continue;
-        const f = Array.isArray(c[y]) ? d : p;
+        const f = Array.isArray(c[y]) ? l : u;
         f[y] = c[y];
       }
-      return [d, p];
+      return [l, u];
     }
-    function s(c, d = c.schema) {
-      const { gen: p, data: y, it: f } = c;
-      if (Object.keys(d).length === 0)
+    function s(c, l = c.schema) {
+      const { gen: u, data: y, it: f } = c;
+      if (Object.keys(l).length === 0)
         return;
-      const h = p.let("missing");
-      for (const w in d) {
-        const x = d[w];
-        if (x.length === 0)
+      const h = u.let("missing");
+      for (const x in l) {
+        const w = l[x];
+        if (w.length === 0)
           continue;
-        const v = (0, i.propertyInData)(p, y, w, f.opts.ownProperties);
+        const v = (0, i.propertyInData)(u, y, x, f.opts.ownProperties);
         c.setParams({
-          property: w,
-          depsCount: x.length,
-          deps: x.join(", ")
-        }), f.allErrors ? p.if(v, () => {
-          for (const A of x)
-            (0, i.checkReportMissingProp)(c, A);
-        }) : (p.if((0, t._)`${v} && (${(0, i.checkMissingProp)(c, x, h)})`), (0, i.reportMissingProp)(c, h), p.else());
+          property: x,
+          depsCount: w.length,
+          deps: w.join(", ")
+        }), f.allErrors ? u.if(v, () => {
+          for (const I of w)
+            (0, i.checkReportMissingProp)(c, I);
+        }) : (u.if((0, t._)`${v} && (${(0, i.checkMissingProp)(c, w, h)})`), (0, i.reportMissingProp)(c, h), u.else());
       }
     }
     e.validatePropertyDeps = s;
-    function a(c, d = c.schema) {
-      const { gen: p, data: y, keyword: f, it: h } = c, w = p.name("valid");
-      for (const x in d)
-        (0, n.alwaysValidSchema)(h, d[x]) || (p.if(
-          (0, i.propertyInData)(p, y, x, h.opts.ownProperties),
+    function a(c, l = c.schema) {
+      const { gen: u, data: y, keyword: f, it: h } = c, x = u.name("valid");
+      for (const w in l)
+        (0, n.alwaysValidSchema)(h, l[w]) || (u.if(
+          (0, i.propertyInData)(u, y, w, h.opts.ownProperties),
           () => {
-            const v = c.subschema({ keyword: f, schemaProp: x }, w);
-            c.mergeValidEvaluated(v, w);
+            const v = c.subschema({ keyword: f, schemaProp: w }, x);
+            c.mergeValidEvaluated(v, x);
           },
-          () => p.var(w, !0)
+          () => u.var(x, !0)
           // TODO var
-        ), c.ok(w));
+        ), c.ok(x));
     }
     e.validateSchemaDeps = a, e.default = o;
   })(Vr)), Vr;
 }
-var mi = {}, zo;
-function op() {
-  if (zo) return mi;
-  zo = 1, Object.defineProperty(mi, "__esModule", { value: !0 });
+var gi = {}, Vo;
+function cp() {
+  if (Vo) return gi;
+  Vo = 1, Object.defineProperty(gi, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), i = {
     keyword: "propertyNames",
     type: "object",
@@ -15140,26 +15267,26 @@ function op() {
       const { gen: r, schema: s, data: a, it: c } = o;
       if ((0, t.alwaysValidSchema)(c, s))
         return;
-      const d = r.name("valid");
-      r.forIn("key", a, (p) => {
-        o.setParams({ propertyName: p }), o.subschema({
+      const l = r.name("valid");
+      r.forIn("key", a, (u) => {
+        o.setParams({ propertyName: u }), o.subschema({
           keyword: "propertyNames",
-          data: p,
+          data: u,
           dataTypes: ["string"],
-          propertyName: p,
+          propertyName: u,
           compositeRule: !0
-        }, d), r.if((0, e.not)(d), () => {
+        }, l), r.if((0, e.not)(l), () => {
           o.error(!0), c.allErrors || r.break();
         });
-      }), o.ok(d);
+      }), o.ok(l);
     }
   };
-  return mi.default = i, mi;
+  return gi.default = i, gi;
 }
-var yi = {}, Vo;
-function Fd() {
-  if (Vo) return yi;
-  Vo = 1, Object.defineProperty(yi, "__esModule", { value: !0 });
+var vi = {}, Go;
+function Zd() {
+  if (Go) return vi;
+  Go = 1, Object.defineProperty(vi, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ tt(), t = /* @__PURE__ */ te(), n = /* @__PURE__ */ et(), i = /* @__PURE__ */ ie(), r = {
     keyword: "additionalProperties",
     type: ["object"],
@@ -15171,32 +15298,32 @@ function Fd() {
       params: ({ params: s }) => (0, t._)`{additionalProperty: ${s.additionalProperty}}`
     },
     code(s) {
-      const { gen: a, schema: c, parentSchema: d, data: p, errsCount: y, it: f } = s;
+      const { gen: a, schema: c, parentSchema: l, data: u, errsCount: y, it: f } = s;
       if (!y)
         throw new Error("ajv implementation error");
-      const { allErrors: h, opts: w } = f;
-      if (f.props = !0, w.removeAdditional !== "all" && (0, i.alwaysValidSchema)(f, c))
+      const { allErrors: h, opts: x } = f;
+      if (f.props = !0, x.removeAdditional !== "all" && (0, i.alwaysValidSchema)(f, c))
         return;
-      const x = (0, e.allSchemaProperties)(d.properties), v = (0, e.allSchemaProperties)(d.patternProperties);
-      A(), s.ok((0, t._)`${y} === ${n.default.errors}`);
-      function A() {
-        a.forIn("key", p, (b) => {
-          !x.length && !v.length ? l(b) : a.if(g(b), () => l(b));
+      const w = (0, e.allSchemaProperties)(l.properties), v = (0, e.allSchemaProperties)(l.patternProperties);
+      I(), s.ok((0, t._)`${y} === ${n.default.errors}`);
+      function I() {
+        a.forIn("key", u, (b) => {
+          !w.length && !v.length ? d(b) : a.if(g(b), () => d(b));
         });
       }
       function g(b) {
         let S;
-        if (x.length > 8) {
-          const I = (0, i.schemaRefOrVal)(f, d.properties, "properties");
-          S = (0, e.isOwnProperty)(a, I, b);
-        } else x.length ? S = (0, t.or)(...x.map((I) => (0, t._)`${b} === ${I}`)) : S = t.nil;
-        return v.length && (S = (0, t.or)(S, ...v.map((I) => (0, t._)`${(0, e.usePattern)(s, I)}.test(${b})`))), (0, t.not)(S);
+        if (w.length > 8) {
+          const A = (0, i.schemaRefOrVal)(f, l.properties, "properties");
+          S = (0, e.isOwnProperty)(a, A, b);
+        } else w.length ? S = (0, t.or)(...w.map((A) => (0, t._)`${b} === ${A}`)) : S = t.nil;
+        return v.length && (S = (0, t.or)(S, ...v.map((A) => (0, t._)`${(0, e.usePattern)(s, A)}.test(${b})`))), (0, t.not)(S);
       }
       function m(b) {
-        a.code((0, t._)`delete ${p}[${b}]`);
+        a.code((0, t._)`delete ${u}[${b}]`);
       }
-      function l(b) {
-        if (w.removeAdditional === "all" || w.removeAdditional && c === !1) {
+      function d(b) {
+        if (x.removeAdditional === "all" || x.removeAdditional && c === !1) {
           m(b);
           return;
         }
@@ -15206,18 +15333,18 @@ function Fd() {
         }
         if (typeof c == "object" && !(0, i.alwaysValidSchema)(f, c)) {
           const S = a.name("valid");
-          w.removeAdditional === "failing" ? (u(b, S, !1), a.if((0, t.not)(S), () => {
+          x.removeAdditional === "failing" ? (p(b, S, !1), a.if((0, t.not)(S), () => {
             s.reset(), m(b);
-          })) : (u(b, S), h || a.if((0, t.not)(S), () => a.break()));
+          })) : (p(b, S), h || a.if((0, t.not)(S), () => a.break()));
         }
       }
-      function u(b, S, I) {
+      function p(b, S, A) {
         const P = {
           keyword: "additionalProperties",
           dataProp: b,
           dataPropType: i.Type.Str
         };
-        I === !1 && Object.assign(P, {
+        A === !1 && Object.assign(P, {
           compositeRule: !0,
           createErrors: !1,
           allErrors: !1
@@ -15225,33 +15352,33 @@ function Fd() {
       }
     }
   };
-  return yi.default = r, yi;
+  return vi.default = r, vi;
 }
-var gi = {}, Uo;
-function cp() {
-  if (Uo) return gi;
-  Uo = 1, Object.defineProperty(gi, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ En(), t = /* @__PURE__ */ tt(), n = /* @__PURE__ */ ie(), i = /* @__PURE__ */ Fd(), o = {
+var bi = {}, Fo;
+function dp() {
+  if (Fo) return bi;
+  Fo = 1, Object.defineProperty(bi, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ Mn(), t = /* @__PURE__ */ tt(), n = /* @__PURE__ */ ie(), i = /* @__PURE__ */ Zd(), o = {
     keyword: "properties",
     type: "object",
     schemaType: "object",
     code(r) {
-      const { gen: s, schema: a, parentSchema: c, data: d, it: p } = r;
-      p.opts.removeAdditional === "all" && c.additionalProperties === void 0 && i.default.code(new e.KeywordCxt(p, i.default, "additionalProperties"));
+      const { gen: s, schema: a, parentSchema: c, data: l, it: u } = r;
+      u.opts.removeAdditional === "all" && c.additionalProperties === void 0 && i.default.code(new e.KeywordCxt(u, i.default, "additionalProperties"));
       const y = (0, t.allSchemaProperties)(a);
       for (const v of y)
-        p.definedProperties.add(v);
-      p.opts.unevaluated && y.length && p.props !== !0 && (p.props = n.mergeEvaluated.props(s, (0, n.toHash)(y), p.props));
-      const f = y.filter((v) => !(0, n.alwaysValidSchema)(p, a[v]));
+        u.definedProperties.add(v);
+      u.opts.unevaluated && y.length && u.props !== !0 && (u.props = n.mergeEvaluated.props(s, (0, n.toHash)(y), u.props));
+      const f = y.filter((v) => !(0, n.alwaysValidSchema)(u, a[v]));
       if (f.length === 0)
         return;
       const h = s.name("valid");
       for (const v of f)
-        w(v) ? x(v) : (s.if((0, t.propertyInData)(s, d, v, p.opts.ownProperties)), x(v), p.allErrors || s.else().var(h, !0), s.endIf()), r.it.definedProperties.add(v), r.ok(h);
-      function w(v) {
-        return p.opts.useDefaults && !p.compositeRule && a[v].default !== void 0;
-      }
+        x(v) ? w(v) : (s.if((0, t.propertyInData)(s, l, v, u.opts.ownProperties)), w(v), u.allErrors || s.else().var(h, !0), s.endIf()), r.it.definedProperties.add(v), r.ok(h);
       function x(v) {
+        return u.opts.useDefaults && !u.compositeRule && a[v].default !== void 0;
+      }
+      function w(v) {
         r.subschema({
           keyword: "properties",
           schemaProp: v,
@@ -15260,53 +15387,53 @@ function cp() {
       }
     }
   };
-  return gi.default = o, gi;
+  return bi.default = o, bi;
 }
-var vi = {}, Go;
-function dp() {
-  if (Go) return vi;
-  Go = 1, Object.defineProperty(vi, "__esModule", { value: !0 });
+var wi = {}, Bo;
+function lp() {
+  if (Bo) return wi;
+  Bo = 1, Object.defineProperty(wi, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ tt(), t = /* @__PURE__ */ te(), n = /* @__PURE__ */ ie(), i = /* @__PURE__ */ ie(), o = {
     keyword: "patternProperties",
     type: "object",
     schemaType: "object",
     code(r) {
-      const { gen: s, schema: a, data: c, parentSchema: d, it: p } = r, { opts: y } = p, f = (0, e.allSchemaProperties)(a), h = f.filter((l) => (0, n.alwaysValidSchema)(p, a[l]));
-      if (f.length === 0 || h.length === f.length && (!p.opts.unevaluated || p.props === !0))
+      const { gen: s, schema: a, data: c, parentSchema: l, it: u } = r, { opts: y } = u, f = (0, e.allSchemaProperties)(a), h = f.filter((d) => (0, n.alwaysValidSchema)(u, a[d]));
+      if (f.length === 0 || h.length === f.length && (!u.opts.unevaluated || u.props === !0))
         return;
-      const w = y.strictSchema && !y.allowMatchingProperties && d.properties, x = s.name("valid");
-      p.props !== !0 && !(p.props instanceof t.Name) && (p.props = (0, i.evaluatedPropsToName)(s, p.props));
-      const { props: v } = p;
-      A();
-      function A() {
-        for (const l of f)
-          w && g(l), p.allErrors ? m(l) : (s.var(x, !0), m(l), s.if(x));
+      const x = y.strictSchema && !y.allowMatchingProperties && l.properties, w = s.name("valid");
+      u.props !== !0 && !(u.props instanceof t.Name) && (u.props = (0, i.evaluatedPropsToName)(s, u.props));
+      const { props: v } = u;
+      I();
+      function I() {
+        for (const d of f)
+          x && g(d), u.allErrors ? m(d) : (s.var(w, !0), m(d), s.if(w));
       }
-      function g(l) {
-        for (const u in w)
-          new RegExp(l).test(u) && (0, n.checkStrictMode)(p, `property ${u} matches pattern ${l} (use allowMatchingProperties)`);
+      function g(d) {
+        for (const p in x)
+          new RegExp(d).test(p) && (0, n.checkStrictMode)(u, `property ${p} matches pattern ${d} (use allowMatchingProperties)`);
       }
-      function m(l) {
-        s.forIn("key", c, (u) => {
-          s.if((0, t._)`${(0, e.usePattern)(r, l)}.test(${u})`, () => {
-            const b = h.includes(l);
+      function m(d) {
+        s.forIn("key", c, (p) => {
+          s.if((0, t._)`${(0, e.usePattern)(r, d)}.test(${p})`, () => {
+            const b = h.includes(d);
             b || r.subschema({
               keyword: "patternProperties",
-              schemaProp: l,
-              dataProp: u,
+              schemaProp: d,
+              dataProp: p,
               dataPropType: i.Type.Str
-            }, x), p.opts.unevaluated && v !== !0 ? s.assign((0, t._)`${v}[${u}]`, !0) : !b && !p.allErrors && s.if((0, t.not)(x), () => s.break());
+            }, w), u.opts.unevaluated && v !== !0 ? s.assign((0, t._)`${v}[${p}]`, !0) : !b && !u.allErrors && s.if((0, t.not)(w), () => s.break());
           });
         });
       }
     }
   };
-  return vi.default = o, vi;
+  return wi.default = o, wi;
 }
-var bi = {}, Fo;
-function lp() {
-  if (Fo) return bi;
-  Fo = 1, Object.defineProperty(bi, "__esModule", { value: !0 });
+var xi = {}, Zo;
+function up() {
+  if (Zo) return xi;
+  Zo = 1, Object.defineProperty(xi, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ ie(), t = {
     keyword: "not",
     schemaType: ["object", "boolean"],
@@ -15327,12 +15454,12 @@ function lp() {
     },
     error: { message: "must NOT be valid" }
   };
-  return bi.default = t, bi;
+  return xi.default = t, xi;
 }
-var wi = {}, Bo;
-function up() {
-  if (Bo) return wi;
-  Bo = 1, Object.defineProperty(wi, "__esModule", { value: !0 });
+var Si = {}, Ho;
+function pp() {
+  if (Ho) return Si;
+  Ho = 1, Object.defineProperty(Si, "__esModule", { value: !0 });
   const t = {
     keyword: "anyOf",
     schemaType: "array",
@@ -15340,12 +15467,12 @@ function up() {
     code: (/* @__PURE__ */ tt()).validateUnion,
     error: { message: "must match a schema in anyOf" }
   };
-  return wi.default = t, wi;
+  return Si.default = t, Si;
 }
-var xi = {}, Zo;
-function pp() {
-  if (Zo) return xi;
-  Zo = 1, Object.defineProperty(xi, "__esModule", { value: !0 });
+var Ii = {}, Jo;
+function fp() {
+  if (Jo) return Ii;
+  Jo = 1, Object.defineProperty(Ii, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), i = {
     keyword: "oneOf",
     schemaType: "array",
@@ -15360,28 +15487,28 @@ function pp() {
         throw new Error("ajv implementation error");
       if (c.opts.discriminator && a.discriminator)
         return;
-      const d = s, p = r.let("valid", !1), y = r.let("passing", null), f = r.name("_valid");
-      o.setParams({ passing: y }), r.block(h), o.result(p, () => o.reset(), () => o.error(!0));
+      const l = s, u = r.let("valid", !1), y = r.let("passing", null), f = r.name("_valid");
+      o.setParams({ passing: y }), r.block(h), o.result(u, () => o.reset(), () => o.error(!0));
       function h() {
-        d.forEach((w, x) => {
+        l.forEach((x, w) => {
           let v;
-          (0, t.alwaysValidSchema)(c, w) ? r.var(f, !0) : v = o.subschema({
+          (0, t.alwaysValidSchema)(c, x) ? r.var(f, !0) : v = o.subschema({
             keyword: "oneOf",
-            schemaProp: x,
+            schemaProp: w,
             compositeRule: !0
-          }, f), x > 0 && r.if((0, e._)`${f} && ${p}`).assign(p, !1).assign(y, (0, e._)`[${y}, ${x}]`).else(), r.if(f, () => {
-            r.assign(p, !0), r.assign(y, x), v && o.mergeEvaluated(v, e.Name);
+          }, f), w > 0 && r.if((0, e._)`${f} && ${u}`).assign(u, !1).assign(y, (0, e._)`[${y}, ${w}]`).else(), r.if(f, () => {
+            r.assign(u, !0), r.assign(y, w), v && o.mergeEvaluated(v, e.Name);
           });
         });
       }
     }
   };
-  return xi.default = i, xi;
+  return Ii.default = i, Ii;
 }
-var Si = {}, Ho;
-function fp() {
-  if (Ho) return Si;
-  Ho = 1, Object.defineProperty(Si, "__esModule", { value: !0 });
+var Ai = {}, Ko;
+function hp() {
+  if (Ko) return Ai;
+  Ko = 1, Object.defineProperty(Ai, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ ie(), t = {
     keyword: "allOf",
     schemaType: "array",
@@ -15393,17 +15520,17 @@ function fp() {
       o.forEach((a, c) => {
         if ((0, e.alwaysValidSchema)(r, a))
           return;
-        const d = n.subschema({ keyword: "allOf", schemaProp: c }, s);
-        n.ok(s), n.mergeEvaluated(d);
+        const l = n.subschema({ keyword: "allOf", schemaProp: c }, s);
+        n.ok(s), n.mergeEvaluated(l);
       });
     }
   };
-  return Si.default = t, Si;
+  return Ai.default = t, Ai;
 }
-var Ai = {}, Jo;
-function hp() {
-  if (Jo) return Ai;
-  Jo = 1, Object.defineProperty(Ai, "__esModule", { value: !0 });
+var qi = {}, Qo;
+function mp() {
+  if (Qo) return qi;
+  Qo = 1, Object.defineProperty(qi, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), i = {
     keyword: "if",
     schemaType: ["object", "boolean"],
@@ -15415,28 +15542,28 @@ function hp() {
     code(r) {
       const { gen: s, parentSchema: a, it: c } = r;
       a.then === void 0 && a.else === void 0 && (0, t.checkStrictMode)(c, '"if" without "then" and "else" is ignored');
-      const d = o(c, "then"), p = o(c, "else");
-      if (!d && !p)
+      const l = o(c, "then"), u = o(c, "else");
+      if (!l && !u)
         return;
       const y = s.let("valid", !0), f = s.name("_valid");
-      if (h(), r.reset(), d && p) {
-        const x = s.let("ifClause");
-        r.setParams({ ifClause: x }), s.if(f, w("then", x), w("else", x));
-      } else d ? s.if(f, w("then")) : s.if((0, e.not)(f), w("else"));
+      if (h(), r.reset(), l && u) {
+        const w = s.let("ifClause");
+        r.setParams({ ifClause: w }), s.if(f, x("then", w), x("else", w));
+      } else l ? s.if(f, x("then")) : s.if((0, e.not)(f), x("else"));
       r.pass(y, () => r.error(!0));
       function h() {
-        const x = r.subschema({
+        const w = r.subschema({
           keyword: "if",
           compositeRule: !0,
           createErrors: !1,
           allErrors: !1
         }, f);
-        r.mergeEvaluated(x);
+        r.mergeEvaluated(w);
       }
-      function w(x, v) {
+      function x(w, v) {
         return () => {
-          const A = r.subschema({ keyword: x }, f);
-          s.assign(y, f), r.mergeValidEvaluated(A, y), v ? s.assign(v, (0, e._)`${x}`) : r.setParams({ ifClause: x });
+          const I = r.subschema({ keyword: w }, f);
+          s.assign(y, f), r.mergeValidEvaluated(I, y), v ? s.assign(v, (0, e._)`${w}`) : r.setParams({ ifClause: w });
         };
       }
     }
@@ -15445,12 +15572,12 @@ function hp() {
     const a = r.schema[s];
     return a !== void 0 && !(0, t.alwaysValidSchema)(r, a);
   }
-  return Ai.default = i, Ai;
+  return qi.default = i, qi;
 }
-var Ii = {}, Ko;
-function mp() {
-  if (Ko) return Ii;
-  Ko = 1, Object.defineProperty(Ii, "__esModule", { value: !0 });
+var Ri = {}, Wo;
+function yp() {
+  if (Wo) return Ri;
+  Wo = 1, Object.defineProperty(Ri, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ ie(), t = {
     keyword: ["then", "else"],
     schemaType: ["object", "boolean"],
@@ -15458,150 +15585,150 @@ function mp() {
       i.if === void 0 && (0, e.checkStrictMode)(o, `"${n}" without "if" is ignored`);
     }
   };
-  return Ii.default = t, Ii;
+  return Ri.default = t, Ri;
 }
-var Qo;
-function Bd() {
-  if (Qo) return ui;
-  Qo = 1, Object.defineProperty(ui, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ Ud(), t = /* @__PURE__ */ rp(), n = /* @__PURE__ */ Gd(), i = /* @__PURE__ */ sp(), o = /* @__PURE__ */ ap(), r = /* @__PURE__ */ da(), s = /* @__PURE__ */ op(), a = /* @__PURE__ */ Fd(), c = /* @__PURE__ */ cp(), d = /* @__PURE__ */ dp(), p = /* @__PURE__ */ lp(), y = /* @__PURE__ */ up(), f = /* @__PURE__ */ pp(), h = /* @__PURE__ */ fp(), w = /* @__PURE__ */ hp(), x = /* @__PURE__ */ mp();
-  function v(A = !1) {
+var Xo;
+function Hd() {
+  if (Xo) return fi;
+  Xo = 1, Object.defineProperty(fi, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ Fd(), t = /* @__PURE__ */ sp(), n = /* @__PURE__ */ Bd(), i = /* @__PURE__ */ ap(), o = /* @__PURE__ */ op(), r = /* @__PURE__ */ ua(), s = /* @__PURE__ */ cp(), a = /* @__PURE__ */ Zd(), c = /* @__PURE__ */ dp(), l = /* @__PURE__ */ lp(), u = /* @__PURE__ */ up(), y = /* @__PURE__ */ pp(), f = /* @__PURE__ */ fp(), h = /* @__PURE__ */ hp(), x = /* @__PURE__ */ mp(), w = /* @__PURE__ */ yp();
+  function v(I = !1) {
     const g = [
       // any
-      p.default,
+      u.default,
       y.default,
       f.default,
       h.default,
-      w.default,
       x.default,
+      w.default,
       // object
       s.default,
       a.default,
       r.default,
       c.default,
-      d.default
+      l.default
     ];
-    return A ? g.push(t.default, i.default) : g.push(e.default, n.default), g.push(o.default), g;
+    return I ? g.push(t.default, i.default) : g.push(e.default, n.default), g.push(o.default), g;
   }
-  return ui.default = v, ui;
+  return fi.default = v, fi;
 }
-var qi = {}, en = {}, Wo;
-function Zd() {
-  if (Wo) return en;
-  Wo = 1, Object.defineProperty(en, "__esModule", { value: !0 }), en.dynamicAnchor = void 0;
-  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ et(), n = /* @__PURE__ */ pr(), i = /* @__PURE__ */ oa(), o = {
+var ji = {}, tn = {}, Yo;
+function Jd() {
+  if (Yo) return tn;
+  Yo = 1, Object.defineProperty(tn, "__esModule", { value: !0 }), tn.dynamicAnchor = void 0;
+  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ et(), n = /* @__PURE__ */ fr(), i = /* @__PURE__ */ da(), o = {
     keyword: "$dynamicAnchor",
     schemaType: "string",
     code: (a) => r(a, a.schema)
   };
   function r(a, c) {
-    const { gen: d, it: p } = a;
-    p.schemaEnv.root.dynamicAnchors[c] = !0;
-    const y = (0, e._)`${t.default.dynamicAnchors}${(0, e.getProperty)(c)}`, f = p.errSchemaPath === "#" ? p.validateName : s(a);
-    d.if((0, e._)`!${y}`, () => d.assign(y, f));
+    const { gen: l, it: u } = a;
+    u.schemaEnv.root.dynamicAnchors[c] = !0;
+    const y = (0, e._)`${t.default.dynamicAnchors}${(0, e.getProperty)(c)}`, f = u.errSchemaPath === "#" ? u.validateName : s(a);
+    l.if((0, e._)`!${y}`, () => l.assign(y, f));
   }
-  en.dynamicAnchor = r;
+  tn.dynamicAnchor = r;
   function s(a) {
-    const { schemaEnv: c, schema: d, self: p } = a.it, { root: y, baseId: f, localRefs: h, meta: w } = c.root, { schemaId: x } = p.opts, v = new n.SchemaEnv({ schema: d, schemaId: x, root: y, baseId: f, localRefs: h, meta: w });
-    return n.compileSchema.call(p, v), (0, i.getValidate)(a, v);
+    const { schemaEnv: c, schema: l, self: u } = a.it, { root: y, baseId: f, localRefs: h, meta: x } = c.root, { schemaId: w } = u.opts, v = new n.SchemaEnv({ schema: l, schemaId: w, root: y, baseId: f, localRefs: h, meta: x });
+    return n.compileSchema.call(u, v), (0, i.getValidate)(a, v);
   }
-  return en.default = o, en;
+  return tn.default = o, tn;
 }
-var tn = {}, Xo;
-function Hd() {
-  if (Xo) return tn;
-  Xo = 1, Object.defineProperty(tn, "__esModule", { value: !0 }), tn.dynamicRef = void 0;
-  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ et(), n = /* @__PURE__ */ oa(), i = {
+var nn = {}, ec;
+function Kd() {
+  if (ec) return nn;
+  ec = 1, Object.defineProperty(nn, "__esModule", { value: !0 }), nn.dynamicRef = void 0;
+  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ et(), n = /* @__PURE__ */ da(), i = {
     keyword: "$dynamicRef",
     schemaType: "string",
     code: (r) => o(r, r.schema)
   };
   function o(r, s) {
-    const { gen: a, keyword: c, it: d } = r;
+    const { gen: a, keyword: c, it: l } = r;
     if (s[0] !== "#")
       throw new Error(`"${c}" only supports hash fragment reference`);
-    const p = s.slice(1);
-    if (d.allErrors)
+    const u = s.slice(1);
+    if (l.allErrors)
       y();
     else {
       const h = a.let("valid", !1);
       y(h), r.ok(h);
     }
     function y(h) {
-      if (d.schemaEnv.root.dynamicAnchors[p]) {
-        const w = a.let("_v", (0, e._)`${t.default.dynamicAnchors}${(0, e.getProperty)(p)}`);
-        a.if(w, f(w, h), f(d.validateName, h));
+      if (l.schemaEnv.root.dynamicAnchors[u]) {
+        const x = a.let("_v", (0, e._)`${t.default.dynamicAnchors}${(0, e.getProperty)(u)}`);
+        a.if(x, f(x, h), f(l.validateName, h));
       } else
-        f(d.validateName, h)();
+        f(l.validateName, h)();
     }
-    function f(h, w) {
-      return w ? () => a.block(() => {
-        (0, n.callRef)(r, h), a.let(w, !0);
+    function f(h, x) {
+      return x ? () => a.block(() => {
+        (0, n.callRef)(r, h), a.let(x, !0);
       }) : () => (0, n.callRef)(r, h);
     }
   }
-  return tn.dynamicRef = o, tn.default = i, tn;
+  return nn.dynamicRef = o, nn.default = i, nn;
 }
-var Ri = {}, Yo;
-function yp() {
-  if (Yo) return Ri;
-  Yo = 1, Object.defineProperty(Ri, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ Zd(), t = /* @__PURE__ */ ie(), n = {
+var $i = {}, tc;
+function gp() {
+  if (tc) return $i;
+  tc = 1, Object.defineProperty($i, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ Jd(), t = /* @__PURE__ */ ie(), n = {
     keyword: "$recursiveAnchor",
     schemaType: "boolean",
     code(i) {
       i.schema ? (0, e.dynamicAnchor)(i, "") : (0, t.checkStrictMode)(i.it, "$recursiveAnchor: false is ignored");
     }
   };
-  return Ri.default = n, Ri;
+  return $i.default = n, $i;
 }
-var ji = {}, ec;
-function gp() {
-  if (ec) return ji;
-  ec = 1, Object.defineProperty(ji, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ Hd(), t = {
+var Pi = {}, nc;
+function vp() {
+  if (nc) return Pi;
+  nc = 1, Object.defineProperty(Pi, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ Kd(), t = {
     keyword: "$recursiveRef",
     schemaType: "string",
     code: (n) => (0, e.dynamicRef)(n, n.schema)
   };
-  return ji.default = t, ji;
+  return Pi.default = t, Pi;
 }
-var tc;
-function vp() {
-  if (tc) return qi;
-  tc = 1, Object.defineProperty(qi, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ Zd(), t = /* @__PURE__ */ Hd(), n = /* @__PURE__ */ yp(), i = /* @__PURE__ */ gp(), o = [e.default, t.default, n.default, i.default];
-  return qi.default = o, qi;
-}
-var $i = {}, Pi = {}, nc;
+var ic;
 function bp() {
-  if (nc) return Pi;
-  nc = 1, Object.defineProperty(Pi, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ da(), t = {
+  if (ic) return ji;
+  ic = 1, Object.defineProperty(ji, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ Jd(), t = /* @__PURE__ */ Kd(), n = /* @__PURE__ */ gp(), i = /* @__PURE__ */ vp(), o = [e.default, t.default, n.default, i.default];
+  return ji.default = o, ji;
+}
+var _i = {}, Ti = {}, rc;
+function wp() {
+  if (rc) return Ti;
+  rc = 1, Object.defineProperty(Ti, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ ua(), t = {
     keyword: "dependentRequired",
     type: "object",
     schemaType: "object",
     error: e.error,
     code: (n) => (0, e.validatePropertyDeps)(n)
   };
-  return Pi.default = t, Pi;
+  return Ti.default = t, Ti;
 }
-var _i = {}, ic;
-function wp() {
-  if (ic) return _i;
-  ic = 1, Object.defineProperty(_i, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ da(), t = {
+var Ci = {}, sc;
+function xp() {
+  if (sc) return Ci;
+  sc = 1, Object.defineProperty(Ci, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ ua(), t = {
     keyword: "dependentSchemas",
     type: "object",
     schemaType: "object",
     code: (n) => (0, e.validateSchemaDeps)(n)
   };
-  return _i.default = t, _i;
+  return Ci.default = t, Ci;
 }
-var Ti = {}, rc;
-function xp() {
-  if (rc) return Ti;
-  rc = 1, Object.defineProperty(Ti, "__esModule", { value: !0 });
+var Ei = {}, ac;
+function Sp() {
+  if (ac) return Ei;
+  ac = 1, Object.defineProperty(Ei, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ ie(), t = {
     keyword: ["maxContains", "minContains"],
     type: "array",
@@ -15610,19 +15737,19 @@ function xp() {
       i.contains === void 0 && (0, e.checkStrictMode)(o, `"${n}" without "contains" is ignored`);
     }
   };
-  return Ti.default = t, Ti;
+  return Ei.default = t, Ei;
 }
-var sc;
-function Sp() {
-  if (sc) return $i;
-  sc = 1, Object.defineProperty($i, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ bp(), t = /* @__PURE__ */ wp(), n = /* @__PURE__ */ xp(), i = [e.default, t.default, n.default];
-  return $i.default = i, $i;
+var oc;
+function Ip() {
+  if (oc) return _i;
+  oc = 1, Object.defineProperty(_i, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ wp(), t = /* @__PURE__ */ xp(), n = /* @__PURE__ */ Sp(), i = [e.default, t.default, n.default];
+  return _i.default = i, _i;
 }
-var Ci = {}, Ei = {}, ac;
+var ki = {}, Mi = {}, cc;
 function Ap() {
-  if (ac) return Ei;
-  ac = 1, Object.defineProperty(Ei, "__esModule", { value: !0 });
+  if (cc) return Mi;
+  cc = 1, Object.defineProperty(Mi, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), n = /* @__PURE__ */ et(), o = {
     keyword: "unevaluatedProperties",
     type: "object",
@@ -15633,42 +15760,42 @@ function Ap() {
       params: ({ params: r }) => (0, e._)`{unevaluatedProperty: ${r.unevaluatedProperty}}`
     },
     code(r) {
-      const { gen: s, schema: a, data: c, errsCount: d, it: p } = r;
-      if (!d)
+      const { gen: s, schema: a, data: c, errsCount: l, it: u } = r;
+      if (!l)
         throw new Error("ajv implementation error");
-      const { allErrors: y, props: f } = p;
-      f instanceof e.Name ? s.if((0, e._)`${f} !== true`, () => s.forIn("key", c, (v) => s.if(w(f, v), () => h(v)))) : f !== !0 && s.forIn("key", c, (v) => f === void 0 ? h(v) : s.if(x(f, v), () => h(v))), p.props = !0, r.ok((0, e._)`${d} === ${n.default.errors}`);
+      const { allErrors: y, props: f } = u;
+      f instanceof e.Name ? s.if((0, e._)`${f} !== true`, () => s.forIn("key", c, (v) => s.if(x(f, v), () => h(v)))) : f !== !0 && s.forIn("key", c, (v) => f === void 0 ? h(v) : s.if(w(f, v), () => h(v))), u.props = !0, r.ok((0, e._)`${l} === ${n.default.errors}`);
       function h(v) {
         if (a === !1) {
           r.setParams({ unevaluatedProperty: v }), r.error(), y || s.break();
           return;
         }
-        if (!(0, t.alwaysValidSchema)(p, a)) {
-          const A = s.name("valid");
+        if (!(0, t.alwaysValidSchema)(u, a)) {
+          const I = s.name("valid");
           r.subschema({
             keyword: "unevaluatedProperties",
             dataProp: v,
             dataPropType: t.Type.Str
-          }, A), y || s.if((0, e.not)(A), () => s.break());
+          }, I), y || s.if((0, e.not)(I), () => s.break());
         }
       }
-      function w(v, A) {
-        return (0, e._)`!${v} || !${v}[${A}]`;
+      function x(v, I) {
+        return (0, e._)`!${v} || !${v}[${I}]`;
       }
-      function x(v, A) {
+      function w(v, I) {
         const g = [];
         for (const m in v)
-          v[m] === !0 && g.push((0, e._)`${A} !== ${m}`);
+          v[m] === !0 && g.push((0, e._)`${I} !== ${m}`);
         return (0, e.and)(...g);
       }
     }
   };
-  return Ei.default = o, Ei;
+  return Mi.default = o, Mi;
 }
-var ki = {}, oc;
-function Ip() {
-  if (oc) return ki;
-  oc = 1, Object.defineProperty(ki, "__esModule", { value: !0 });
+var Oi = {}, dc;
+function qp() {
+  if (dc) return Oi;
+  dc = 1, Object.defineProperty(Oi, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ ie(), i = {
     keyword: "unevaluatedItems",
     type: "array",
@@ -15678,37 +15805,37 @@ function Ip() {
       params: ({ params: { len: o } }) => (0, e._)`{limit: ${o}}`
     },
     code(o) {
-      const { gen: r, schema: s, data: a, it: c } = o, d = c.items || 0;
-      if (d === !0)
+      const { gen: r, schema: s, data: a, it: c } = o, l = c.items || 0;
+      if (l === !0)
         return;
-      const p = r.const("len", (0, e._)`${a}.length`);
+      const u = r.const("len", (0, e._)`${a}.length`);
       if (s === !1)
-        o.setParams({ len: d }), o.fail((0, e._)`${p} > ${d}`);
+        o.setParams({ len: l }), o.fail((0, e._)`${u} > ${l}`);
       else if (typeof s == "object" && !(0, t.alwaysValidSchema)(c, s)) {
-        const f = r.var("valid", (0, e._)`${p} <= ${d}`);
-        r.if((0, e.not)(f), () => y(f, d)), o.ok(f);
+        const f = r.var("valid", (0, e._)`${u} <= ${l}`);
+        r.if((0, e.not)(f), () => y(f, l)), o.ok(f);
       }
       c.items = !0;
       function y(f, h) {
-        r.forRange("i", h, p, (w) => {
-          o.subschema({ keyword: "unevaluatedItems", dataProp: w, dataPropType: t.Type.Num }, f), c.allErrors || r.if((0, e.not)(f), () => r.break());
+        r.forRange("i", h, u, (x) => {
+          o.subschema({ keyword: "unevaluatedItems", dataProp: x, dataPropType: t.Type.Num }, f), c.allErrors || r.if((0, e.not)(f), () => r.break());
         });
       }
     }
   };
-  return ki.default = i, ki;
+  return Oi.default = i, Oi;
 }
-var cc;
-function qp() {
-  if (cc) return Ci;
-  cc = 1, Object.defineProperty(Ci, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ Ap(), t = /* @__PURE__ */ Ip(), n = [e.default, t.default];
-  return Ci.default = n, Ci;
-}
-var Mi = {}, Oi = {}, dc;
+var lc;
 function Rp() {
-  if (dc) return Oi;
-  dc = 1, Object.defineProperty(Oi, "__esModule", { value: !0 });
+  if (lc) return ki;
+  lc = 1, Object.defineProperty(ki, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ Ap(), t = /* @__PURE__ */ qp(), n = [e.default, t.default];
+  return ki.default = n, ki;
+}
+var Li = {}, Ni = {}, uc;
+function jp() {
+  if (uc) return Ni;
+  uc = 1, Object.defineProperty(Ni, "__esModule", { value: !0 });
   const e = /* @__PURE__ */ te(), n = {
     keyword: "format",
     type: ["number", "string"],
@@ -15719,71 +15846,71 @@ function Rp() {
       params: ({ schemaCode: i }) => (0, e._)`{format: ${i}}`
     },
     code(i, o) {
-      const { gen: r, data: s, $data: a, schema: c, schemaCode: d, it: p } = i, { opts: y, errSchemaPath: f, schemaEnv: h, self: w } = p;
+      const { gen: r, data: s, $data: a, schema: c, schemaCode: l, it: u } = i, { opts: y, errSchemaPath: f, schemaEnv: h, self: x } = u;
       if (!y.validateFormats)
         return;
-      a ? x() : v();
-      function x() {
-        const A = r.scopeValue("formats", {
-          ref: w.formats,
+      a ? w() : v();
+      function w() {
+        const I = r.scopeValue("formats", {
+          ref: x.formats,
           code: y.code.formats
-        }), g = r.const("fDef", (0, e._)`${A}[${d}]`), m = r.let("fType"), l = r.let("format");
-        r.if((0, e._)`typeof ${g} == "object" && !(${g} instanceof RegExp)`, () => r.assign(m, (0, e._)`${g}.type || "string"`).assign(l, (0, e._)`${g}.validate`), () => r.assign(m, (0, e._)`"string"`).assign(l, g)), i.fail$data((0, e.or)(u(), b()));
-        function u() {
-          return y.strictSchema === !1 ? e.nil : (0, e._)`${d} && !${l}`;
+        }), g = r.const("fDef", (0, e._)`${I}[${l}]`), m = r.let("fType"), d = r.let("format");
+        r.if((0, e._)`typeof ${g} == "object" && !(${g} instanceof RegExp)`, () => r.assign(m, (0, e._)`${g}.type || "string"`).assign(d, (0, e._)`${g}.validate`), () => r.assign(m, (0, e._)`"string"`).assign(d, g)), i.fail$data((0, e.or)(p(), b()));
+        function p() {
+          return y.strictSchema === !1 ? e.nil : (0, e._)`${l} && !${d}`;
         }
         function b() {
-          const S = h.$async ? (0, e._)`(${g}.async ? await ${l}(${s}) : ${l}(${s}))` : (0, e._)`${l}(${s})`, I = (0, e._)`(typeof ${l} == "function" ? ${S} : ${l}.test(${s}))`;
-          return (0, e._)`${l} && ${l} !== true && ${m} === ${o} && !${I}`;
+          const S = h.$async ? (0, e._)`(${g}.async ? await ${d}(${s}) : ${d}(${s}))` : (0, e._)`${d}(${s})`, A = (0, e._)`(typeof ${d} == "function" ? ${S} : ${d}.test(${s}))`;
+          return (0, e._)`${d} && ${d} !== true && ${m} === ${o} && !${A}`;
         }
       }
       function v() {
-        const A = w.formats[c];
-        if (!A) {
-          u();
+        const I = x.formats[c];
+        if (!I) {
+          p();
           return;
         }
-        if (A === !0)
+        if (I === !0)
           return;
-        const [g, m, l] = b(A);
+        const [g, m, d] = b(I);
         g === o && i.pass(S());
-        function u() {
+        function p() {
           if (y.strictSchema === !1) {
-            w.logger.warn(I());
+            x.logger.warn(A());
             return;
           }
-          throw new Error(I());
-          function I() {
+          throw new Error(A());
+          function A() {
             return `unknown format "${c}" ignored in schema at path "${f}"`;
           }
         }
-        function b(I) {
-          const P = I instanceof RegExp ? (0, e.regexpCode)(I) : y.code.formats ? (0, e._)`${y.code.formats}${(0, e.getProperty)(c)}` : void 0, R = r.scopeValue("formats", { key: c, ref: I, code: P });
-          return typeof I == "object" && !(I instanceof RegExp) ? [I.type || "string", I.validate, (0, e._)`${R}.validate`] : ["string", I, R];
+        function b(A) {
+          const P = A instanceof RegExp ? (0, e.regexpCode)(A) : y.code.formats ? (0, e._)`${y.code.formats}${(0, e.getProperty)(c)}` : void 0, R = r.scopeValue("formats", { key: c, ref: A, code: P });
+          return typeof A == "object" && !(A instanceof RegExp) ? [A.type || "string", A.validate, (0, e._)`${R}.validate`] : ["string", A, R];
         }
         function S() {
-          if (typeof A == "object" && !(A instanceof RegExp) && A.async) {
+          if (typeof I == "object" && !(I instanceof RegExp) && I.async) {
             if (!h.$async)
               throw new Error("async format in sync schema");
-            return (0, e._)`await ${l}(${s})`;
+            return (0, e._)`await ${d}(${s})`;
           }
-          return typeof m == "function" ? (0, e._)`${l}(${s})` : (0, e._)`${l}.test(${s})`;
+          return typeof m == "function" ? (0, e._)`${d}(${s})` : (0, e._)`${d}.test(${s})`;
         }
       }
     }
   };
-  return Oi.default = n, Oi;
+  return Ni.default = n, Ni;
 }
-var lc;
-function Jd() {
-  if (lc) return Mi;
-  lc = 1, Object.defineProperty(Mi, "__esModule", { value: !0 });
-  const t = [(/* @__PURE__ */ Rp()).default];
-  return Mi.default = t, Mi;
+var pc;
+function Qd() {
+  if (pc) return Li;
+  pc = 1, Object.defineProperty(Li, "__esModule", { value: !0 });
+  const t = [(/* @__PURE__ */ jp()).default];
+  return Li.default = t, Li;
 }
-var Ut = {}, uc;
-function Kd() {
-  return uc || (uc = 1, Object.defineProperty(Ut, "__esModule", { value: !0 }), Ut.contentVocabulary = Ut.metadataVocabulary = void 0, Ut.metadataVocabulary = [
+var Ft = {}, fc;
+function Wd() {
+  return fc || (fc = 1, Object.defineProperty(Ft, "__esModule", { value: !0 }), Ft.contentVocabulary = Ft.metadataVocabulary = void 0, Ft.metadataVocabulary = [
     "title",
     "description",
     "default",
@@ -15791,17 +15918,17 @@ function Kd() {
     "readOnly",
     "writeOnly",
     "examples"
-  ], Ut.contentVocabulary = [
+  ], Ft.contentVocabulary = [
     "contentMediaType",
     "contentEncoding",
     "contentSchema"
-  ]), Ut;
+  ]), Ft;
 }
-var pc;
-function jp() {
-  if (pc) return Kn;
-  pc = 1, Object.defineProperty(Kn, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ zd(), t = /* @__PURE__ */ Vd(), n = /* @__PURE__ */ Bd(), i = /* @__PURE__ */ vp(), o = /* @__PURE__ */ Sp(), r = /* @__PURE__ */ qp(), s = /* @__PURE__ */ Jd(), a = /* @__PURE__ */ Kd(), c = [
+var hc;
+function $p() {
+  if (hc) return Wn;
+  hc = 1, Object.defineProperty(Wn, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ Vd(), t = /* @__PURE__ */ Gd(), n = /* @__PURE__ */ Hd(), i = /* @__PURE__ */ bp(), o = /* @__PURE__ */ Ip(), r = /* @__PURE__ */ Rp(), s = /* @__PURE__ */ Qd(), a = /* @__PURE__ */ Wd(), c = [
     i.default,
     e.default,
     t.default,
@@ -15812,56 +15939,56 @@ function jp() {
     o.default,
     r.default
   ];
-  return Kn.default = c, Kn;
+  return Wn.default = c, Wn;
 }
-var Li = {}, gn = {}, fc;
-function $p() {
-  if (fc) return gn;
-  fc = 1, Object.defineProperty(gn, "__esModule", { value: !0 }), gn.DiscrError = void 0;
+var Di = {}, vn = {}, mc;
+function Pp() {
+  if (mc) return vn;
+  mc = 1, Object.defineProperty(vn, "__esModule", { value: !0 }), vn.DiscrError = void 0;
   var e;
   return (function(t) {
     t.Tag = "tag", t.Mapping = "mapping";
-  })(e || (gn.DiscrError = e = {})), gn;
+  })(e || (vn.DiscrError = e = {})), vn;
 }
-var hc;
-function Qd() {
-  if (hc) return Li;
-  hc = 1, Object.defineProperty(Li, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ $p(), n = /* @__PURE__ */ pr(), i = /* @__PURE__ */ kn(), o = /* @__PURE__ */ ie(), s = {
+var yc;
+function Xd() {
+  if (yc) return Di;
+  yc = 1, Object.defineProperty(Di, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ te(), t = /* @__PURE__ */ Pp(), n = /* @__PURE__ */ fr(), i = /* @__PURE__ */ On(), o = /* @__PURE__ */ ie(), s = {
     keyword: "discriminator",
     type: "object",
     schemaType: "object",
     error: {
       message: ({ params: { discrError: a, tagName: c } }) => a === t.DiscrError.Tag ? `tag "${c}" must be string` : `value of tag "${c}" must be in oneOf`,
-      params: ({ params: { discrError: a, tag: c, tagName: d } }) => (0, e._)`{error: ${a}, tag: ${d}, tagValue: ${c}}`
+      params: ({ params: { discrError: a, tag: c, tagName: l } }) => (0, e._)`{error: ${a}, tag: ${l}, tagValue: ${c}}`
     },
     code(a) {
-      const { gen: c, data: d, schema: p, parentSchema: y, it: f } = a, { oneOf: h } = y;
+      const { gen: c, data: l, schema: u, parentSchema: y, it: f } = a, { oneOf: h } = y;
       if (!f.opts.discriminator)
         throw new Error("discriminator: requires discriminator option");
-      const w = p.propertyName;
-      if (typeof w != "string")
+      const x = u.propertyName;
+      if (typeof x != "string")
         throw new Error("discriminator: requires propertyName");
-      if (p.mapping)
+      if (u.mapping)
         throw new Error("discriminator: mapping is not supported");
       if (!h)
         throw new Error("discriminator: requires oneOf keyword");
-      const x = c.let("valid", !1), v = c.const("tag", (0, e._)`${d}${(0, e.getProperty)(w)}`);
-      c.if((0, e._)`typeof ${v} == "string"`, () => A(), () => a.error(!1, { discrError: t.DiscrError.Tag, tag: v, tagName: w })), a.ok(x);
-      function A() {
-        const l = m();
+      const w = c.let("valid", !1), v = c.const("tag", (0, e._)`${l}${(0, e.getProperty)(x)}`);
+      c.if((0, e._)`typeof ${v} == "string"`, () => I(), () => a.error(!1, { discrError: t.DiscrError.Tag, tag: v, tagName: x })), a.ok(w);
+      function I() {
+        const d = m();
         c.if(!1);
-        for (const u in l)
-          c.elseIf((0, e._)`${v} === ${u}`), c.assign(x, g(l[u]));
-        c.else(), a.error(!1, { discrError: t.DiscrError.Mapping, tag: v, tagName: w }), c.endIf();
+        for (const p in d)
+          c.elseIf((0, e._)`${v} === ${p}`), c.assign(w, g(d[p]));
+        c.else(), a.error(!1, { discrError: t.DiscrError.Mapping, tag: v, tagName: x }), c.endIf();
       }
-      function g(l) {
-        const u = c.name("valid"), b = a.subschema({ keyword: "oneOf", schemaProp: l }, u);
-        return a.mergeEvaluated(b, e.Name), u;
+      function g(d) {
+        const p = c.name("valid"), b = a.subschema({ keyword: "oneOf", schemaProp: d }, p);
+        return a.mergeEvaluated(b, e.Name), p;
       }
       function m() {
-        var l;
-        const u = {}, b = I(y);
+        var d;
+        const p = {}, b = A(y);
         let S = !0;
         for (let E = 0; E < h.length; E++) {
           let k = h[E];
@@ -15870,16 +15997,16 @@ function Qd() {
             if (k = n.resolveRef.call(f.self, f.schemaEnv.root, f.baseId, j), k instanceof n.SchemaEnv && (k = k.schema), k === void 0)
               throw new i.default(f.opts.uriResolver, f.baseId, j);
           }
-          const M = (l = k?.properties) === null || l === void 0 ? void 0 : l[w];
+          const M = (d = k?.properties) === null || d === void 0 ? void 0 : d[x];
           if (typeof M != "object")
-            throw new Error(`discriminator: oneOf subschemas (or referenced schemas) must have "properties/${w}"`);
-          S = S && (b || I(k)), P(M, E);
+            throw new Error(`discriminator: oneOf subschemas (or referenced schemas) must have "properties/${x}"`);
+          S = S && (b || A(k)), P(M, E);
         }
         if (!S)
-          throw new Error(`discriminator: "${w}" must be required`);
-        return u;
-        function I({ required: E }) {
-          return Array.isArray(E) && E.includes(w);
+          throw new Error(`discriminator: "${x}" must be required`);
+        return p;
+        function A({ required: E }) {
+          return Array.isArray(E) && E.includes(x);
         }
         function P(E, k) {
           if (E.const)
@@ -15888,95 +16015,95 @@ function Qd() {
             for (const M of E.enum)
               R(M, k);
           else
-            throw new Error(`discriminator: "properties/${w}" must have "const" or "enum"`);
+            throw new Error(`discriminator: "properties/${x}" must have "const" or "enum"`);
         }
         function R(E, k) {
-          if (typeof E != "string" || E in u)
-            throw new Error(`discriminator: "${w}" values must be unique strings`);
-          u[E] = k;
+          if (typeof E != "string" || E in p)
+            throw new Error(`discriminator: "${x}" values must be unique strings`);
+          p[E] = k;
         }
       }
     }
   };
-  return Li.default = s, Li;
+  return Di.default = s, Di;
 }
-var Ni = {};
-const Pp = "https://json-schema.org/draft/2020-12/schema", _p = "https://json-schema.org/draft/2020-12/schema", Tp = { "https://json-schema.org/draft/2020-12/vocab/core": !0, "https://json-schema.org/draft/2020-12/vocab/applicator": !0, "https://json-schema.org/draft/2020-12/vocab/unevaluated": !0, "https://json-schema.org/draft/2020-12/vocab/validation": !0, "https://json-schema.org/draft/2020-12/vocab/meta-data": !0, "https://json-schema.org/draft/2020-12/vocab/format-annotation": !0, "https://json-schema.org/draft/2020-12/vocab/content": !0 }, Cp = "meta", Ep = "Core and Validation specifications meta-schema", kp = [{ $ref: "meta/core" }, { $ref: "meta/applicator" }, { $ref: "meta/unevaluated" }, { $ref: "meta/validation" }, { $ref: "meta/meta-data" }, { $ref: "meta/format-annotation" }, { $ref: "meta/content" }], Mp = ["object", "boolean"], Op = "This meta-schema also defines keywords that have appeared in previous drafts in order to prevent incompatible extensions as they remain in common use.", Lp = { definitions: { $comment: '"definitions" has been replaced by "$defs".', type: "object", additionalProperties: { $dynamicRef: "#meta" }, deprecated: !0, default: {} }, dependencies: { $comment: '"dependencies" has been split and replaced by "dependentSchemas" and "dependentRequired" in order to serve their differing semantics.', type: "object", additionalProperties: { anyOf: [{ $dynamicRef: "#meta" }, { $ref: "meta/validation#/$defs/stringArray" }] }, deprecated: !0, default: {} }, $recursiveAnchor: { $comment: '"$recursiveAnchor" has been replaced by "$dynamicAnchor".', $ref: "meta/core#/$defs/anchorString", deprecated: !0 }, $recursiveRef: { $comment: '"$recursiveRef" has been replaced by "$dynamicRef".', $ref: "meta/core#/$defs/uriReferenceString", deprecated: !0 } }, Np = {
-  $schema: Pp,
-  $id: _p,
-  $vocabulary: Tp,
-  $dynamicAnchor: Cp,
-  title: Ep,
-  allOf: kp,
-  type: Mp,
-  $comment: Op,
-  properties: Lp
-}, Dp = "https://json-schema.org/draft/2020-12/schema", zp = "https://json-schema.org/draft/2020-12/meta/applicator", Vp = { "https://json-schema.org/draft/2020-12/vocab/applicator": !0 }, Up = "meta", Gp = "Applicator vocabulary meta-schema", Fp = ["object", "boolean"], Bp = { prefixItems: { $ref: "#/$defs/schemaArray" }, items: { $dynamicRef: "#meta" }, contains: { $dynamicRef: "#meta" }, additionalProperties: { $dynamicRef: "#meta" }, properties: { type: "object", additionalProperties: { $dynamicRef: "#meta" }, default: {} }, patternProperties: { type: "object", additionalProperties: { $dynamicRef: "#meta" }, propertyNames: { format: "regex" }, default: {} }, dependentSchemas: { type: "object", additionalProperties: { $dynamicRef: "#meta" }, default: {} }, propertyNames: { $dynamicRef: "#meta" }, if: { $dynamicRef: "#meta" }, then: { $dynamicRef: "#meta" }, else: { $dynamicRef: "#meta" }, allOf: { $ref: "#/$defs/schemaArray" }, anyOf: { $ref: "#/$defs/schemaArray" }, oneOf: { $ref: "#/$defs/schemaArray" }, not: { $dynamicRef: "#meta" } }, Zp = { schemaArray: { type: "array", minItems: 1, items: { $dynamicRef: "#meta" } } }, Hp = {
-  $schema: Dp,
-  $id: zp,
+var zi = {};
+const _p = "https://json-schema.org/draft/2020-12/schema", Tp = "https://json-schema.org/draft/2020-12/schema", Cp = { "https://json-schema.org/draft/2020-12/vocab/core": !0, "https://json-schema.org/draft/2020-12/vocab/applicator": !0, "https://json-schema.org/draft/2020-12/vocab/unevaluated": !0, "https://json-schema.org/draft/2020-12/vocab/validation": !0, "https://json-schema.org/draft/2020-12/vocab/meta-data": !0, "https://json-schema.org/draft/2020-12/vocab/format-annotation": !0, "https://json-schema.org/draft/2020-12/vocab/content": !0 }, Ep = "meta", kp = "Core and Validation specifications meta-schema", Mp = [{ $ref: "meta/core" }, { $ref: "meta/applicator" }, { $ref: "meta/unevaluated" }, { $ref: "meta/validation" }, { $ref: "meta/meta-data" }, { $ref: "meta/format-annotation" }, { $ref: "meta/content" }], Op = ["object", "boolean"], Lp = "This meta-schema also defines keywords that have appeared in previous drafts in order to prevent incompatible extensions as they remain in common use.", Np = { definitions: { $comment: '"definitions" has been replaced by "$defs".', type: "object", additionalProperties: { $dynamicRef: "#meta" }, deprecated: !0, default: {} }, dependencies: { $comment: '"dependencies" has been split and replaced by "dependentSchemas" and "dependentRequired" in order to serve their differing semantics.', type: "object", additionalProperties: { anyOf: [{ $dynamicRef: "#meta" }, { $ref: "meta/validation#/$defs/stringArray" }] }, deprecated: !0, default: {} }, $recursiveAnchor: { $comment: '"$recursiveAnchor" has been replaced by "$dynamicAnchor".', $ref: "meta/core#/$defs/anchorString", deprecated: !0 }, $recursiveRef: { $comment: '"$recursiveRef" has been replaced by "$dynamicRef".', $ref: "meta/core#/$defs/uriReferenceString", deprecated: !0 } }, Dp = {
+  $schema: _p,
+  $id: Tp,
+  $vocabulary: Cp,
+  $dynamicAnchor: Ep,
+  title: kp,
+  allOf: Mp,
+  type: Op,
+  $comment: Lp,
+  properties: Np
+}, zp = "https://json-schema.org/draft/2020-12/schema", Up = "https://json-schema.org/draft/2020-12/meta/applicator", Vp = { "https://json-schema.org/draft/2020-12/vocab/applicator": !0 }, Gp = "meta", Fp = "Applicator vocabulary meta-schema", Bp = ["object", "boolean"], Zp = { prefixItems: { $ref: "#/$defs/schemaArray" }, items: { $dynamicRef: "#meta" }, contains: { $dynamicRef: "#meta" }, additionalProperties: { $dynamicRef: "#meta" }, properties: { type: "object", additionalProperties: { $dynamicRef: "#meta" }, default: {} }, patternProperties: { type: "object", additionalProperties: { $dynamicRef: "#meta" }, propertyNames: { format: "regex" }, default: {} }, dependentSchemas: { type: "object", additionalProperties: { $dynamicRef: "#meta" }, default: {} }, propertyNames: { $dynamicRef: "#meta" }, if: { $dynamicRef: "#meta" }, then: { $dynamicRef: "#meta" }, else: { $dynamicRef: "#meta" }, allOf: { $ref: "#/$defs/schemaArray" }, anyOf: { $ref: "#/$defs/schemaArray" }, oneOf: { $ref: "#/$defs/schemaArray" }, not: { $dynamicRef: "#meta" } }, Hp = { schemaArray: { type: "array", minItems: 1, items: { $dynamicRef: "#meta" } } }, Jp = {
+  $schema: zp,
+  $id: Up,
   $vocabulary: Vp,
-  $dynamicAnchor: Up,
-  title: Gp,
-  type: Fp,
-  properties: Bp,
-  $defs: Zp
-}, Jp = "https://json-schema.org/draft/2020-12/schema", Kp = "https://json-schema.org/draft/2020-12/meta/unevaluated", Qp = { "https://json-schema.org/draft/2020-12/vocab/unevaluated": !0 }, Wp = "meta", Xp = "Unevaluated applicator vocabulary meta-schema", Yp = ["object", "boolean"], ef = { unevaluatedItems: { $dynamicRef: "#meta" }, unevaluatedProperties: { $dynamicRef: "#meta" } }, tf = {
-  $schema: Jp,
-  $id: Kp,
-  $vocabulary: Qp,
-  $dynamicAnchor: Wp,
-  title: Xp,
-  type: Yp,
-  properties: ef
-}, nf = "https://json-schema.org/draft/2020-12/schema", rf = "https://json-schema.org/draft/2020-12/meta/content", sf = { "https://json-schema.org/draft/2020-12/vocab/content": !0 }, af = "meta", of = "Content vocabulary meta-schema", cf = ["object", "boolean"], df = { contentEncoding: { type: "string" }, contentMediaType: { type: "string" }, contentSchema: { $dynamicRef: "#meta" } }, lf = {
-  $schema: nf,
-  $id: rf,
-  $vocabulary: sf,
-  $dynamicAnchor: af,
-  title: of,
-  type: cf,
-  properties: df
-}, uf = "https://json-schema.org/draft/2020-12/schema", pf = "https://json-schema.org/draft/2020-12/meta/core", ff = { "https://json-schema.org/draft/2020-12/vocab/core": !0 }, hf = "meta", mf = "Core vocabulary meta-schema", yf = ["object", "boolean"], gf = { $id: { $ref: "#/$defs/uriReferenceString", $comment: "Non-empty fragments not allowed.", pattern: "^[^#]*#?$" }, $schema: { $ref: "#/$defs/uriString" }, $ref: { $ref: "#/$defs/uriReferenceString" }, $anchor: { $ref: "#/$defs/anchorString" }, $dynamicRef: { $ref: "#/$defs/uriReferenceString" }, $dynamicAnchor: { $ref: "#/$defs/anchorString" }, $vocabulary: { type: "object", propertyNames: { $ref: "#/$defs/uriString" }, additionalProperties: { type: "boolean" } }, $comment: { type: "string" }, $defs: { type: "object", additionalProperties: { $dynamicRef: "#meta" } } }, vf = { anchorString: { type: "string", pattern: "^[A-Za-z_][-A-Za-z0-9._]*$" }, uriString: { type: "string", format: "uri" }, uriReferenceString: { type: "string", format: "uri-reference" } }, bf = {
-  $schema: uf,
-  $id: pf,
-  $vocabulary: ff,
-  $dynamicAnchor: hf,
-  title: mf,
-  type: yf,
-  properties: gf,
-  $defs: vf
-}, wf = "https://json-schema.org/draft/2020-12/schema", xf = "https://json-schema.org/draft/2020-12/meta/format-annotation", Sf = { "https://json-schema.org/draft/2020-12/vocab/format-annotation": !0 }, Af = "meta", If = "Format vocabulary meta-schema for annotation results", qf = ["object", "boolean"], Rf = { format: { type: "string" } }, jf = {
-  $schema: wf,
-  $id: xf,
-  $vocabulary: Sf,
+  $dynamicAnchor: Gp,
+  title: Fp,
+  type: Bp,
+  properties: Zp,
+  $defs: Hp
+}, Kp = "https://json-schema.org/draft/2020-12/schema", Qp = "https://json-schema.org/draft/2020-12/meta/unevaluated", Wp = { "https://json-schema.org/draft/2020-12/vocab/unevaluated": !0 }, Xp = "meta", Yp = "Unevaluated applicator vocabulary meta-schema", ef = ["object", "boolean"], tf = { unevaluatedItems: { $dynamicRef: "#meta" }, unevaluatedProperties: { $dynamicRef: "#meta" } }, nf = {
+  $schema: Kp,
+  $id: Qp,
+  $vocabulary: Wp,
+  $dynamicAnchor: Xp,
+  title: Yp,
+  type: ef,
+  properties: tf
+}, rf = "https://json-schema.org/draft/2020-12/schema", sf = "https://json-schema.org/draft/2020-12/meta/content", af = { "https://json-schema.org/draft/2020-12/vocab/content": !0 }, of = "meta", cf = "Content vocabulary meta-schema", df = ["object", "boolean"], lf = { contentEncoding: { type: "string" }, contentMediaType: { type: "string" }, contentSchema: { $dynamicRef: "#meta" } }, uf = {
+  $schema: rf,
+  $id: sf,
+  $vocabulary: af,
+  $dynamicAnchor: of,
+  title: cf,
+  type: df,
+  properties: lf
+}, pf = "https://json-schema.org/draft/2020-12/schema", ff = "https://json-schema.org/draft/2020-12/meta/core", hf = { "https://json-schema.org/draft/2020-12/vocab/core": !0 }, mf = "meta", yf = "Core vocabulary meta-schema", gf = ["object", "boolean"], vf = { $id: { $ref: "#/$defs/uriReferenceString", $comment: "Non-empty fragments not allowed.", pattern: "^[^#]*#?$" }, $schema: { $ref: "#/$defs/uriString" }, $ref: { $ref: "#/$defs/uriReferenceString" }, $anchor: { $ref: "#/$defs/anchorString" }, $dynamicRef: { $ref: "#/$defs/uriReferenceString" }, $dynamicAnchor: { $ref: "#/$defs/anchorString" }, $vocabulary: { type: "object", propertyNames: { $ref: "#/$defs/uriString" }, additionalProperties: { type: "boolean" } }, $comment: { type: "string" }, $defs: { type: "object", additionalProperties: { $dynamicRef: "#meta" } } }, bf = { anchorString: { type: "string", pattern: "^[A-Za-z_][-A-Za-z0-9._]*$" }, uriString: { type: "string", format: "uri" }, uriReferenceString: { type: "string", format: "uri-reference" } }, wf = {
+  $schema: pf,
+  $id: ff,
+  $vocabulary: hf,
+  $dynamicAnchor: mf,
+  title: yf,
+  type: gf,
+  properties: vf,
+  $defs: bf
+}, xf = "https://json-schema.org/draft/2020-12/schema", Sf = "https://json-schema.org/draft/2020-12/meta/format-annotation", If = { "https://json-schema.org/draft/2020-12/vocab/format-annotation": !0 }, Af = "meta", qf = "Format vocabulary meta-schema for annotation results", Rf = ["object", "boolean"], jf = { format: { type: "string" } }, $f = {
+  $schema: xf,
+  $id: Sf,
+  $vocabulary: If,
   $dynamicAnchor: Af,
-  title: If,
-  type: qf,
-  properties: Rf
-}, $f = "https://json-schema.org/draft/2020-12/schema", Pf = "https://json-schema.org/draft/2020-12/meta/meta-data", _f = { "https://json-schema.org/draft/2020-12/vocab/meta-data": !0 }, Tf = "meta", Cf = "Meta-data vocabulary meta-schema", Ef = ["object", "boolean"], kf = { title: { type: "string" }, description: { type: "string" }, default: !0, deprecated: { type: "boolean", default: !1 }, readOnly: { type: "boolean", default: !1 }, writeOnly: { type: "boolean", default: !1 }, examples: { type: "array", items: !0 } }, Mf = {
-  $schema: $f,
-  $id: Pf,
-  $vocabulary: _f,
-  $dynamicAnchor: Tf,
-  title: Cf,
-  type: Ef,
-  properties: kf
-}, Of = "https://json-schema.org/draft/2020-12/schema", Lf = "https://json-schema.org/draft/2020-12/meta/validation", Nf = { "https://json-schema.org/draft/2020-12/vocab/validation": !0 }, Df = "meta", zf = "Validation vocabulary meta-schema", Vf = ["object", "boolean"], Uf = { type: { anyOf: [{ $ref: "#/$defs/simpleTypes" }, { type: "array", items: { $ref: "#/$defs/simpleTypes" }, minItems: 1, uniqueItems: !0 }] }, const: !0, enum: { type: "array", items: !0 }, multipleOf: { type: "number", exclusiveMinimum: 0 }, maximum: { type: "number" }, exclusiveMaximum: { type: "number" }, minimum: { type: "number" }, exclusiveMinimum: { type: "number" }, maxLength: { $ref: "#/$defs/nonNegativeInteger" }, minLength: { $ref: "#/$defs/nonNegativeIntegerDefault0" }, pattern: { type: "string", format: "regex" }, maxItems: { $ref: "#/$defs/nonNegativeInteger" }, minItems: { $ref: "#/$defs/nonNegativeIntegerDefault0" }, uniqueItems: { type: "boolean", default: !1 }, maxContains: { $ref: "#/$defs/nonNegativeInteger" }, minContains: { $ref: "#/$defs/nonNegativeInteger", default: 1 }, maxProperties: { $ref: "#/$defs/nonNegativeInteger" }, minProperties: { $ref: "#/$defs/nonNegativeIntegerDefault0" }, required: { $ref: "#/$defs/stringArray" }, dependentRequired: { type: "object", additionalProperties: { $ref: "#/$defs/stringArray" } } }, Gf = { nonNegativeInteger: { type: "integer", minimum: 0 }, nonNegativeIntegerDefault0: { $ref: "#/$defs/nonNegativeInteger", default: 0 }, simpleTypes: { enum: ["array", "boolean", "integer", "null", "number", "object", "string"] }, stringArray: { type: "array", items: { type: "string" }, uniqueItems: !0, default: [] } }, Ff = {
-  $schema: Of,
-  $id: Lf,
-  $vocabulary: Nf,
-  $dynamicAnchor: Df,
-  title: zf,
+  title: qf,
+  type: Rf,
+  properties: jf
+}, Pf = "https://json-schema.org/draft/2020-12/schema", _f = "https://json-schema.org/draft/2020-12/meta/meta-data", Tf = { "https://json-schema.org/draft/2020-12/vocab/meta-data": !0 }, Cf = "meta", Ef = "Meta-data vocabulary meta-schema", kf = ["object", "boolean"], Mf = { title: { type: "string" }, description: { type: "string" }, default: !0, deprecated: { type: "boolean", default: !1 }, readOnly: { type: "boolean", default: !1 }, writeOnly: { type: "boolean", default: !1 }, examples: { type: "array", items: !0 } }, Of = {
+  $schema: Pf,
+  $id: _f,
+  $vocabulary: Tf,
+  $dynamicAnchor: Cf,
+  title: Ef,
+  type: kf,
+  properties: Mf
+}, Lf = "https://json-schema.org/draft/2020-12/schema", Nf = "https://json-schema.org/draft/2020-12/meta/validation", Df = { "https://json-schema.org/draft/2020-12/vocab/validation": !0 }, zf = "meta", Uf = "Validation vocabulary meta-schema", Vf = ["object", "boolean"], Gf = { type: { anyOf: [{ $ref: "#/$defs/simpleTypes" }, { type: "array", items: { $ref: "#/$defs/simpleTypes" }, minItems: 1, uniqueItems: !0 }] }, const: !0, enum: { type: "array", items: !0 }, multipleOf: { type: "number", exclusiveMinimum: 0 }, maximum: { type: "number" }, exclusiveMaximum: { type: "number" }, minimum: { type: "number" }, exclusiveMinimum: { type: "number" }, maxLength: { $ref: "#/$defs/nonNegativeInteger" }, minLength: { $ref: "#/$defs/nonNegativeIntegerDefault0" }, pattern: { type: "string", format: "regex" }, maxItems: { $ref: "#/$defs/nonNegativeInteger" }, minItems: { $ref: "#/$defs/nonNegativeIntegerDefault0" }, uniqueItems: { type: "boolean", default: !1 }, maxContains: { $ref: "#/$defs/nonNegativeInteger" }, minContains: { $ref: "#/$defs/nonNegativeInteger", default: 1 }, maxProperties: { $ref: "#/$defs/nonNegativeInteger" }, minProperties: { $ref: "#/$defs/nonNegativeIntegerDefault0" }, required: { $ref: "#/$defs/stringArray" }, dependentRequired: { type: "object", additionalProperties: { $ref: "#/$defs/stringArray" } } }, Ff = { nonNegativeInteger: { type: "integer", minimum: 0 }, nonNegativeIntegerDefault0: { $ref: "#/$defs/nonNegativeInteger", default: 0 }, simpleTypes: { enum: ["array", "boolean", "integer", "null", "number", "object", "string"] }, stringArray: { type: "array", items: { type: "string" }, uniqueItems: !0, default: [] } }, Bf = {
+  $schema: Lf,
+  $id: Nf,
+  $vocabulary: Df,
+  $dynamicAnchor: zf,
+  title: Uf,
   type: Vf,
-  properties: Uf,
-  $defs: Gf
+  properties: Gf,
+  $defs: Ff
 };
-var mc;
-function Bf() {
-  if (mc) return Ni;
-  mc = 1, Object.defineProperty(Ni, "__esModule", { value: !0 });
-  const e = Np, t = Hp, n = tf, i = lf, o = bf, r = jf, s = Mf, a = Ff, c = ["/properties"];
-  function d(p) {
+var gc;
+function Zf() {
+  if (gc) return zi;
+  gc = 1, Object.defineProperty(zi, "__esModule", { value: !0 });
+  const e = Dp, t = Jp, n = nf, i = uf, o = wf, r = $f, s = Of, a = Bf, c = ["/properties"];
+  function l(u) {
     return [
       e,
       t,
@@ -15988,16 +16115,16 @@ function Bf() {
       y(this, a)
     ].forEach((f) => this.addMetaSchema(f, void 0, !1)), this;
     function y(f, h) {
-      return p ? f.$dataMetaSchema(h, c) : h;
+      return u ? f.$dataMetaSchema(h, c) : h;
     }
   }
-  return Ni.default = d, Ni;
+  return zi.default = l, zi;
 }
-var yc;
-function Zf() {
-  return yc || (yc = 1, (function(e, t) {
+var vc;
+function Hf() {
+  return vc || (vc = 1, (function(e, t) {
     Object.defineProperty(t, "__esModule", { value: !0 }), t.MissingRefError = t.ValidationError = t.CodeGen = t.Name = t.nil = t.stringify = t.str = t._ = t.KeywordCxt = t.Ajv2020 = void 0;
-    const n = /* @__PURE__ */ Dd(), i = /* @__PURE__ */ jp(), o = /* @__PURE__ */ Qd(), r = /* @__PURE__ */ Bf(), s = "https://json-schema.org/draft/2020-12/schema";
+    const n = /* @__PURE__ */ Ud(), i = /* @__PURE__ */ $p(), o = /* @__PURE__ */ Xd(), r = /* @__PURE__ */ Zf(), s = "https://json-schema.org/draft/2020-12/schema";
     class a extends n.default {
       constructor(h = {}) {
         super({
@@ -16012,47 +16139,47 @@ function Zf() {
       }
       _addDefaultMetaSchema() {
         super._addDefaultMetaSchema();
-        const { $data: h, meta: w } = this.opts;
-        w && (r.default.call(this, h), this.refs["http://json-schema.org/schema"] = s);
+        const { $data: h, meta: x } = this.opts;
+        x && (r.default.call(this, h), this.refs["http://json-schema.org/schema"] = s);
       }
       defaultMeta() {
         return this.opts.defaultMeta = super.defaultMeta() || (this.getSchema(s) ? s : void 0);
       }
     }
     t.Ajv2020 = a, e.exports = t = a, e.exports.Ajv2020 = a, Object.defineProperty(t, "__esModule", { value: !0 }), t.default = a;
-    var c = /* @__PURE__ */ En();
+    var c = /* @__PURE__ */ Mn();
     Object.defineProperty(t, "KeywordCxt", { enumerable: !0, get: function() {
       return c.KeywordCxt;
     } });
-    var d = /* @__PURE__ */ te();
+    var l = /* @__PURE__ */ te();
     Object.defineProperty(t, "_", { enumerable: !0, get: function() {
-      return d._;
+      return l._;
     } }), Object.defineProperty(t, "str", { enumerable: !0, get: function() {
-      return d.str;
+      return l.str;
     } }), Object.defineProperty(t, "stringify", { enumerable: !0, get: function() {
-      return d.stringify;
+      return l.stringify;
     } }), Object.defineProperty(t, "nil", { enumerable: !0, get: function() {
-      return d.nil;
+      return l.nil;
     } }), Object.defineProperty(t, "Name", { enumerable: !0, get: function() {
-      return d.Name;
+      return l.Name;
     } }), Object.defineProperty(t, "CodeGen", { enumerable: !0, get: function() {
-      return d.CodeGen;
+      return l.CodeGen;
     } });
-    var p = /* @__PURE__ */ ur();
+    var u = /* @__PURE__ */ pr();
     Object.defineProperty(t, "ValidationError", { enumerable: !0, get: function() {
-      return p.default;
+      return u.default;
     } });
-    var y = /* @__PURE__ */ kn();
+    var y = /* @__PURE__ */ On();
     Object.defineProperty(t, "MissingRefError", { enumerable: !0, get: function() {
       return y.default;
     } });
-  })(Fn, Fn.exports)), Fn.exports;
+  })(Zn, Zn.exports)), Zn.exports;
 }
-var Hf = /* @__PURE__ */ Zf();
-const Jf = /* @__PURE__ */ aa(Hf);
-var Di = { exports: {} }, Ur = {}, gc;
-function Kf() {
-  return gc || (gc = 1, (function(e) {
+var Jf = /* @__PURE__ */ Hf();
+const Kf = /* @__PURE__ */ ca(Jf);
+var Ui = { exports: {} }, Gr = {}, bc;
+function Qf() {
+  return bc || (bc = 1, (function(e) {
     Object.defineProperty(e, "__esModule", { value: !0 }), e.formatNames = e.fastFormats = e.fullFormats = void 0;
     function t(E, k) {
       return { validate: E, compare: k };
@@ -16061,13 +16188,13 @@ function Kf() {
       // date: http://tools.ietf.org/html/rfc3339#section-5.6
       date: t(r, s),
       // date-time: http://tools.ietf.org/html/rfc3339#section-5.6
-      time: t(c(!0), d),
+      time: t(c(!0), l),
       "date-time": t(f(!0), h),
-      "iso-time": t(c(), p),
-      "iso-date-time": t(f(), w),
+      "iso-time": t(c(), u),
+      "iso-date-time": t(f(), x),
       // duration: https://tools.ietf.org/html/rfc3339#appendix-A
       duration: /^P(?!$)((\d+Y)?(\d+M)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?|(\d+W)?)$/,
-      uri: A,
+      uri: I,
       "uri-reference": /^(?:[a-z][a-z0-9+\-.]*:)?(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'"()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?(?:\?(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i,
       // uri-template: https://tools.ietf.org/html/rfc6570
       "uri-template": /^(?:(?:[^\x00-\x20"'<>%\\^`{|}]|%[0-9a-f]{2})|\{[+#./;?&=,!@|]?(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?(?:,(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?)*\})*$/i,
@@ -16096,9 +16223,9 @@ function Kf() {
       // signed 64 bit integer
       int64: { type: "number", validate: S },
       // C-type float
-      float: { type: "number", validate: I },
+      float: { type: "number", validate: A },
       // C-type double
-      double: { type: "number", validate: I },
+      double: { type: "number", validate: A },
       // hint to the UI to hide input strings
       password: !0,
       // unchecked string payload
@@ -16106,10 +16233,10 @@ function Kf() {
     }, e.fastFormats = {
       ...e.fullFormats,
       date: t(/^\d\d\d\d-[0-1]\d-[0-3]\d$/, s),
-      time: t(/^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)$/i, d),
+      time: t(/^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)$/i, l),
       "date-time": t(/^\d\d\d\d-[0-1]\d-[0-3]\dt(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)$/i, h),
-      "iso-time": t(/^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)?$/i, p),
-      "iso-date-time": t(/^\d\d\d\d-[0-1]\d-[0-3]\d[t\s](?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)?$/i, w),
+      "iso-time": t(/^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)?$/i, u),
+      "iso-date-time": t(/^\d\d\d\d-[0-1]\d-[0-3]\d[t\s](?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)?$/i, x),
       // uri: https://github.com/mafintosh/is-my-json-valid/blob/master/formats.js
       uri: /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/)?[^\s]*$/i,
       "uri-reference": /^(?:(?:[a-z][a-z0-9+\-.]*:)?\/?\/)?(?:[^\\\s#][^\s#]*)?(?:#[^\\\s]*)?$/i,
@@ -16144,18 +16271,18 @@ function Kf() {
           return !1;
         if (N <= 23 && _ <= 59 && G < 60)
           return !0;
-        const V = _ - O * B, D = N - T * B - (V < 0 ? 1 : 0);
-        return (D === 23 || D === -1) && (V === 59 || V === -1) && G < 61;
+        const U = _ - O * B, D = N - T * B - (U < 0 ? 1 : 0);
+        return (D === 23 || D === -1) && (U === 59 || U === -1) && G < 61;
       };
     }
-    function d(E, k) {
+    function l(E, k) {
       if (!(E && k))
         return;
       const M = (/* @__PURE__ */ new Date("2020-01-01T" + E)).valueOf(), j = (/* @__PURE__ */ new Date("2020-01-01T" + k)).valueOf();
       if (M && j)
         return M - j;
     }
-    function p(E, k) {
+    function u(E, k) {
       if (!(E && k))
         return;
       const M = a.exec(E), j = a.exec(k);
@@ -16177,29 +16304,29 @@ function Kf() {
       if (M && j)
         return M - j;
     }
-    function w(E, k) {
+    function x(E, k) {
       if (!(E && k))
         return;
       const [M, j] = E.split(y), [N, _] = k.split(y), G = s(M, N);
       if (G !== void 0)
-        return G || d(j, _);
+        return G || l(j, _);
     }
-    const x = /\/|:/, v = /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)(?:\?(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i;
-    function A(E) {
-      return x.test(E) && v.test(E);
+    const w = /\/|:/, v = /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)(?:\?(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i;
+    function I(E) {
+      return w.test(E) && v.test(E);
     }
     const g = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/gm;
     function m(E) {
       return g.lastIndex = 0, g.test(E);
     }
-    const l = -2147483648, u = 2 ** 31 - 1;
+    const d = -2147483648, p = 2 ** 31 - 1;
     function b(E) {
-      return Number.isInteger(E) && E <= u && E >= l;
+      return Number.isInteger(E) && E <= p && E >= d;
     }
     function S(E) {
       return Number.isInteger(E);
     }
-    function I() {
+    function A() {
       return !0;
     }
     const P = /[^\\]\\Z/;
@@ -16212,13 +16339,13 @@ function Kf() {
         return !1;
       }
     }
-  })(Ur)), Ur;
+  })(Gr)), Gr;
 }
-var Gr = {}, zi = { exports: {} }, Vi = {}, vc;
-function Qf() {
-  if (vc) return Vi;
-  vc = 1, Object.defineProperty(Vi, "__esModule", { value: !0 });
-  const e = /* @__PURE__ */ zd(), t = /* @__PURE__ */ Vd(), n = /* @__PURE__ */ Bd(), i = /* @__PURE__ */ Jd(), o = /* @__PURE__ */ Kd(), r = [
+var Fr = {}, Vi = { exports: {} }, Gi = {}, wc;
+function Wf() {
+  if (wc) return Gi;
+  wc = 1, Object.defineProperty(Gi, "__esModule", { value: !0 });
+  const e = /* @__PURE__ */ Vd(), t = /* @__PURE__ */ Gd(), n = /* @__PURE__ */ Hd(), i = /* @__PURE__ */ Qd(), o = /* @__PURE__ */ Wd(), r = [
     e.default,
     t.default,
     (0, n.default)(),
@@ -16226,70 +16353,70 @@ function Qf() {
     o.metadataVocabulary,
     o.contentVocabulary
   ];
-  return Vi.default = r, Vi;
+  return Gi.default = r, Gi;
 }
-const Wf = "http://json-schema.org/draft-07/schema#", Xf = "http://json-schema.org/draft-07/schema#", Yf = "Core schema meta-schema", eh = { schemaArray: { type: "array", minItems: 1, items: { $ref: "#" } }, nonNegativeInteger: { type: "integer", minimum: 0 }, nonNegativeIntegerDefault0: { allOf: [{ $ref: "#/definitions/nonNegativeInteger" }, { default: 0 }] }, simpleTypes: { enum: ["array", "boolean", "integer", "null", "number", "object", "string"] }, stringArray: { type: "array", items: { type: "string" }, uniqueItems: !0, default: [] } }, th = ["object", "boolean"], nh = { $id: { type: "string", format: "uri-reference" }, $schema: { type: "string", format: "uri" }, $ref: { type: "string", format: "uri-reference" }, $comment: { type: "string" }, title: { type: "string" }, description: { type: "string" }, default: !0, readOnly: { type: "boolean", default: !1 }, examples: { type: "array", items: !0 }, multipleOf: { type: "number", exclusiveMinimum: 0 }, maximum: { type: "number" }, exclusiveMaximum: { type: "number" }, minimum: { type: "number" }, exclusiveMinimum: { type: "number" }, maxLength: { $ref: "#/definitions/nonNegativeInteger" }, minLength: { $ref: "#/definitions/nonNegativeIntegerDefault0" }, pattern: { type: "string", format: "regex" }, additionalItems: { $ref: "#" }, items: { anyOf: [{ $ref: "#" }, { $ref: "#/definitions/schemaArray" }], default: !0 }, maxItems: { $ref: "#/definitions/nonNegativeInteger" }, minItems: { $ref: "#/definitions/nonNegativeIntegerDefault0" }, uniqueItems: { type: "boolean", default: !1 }, contains: { $ref: "#" }, maxProperties: { $ref: "#/definitions/nonNegativeInteger" }, minProperties: { $ref: "#/definitions/nonNegativeIntegerDefault0" }, required: { $ref: "#/definitions/stringArray" }, additionalProperties: { $ref: "#" }, definitions: { type: "object", additionalProperties: { $ref: "#" }, default: {} }, properties: { type: "object", additionalProperties: { $ref: "#" }, default: {} }, patternProperties: { type: "object", additionalProperties: { $ref: "#" }, propertyNames: { format: "regex" }, default: {} }, dependencies: { type: "object", additionalProperties: { anyOf: [{ $ref: "#" }, { $ref: "#/definitions/stringArray" }] } }, propertyNames: { $ref: "#" }, const: !0, enum: { type: "array", items: !0, minItems: 1, uniqueItems: !0 }, type: { anyOf: [{ $ref: "#/definitions/simpleTypes" }, { type: "array", items: { $ref: "#/definitions/simpleTypes" }, minItems: 1, uniqueItems: !0 }] }, format: { type: "string" }, contentMediaType: { type: "string" }, contentEncoding: { type: "string" }, if: { $ref: "#" }, then: { $ref: "#" }, else: { $ref: "#" }, allOf: { $ref: "#/definitions/schemaArray" }, anyOf: { $ref: "#/definitions/schemaArray" }, oneOf: { $ref: "#/definitions/schemaArray" }, not: { $ref: "#" } }, ih = {
-  $schema: Wf,
-  $id: Xf,
-  title: Yf,
-  definitions: eh,
-  type: th,
-  properties: nh,
+const Xf = "http://json-schema.org/draft-07/schema#", Yf = "http://json-schema.org/draft-07/schema#", eh = "Core schema meta-schema", th = { schemaArray: { type: "array", minItems: 1, items: { $ref: "#" } }, nonNegativeInteger: { type: "integer", minimum: 0 }, nonNegativeIntegerDefault0: { allOf: [{ $ref: "#/definitions/nonNegativeInteger" }, { default: 0 }] }, simpleTypes: { enum: ["array", "boolean", "integer", "null", "number", "object", "string"] }, stringArray: { type: "array", items: { type: "string" }, uniqueItems: !0, default: [] } }, nh = ["object", "boolean"], ih = { $id: { type: "string", format: "uri-reference" }, $schema: { type: "string", format: "uri" }, $ref: { type: "string", format: "uri-reference" }, $comment: { type: "string" }, title: { type: "string" }, description: { type: "string" }, default: !0, readOnly: { type: "boolean", default: !1 }, examples: { type: "array", items: !0 }, multipleOf: { type: "number", exclusiveMinimum: 0 }, maximum: { type: "number" }, exclusiveMaximum: { type: "number" }, minimum: { type: "number" }, exclusiveMinimum: { type: "number" }, maxLength: { $ref: "#/definitions/nonNegativeInteger" }, minLength: { $ref: "#/definitions/nonNegativeIntegerDefault0" }, pattern: { type: "string", format: "regex" }, additionalItems: { $ref: "#" }, items: { anyOf: [{ $ref: "#" }, { $ref: "#/definitions/schemaArray" }], default: !0 }, maxItems: { $ref: "#/definitions/nonNegativeInteger" }, minItems: { $ref: "#/definitions/nonNegativeIntegerDefault0" }, uniqueItems: { type: "boolean", default: !1 }, contains: { $ref: "#" }, maxProperties: { $ref: "#/definitions/nonNegativeInteger" }, minProperties: { $ref: "#/definitions/nonNegativeIntegerDefault0" }, required: { $ref: "#/definitions/stringArray" }, additionalProperties: { $ref: "#" }, definitions: { type: "object", additionalProperties: { $ref: "#" }, default: {} }, properties: { type: "object", additionalProperties: { $ref: "#" }, default: {} }, patternProperties: { type: "object", additionalProperties: { $ref: "#" }, propertyNames: { format: "regex" }, default: {} }, dependencies: { type: "object", additionalProperties: { anyOf: [{ $ref: "#" }, { $ref: "#/definitions/stringArray" }] } }, propertyNames: { $ref: "#" }, const: !0, enum: { type: "array", items: !0, minItems: 1, uniqueItems: !0 }, type: { anyOf: [{ $ref: "#/definitions/simpleTypes" }, { type: "array", items: { $ref: "#/definitions/simpleTypes" }, minItems: 1, uniqueItems: !0 }] }, format: { type: "string" }, contentMediaType: { type: "string" }, contentEncoding: { type: "string" }, if: { $ref: "#" }, then: { $ref: "#" }, else: { $ref: "#" }, allOf: { $ref: "#/definitions/schemaArray" }, anyOf: { $ref: "#/definitions/schemaArray" }, oneOf: { $ref: "#/definitions/schemaArray" }, not: { $ref: "#" } }, rh = {
+  $schema: Xf,
+  $id: Yf,
+  title: eh,
+  definitions: th,
+  type: nh,
+  properties: ih,
   default: !0
 };
-var bc;
-function rh() {
-  return bc || (bc = 1, (function(e, t) {
+var xc;
+function sh() {
+  return xc || (xc = 1, (function(e, t) {
     Object.defineProperty(t, "__esModule", { value: !0 }), t.MissingRefError = t.ValidationError = t.CodeGen = t.Name = t.nil = t.stringify = t.str = t._ = t.KeywordCxt = t.Ajv = void 0;
-    const n = /* @__PURE__ */ Dd(), i = /* @__PURE__ */ Qf(), o = /* @__PURE__ */ Qd(), r = ih, s = ["/properties"], a = "http://json-schema.org/draft-07/schema";
+    const n = /* @__PURE__ */ Ud(), i = /* @__PURE__ */ Wf(), o = /* @__PURE__ */ Xd(), r = rh, s = ["/properties"], a = "http://json-schema.org/draft-07/schema";
     class c extends n.default {
       _addVocabularies() {
-        super._addVocabularies(), i.default.forEach((w) => this.addVocabulary(w)), this.opts.discriminator && this.addKeyword(o.default);
+        super._addVocabularies(), i.default.forEach((x) => this.addVocabulary(x)), this.opts.discriminator && this.addKeyword(o.default);
       }
       _addDefaultMetaSchema() {
         if (super._addDefaultMetaSchema(), !this.opts.meta)
           return;
-        const w = this.opts.$data ? this.$dataMetaSchema(r, s) : r;
-        this.addMetaSchema(w, a, !1), this.refs["http://json-schema.org/schema"] = a;
+        const x = this.opts.$data ? this.$dataMetaSchema(r, s) : r;
+        this.addMetaSchema(x, a, !1), this.refs["http://json-schema.org/schema"] = a;
       }
       defaultMeta() {
         return this.opts.defaultMeta = super.defaultMeta() || (this.getSchema(a) ? a : void 0);
       }
     }
     t.Ajv = c, e.exports = t = c, e.exports.Ajv = c, Object.defineProperty(t, "__esModule", { value: !0 }), t.default = c;
-    var d = /* @__PURE__ */ En();
+    var l = /* @__PURE__ */ Mn();
     Object.defineProperty(t, "KeywordCxt", { enumerable: !0, get: function() {
-      return d.KeywordCxt;
+      return l.KeywordCxt;
     } });
-    var p = /* @__PURE__ */ te();
+    var u = /* @__PURE__ */ te();
     Object.defineProperty(t, "_", { enumerable: !0, get: function() {
-      return p._;
+      return u._;
     } }), Object.defineProperty(t, "str", { enumerable: !0, get: function() {
-      return p.str;
+      return u.str;
     } }), Object.defineProperty(t, "stringify", { enumerable: !0, get: function() {
-      return p.stringify;
+      return u.stringify;
     } }), Object.defineProperty(t, "nil", { enumerable: !0, get: function() {
-      return p.nil;
+      return u.nil;
     } }), Object.defineProperty(t, "Name", { enumerable: !0, get: function() {
-      return p.Name;
+      return u.Name;
     } }), Object.defineProperty(t, "CodeGen", { enumerable: !0, get: function() {
-      return p.CodeGen;
+      return u.CodeGen;
     } });
-    var y = /* @__PURE__ */ ur();
+    var y = /* @__PURE__ */ pr();
     Object.defineProperty(t, "ValidationError", { enumerable: !0, get: function() {
       return y.default;
     } });
-    var f = /* @__PURE__ */ kn();
+    var f = /* @__PURE__ */ On();
     Object.defineProperty(t, "MissingRefError", { enumerable: !0, get: function() {
       return f.default;
     } });
-  })(zi, zi.exports)), zi.exports;
+  })(Vi, Vi.exports)), Vi.exports;
 }
-var wc;
-function sh() {
-  return wc || (wc = 1, (function(e) {
+var Sc;
+function ah() {
+  return Sc || (Sc = 1, (function(e) {
     Object.defineProperty(e, "__esModule", { value: !0 }), e.formatLimitDefinition = void 0;
-    const t = /* @__PURE__ */ rh(), n = /* @__PURE__ */ te(), i = n.operators, o = {
+    const t = /* @__PURE__ */ sh(), n = /* @__PURE__ */ te(), i = n.operators, o = {
       formatMaximum: { okStr: "<=", ok: i.LTE, fail: i.GT },
       formatMinimum: { okStr: ">=", ok: i.GTE, fail: i.LT },
       formatExclusiveMaximum: { okStr: "<", ok: i.LT, fail: i.GTE },
@@ -16305,110 +16432,110 @@ function sh() {
       $data: !0,
       error: r,
       code(a) {
-        const { gen: c, data: d, schemaCode: p, keyword: y, it: f } = a, { opts: h, self: w } = f;
+        const { gen: c, data: l, schemaCode: u, keyword: y, it: f } = a, { opts: h, self: x } = f;
         if (!h.validateFormats)
           return;
-        const x = new t.KeywordCxt(f, w.RULES.all.format.definition, "format");
-        x.$data ? v() : A();
+        const w = new t.KeywordCxt(f, x.RULES.all.format.definition, "format");
+        w.$data ? v() : I();
         function v() {
           const m = c.scopeValue("formats", {
-            ref: w.formats,
+            ref: x.formats,
             code: h.code.formats
-          }), l = c.const("fmt", (0, n._)`${m}[${x.schemaCode}]`);
-          a.fail$data((0, n.or)((0, n._)`typeof ${l} != "object"`, (0, n._)`${l} instanceof RegExp`, (0, n._)`typeof ${l}.compare != "function"`, g(l)));
+          }), d = c.const("fmt", (0, n._)`${m}[${w.schemaCode}]`);
+          a.fail$data((0, n.or)((0, n._)`typeof ${d} != "object"`, (0, n._)`${d} instanceof RegExp`, (0, n._)`typeof ${d}.compare != "function"`, g(d)));
         }
-        function A() {
-          const m = x.schema, l = w.formats[m];
-          if (!l || l === !0)
+        function I() {
+          const m = w.schema, d = x.formats[m];
+          if (!d || d === !0)
             return;
-          if (typeof l != "object" || l instanceof RegExp || typeof l.compare != "function")
+          if (typeof d != "object" || d instanceof RegExp || typeof d.compare != "function")
             throw new Error(`"${y}": format "${m}" does not define "compare" function`);
-          const u = c.scopeValue("formats", {
+          const p = c.scopeValue("formats", {
             key: m,
-            ref: l,
+            ref: d,
             code: h.code.formats ? (0, n._)`${h.code.formats}${(0, n.getProperty)(m)}` : void 0
           });
-          a.fail$data(g(u));
+          a.fail$data(g(p));
         }
         function g(m) {
-          return (0, n._)`${m}.compare(${d}, ${p}) ${o[y].fail} 0`;
+          return (0, n._)`${m}.compare(${l}, ${u}) ${o[y].fail} 0`;
         }
       },
       dependencies: ["format"]
     };
     const s = (a) => (a.addKeyword(e.formatLimitDefinition), a);
     e.default = s;
-  })(Gr)), Gr;
+  })(Fr)), Fr;
 }
-var xc;
-function ah() {
-  return xc || (xc = 1, (function(e, t) {
+var Ic;
+function oh() {
+  return Ic || (Ic = 1, (function(e, t) {
     Object.defineProperty(t, "__esModule", { value: !0 });
-    const n = Kf(), i = sh(), o = /* @__PURE__ */ te(), r = new o.Name("fullFormats"), s = new o.Name("fastFormats"), a = (d, p = { keywords: !0 }) => {
-      if (Array.isArray(p))
-        return c(d, p, n.fullFormats, r), d;
-      const [y, f] = p.mode === "fast" ? [n.fastFormats, s] : [n.fullFormats, r], h = p.formats || n.formatNames;
-      return c(d, h, y, f), p.keywords && (0, i.default)(d), d;
+    const n = Qf(), i = ah(), o = /* @__PURE__ */ te(), r = new o.Name("fullFormats"), s = new o.Name("fastFormats"), a = (l, u = { keywords: !0 }) => {
+      if (Array.isArray(u))
+        return c(l, u, n.fullFormats, r), l;
+      const [y, f] = u.mode === "fast" ? [n.fastFormats, s] : [n.fullFormats, r], h = u.formats || n.formatNames;
+      return c(l, h, y, f), u.keywords && (0, i.default)(l), l;
     };
-    a.get = (d, p = "full") => {
-      const f = (p === "fast" ? n.fastFormats : n.fullFormats)[d];
+    a.get = (l, u = "full") => {
+      const f = (u === "fast" ? n.fastFormats : n.fullFormats)[l];
       if (!f)
-        throw new Error(`Unknown format "${d}"`);
+        throw new Error(`Unknown format "${l}"`);
       return f;
     };
-    function c(d, p, y, f) {
-      var h, w;
-      (h = (w = d.opts.code).formats) !== null && h !== void 0 || (w.formats = (0, o._)`require("ajv-formats/dist/formats").${f}`);
-      for (const x of p)
-        d.addFormat(x, y[x]);
+    function c(l, u, y, f) {
+      var h, x;
+      (h = (x = l.opts.code).formats) !== null && h !== void 0 || (x.formats = (0, o._)`require("ajv-formats/dist/formats").${f}`);
+      for (const w of u)
+        l.addFormat(w, y[w]);
     }
     e.exports = t = a, Object.defineProperty(t, "__esModule", { value: !0 }), t.default = a;
-  })(Di, Di.exports)), Di.exports;
+  })(Ui, Ui.exports)), Ui.exports;
 }
-var oh = ah();
-const ch = /* @__PURE__ */ aa(oh);
+var ch = oh();
+const dh = /* @__PURE__ */ ca(ch);
 /*! noble-ed25519 - MIT License (c) 2019 Paul Miller (paulmillr.com) */
-const dh = {
+const lh = {
   p: 0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffedn,
   n: 0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3edn,
   a: 0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffecn,
   d: 0x52036cee2b6ffe738cc740797779e89800700a4d4141d8ab75eb4dca135978a3n,
   Gx: 0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51an,
   Gy: 0x6666666666666666666666666666666666666666666666666666666666666658n
-}, { p: qe, n: Zi, Gx: Sc, Gy: Ac, a: Fr, d: Br } = dh, lh = 8n, Et = 32, $n = 64, Fe = (e = "") => {
+}, { p: qe, n: Ji, Gx: Ac, Gy: qc, a: Br, d: Zr } = lh, uh = 8n, Mt = 32, _n = 64, Fe = (e = "") => {
   throw new Error(e);
-}, uh = (e) => typeof e == "bigint", Wd = (e) => typeof e == "string", ph = (e) => e instanceof Uint8Array || ArrayBuffer.isView(e) && e.constructor.name === "Uint8Array", Jt = (e, t) => !ph(e) || typeof t == "number" && t > 0 && e.length !== t ? Fe("Uint8Array expected") : e, fr = (e) => new Uint8Array(e), la = (e) => Uint8Array.from(e), Xd = (e, t) => e.toString(16).padStart(t, "0"), ua = (e) => Array.from(Jt(e)).map((t) => Xd(t, 2)).join(""), bt = { _0: 48, _9: 57, A: 65, F: 70, a: 97, f: 102 }, Ic = (e) => {
+}, ph = (e) => typeof e == "bigint", Yd = (e) => typeof e == "string", fh = (e) => e instanceof Uint8Array || ArrayBuffer.isView(e) && e.constructor.name === "Uint8Array", Kt = (e, t) => !fh(e) || typeof t == "number" && t > 0 && e.length !== t ? Fe("Uint8Array expected") : e, hr = (e) => new Uint8Array(e), pa = (e) => Uint8Array.from(e), el = (e, t) => e.toString(16).padStart(t, "0"), fa = (e) => Array.from(Kt(e)).map((t) => el(t, 2)).join(""), bt = { _0: 48, _9: 57, A: 65, F: 70, a: 97, f: 102 }, Rc = (e) => {
   if (e >= bt._0 && e <= bt._9)
     return e - bt._0;
   if (e >= bt.A && e <= bt.F)
     return e - (bt.A - 10);
   if (e >= bt.a && e <= bt.f)
     return e - (bt.a - 10);
-}, pa = (e) => {
+}, ha = (e) => {
   const t = "hex invalid";
-  if (!Wd(e))
+  if (!Yd(e))
     return Fe(t);
   const n = e.length, i = n / 2;
   if (n % 2)
     return Fe(t);
-  const o = fr(i);
+  const o = hr(i);
   for (let r = 0, s = 0; r < i; r++, s += 2) {
-    const a = Ic(e.charCodeAt(s)), c = Ic(e.charCodeAt(s + 1));
+    const a = Rc(e.charCodeAt(s)), c = Rc(e.charCodeAt(s + 1));
     if (a === void 0 || c === void 0)
       return Fe(t);
     o[r] = a * 16 + c;
   }
   return o;
-}, sn = (e, t) => Jt(Wd(e) ? pa(e) : la(Jt(e)), t), Yd = () => globalThis?.crypto, fh = () => Yd()?.subtle ?? Fe("crypto.subtle must be defined"), Pn = (...e) => {
-  const t = fr(e.reduce((i, o) => i + Jt(o).length, 0));
+}, an = (e, t) => Kt(Yd(e) ? ha(e) : pa(Kt(e)), t), tl = () => globalThis?.crypto, hh = () => tl()?.subtle ?? Fe("crypto.subtle must be defined"), Tn = (...e) => {
+  const t = hr(e.reduce((i, o) => i + Kt(o).length, 0));
   let n = 0;
   return e.forEach((i) => {
     t.set(i, n), n += i.length;
   }), t;
-}, hh = (e = Et) => Yd().getRandomValues(fr(e)), er = BigInt, Ft = (e, t, n, i = "bad number: out of range") => uh(e) && t <= e && e < n ? e : Fe(i), Y = (e, t = qe) => {
+}, mh = (e = Mt) => tl().getRandomValues(hr(e)), tr = BigInt, Zt = (e, t, n, i = "bad number: out of range") => ph(e) && t <= e && e < n ? e : Fe(i), Y = (e, t = qe) => {
   const n = e % t;
   return n >= 0n ? n : t + n;
-}, el = (e) => Y(e, Zi), tl = (e, t) => {
+}, nl = (e) => Y(e, Ji), il = (e, t) => {
   (e === 0n || t <= 0n) && Fe("no inverse n=" + e + " mod=" + t);
   let n = Y(e, t), i = t, o = 0n, r = 1n;
   for (; n !== 0n; ) {
@@ -16416,50 +16543,50 @@ const dh = {
     i = n, n = a, o = r, r = c;
   }
   return i === 1n ? Y(o, t) : Fe("no inverse");
-}, qc = (e) => e instanceof At ? e : Fe("Point expected"), zs = 2n ** 256n, ot = class ot {
+}, jc = (e) => e instanceof At ? e : Fe("Point expected"), Us = 2n ** 256n, ot = class ot {
   constructor(t, n, i, o) {
     ht(this, "ex");
     ht(this, "ey");
     ht(this, "ez");
     ht(this, "et");
-    const r = zs;
-    this.ex = Ft(t, 0n, r), this.ey = Ft(n, 0n, r), this.ez = Ft(i, 1n, r), this.et = Ft(o, 0n, r), Object.freeze(this);
+    const r = Us;
+    this.ex = Zt(t, 0n, r), this.ey = Zt(n, 0n, r), this.ez = Zt(i, 1n, r), this.et = Zt(o, 0n, r), Object.freeze(this);
   }
   static fromAffine(t) {
     return new ot(t.x, t.y, 1n, Y(t.x * t.y));
   }
   /** RFC8032 5.1.3: Uint8Array to Point. */
   static fromBytes(t, n = !1) {
-    const i = Br, o = la(Jt(t, Et)), r = t[31];
+    const i = Zr, o = pa(Kt(t, Mt)), r = t[31];
     o[31] = r & -129;
-    const s = fa(o);
-    Ft(s, 0n, n ? zs : qe);
-    const c = Y(s * s), d = Y(c - 1n), p = Y(i * c + 1n);
-    let { isValid: y, value: f } = yh(d, p);
+    const s = ma(o);
+    Zt(s, 0n, n ? Us : qe);
+    const c = Y(s * s), l = Y(c - 1n), u = Y(i * c + 1n);
+    let { isValid: y, value: f } = gh(l, u);
     y || Fe("bad point: y not sqrt");
-    const h = (f & 1n) === 1n, w = (r & 128) !== 0;
-    return !n && f === 0n && w && Fe("bad point: x==0, isLastByteOdd"), w !== h && (f = Y(-f)), new ot(f, s, 1n, Y(f * s));
+    const h = (f & 1n) === 1n, x = (r & 128) !== 0;
+    return !n && f === 0n && x && Fe("bad point: x==0, isLastByteOdd"), x !== h && (f = Y(-f)), new ot(f, s, 1n, Y(f * s));
   }
   /** Checks if the point is valid and on-curve. */
   assertValidity() {
-    const t = Fr, n = Br, i = this;
+    const t = Br, n = Zr, i = this;
     if (i.is0())
       throw new Error("bad point: ZERO");
-    const { ex: o, ey: r, ez: s, et: a } = i, c = Y(o * o), d = Y(r * r), p = Y(s * s), y = Y(p * p), f = Y(c * t), h = Y(p * Y(f + d)), w = Y(y + Y(n * Y(c * d)));
-    if (h !== w)
+    const { ex: o, ey: r, ez: s, et: a } = i, c = Y(o * o), l = Y(r * r), u = Y(s * s), y = Y(u * u), f = Y(c * t), h = Y(u * Y(f + l)), x = Y(y + Y(n * Y(c * l)));
+    if (h !== x)
       throw new Error("bad point: equation left != right (1)");
-    const x = Y(o * r), v = Y(s * a);
-    if (x !== v)
+    const w = Y(o * r), v = Y(s * a);
+    if (w !== v)
       throw new Error("bad point: equation left != right (2)");
     return this;
   }
   /** Equality check: compare points P&Q. */
   equals(t) {
-    const { ex: n, ey: i, ez: o } = this, { ex: r, ey: s, ez: a } = qc(t), c = Y(n * a), d = Y(r * o), p = Y(i * a), y = Y(s * o);
-    return c === d && p === y;
+    const { ex: n, ey: i, ez: o } = this, { ex: r, ey: s, ez: a } = jc(t), c = Y(n * a), l = Y(r * o), u = Y(i * a), y = Y(s * o);
+    return c === l && u === y;
   }
   is0() {
-    return this.equals(rn);
+    return this.equals(sn);
   }
   /** Flip point over y coordinate. */
   negate() {
@@ -16467,13 +16594,13 @@ const dh = {
   }
   /** Point doubling. Complete formula. Cost: `4M + 4S + 1*a + 6add + 1*2`. */
   double() {
-    const { ex: t, ey: n, ez: i } = this, o = Fr, r = Y(t * t), s = Y(n * n), a = Y(2n * Y(i * i)), c = Y(o * r), d = t + n, p = Y(Y(d * d) - r - s), y = c + s, f = y - a, h = c - s, w = Y(p * f), x = Y(y * h), v = Y(p * h), A = Y(f * y);
-    return new ot(w, x, A, v);
+    const { ex: t, ey: n, ez: i } = this, o = Br, r = Y(t * t), s = Y(n * n), a = Y(2n * Y(i * i)), c = Y(o * r), l = t + n, u = Y(Y(l * l) - r - s), y = c + s, f = y - a, h = c - s, x = Y(u * f), w = Y(y * h), v = Y(u * h), I = Y(f * y);
+    return new ot(x, w, I, v);
   }
   /** Point addition. Complete formula. Cost: `8M + 1*k + 8add + 1*2`. */
   add(t) {
-    const { ex: n, ey: i, ez: o, et: r } = this, { ex: s, ey: a, ez: c, et: d } = qc(t), p = Fr, y = Br, f = Y(n * s), h = Y(i * a), w = Y(r * y * d), x = Y(o * c), v = Y((n + i) * (s + a) - f - h), A = Y(x - w), g = Y(x + w), m = Y(h - p * f), l = Y(v * A), u = Y(g * m), b = Y(v * m), S = Y(A * g);
-    return new ot(l, u, S, b);
+    const { ex: n, ey: i, ez: o, et: r } = this, { ex: s, ey: a, ez: c, et: l } = jc(t), u = Br, y = Zr, f = Y(n * s), h = Y(i * a), x = Y(r * y * l), w = Y(o * c), v = Y((n + i) * (s + a) - f - h), I = Y(w - x), g = Y(w + x), m = Y(h - u * f), d = Y(v * I), p = Y(g * m), b = Y(v * m), S = Y(I * g);
+    return new ot(d, p, S, b);
   }
   /**
    * Point-by-scalar multiplication. Scalar must be in range 1 <= n < CURVE.n.
@@ -16484,12 +16611,12 @@ const dh = {
    */
   multiply(t, n = !0) {
     if (!n && (t === 0n || this.is0()))
-      return rn;
-    if (Ft(t, 1n, Zi), t === 1n)
+      return sn;
+    if (Zt(t, 1n, Ji), t === 1n)
       return this;
-    if (this.equals(kt))
-      return Rh(t).p;
-    let i = rn, o = kt;
+    if (this.equals(Ot))
+      return jh(t).p;
+    let i = sn, o = Ot;
     for (let r = this; t > 0n; r = r.double(), t >>= 1n)
       t & 1n ? i = i.add(r) : n && (o = o.add(r));
     return i;
@@ -16497,31 +16624,31 @@ const dh = {
   /** Convert point to 2d xy affine point. (X, Y, Z) ∋ (x=X/Z, y=Y/Z) */
   toAffine() {
     const { ex: t, ey: n, ez: i } = this;
-    if (this.equals(rn))
+    if (this.equals(sn))
       return { x: 0n, y: 1n };
-    const o = tl(i, qe);
+    const o = il(i, qe);
     return Y(i * o) !== 1n && Fe("invalid inverse"), { x: Y(t * o), y: Y(n * o) };
   }
   toBytes() {
-    const { x: t, y: n } = this.assertValidity().toAffine(), i = nl(n);
+    const { x: t, y: n } = this.assertValidity().toAffine(), i = rl(n);
     return i[31] |= t & 1n ? 128 : 0, i;
   }
   toHex() {
-    return ua(this.toBytes());
+    return fa(this.toBytes());
   }
   // encode to hex string
   clearCofactor() {
-    return this.multiply(er(lh), !1);
+    return this.multiply(tr(uh), !1);
   }
   isSmallOrder() {
     return this.clearCofactor().is0();
   }
   isTorsionFree() {
-    let t = this.multiply(Zi / 2n, !1).double();
-    return Zi % 2n && (t = t.add(this)), t.is0();
+    let t = this.multiply(Ji / 2n, !1).double();
+    return Ji % 2n && (t = t.add(this)), t.is0();
   }
   static fromHex(t, n) {
-    return ot.fromBytes(sn(t), n);
+    return ot.fromBytes(an(t), n);
   }
   get x() {
     return this.toAffine().x;
@@ -16535,66 +16662,66 @@ const dh = {
 };
 ht(ot, "BASE"), ht(ot, "ZERO");
 let At = ot;
-const kt = new At(Sc, Ac, 1n, Y(Sc * Ac)), rn = new At(0n, 1n, 1n, 0n);
-At.BASE = kt;
-At.ZERO = rn;
-const nl = (e) => pa(Xd(Ft(e, 0n, zs), $n)).reverse(), fa = (e) => er("0x" + ua(la(Jt(e)).reverse())), st = (e, t) => {
+const Ot = new At(Ac, qc, 1n, Y(Ac * qc)), sn = new At(0n, 1n, 1n, 0n);
+At.BASE = Ot;
+At.ZERO = sn;
+const rl = (e) => ha(el(Zt(e, 0n, Us), _n)).reverse(), ma = (e) => tr("0x" + fa(pa(Kt(e)).reverse())), st = (e, t) => {
   let n = e;
   for (; t-- > 0n; )
     n *= n, n %= qe;
   return n;
-}, mh = (e) => {
-  const n = e * e % qe * e % qe, i = st(n, 2n) * n % qe, o = st(i, 1n) * e % qe, r = st(o, 5n) * o % qe, s = st(r, 10n) * r % qe, a = st(s, 20n) * s % qe, c = st(a, 40n) * a % qe, d = st(c, 80n) * c % qe, p = st(d, 80n) * c % qe, y = st(p, 10n) * r % qe;
+}, yh = (e) => {
+  const n = e * e % qe * e % qe, i = st(n, 2n) * n % qe, o = st(i, 1n) * e % qe, r = st(o, 5n) * o % qe, s = st(r, 10n) * r % qe, a = st(s, 20n) * s % qe, c = st(a, 40n) * a % qe, l = st(c, 80n) * c % qe, u = st(l, 80n) * c % qe, y = st(u, 10n) * r % qe;
   return { pow_p_5_8: st(y, 2n) * e % qe, b2: n };
-}, Rc = 0x2b8324804fc1df0b2b4d00993dfbd7a72f431806ad2fe478c4ee1b274a0ea0b0n, yh = (e, t) => {
-  const n = Y(t * t * t), i = Y(n * n * t), o = mh(e * i).pow_p_5_8;
+}, $c = 0x2b8324804fc1df0b2b4d00993dfbd7a72f431806ad2fe478c4ee1b274a0ea0b0n, gh = (e, t) => {
+  const n = Y(t * t * t), i = Y(n * n * t), o = yh(e * i).pow_p_5_8;
   let r = Y(e * n * o);
-  const s = Y(t * r * r), a = r, c = Y(r * Rc), d = s === e, p = s === Y(-e), y = s === Y(-e * Rc);
-  return d && (r = a), (p || y) && (r = c), (Y(r) & 1n) === 1n && (r = Y(-r)), { isValid: d || p, value: r };
-}, tr = (e) => el(fa(e)), ha = (...e) => Ah.sha512Async(...e), gh = (e) => {
-  const t = e.slice(0, Et);
+  const s = Y(t * r * r), a = r, c = Y(r * $c), l = s === e, u = s === Y(-e), y = s === Y(-e * $c);
+  return l && (r = a), (u || y) && (r = c), (Y(r) & 1n) === 1n && (r = Y(-r)), { isValid: l || u, value: r };
+}, nr = (e) => nl(ma(e)), ya = (...e) => Ah.sha512Async(...e), vh = (e) => {
+  const t = e.slice(0, Mt);
   t[0] &= 248, t[31] &= 127, t[31] |= 64;
-  const n = e.slice(Et, $n), i = tr(t), o = kt.multiply(i), r = o.toBytes();
+  const n = e.slice(Mt, _n), i = nr(t), o = Ot.multiply(i), r = o.toBytes();
   return { head: t, prefix: n, scalar: i, point: o, pointBytes: r };
-}, vh = (e) => ha(sn(e, Et)).then(gh), il = (e) => ha(e.hashable).then(e.finish), bh = (e, t, n) => {
-  const { pointBytes: i, scalar: o } = e, r = tr(t), s = kt.multiply(r).toBytes();
-  return { hashable: Pn(s, i, n), finish: (d) => {
-    const p = el(r + tr(d) * o);
-    return Jt(Pn(s, nl(p)), $n);
+}, bh = (e) => ya(an(e, Mt)).then(vh), sl = (e) => ya(e.hashable).then(e.finish), wh = (e, t, n) => {
+  const { pointBytes: i, scalar: o } = e, r = nr(t), s = Ot.multiply(r).toBytes();
+  return { hashable: Tn(s, i, n), finish: (l) => {
+    const u = nl(r + nr(l) * o);
+    return Kt(Tn(s, rl(u)), _n);
   } };
-}, wh = async (e, t) => {
-  const n = sn(e), i = await vh(t), o = await ha(i.prefix, n);
-  return il(bh(i, o, n));
-}, rl = { zip215: !0 }, xh = (e, t, n, i = rl) => {
-  e = sn(e, $n), t = sn(t), n = sn(n, Et);
+}, xh = async (e, t) => {
+  const n = an(e), i = await bh(t), o = await ya(i.prefix, n);
+  return sl(wh(i, o, n));
+}, al = { zip215: !0 }, Sh = (e, t, n, i = al) => {
+  e = an(e, _n), t = an(t), n = an(n, Mt);
   const { zip215: o } = i;
-  let r, s, a, c, d = Uint8Array.of();
+  let r, s, a, c, l = Uint8Array.of();
   try {
-    r = At.fromHex(n, o), s = At.fromHex(e.slice(0, Et), o), a = fa(e.slice(Et, $n)), c = kt.multiply(a, !1), d = Pn(s.toBytes(), r.toBytes(), t);
+    r = At.fromHex(n, o), s = At.fromHex(e.slice(0, Mt), o), a = ma(e.slice(Mt, _n)), c = Ot.multiply(a, !1), l = Tn(s.toBytes(), r.toBytes(), t);
   } catch {
   }
-  return { hashable: d, finish: (y) => {
+  return { hashable: l, finish: (y) => {
     if (c == null || !o && r.isSmallOrder())
       return !1;
-    const f = tr(y);
+    const f = nr(y);
     return s.add(r.multiply(f, !1)).add(c.negate()).clearCofactor().is0();
   } };
-}, Sh = async (e, t, n, i = rl) => il(xh(e, t, n, i)), Ah = {
+}, Ih = async (e, t, n, i = al) => sl(Sh(e, t, n, i)), Ah = {
   sha512Async: async (...e) => {
-    const t = fh(), n = Pn(...e);
-    return fr(await t.digest("SHA-512", n.buffer));
+    const t = hh(), n = Tn(...e);
+    return hr(await t.digest("SHA-512", n.buffer));
   },
   sha512Sync: void 0,
-  bytesToHex: ua,
-  hexToBytes: pa,
-  concatBytes: Pn,
+  bytesToHex: fa,
+  hexToBytes: ha,
+  concatBytes: Tn,
   mod: Y,
-  invert: tl,
-  randomBytes: hh
-}, nr = 8, Ih = 256, sl = Math.ceil(Ih / nr) + 1, Vs = 2 ** (nr - 1), qh = () => {
+  invert: il,
+  randomBytes: mh
+}, ir = 8, qh = 256, ol = Math.ceil(qh / ir) + 1, Vs = 2 ** (ir - 1), Rh = () => {
   const e = [];
-  let t = kt, n = t;
-  for (let i = 0; i < sl; i++) {
+  let t = Ot, n = t;
+  for (let i = 0; i < ol; i++) {
     n = t, e.push(n);
     for (let o = 1; o < Vs; o++)
       n = n.add(t), e.push(n);
@@ -16602,25 +16729,25 @@ const nl = (e) => pa(Xd(Ft(e, 0n, zs), $n)).reverse(), fa = (e) => er("0x" + ua(
   }
   return e;
 };
-let jc;
-const $c = (e, t) => {
+let Pc;
+const _c = (e, t) => {
   const n = t.negate();
   return e ? n : t;
-}, Rh = (e) => {
-  const t = jc || (jc = qh());
-  let n = rn, i = kt;
-  const o = 2 ** nr, r = o, s = er(o - 1), a = er(nr);
-  for (let c = 0; c < sl; c++) {
-    let d = Number(e & s);
-    e >>= a, d > Vs && (d -= r, e += 1n);
-    const p = c * Vs, y = p, f = p + Math.abs(d) - 1, h = c % 2 !== 0, w = d < 0;
-    d === 0 ? i = i.add($c(h, t[y])) : n = n.add($c(w, t[f]));
+}, jh = (e) => {
+  const t = Pc || (Pc = Rh());
+  let n = sn, i = Ot;
+  const o = 2 ** ir, r = o, s = tr(o - 1), a = tr(ir);
+  for (let c = 0; c < ol; c++) {
+    let l = Number(e & s);
+    e >>= a, l > Vs && (l -= r, e += 1n);
+    const u = c * Vs, y = u, f = u + Math.abs(l) - 1, h = c % 2 !== 0, x = l < 0;
+    l === 0 ? i = i.add(_c(h, t[y])) : n = n.add(_c(x, t[f]));
   }
   return { p: n, f: i };
 };
-var Zr = {}, Hr, Pc;
-function ma() {
-  return Pc || (Pc = 1, Hr = class al {
+var Hr = {}, Jr, Tc;
+function ga() {
+  return Tc || (Tc = 1, Jr = class cl {
     /**
      * Creates a new IdentifierIssuer. A IdentifierIssuer issues unique
      * identifiers, keeping track of any previously issued identifiers.
@@ -16639,7 +16766,7 @@ function ma() {
      */
     clone() {
       const { prefix: t, _existing: n, counter: i } = this;
-      return new al(t, new Map(n), i);
+      return new cl(t, new Map(n), i);
     }
     /**
      * Gets the new identifier for the given old identifier, where if no old
@@ -16677,53 +16804,53 @@ function ma() {
     getOldIds() {
       return [...this._existing.keys()];
     }
-  }), Hr;
+  }), Jr;
 }
-var Jr = {}, _c;
-function jh() {
-  return _c || (_c = 1, (function(e, t) {
+var Kr = {}, Cc;
+function $h() {
+  return Cc || (Cc = 1, (function(e, t) {
     if (e.setImmediate)
       return;
     var n = 1, i = {}, o = !1, r = e.document, s;
     function a(g) {
       typeof g != "function" && (g = new Function("" + g));
-      for (var m = new Array(arguments.length - 1), l = 0; l < m.length; l++)
-        m[l] = arguments[l + 1];
-      var u = { callback: g, args: m };
-      return i[n] = u, s(n), n++;
+      for (var m = new Array(arguments.length - 1), d = 0; d < m.length; d++)
+        m[d] = arguments[d + 1];
+      var p = { callback: g, args: m };
+      return i[n] = p, s(n), n++;
     }
     function c(g) {
       delete i[g];
     }
-    function d(g) {
-      var m = g.callback, l = g.args;
-      switch (l.length) {
+    function l(g) {
+      var m = g.callback, d = g.args;
+      switch (d.length) {
         case 0:
           m();
           break;
         case 1:
-          m(l[0]);
+          m(d[0]);
           break;
         case 2:
-          m(l[0], l[1]);
+          m(d[0], d[1]);
           break;
         case 3:
-          m(l[0], l[1], l[2]);
+          m(d[0], d[1], d[2]);
           break;
         default:
-          m.apply(t, l);
+          m.apply(t, d);
           break;
       }
     }
-    function p(g) {
+    function u(g) {
       if (o)
-        setTimeout(p, 0, g);
+        setTimeout(u, 0, g);
       else {
         var m = i[g];
         if (m) {
           o = !0;
           try {
-            d(m);
+            l(m);
           } finally {
             c(g), o = !1;
           }
@@ -16733,7 +16860,7 @@ function jh() {
     function y() {
       s = function(g) {
         process.nextTick(function() {
-          p(g);
+          u(g);
         });
       };
     }
@@ -16746,49 +16873,49 @@ function jh() {
       }
     }
     function h() {
-      var g = "setImmediate$" + Math.random() + "$", m = function(l) {
-        l.source === e && typeof l.data == "string" && l.data.indexOf(g) === 0 && p(+l.data.slice(g.length));
+      var g = "setImmediate$" + Math.random() + "$", m = function(d) {
+        d.source === e && typeof d.data == "string" && d.data.indexOf(g) === 0 && u(+d.data.slice(g.length));
       };
-      e.addEventListener ? e.addEventListener("message", m, !1) : e.attachEvent("onmessage", m), s = function(l) {
-        e.postMessage(g + l, "*");
+      e.addEventListener ? e.addEventListener("message", m, !1) : e.attachEvent("onmessage", m), s = function(d) {
+        e.postMessage(g + d, "*");
       };
     }
-    function w() {
+    function x() {
       var g = new MessageChannel();
       g.port1.onmessage = function(m) {
-        var l = m.data;
-        p(l);
+        var d = m.data;
+        u(d);
       }, s = function(m) {
         g.port2.postMessage(m);
       };
     }
-    function x() {
+    function w() {
       var g = r.documentElement;
       s = function(m) {
-        var l = r.createElement("script");
-        l.onreadystatechange = function() {
-          p(m), l.onreadystatechange = null, g.removeChild(l), l = null;
-        }, g.appendChild(l);
+        var d = r.createElement("script");
+        d.onreadystatechange = function() {
+          u(m), d.onreadystatechange = null, g.removeChild(d), d = null;
+        }, g.appendChild(d);
       };
     }
     function v() {
       s = function(g) {
-        setTimeout(p, 0, g);
+        setTimeout(u, 0, g);
       };
     }
-    var A = Object.getPrototypeOf && Object.getPrototypeOf(e);
-    A = A && A.setTimeout ? A : e, {}.toString.call(e.process) === "[object process]" ? y() : f() ? h() : e.MessageChannel ? w() : r && "onreadystatechange" in r.createElement("script") ? x() : v(), A.setImmediate = a, A.clearImmediate = c;
-  })(typeof self > "u" ? typeof Ga > "u" ? Jr : Ga : self)), Jr;
+    var I = Object.getPrototypeOf && Object.getPrototypeOf(e);
+    I = I && I.setTimeout ? I : e, {}.toString.call(e.process) === "[object process]" ? y() : f() ? h() : e.MessageChannel ? x() : r && "onreadystatechange" in r.createElement("script") ? w() : v(), I.setImmediate = a, I.clearImmediate = c;
+  })(typeof self > "u" ? typeof Ba > "u" ? Kr : Ba : self)), Kr;
 }
 /*!
  * Copyright (c) 2016-2022 Digital Bazaar, Inc. All rights reserved.
  */
-var Kr, Tc;
-function hr() {
-  if (Tc) return Kr;
-  Tc = 1, jh();
+var Qr, Ec;
+function mr() {
+  if (Ec) return Qr;
+  Ec = 1, $h();
   const e = self.crypto || self.msCrypto;
-  return Kr = class {
+  return Qr = class {
     /**
      * Creates a new MessageDigest.
      *
@@ -16817,14 +16944,14 @@ function hr() {
         o += i[r].toString(16).padStart(2, "0");
       return o;
     }
-  }, Kr;
+  }, Qr;
 }
 /*!
  * Copyright (c) 2016-2022 Digital Bazaar, Inc. All rights reserved.
  */
-var Qr, Cc;
-function ol() {
-  return Cc || (Cc = 1, Qr = class {
+var Wr, kc;
+function dl() {
+  return kc || (kc = 1, Wr = class {
     /**
      * A Permuter iterates over all possible permutations of the given array
      * of elements.
@@ -16855,8 +16982,8 @@ function ol() {
       let o = null, r = 0;
       const s = t.length;
       for (let a = 0; a < s; ++a) {
-        const c = t[a], d = n.get(c);
-        (o === null || c > o) && (d && a > 0 && c > t[a - 1] || !d && a < s - 1 && c > t[a + 1]) && (o = c, r = a);
+        const c = t[a], l = n.get(c);
+        (o === null || c > o) && (l && a > 0 && c > t[a - 1] || !l && a < s - 1 && c > t[a + 1]) && (o = c, r = a);
       }
       if (o === null)
         this.done = !0;
@@ -16868,22 +16995,22 @@ function ol() {
       }
       return i;
     }
-  }), Qr;
+  }), Wr;
 }
 /*!
  * Copyright (c) 2016-2022 Digital Bazaar, Inc. All rights reserved.
  */
-var Wr, Ec;
-function ya() {
-  if (Ec) return Wr;
-  Ec = 1;
+var Xr, Mc;
+function va() {
+  if (Mc) return Xr;
+  Mc = 1;
   const t = "http://www.w3.org/1999/02/22-rdf-syntax-ns#" + "langString", n = "http://www.w3.org/2001/XMLSchema#string", i = "NamedNode", o = "BlankNode", r = "Literal", s = "DefaultGraph", a = {};
   (() => {
-    const h = "(?:<([^:]+:[^>]*)>)", x = "A-Za-zÀ-ÖØ-öø-˿Ͱ-ͽͿ-῿‌-‍⁰-↏Ⰰ-⿯、-퟿豈-﷏ﷰ-�" + "_", v = x + "0-9-·̀-ͯ‿-⁀", g = "(_:(?:[" + x + "0-9])(?:(?:[" + v + ".])*(?:[" + v + "]))?)", m = '"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"', l = "(?:\\^\\^" + h + ")", b = "(?:" + m + "(?:" + l + "|" + "(?:@([a-zA-Z]+(?:-[a-zA-Z0-9]+)*))" + ")?)", S = "[ \\t]+", I = "[ \\t]*", P = "(?:" + h + "|" + g + ")" + S, R = h + S, E = "(?:" + h + "|" + g + "|" + b + ")" + I, k = "(?:\\.|(?:(?:" + h + "|" + g + ")" + I + "\\.))";
-    a.eoln = /(?:\r\n)|(?:\n)|(?:\r)/g, a.empty = new RegExp("^" + I + "$"), a.quad = new RegExp(
-      "^" + I + P + R + E + k + I + "$"
+    const h = "(?:<([^:]+:[^>]*)>)", w = "A-Za-zÀ-ÖØ-öø-˿Ͱ-ͽͿ-῿‌-‍⁰-↏Ⰰ-⿯、-퟿豈-﷏ﷰ-�" + "_", v = w + "0-9-·̀-ͯ‿-⁀", g = "(_:(?:[" + w + "0-9])(?:(?:[" + v + ".])*(?:[" + v + "]))?)", m = '"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"', d = "(?:\\^\\^" + h + ")", b = "(?:" + m + "(?:" + d + "|" + "(?:@([a-zA-Z]+(?:-[a-zA-Z0-9]+)*))" + ")?)", S = "[ \\t]+", A = "[ \\t]*", P = "(?:" + h + "|" + g + ")" + S, R = h + S, E = "(?:" + h + "|" + g + "|" + b + ")" + A, k = "(?:\\.|(?:(?:" + h + "|" + g + ")" + A + "\\.))";
+    a.eoln = /(?:\r\n)|(?:\n)|(?:\r)/g, a.empty = new RegExp("^" + A + "$"), a.quad = new RegExp(
+      "^" + A + P + R + E + k + A + "$"
     );
-  })(), Wr = class Hi {
+  })(), Xr = class Ki {
     /**
      * Parses RDF in the form of N-Quads.
      *
@@ -16891,45 +17018,45 @@ function ya() {
      *
      * @return an RDF dataset (an array of quads per http://rdf.js.org/).
      */
-    static parse(w) {
-      const x = [], v = {}, A = w.split(a.eoln);
+    static parse(x) {
+      const w = [], v = {}, I = x.split(a.eoln);
       let g = 0;
-      for (const m of A) {
+      for (const m of I) {
         if (g++, a.empty.test(m))
           continue;
-        const l = m.match(a.quad);
-        if (l === null)
+        const d = m.match(a.quad);
+        if (d === null)
           throw new Error("N-Quads parse error on line " + g + ".");
-        const u = { subject: null, predicate: null, object: null, graph: null };
-        if (l[1] !== void 0 ? u.subject = { termType: i, value: l[1] } : u.subject = { termType: o, value: l[2] }, u.predicate = { termType: i, value: l[3] }, l[4] !== void 0 ? u.object = { termType: i, value: l[4] } : l[5] !== void 0 ? u.object = { termType: o, value: l[5] } : (u.object = {
+        const p = { subject: null, predicate: null, object: null, graph: null };
+        if (d[1] !== void 0 ? p.subject = { termType: i, value: d[1] } : p.subject = { termType: o, value: d[2] }, p.predicate = { termType: i, value: d[3] }, d[4] !== void 0 ? p.object = { termType: i, value: d[4] } : d[5] !== void 0 ? p.object = { termType: o, value: d[5] } : (p.object = {
           termType: r,
           value: void 0,
           datatype: {
             termType: i
           }
-        }, l[7] !== void 0 ? u.object.datatype.value = l[7] : l[8] !== void 0 ? (u.object.datatype.value = t, u.object.language = l[8]) : u.object.datatype.value = n, u.object.value = f(l[6])), l[9] !== void 0 ? u.graph = {
+        }, d[7] !== void 0 ? p.object.datatype.value = d[7] : d[8] !== void 0 ? (p.object.datatype.value = t, p.object.language = d[8]) : p.object.datatype.value = n, p.object.value = f(d[6])), d[9] !== void 0 ? p.graph = {
           termType: i,
-          value: l[9]
-        } : l[10] !== void 0 ? u.graph = {
+          value: d[9]
+        } : d[10] !== void 0 ? p.graph = {
           termType: o,
-          value: l[10]
-        } : u.graph = {
+          value: d[10]
+        } : p.graph = {
           termType: s,
           value: ""
-        }, !(u.graph.value in v))
-          v[u.graph.value] = [u], x.push(u);
+        }, !(p.graph.value in v))
+          v[p.graph.value] = [p], w.push(p);
         else {
           let b = !0;
-          const S = v[u.graph.value];
-          for (const I of S)
-            if (c(I, u)) {
+          const S = v[p.graph.value];
+          for (const A of S)
+            if (c(A, p)) {
               b = !1;
               break;
             }
-          b && (S.push(u), x.push(u));
+          b && (S.push(p), w.push(p));
         }
       }
-      return x;
+      return w;
     }
     /**
      * Converts an RDF dataset to N-Quads.
@@ -16938,12 +17065,12 @@ function ya() {
      *
      * @return the N-Quads string.
      */
-    static serialize(w) {
-      Array.isArray(w) || (w = Hi.legacyDatasetToQuads(w));
-      const x = [];
-      for (const v of w)
-        x.push(Hi.serializeQuad(v));
-      return x.sort().join("");
+    static serialize(x) {
+      Array.isArray(x) || (x = Ki.legacyDatasetToQuads(x));
+      const w = [];
+      for (const v of x)
+        w.push(Ki.serializeQuad(v));
+      return w.sort().join("");
     }
     /**
      * Converts RDF quad components to an N-Quad string (a single quad).
@@ -16955,9 +17082,9 @@ function ya() {
      *
      * @return {string} the N-Quad.
      */
-    static serializeQuadComponents(w, x, v, A) {
+    static serializeQuadComponents(x, w, v, I) {
       let g = "";
-      return w.termType === i ? g += `<${w.value}>` : g += `${w.value}`, g += ` <${x.value}> `, v.termType === i ? g += `<${v.value}>` : v.termType === o ? g += v.value : (g += `"${p(v.value)}"`, v.datatype.value === t ? v.language && (g += `@${v.language}`) : v.datatype.value !== n && (g += `^^<${v.datatype.value}>`)), A.termType === i ? g += ` <${A.value}>` : A.termType === o && (g += ` ${A.value}`), g += ` .
+      return x.termType === i ? g += `<${x.value}>` : g += `${x.value}`, g += ` <${w.value}> `, v.termType === i ? g += `<${v.value}>` : v.termType === o ? g += v.value : (g += `"${u(v.value)}"`, v.datatype.value === t ? v.language && (g += `@${v.language}`) : v.datatype.value !== n && (g += `^^<${v.datatype.value}>`)), I.termType === i ? g += ` <${I.value}>` : I.termType === o && (g += ` ${I.value}`), g += ` .
 `, g;
     }
     /**
@@ -16967,12 +17094,12 @@ function ya() {
      *
      * @return the N-Quad string.
      */
-    static serializeQuad(w) {
-      return Hi.serializeQuadComponents(
-        w.subject,
-        w.predicate,
-        w.object,
-        w.graph
+    static serializeQuad(x) {
+      return Ki.serializeQuadComponents(
+        x.subject,
+        x.predicate,
+        x.object,
+        x.graph
       );
     }
     /**
@@ -16983,42 +17110,42 @@ function ya() {
      *
      * @return the array of quads dataset.
      */
-    static legacyDatasetToQuads(w) {
-      const x = [], v = {
+    static legacyDatasetToQuads(x) {
+      const w = [], v = {
         "blank node": o,
         IRI: i,
         literal: r
       };
-      for (const A in w)
-        w[A].forEach((m) => {
-          const l = {};
-          for (const u in m) {
-            const b = m[u], S = {
+      for (const I in x)
+        x[I].forEach((m) => {
+          const d = {};
+          for (const p in m) {
+            const b = m[p], S = {
               termType: v[b.type],
               value: b.value
             };
             S.termType === r && (S.datatype = {
               termType: i
-            }, "datatype" in b && (S.datatype.value = b.datatype), "language" in b ? ("datatype" in b || (S.datatype.value = t), S.language = b.language) : "datatype" in b || (S.datatype.value = n)), l[u] = S;
+            }, "datatype" in b && (S.datatype.value = b.datatype), "language" in b ? ("datatype" in b || (S.datatype.value = t), S.language = b.language) : "datatype" in b || (S.datatype.value = n)), d[p] = S;
           }
-          A === "@default" ? l.graph = {
+          I === "@default" ? d.graph = {
             termType: s,
             value: ""
-          } : l.graph = {
-            termType: A.startsWith("_:") ? o : i,
-            value: A
-          }, x.push(l);
+          } : d.graph = {
+            termType: I.startsWith("_:") ? o : i,
+            value: I
+          }, w.push(d);
         });
-      return x;
+      return w;
     }
   };
-  function c(h, w) {
-    return !(h.subject.termType === w.subject.termType && h.object.termType === w.object.termType) || !(h.subject.value === w.subject.value && h.predicate.value === w.predicate.value && h.object.value === w.object.value) ? !1 : h.object.termType !== r ? !0 : h.object.datatype.termType === w.object.datatype.termType && h.object.language === w.object.language && h.object.datatype.value === w.object.datatype.value;
+  function c(h, x) {
+    return !(h.subject.termType === x.subject.termType && h.object.termType === x.object.termType) || !(h.subject.value === x.subject.value && h.predicate.value === x.predicate.value && h.object.value === x.object.value) ? !1 : h.object.termType !== r ? !0 : h.object.datatype.termType === x.object.datatype.termType && h.object.language === x.object.language && h.object.datatype.value === x.object.datatype.value;
   }
-  const d = /["\\\n\r]/g;
-  function p(h) {
-    return h.replace(d, function(w) {
-      switch (w) {
+  const l = /["\\\n\r]/g;
+  function u(h) {
+    return h.replace(l, function(x) {
+      switch (x) {
         case '"':
           return '\\"';
         case "\\":
@@ -17033,9 +17160,9 @@ function ya() {
   }
   const y = /(?:\\([tbnrf"'\\]))|(?:\\u([0-9A-Fa-f]{4}))|(?:\\U([0-9A-Fa-f]{8}))/g;
   function f(h) {
-    return h.replace(y, function(w, x, v, A) {
-      if (x)
-        switch (x) {
+    return h.replace(y, function(x, w, v, I) {
+      if (w)
+        switch (w) {
           case "t":
             return "	";
           case "b":
@@ -17056,21 +17183,21 @@ function ya() {
         }
       if (v)
         return String.fromCharCode(parseInt(v, 16));
-      if (A)
+      if (I)
         throw new Error("Unsupported U escape");
     });
   }
-  return Wr;
+  return Xr;
 }
 /*!
  * Copyright (c) 2016-2022 Digital Bazaar, Inc. All rights reserved.
  */
-var Xr, kc;
-function cl() {
-  if (kc) return Xr;
-  kc = 1;
-  const e = ma(), t = hr(), n = ol(), i = ya();
-  Xr = class {
+var Yr, Oc;
+function ll() {
+  if (Oc) return Yr;
+  Oc = 1;
+  const e = ga(), t = mr(), n = dl(), i = va();
+  Yr = class {
     constructor({
       createMessageDigest: s = () => new t("sha256"),
       canonicalIdMap: a = /* @__PURE__ */ new Map(),
@@ -17084,52 +17211,52 @@ function cl() {
       for (const h of s)
         this._addBlankNodeQuadInfo({ quad: h, component: h.subject }), this._addBlankNodeQuadInfo({ quad: h, component: h.object }), this._addBlankNodeQuadInfo({ quad: h, component: h.graph });
       const a = /* @__PURE__ */ new Map(), c = [...this.blankNodeInfo.keys()];
-      let d = 0;
+      let l = 0;
       for (const h of c)
-        ++d % 100 === 0 && await this._yield(), await this._hashAndTrackBlankNode({ id: h, hashToBlankNodes: a });
-      const p = [...a.keys()].sort(), y = [];
-      for (const h of p) {
-        const w = a.get(h);
-        if (w.length > 1) {
-          y.push(w);
+        ++l % 100 === 0 && await this._yield(), await this._hashAndTrackBlankNode({ id: h, hashToBlankNodes: a });
+      const u = [...a.keys()].sort(), y = [];
+      for (const h of u) {
+        const x = a.get(h);
+        if (x.length > 1) {
+          y.push(x);
           continue;
         }
-        const x = w[0];
-        this.canonicalIssuer.getId(x);
+        const w = x[0];
+        this.canonicalIssuer.getId(w);
       }
       for (const h of y) {
-        const w = [];
-        for (const x of h) {
-          if (this.canonicalIssuer.hasId(x))
+        const x = [];
+        for (const w of h) {
+          if (this.canonicalIssuer.hasId(w))
             continue;
           const v = new e("_:b");
-          v.getId(x);
-          const A = await this.hashNDegreeQuads(x, v);
-          w.push(A);
+          v.getId(w);
+          const I = await this.hashNDegreeQuads(w, v);
+          x.push(I);
         }
-        w.sort(o);
-        for (const x of w) {
-          const v = x.issuer.getOldIds();
-          for (const A of v)
-            this.canonicalIssuer.getId(A);
+        x.sort(o);
+        for (const w of x) {
+          const v = w.issuer.getOldIds();
+          for (const I of v)
+            this.canonicalIssuer.getId(I);
         }
       }
       const f = [];
       for (const h of this.quads) {
-        const w = i.serializeQuadComponents(
+        const x = i.serializeQuadComponents(
           this._componentWithCanonicalId(h.subject),
           h.predicate,
           this._componentWithCanonicalId(h.object),
           this._componentWithCanonicalId(h.graph)
         );
-        f.push(w);
+        f.push(x);
       }
       return f.sort(), f.join("");
     }
     // 4.6) Hash First Degree Quads
     async hashFirstDegreeQuads(s) {
-      const a = [], c = this.blankNodeInfo.get(s), d = c.quads;
-      for (const y of d) {
+      const a = [], c = this.blankNodeInfo.get(s), l = c.quads;
+      for (const y of l) {
         const f = {
           subject: null,
           predicate: y.predicate,
@@ -17151,17 +17278,17 @@ function cl() {
         ), a.push(i.serializeQuad(f));
       }
       a.sort();
-      const p = this.createMessageDigest();
+      const u = this.createMessageDigest();
       for (const y of a)
-        p.update(y);
-      return c.hash = await p.digest(), c.hash;
+        u.update(y);
+      return c.hash = await u.digest(), c.hash;
     }
     // 4.7) Hash Related Blank Node
-    async hashRelatedBlankNode(s, a, c, d) {
-      let p;
-      this.canonicalIssuer.hasId(s) ? p = this.canonicalIssuer.getId(s) : c.hasId(s) ? p = c.getId(s) : p = this.blankNodeInfo.get(s).hash;
+    async hashRelatedBlankNode(s, a, c, l) {
+      let u;
+      this.canonicalIssuer.hasId(s) ? u = this.canonicalIssuer.getId(s) : c.hasId(s) ? u = c.getId(s) : u = this.blankNodeInfo.get(s).hash;
       const y = this.createMessageDigest();
-      return y.update(d), d !== "g" && y.update(this.getRelatedPredicate(a)), y.update(p), y.digest();
+      return y.update(l), l !== "g" && y.update(this.getRelatedPredicate(a)), y.update(u), y.digest();
     }
     // 4.8) Hash N-Degree Quads
     async hashNDegreeQuads(s, a) {
@@ -17171,37 +17298,37 @@ function cl() {
           `Maximum deep iterations (${this.maxDeepIterations}) exceeded.`
         );
       this.deepIterations.set(s, c + 1);
-      const d = this.createMessageDigest(), p = await this.createHashToRelated(s, a), y = [...p.keys()].sort();
+      const l = this.createMessageDigest(), u = await this.createHashToRelated(s, a), y = [...u.keys()].sort();
       for (const f of y) {
-        d.update(f);
-        let h = "", w;
-        const x = new n(p.get(f));
+        l.update(f);
+        let h = "", x;
+        const w = new n(u.get(f));
         let v = 0;
-        for (; x.hasNext(); ) {
-          const A = x.next();
+        for (; w.hasNext(); ) {
+          const I = w.next();
           ++v % 3 === 0 && await this._yield();
           let g = a.clone(), m = "";
-          const l = [];
-          let u = !1;
-          for (const b of A)
-            if (this.canonicalIssuer.hasId(b) ? m += this.canonicalIssuer.getId(b) : (g.hasId(b) || l.push(b), m += g.getId(b)), h.length !== 0 && m > h) {
-              u = !0;
+          const d = [];
+          let p = !1;
+          for (const b of I)
+            if (this.canonicalIssuer.hasId(b) ? m += this.canonicalIssuer.getId(b) : (g.hasId(b) || d.push(b), m += g.getId(b)), h.length !== 0 && m > h) {
+              p = !0;
               break;
             }
-          if (!u) {
-            for (const b of l) {
+          if (!p) {
+            for (const b of d) {
               const S = await this.hashNDegreeQuads(b, g);
               if (m += g.getId(b), m += `<${S.hash}>`, g = S.issuer, h.length !== 0 && m > h) {
-                u = !0;
+                p = !0;
                 break;
               }
             }
-            u || (h.length === 0 || m < h) && (h = m, w = g);
+            p || (h.length === 0 || m < h) && (h = m, x = g);
           }
         }
-        d.update(h), a = w;
+        l.update(h), a = x;
       }
-      return { hash: await d.digest(), issuer: a };
+      return { hash: await l.digest(), issuer: a };
     }
     // helper for modifying component during Hash First Degree Quads
     modifyFirstDegreeComponent(s, a) {
@@ -17216,10 +17343,10 @@ function cl() {
     }
     // helper for creating hash to related blank nodes map
     async createHashToRelated(s, a) {
-      const c = /* @__PURE__ */ new Map(), d = this.blankNodeInfo.get(s).quads;
-      let p = 0;
-      for (const y of d)
-        ++p % 100 === 0 && await this._yield(), await Promise.all([
+      const c = /* @__PURE__ */ new Map(), l = this.blankNodeInfo.get(s).quads;
+      let u = 0;
+      for (const y of l)
+        ++u % 100 === 0 && await this._yield(), await Promise.all([
           this._addRelatedBlankNodeHash({
             quad: y,
             component: y.subject,
@@ -17248,25 +17375,25 @@ function cl() {
       return c;
     }
     async _hashAndTrackBlankNode({ id: s, hashToBlankNodes: a }) {
-      const c = await this.hashFirstDegreeQuads(s), d = a.get(c);
-      d ? d.push(s) : a.set(c, [s]);
+      const c = await this.hashFirstDegreeQuads(s), l = a.get(c);
+      l ? l.push(s) : a.set(c, [s]);
     }
     _addBlankNodeQuadInfo({ quad: s, component: a }) {
       if (a.termType !== "BlankNode")
         return;
-      const c = a.value, d = this.blankNodeInfo.get(c);
-      d ? d.quads.add(s) : this.blankNodeInfo.set(c, { quads: /* @__PURE__ */ new Set([s]), hash: null });
+      const c = a.value, l = this.blankNodeInfo.get(c);
+      l ? l.quads.add(s) : this.blankNodeInfo.set(c, { quads: /* @__PURE__ */ new Set([s]), hash: null });
     }
-    async _addRelatedBlankNodeHash({ quad: s, component: a, position: c, id: d, issuer: p, hashToRelated: y }) {
-      if (!(a.termType === "BlankNode" && a.value !== d))
+    async _addRelatedBlankNodeHash({ quad: s, component: a, position: c, id: l, issuer: u, hashToRelated: y }) {
+      if (!(a.termType === "BlankNode" && a.value !== l))
         return;
       const f = a.value, h = await this.hashRelatedBlankNode(
         f,
         s,
-        p,
+        u,
         c
-      ), w = y.get(h);
-      w ? w.push(f) : y.set(h, [f]);
+      ), x = y.get(h);
+      x ? x.push(f) : y.set(h, [f]);
     }
     // canonical ids for 7.1
     _componentWithCanonicalId(s) {
@@ -17282,17 +17409,17 @@ function cl() {
   function o(r, s) {
     return r.hash < s.hash ? -1 : r.hash > s.hash ? 1 : 0;
   }
-  return Xr;
+  return Yr;
 }
 /*!
  * Copyright (c) 2016-2022 Digital Bazaar, Inc. All rights reserved.
  */
-var Yr, Mc;
-function $h() {
-  if (Mc) return Yr;
-  Mc = 1;
-  const e = hr(), t = cl();
-  return Yr = class extends t {
+var es, Lc;
+function Ph() {
+  if (Lc) return es;
+  Lc = 1;
+  const e = mr(), t = ll();
+  return es = class extends t {
     constructor() {
       super(), this.name = "URGNA2012", this.createMessageDigest = () => new e("sha1");
     }
@@ -17315,35 +17442,35 @@ function $h() {
       const r = /* @__PURE__ */ new Map(), s = this.blankNodeInfo.get(i).quads;
       let a = 0;
       for (const c of s) {
-        let d, p;
+        let l, u;
         if (c.subject.termType === "BlankNode" && c.subject.value !== i)
-          p = c.subject.value, d = "p";
+          u = c.subject.value, l = "p";
         else if (c.object.termType === "BlankNode" && c.object.value !== i)
-          p = c.object.value, d = "r";
+          u = c.object.value, l = "r";
         else
           continue;
         ++a % 100 === 0 && await this._yield();
         const y = await this.hashRelatedBlankNode(
-          p,
+          u,
           c,
           o,
-          d
+          l
         ), f = r.get(y);
-        f ? f.push(p) : r.set(y, [p]);
+        f ? f.push(u) : r.set(y, [u]);
       }
       return r;
     }
-  }, Yr;
+  }, es;
 }
 /*!
  * Copyright (c) 2016-2022 Digital Bazaar, Inc. All rights reserved.
  */
-var es, Oc;
-function dl() {
-  if (Oc) return es;
-  Oc = 1;
-  const e = ma(), t = hr(), n = ol(), i = ya();
-  es = class {
+var ts, Nc;
+function ul() {
+  if (Nc) return ts;
+  Nc = 1;
+  const e = ga(), t = mr(), n = dl(), i = va();
+  ts = class {
     constructor({
       createMessageDigest: s = () => new t("sha256"),
       canonicalIdMap: a = /* @__PURE__ */ new Map(),
@@ -17359,30 +17486,30 @@ function dl() {
       const a = /* @__PURE__ */ new Map(), c = [...this.blankNodeInfo.keys()];
       for (const f of c)
         this._hashAndTrackBlankNode({ id: f, hashToBlankNodes: a });
-      const d = [...a.keys()].sort(), p = [];
-      for (const f of d) {
+      const l = [...a.keys()].sort(), u = [];
+      for (const f of l) {
         const h = a.get(f);
         if (h.length > 1) {
-          p.push(h);
+          u.push(h);
           continue;
         }
-        const w = h[0];
-        this.canonicalIssuer.getId(w);
+        const x = h[0];
+        this.canonicalIssuer.getId(x);
       }
-      for (const f of p) {
+      for (const f of u) {
         const h = [];
-        for (const w of f) {
-          if (this.canonicalIssuer.hasId(w))
+        for (const x of f) {
+          if (this.canonicalIssuer.hasId(x))
             continue;
-          const x = new e("_:b");
-          x.getId(w);
-          const v = this.hashNDegreeQuads(w, x);
+          const w = new e("_:b");
+          w.getId(x);
+          const v = this.hashNDegreeQuads(x, w);
           h.push(v);
         }
         h.sort(o);
-        for (const w of h) {
-          const x = w.issuer.getOldIds();
-          for (const v of x)
+        for (const x of h) {
+          const w = x.issuer.getOldIds();
+          for (const v of w)
             this.canonicalIssuer.getId(v);
         }
       }
@@ -17400,8 +17527,8 @@ function dl() {
     }
     // 4.6) Hash First Degree Quads
     hashFirstDegreeQuads(s) {
-      const a = [], c = this.blankNodeInfo.get(s), d = c.quads;
-      for (const y of d) {
+      const a = [], c = this.blankNodeInfo.get(s), l = c.quads;
+      for (const y of l) {
         const f = {
           subject: null,
           predicate: y.predicate,
@@ -17423,17 +17550,17 @@ function dl() {
         ), a.push(i.serializeQuad(f));
       }
       a.sort();
-      const p = this.createMessageDigest();
+      const u = this.createMessageDigest();
       for (const y of a)
-        p.update(y);
-      return c.hash = p.digest(), c.hash;
+        u.update(y);
+      return c.hash = u.digest(), c.hash;
     }
     // 4.7) Hash Related Blank Node
-    hashRelatedBlankNode(s, a, c, d) {
-      let p;
-      this.canonicalIssuer.hasId(s) ? p = this.canonicalIssuer.getId(s) : c.hasId(s) ? p = c.getId(s) : p = this.blankNodeInfo.get(s).hash;
+    hashRelatedBlankNode(s, a, c, l) {
+      let u;
+      this.canonicalIssuer.hasId(s) ? u = this.canonicalIssuer.getId(s) : c.hasId(s) ? u = c.getId(s) : u = this.blankNodeInfo.get(s).hash;
       const y = this.createMessageDigest();
-      return y.update(d), d !== "g" && y.update(this.getRelatedPredicate(a)), y.update(p), y.digest();
+      return y.update(l), l !== "g" && y.update(this.getRelatedPredicate(a)), y.update(u), y.digest();
     }
     // 4.8) Hash N-Degree Quads
     hashNDegreeQuads(s, a) {
@@ -17443,35 +17570,35 @@ function dl() {
           `Maximum deep iterations (${this.maxDeepIterations}) exceeded.`
         );
       this.deepIterations.set(s, c + 1);
-      const d = this.createMessageDigest(), p = this.createHashToRelated(s, a), y = [...p.keys()].sort();
+      const l = this.createMessageDigest(), u = this.createHashToRelated(s, a), y = [...u.keys()].sort();
       for (const f of y) {
-        d.update(f);
-        let h = "", w;
-        const x = new n(p.get(f));
-        for (; x.hasNext(); ) {
-          const v = x.next();
-          let A = a.clone(), g = "";
+        l.update(f);
+        let h = "", x;
+        const w = new n(u.get(f));
+        for (; w.hasNext(); ) {
+          const v = w.next();
+          let I = a.clone(), g = "";
           const m = [];
-          let l = !1;
-          for (const u of v)
-            if (this.canonicalIssuer.hasId(u) ? g += this.canonicalIssuer.getId(u) : (A.hasId(u) || m.push(u), g += A.getId(u)), h.length !== 0 && g > h) {
-              l = !0;
+          let d = !1;
+          for (const p of v)
+            if (this.canonicalIssuer.hasId(p) ? g += this.canonicalIssuer.getId(p) : (I.hasId(p) || m.push(p), g += I.getId(p)), h.length !== 0 && g > h) {
+              d = !0;
               break;
             }
-          if (!l) {
-            for (const u of m) {
-              const b = this.hashNDegreeQuads(u, A);
-              if (g += A.getId(u), g += `<${b.hash}>`, A = b.issuer, h.length !== 0 && g > h) {
-                l = !0;
+          if (!d) {
+            for (const p of m) {
+              const b = this.hashNDegreeQuads(p, I);
+              if (g += I.getId(p), g += `<${b.hash}>`, I = b.issuer, h.length !== 0 && g > h) {
+                d = !0;
                 break;
               }
             }
-            l || (h.length === 0 || g < h) && (h = g, w = A);
+            d || (h.length === 0 || g < h) && (h = g, x = I);
           }
         }
-        d.update(h), a = w;
+        l.update(h), a = x;
       }
-      return { hash: d.digest(), issuer: a };
+      return { hash: l.digest(), issuer: a };
     }
     // helper for modifying component during Hash First Degree Quads
     modifyFirstDegreeComponent(s, a) {
@@ -17486,25 +17613,25 @@ function dl() {
     }
     // helper for creating hash to related blank nodes map
     createHashToRelated(s, a) {
-      const c = /* @__PURE__ */ new Map(), d = this.blankNodeInfo.get(s).quads;
-      for (const p of d)
+      const c = /* @__PURE__ */ new Map(), l = this.blankNodeInfo.get(s).quads;
+      for (const u of l)
         this._addRelatedBlankNodeHash({
-          quad: p,
-          component: p.subject,
+          quad: u,
+          component: u.subject,
           position: "s",
           id: s,
           issuer: a,
           hashToRelated: c
         }), this._addRelatedBlankNodeHash({
-          quad: p,
-          component: p.object,
+          quad: u,
+          component: u.object,
           position: "o",
           id: s,
           issuer: a,
           hashToRelated: c
         }), this._addRelatedBlankNodeHash({
-          quad: p,
-          component: p.graph,
+          quad: u,
+          component: u.graph,
           position: "g",
           id: s,
           issuer: a,
@@ -17513,20 +17640,20 @@ function dl() {
       return c;
     }
     _hashAndTrackBlankNode({ id: s, hashToBlankNodes: a }) {
-      const c = this.hashFirstDegreeQuads(s), d = a.get(c);
-      d ? d.push(s) : a.set(c, [s]);
+      const c = this.hashFirstDegreeQuads(s), l = a.get(c);
+      l ? l.push(s) : a.set(c, [s]);
     }
     _addBlankNodeQuadInfo({ quad: s, component: a }) {
       if (a.termType !== "BlankNode")
         return;
-      const c = a.value, d = this.blankNodeInfo.get(c);
-      d ? d.quads.add(s) : this.blankNodeInfo.set(c, { quads: /* @__PURE__ */ new Set([s]), hash: null });
+      const c = a.value, l = this.blankNodeInfo.get(c);
+      l ? l.quads.add(s) : this.blankNodeInfo.set(c, { quads: /* @__PURE__ */ new Set([s]), hash: null });
     }
-    _addRelatedBlankNodeHash({ quad: s, component: a, position: c, id: d, issuer: p, hashToRelated: y }) {
-      if (!(a.termType === "BlankNode" && a.value !== d))
+    _addRelatedBlankNodeHash({ quad: s, component: a, position: c, id: l, issuer: u, hashToRelated: y }) {
+      if (!(a.termType === "BlankNode" && a.value !== l))
         return;
-      const f = a.value, h = this.hashRelatedBlankNode(f, s, p, c), w = y.get(h);
-      w ? w.push(f) : y.set(h, [f]);
+      const f = a.value, h = this.hashRelatedBlankNode(f, s, u, c), x = y.get(h);
+      x ? x.push(f) : y.set(h, [f]);
     }
     // canonical ids for 7.1
     _componentWithCanonicalId({ component: s }) {
@@ -17539,17 +17666,17 @@ function dl() {
   function o(r, s) {
     return r.hash < s.hash ? -1 : r.hash > s.hash ? 1 : 0;
   }
-  return es;
+  return ts;
 }
 /*!
  * Copyright (c) 2016-2021 Digital Bazaar, Inc. All rights reserved.
  */
-var ts, Lc;
-function Ph() {
-  if (Lc) return ts;
-  Lc = 1;
-  const e = hr(), t = dl();
-  return ts = class extends t {
+var ns, Dc;
+function _h() {
+  if (Dc) return ns;
+  Dc = 1;
+  const e = mr(), t = ul();
+  return ns = class extends t {
     constructor() {
       super(), this.name = "URGNA2012", this.createMessageDigest = () => new e("sha1");
     }
@@ -17571,40 +17698,40 @@ function Ph() {
     createHashToRelated(i, o) {
       const r = /* @__PURE__ */ new Map(), s = this.blankNodeInfo.get(i).quads;
       for (const a of s) {
-        let c, d;
+        let c, l;
         if (a.subject.termType === "BlankNode" && a.subject.value !== i)
-          d = a.subject.value, c = "p";
+          l = a.subject.value, c = "p";
         else if (a.object.termType === "BlankNode" && a.object.value !== i)
-          d = a.object.value, c = "r";
+          l = a.object.value, c = "r";
         else
           continue;
-        const p = this.hashRelatedBlankNode(d, a, o, c), y = r.get(p);
-        y ? y.push(d) : r.set(p, [d]);
+        const u = this.hashRelatedBlankNode(l, a, o, c), y = r.get(u);
+        y ? y.push(l) : r.set(u, [l]);
       }
       return r;
     }
-  }, ts;
+  }, ns;
 }
-const _h = {}, Th = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Th = {}, Ch = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: _h
-}, Symbol.toStringTag, { value: "Module" })), Ch = /* @__PURE__ */ _u(Th);
-var Nc;
-function Eh() {
-  return Nc || (Nc = 1, (function(e) {
-    const t = cl(), n = $h(), i = dl(), o = Ph();
+  default: Th
+}, Symbol.toStringTag, { value: "Module" })), Eh = /* @__PURE__ */ Tu(Ch);
+var zc;
+function kh() {
+  return zc || (zc = 1, (function(e) {
+    const t = ll(), n = Ph(), i = ul(), o = _h();
     let r;
     try {
-      r = Ch;
+      r = Eh;
     } catch {
     }
     function s(a) {
       return Array.isArray(a) ? a : e.NQuads.legacyDatasetToQuads(a);
     }
-    e.NQuads = ya(), e.IdentifierIssuer = ma(), e._rdfCanonizeNative = function(a) {
+    e.NQuads = va(), e.IdentifierIssuer = ga(), e._rdfCanonizeNative = function(a) {
       return a && (r = a), r;
     }, e.canonize = async function(a, c) {
-      const d = s(a);
+      const l = s(a);
       if (c.useNative) {
         if (!r)
           throw new Error("rdf-canonize-native not available");
@@ -17612,22 +17739,22 @@ function Eh() {
           throw new Error(
             '"createMessageDigest" cannot be used with "useNative".'
           );
-        return new Promise((p, y) => r.canonize(d, c, (f, h) => f ? y(f) : p(h)));
+        return new Promise((u, y) => r.canonize(l, c, (f, h) => f ? y(f) : u(h)));
       }
       if (c.algorithm === "URDNA2015")
-        return new t(c).main(d);
+        return new t(c).main(l);
       if (c.algorithm === "URGNA2012") {
         if (c.createMessageDigest)
           throw new Error(
             '"createMessageDigest" cannot be used with "URGNA2012".'
           );
-        return new n(c).main(d);
+        return new n(c).main(l);
       }
       throw "algorithm" in c ? new Error(
         "Invalid RDF Dataset Canonicalization algorithm: " + c.algorithm
       ) : new Error("No RDF Dataset Canonicalization algorithm specified.");
     }, e._canonizeSync = function(a, c) {
-      const d = s(a);
+      const l = s(a);
       if (c.useNative) {
         if (!r)
           throw new Error("rdf-canonize-native not available");
@@ -17635,40 +17762,40 @@ function Eh() {
           throw new Error(
             '"createMessageDigest" cannot be used with "useNative".'
           );
-        return r.canonizeSync(d, c);
+        return r.canonizeSync(l, c);
       }
       if (c.algorithm === "URDNA2015")
-        return new i(c).main(d);
+        return new i(c).main(l);
       if (c.algorithm === "URGNA2012") {
         if (c.createMessageDigest)
           throw new Error(
             '"createMessageDigest" cannot be used with "URGNA2012".'
           );
-        return new o(c).main(d);
+        return new o(c).main(l);
       }
       throw "algorithm" in c ? new Error(
         "Invalid RDF Dataset Canonicalization algorithm: " + c.algorithm
       ) : new Error("No RDF Dataset Canonicalization algorithm specified.");
     };
-  })(Zr)), Zr;
+  })(Hr)), Hr;
 }
-var ns, Dc;
-function ga() {
-  return Dc || (Dc = 1, ns = Eh()), ns;
-}
-var is, zc;
-function Ne() {
-  if (zc) return is;
-  zc = 1;
-  const e = {};
-  return is = e, e.isArray = Array.isArray, e.isBoolean = (t) => typeof t == "boolean" || Object.prototype.toString.call(t) === "[object Boolean]", e.isDouble = (t) => e.isNumber(t) && (String(t).indexOf(".") !== -1 || Math.abs(t) >= 1e21), e.isEmptyObject = (t) => e.isObject(t) && Object.keys(t).length === 0, e.isNumber = (t) => typeof t == "number" || Object.prototype.toString.call(t) === "[object Number]", e.isNumeric = (t) => !isNaN(parseFloat(t)) && isFinite(t), e.isObject = (t) => Object.prototype.toString.call(t) === "[object Object]", e.isString = (t) => typeof t == "string" || Object.prototype.toString.call(t) === "[object String]", e.isUndefined = (t) => typeof t > "u", is;
+var is, Uc;
+function ba() {
+  return Uc || (Uc = 1, is = kh()), is;
 }
 var rs, Vc;
-function It() {
+function Ne() {
   if (Vc) return rs;
   Vc = 1;
+  const e = {};
+  return rs = e, e.isArray = Array.isArray, e.isBoolean = (t) => typeof t == "boolean" || Object.prototype.toString.call(t) === "[object Boolean]", e.isDouble = (t) => e.isNumber(t) && (String(t).indexOf(".") !== -1 || Math.abs(t) >= 1e21), e.isEmptyObject = (t) => e.isObject(t) && Object.keys(t).length === 0, e.isNumber = (t) => typeof t == "number" || Object.prototype.toString.call(t) === "[object Number]", e.isNumeric = (t) => !isNaN(parseFloat(t)) && isFinite(t), e.isObject = (t) => Object.prototype.toString.call(t) === "[object Object]", e.isString = (t) => typeof t == "string" || Object.prototype.toString.call(t) === "[object String]", e.isUndefined = (t) => typeof t > "u", rs;
+}
+var ss, Gc;
+function qt() {
+  if (Gc) return ss;
+  Gc = 1;
   const e = Ne(), t = {};
-  return rs = t, t.isSubject = (n) => e.isObject(n) && !("@value" in n || "@set" in n || "@list" in n) ? Object.keys(n).length > 1 || !("@id" in n) : !1, t.isSubjectReference = (n) => (
+  return ss = t, t.isSubject = (n) => e.isObject(n) && !("@value" in n || "@set" in n || "@list" in n) ? Object.keys(n).length > 1 || !("@id" in n) : !1, t.isSubjectReference = (n) => (
     // Note: A value is a subject reference if all of these hold true:
     // 1. It is an Object.
     // 2. It has a single key: @id.
@@ -17692,11 +17819,11 @@ function It() {
       return Object.keys(n).length === 0 || !("@value" in n || "@set" in n || "@list" in n);
     }
     return !1;
-  }, rs;
+  }, ss;
 }
-var ss, Uc;
+var as, Fc;
 function He() {
-  return Uc || (Uc = 1, ss = class extends Error {
+  return Fc || (Fc = 1, as = class extends Error {
     /**
      * Creates a JSON-LD Error.
      *
@@ -17707,72 +17834,72 @@ function He() {
     constructor(t = "An unspecified JSON-LD error occurred.", n = "jsonld.Error", i = {}) {
       super(t), this.name = n, this.message = t, this.details = i;
     }
-  }), ss;
+  }), as;
 }
-var as, Gc;
+var os, Bc;
 function Ze() {
-  if (Gc) return as;
-  Gc = 1;
-  const e = It(), t = Ne(), n = ga().IdentifierIssuer, i = He(), o = /^[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*$/, r = /(?:<[^>]*?>|"[^"]*?"|[^,])+/g, s = /\s*<([^>]*?)>\s*(?:;\s*(.*))?/, a = /(.*?)=(?:(?:"([^"]*?)")|([^"]*?))\s*(?:(?:;\s*)|$)/g, c = /^@[a-zA-Z]+$/, d = {
+  if (Bc) return os;
+  Bc = 1;
+  const e = qt(), t = Ne(), n = ba().IdentifierIssuer, i = He(), o = /^[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*$/, r = /(?:<[^>]*?>|"[^"]*?"|[^,])+/g, s = /\s*<([^>]*?)>\s*(?:;\s*(.*))?/, a = /(.*?)=(?:(?:"([^"]*?)")|([^"]*?))\s*(?:(?:;\s*)|$)/g, c = /^@[a-zA-Z]+$/, l = {
     headers: {
       accept: "application/ld+json, application/json"
     }
-  }, p = {};
-  as = p, p.IdentifierIssuer = n, p.REGEX_BCP47 = o, p.REGEX_KEYWORD = c, p.clone = function(f) {
+  }, u = {};
+  os = u, u.IdentifierIssuer = n, u.REGEX_BCP47 = o, u.REGEX_KEYWORD = c, u.clone = function(f) {
     if (f && typeof f == "object") {
       let h;
       if (t.isArray(f)) {
         h = [];
-        for (let w = 0; w < f.length; ++w)
-          h[w] = p.clone(f[w]);
+        for (let x = 0; x < f.length; ++x)
+          h[x] = u.clone(f[x]);
       } else if (f instanceof Map) {
         h = /* @__PURE__ */ new Map();
-        for (const [w, x] of f)
-          h.set(w, p.clone(x));
+        for (const [x, w] of f)
+          h.set(x, u.clone(w));
       } else if (f instanceof Set) {
         h = /* @__PURE__ */ new Set();
-        for (const w of f)
-          h.add(p.clone(w));
+        for (const x of f)
+          h.add(u.clone(x));
       } else if (t.isObject(f)) {
         h = {};
-        for (const w in f)
-          h[w] = p.clone(f[w]);
+        for (const x in f)
+          h[x] = u.clone(f[x]);
       } else
         h = f.toString();
       return h;
     }
     return f;
-  }, p.asArray = function(f) {
+  }, u.asArray = function(f) {
     return Array.isArray(f) ? f : [f];
-  }, p.buildHeaders = (f = {}) => {
+  }, u.buildHeaders = (f = {}) => {
     if (Object.keys(f).some(
-      (w) => w.toLowerCase() === "accept"
+      (x) => x.toLowerCase() === "accept"
     ))
       throw new RangeError(
-        'Accept header may not be specified; only "' + d.headers.accept + '" is supported.'
+        'Accept header may not be specified; only "' + l.headers.accept + '" is supported.'
       );
-    return Object.assign({ Accept: d.headers.accept }, f);
-  }, p.parseLinkHeader = (f) => {
-    const h = {}, w = f.match(r);
-    for (let x = 0; x < w.length; ++x) {
-      let v = w[x].match(s);
+    return Object.assign({ Accept: l.headers.accept }, f);
+  }, u.parseLinkHeader = (f) => {
+    const h = {}, x = f.match(r);
+    for (let w = 0; w < x.length; ++w) {
+      let v = x[w].match(s);
       if (!v)
         continue;
-      const A = { target: v[1] }, g = v[2];
+      const I = { target: v[1] }, g = v[2];
       for (; v = a.exec(g); )
-        A[v[1]] = v[2] === void 0 ? v[3] : v[2];
-      const m = A.rel || "";
-      Array.isArray(h[m]) ? h[m].push(A) : h.hasOwnProperty(m) ? h[m] = [h[m], A] : h[m] = A;
+        I[v[1]] = v[2] === void 0 ? v[3] : v[2];
+      const m = I.rel || "";
+      Array.isArray(h[m]) ? h[m].push(I) : h.hasOwnProperty(m) ? h[m] = [h[m], I] : h[m] = I;
     }
     return h;
-  }, p.validateTypeValue = (f, h) => {
-    if (!t.isString(f) && !(t.isArray(f) && f.every((w) => t.isString(w)))) {
+  }, u.validateTypeValue = (f, h) => {
+    if (!t.isString(f) && !(t.isArray(f) && f.every((x) => t.isString(x)))) {
       if (h && t.isObject(f))
         switch (Object.keys(f).length) {
           case 0:
             return;
           case 1:
-            if ("@default" in f && p.asArray(f["@default"]).every((w) => t.isString(w)))
+            if ("@default" in f && u.asArray(f["@default"]).every((x) => t.isString(x)))
               return;
         }
       throw new i(
@@ -17781,74 +17908,74 @@ function Ze() {
         { code: "invalid type value", value: f }
       );
     }
-  }, p.hasProperty = (f, h) => {
+  }, u.hasProperty = (f, h) => {
     if (f.hasOwnProperty(h)) {
-      const w = f[h];
-      return !t.isArray(w) || w.length > 0;
+      const x = f[h];
+      return !t.isArray(x) || x.length > 0;
     }
     return !1;
-  }, p.hasValue = (f, h, w) => {
-    if (p.hasProperty(f, h)) {
-      let x = f[h];
-      const v = e.isList(x);
-      if (t.isArray(x) || v) {
-        v && (x = x["@list"]);
-        for (let A = 0; A < x.length; ++A)
-          if (p.compareValues(w, x[A]))
+  }, u.hasValue = (f, h, x) => {
+    if (u.hasProperty(f, h)) {
+      let w = f[h];
+      const v = e.isList(w);
+      if (t.isArray(w) || v) {
+        v && (w = w["@list"]);
+        for (let I = 0; I < w.length; ++I)
+          if (u.compareValues(x, w[I]))
             return !0;
-      } else if (!t.isArray(w))
-        return p.compareValues(w, x);
+      } else if (!t.isArray(x))
+        return u.compareValues(x, w);
     }
     return !1;
-  }, p.addValue = (f, h, w, x) => {
-    if (x = x || {}, "propertyIsArray" in x || (x.propertyIsArray = !1), "valueIsArray" in x || (x.valueIsArray = !1), "allowDuplicate" in x || (x.allowDuplicate = !0), "prependValue" in x || (x.prependValue = !1), x.valueIsArray)
-      f[h] = w;
-    else if (t.isArray(w)) {
-      w.length === 0 && x.propertyIsArray && !f.hasOwnProperty(h) && (f[h] = []), x.prependValue && (w = w.concat(f[h]), f[h] = []);
-      for (let v = 0; v < w.length; ++v)
-        p.addValue(f, h, w[v], x);
+  }, u.addValue = (f, h, x, w) => {
+    if (w = w || {}, "propertyIsArray" in w || (w.propertyIsArray = !1), "valueIsArray" in w || (w.valueIsArray = !1), "allowDuplicate" in w || (w.allowDuplicate = !0), "prependValue" in w || (w.prependValue = !1), w.valueIsArray)
+      f[h] = x;
+    else if (t.isArray(x)) {
+      x.length === 0 && w.propertyIsArray && !f.hasOwnProperty(h) && (f[h] = []), w.prependValue && (x = x.concat(f[h]), f[h] = []);
+      for (let v = 0; v < x.length; ++v)
+        u.addValue(f, h, x[v], w);
     } else if (f.hasOwnProperty(h)) {
-      const v = !x.allowDuplicate && p.hasValue(f, h, w);
-      !t.isArray(f[h]) && (!v || x.propertyIsArray) && (f[h] = [f[h]]), v || (x.prependValue ? f[h].unshift(w) : f[h].push(w));
+      const v = !w.allowDuplicate && u.hasValue(f, h, x);
+      !t.isArray(f[h]) && (!v || w.propertyIsArray) && (f[h] = [f[h]]), v || (w.prependValue ? f[h].unshift(x) : f[h].push(x));
     } else
-      f[h] = x.propertyIsArray ? [w] : w;
-  }, p.getValues = (f, h) => [].concat(f[h] || []), p.removeProperty = (f, h) => {
+      f[h] = w.propertyIsArray ? [x] : x;
+  }, u.getValues = (f, h) => [].concat(f[h] || []), u.removeProperty = (f, h) => {
     delete f[h];
-  }, p.removeValue = (f, h, w, x) => {
-    x = x || {}, "propertyIsArray" in x || (x.propertyIsArray = !1);
-    const v = p.getValues(f, h).filter(
-      (A) => !p.compareValues(A, w)
+  }, u.removeValue = (f, h, x, w) => {
+    w = w || {}, "propertyIsArray" in w || (w.propertyIsArray = !1);
+    const v = u.getValues(f, h).filter(
+      (I) => !u.compareValues(I, x)
     );
-    v.length === 0 ? p.removeProperty(f, h) : v.length === 1 && !x.propertyIsArray ? f[h] = v[0] : f[h] = v;
-  }, p.relabelBlankNodes = (f, h) => {
+    v.length === 0 ? u.removeProperty(f, h) : v.length === 1 && !w.propertyIsArray ? f[h] = v[0] : f[h] = v;
+  }, u.relabelBlankNodes = (f, h) => {
     h = h || {};
-    const w = h.issuer || new n("_:b");
-    return y(w, f);
-  }, p.compareValues = (f, h) => f === h || e.isValue(f) && e.isValue(h) && f["@value"] === h["@value"] && f["@type"] === h["@type"] && f["@language"] === h["@language"] && f["@index"] === h["@index"] ? !0 : t.isObject(f) && "@id" in f && t.isObject(h) && "@id" in h ? f["@id"] === h["@id"] : !1, p.compareShortestLeast = (f, h) => f.length < h.length ? -1 : h.length < f.length ? 1 : f === h ? 0 : f < h ? -1 : 1;
+    const x = h.issuer || new n("_:b");
+    return y(x, f);
+  }, u.compareValues = (f, h) => f === h || e.isValue(f) && e.isValue(h) && f["@value"] === h["@value"] && f["@type"] === h["@type"] && f["@language"] === h["@language"] && f["@index"] === h["@index"] ? !0 : t.isObject(f) && "@id" in f && t.isObject(h) && "@id" in h ? f["@id"] === h["@id"] : !1, u.compareShortestLeast = (f, h) => f.length < h.length ? -1 : h.length < f.length ? 1 : f === h ? 0 : f < h ? -1 : 1;
   function y(f, h) {
     if (t.isArray(h))
-      for (let w = 0; w < h.length; ++w)
-        h[w] = y(f, h[w]);
+      for (let x = 0; x < h.length; ++x)
+        h[x] = y(f, h[x]);
     else if (e.isList(h))
       h["@list"] = y(f, h["@list"]);
     else if (t.isObject(h)) {
       e.isBlankNode(h) && (h["@id"] = f.getId(h["@id"]));
-      const w = Object.keys(h).sort();
-      for (let x = 0; x < w.length; ++x) {
-        const v = w[x];
+      const x = Object.keys(h).sort();
+      for (let w = 0; w < x.length; ++w) {
+        const v = x[w];
         v !== "@id" && (h[v] = y(f, h[v]));
       }
     }
     return h;
   }
-  return as;
+  return os;
 }
-var os, Fc;
-function va() {
-  if (Fc) return os;
-  Fc = 1;
+var cs, Zc;
+function wa() {
+  if (Zc) return cs;
+  Zc = 1;
   const e = "http://www.w3.org/1999/02/22-rdf-syntax-ns#", t = "http://www.w3.org/2001/XMLSchema#";
-  return os = {
+  return cs = {
     // TODO: Deprecated and will be removed later. Use LINK_HEADER_CONTEXT.
     LINK_HEADER_REL: "http://www.w3.org/ns/json-ld#context",
     LINK_HEADER_CONTEXT: "http://www.w3.org/ns/json-ld#context",
@@ -17868,11 +17995,11 @@ function va() {
     XSD_DOUBLE: t + "double",
     XSD_INTEGER: t + "integer",
     XSD_STRING: t + "string"
-  }, os;
+  }, cs;
 }
-var cs, Bc;
-function ll() {
-  return Bc || (Bc = 1, cs = class {
+var ds, Hc;
+function pl() {
+  return Hc || (Hc = 1, ds = class {
     /**
      * Creates a simple queue for requesting documents.
      */
@@ -17896,14 +18023,14 @@ function ll() {
         delete this._requests[t];
       }
     }
-  }), cs;
+  }), ds;
 }
-var ds, Zc;
-function Lt() {
-  if (Zc) return ds;
-  Zc = 1;
+var ls, Jc;
+function Dt() {
+  if (Jc) return ls;
+  Jc = 1;
   const e = Ne(), t = {};
-  ds = t, t.parsers = {
+  ls = t, t.parsers = {
     simple: {
       // RFC 3986 basic parts
       keys: [
@@ -17973,16 +18100,16 @@ function Lt() {
     let r = "";
     if (i.href !== "" ? r += (i.protocol || "") + "//" + (i.authority || "") : o.indexOf("//") && (r += "//"), o.indexOf(r) !== 0)
       return o;
-    const s = t.parse(o.substr(r.length)), a = i.normalizedPath.split("/"), c = s.normalizedPath.split("/"), d = s.fragment || s.query ? 0 : 1;
-    for (; a.length > 0 && c.length > d && a[0] === c[0]; )
+    const s = t.parse(o.substr(r.length)), a = i.normalizedPath.split("/"), c = s.normalizedPath.split("/"), l = s.fragment || s.query ? 0 : 1;
+    for (; a.length > 0 && c.length > l && a[0] === c[0]; )
       a.shift(), c.shift();
-    let p = "";
+    let u = "";
     if (a.length > 0) {
       a.pop();
       for (let y = 0; y < a.length; ++y)
-        p += "../";
+        u += "../";
     }
-    return p += c.join("/"), s.query !== null && (p += "?" + s.query), s.fragment !== null && (p += "#" + s.fragment), p === "" && (p = "./"), p;
+    return u += c.join("/"), s.query !== null && (u += "?" + s.query), s.fragment !== null && (u += "#" + s.fragment), u === "" && (u = "./"), u;
   }, t.removeDotSegments = (i) => {
     if (i.length === 0)
       return "";
@@ -18002,19 +18129,19 @@ function Lt() {
     return i[0] === "/" && r.length > 0 && r[0] !== "" && r.unshift(""), r.length === 1 && r[0] === "" ? "/" : r.join("/");
   };
   const n = /^([A-Za-z][A-Za-z0-9+-.]*|_):[^\s]*$/;
-  return t.isAbsolute = (i) => e.isString(i) && n.test(i), t.isRelative = (i) => e.isString(i), ds;
+  return t.isAbsolute = (i) => e.isString(i) && n.test(i), t.isRelative = (i) => e.isString(i), ls;
 }
-var ls, Hc;
-function kh() {
-  if (Hc) return ls;
-  Hc = 1;
-  const { parseLinkHeader: e, buildHeaders: t } = Ze(), { LINK_HEADER_CONTEXT: n } = va(), i = He(), o = ll(), { prependBase: r } = Lt(), s = /(^|(\r\n))link:/i;
-  ls = ({
+var us, Kc;
+function Mh() {
+  if (Kc) return us;
+  Kc = 1;
+  const { parseLinkHeader: e, buildHeaders: t } = Ze(), { LINK_HEADER_CONTEXT: n } = wa(), i = He(), o = pl(), { prependBase: r } = Dt(), s = /(^|(\r\n))link:/i;
+  us = ({
     secure: c,
-    headers: d = {},
-    xhr: p
+    headers: l = {},
+    xhr: u
   } = { headers: {} }) => {
-    return d = t(d), new o().wrapLoader(f);
+    return l = t(l), new o().wrapLoader(f);
     async function f(h) {
       if (h.indexOf("http:") !== 0 && h.indexOf("https:") !== 0)
         throw new i(
@@ -18028,9 +18155,9 @@ function kh() {
           "jsonld.InvalidUrl",
           { code: "loading document failed", url: h }
         );
-      let w;
+      let x;
       try {
-        w = await a(p, h, d);
+        x = await a(u, h, l);
       } catch (m) {
         throw new i(
           "URL could not be dereferenced, an error occurred.",
@@ -18038,50 +18165,50 @@ function kh() {
           { code: "loading document failed", url: h, cause: m }
         );
       }
-      if (w.status >= 400)
+      if (x.status >= 400)
         throw new i(
-          "URL could not be dereferenced: " + w.statusText,
+          "URL could not be dereferenced: " + x.statusText,
           "jsonld.LoadDocumentError",
           {
             code: "loading document failed",
             url: h,
-            httpStatusCode: w.status
+            httpStatusCode: x.status
           }
         );
-      let x = { contextUrl: null, documentUrl: h, document: w.response }, v = null;
-      const A = w.getResponseHeader("Content-Type");
+      let w = { contextUrl: null, documentUrl: h, document: x.response }, v = null;
+      const I = x.getResponseHeader("Content-Type");
       let g;
-      if (s.test(w.getAllResponseHeaders()) && (g = w.getResponseHeader("Link")), g && A !== "application/ld+json") {
-        const m = e(g), l = m[n];
-        if (Array.isArray(l))
+      if (s.test(x.getAllResponseHeaders()) && (g = x.getResponseHeader("Link")), g && I !== "application/ld+json") {
+        const m = e(g), d = m[n];
+        if (Array.isArray(d))
           throw new i(
             "URL could not be dereferenced, it has more than one associated HTTP Link Header.",
             "jsonld.InvalidUrl",
             { code: "multiple context link headers", url: h }
           );
-        l && (x.contextUrl = l.target), v = m.alternate, v && v.type == "application/ld+json" && !(A || "").match(/^application\/(\w*\+)?json$/) && (x = await f(r(h, v.target)));
+        d && (w.contextUrl = d.target), v = m.alternate, v && v.type == "application/ld+json" && !(I || "").match(/^application\/(\w*\+)?json$/) && (w = await f(r(h, v.target)));
       }
-      return x;
+      return w;
     }
   };
-  function a(c, d, p) {
+  function a(c, l, u) {
     c = c || XMLHttpRequest;
     const y = new c();
     return new Promise((f, h) => {
-      y.onload = () => f(y), y.onerror = (w) => h(w), y.open("GET", d, !0);
-      for (const w in p)
-        y.setRequestHeader(w, p[w]);
+      y.onload = () => f(y), y.onerror = (x) => h(x), y.open("GET", l, !0);
+      for (const x in u)
+        y.setRequestHeader(x, u[x]);
       y.send();
     });
   }
-  return ls;
+  return us;
 }
-var us, Jc;
-function Mh() {
-  if (Jc) return us;
-  Jc = 1;
-  const e = kh(), t = {};
-  return us = t, t.setupDocumentLoaders = function(n) {
+var ps, Qc;
+function Oh() {
+  if (Qc) return ps;
+  Qc = 1;
+  const e = Mh(), t = {};
+  return ps = t, t.setupDocumentLoaders = function(n) {
     typeof XMLHttpRequest < "u" && (n.documentLoaders.xhr = e, n.useDocumentLoader("xhr"));
   }, t.setupGlobals = function(n) {
     typeof globalThis.JsonLdProcessor > "u" && Object.defineProperty(globalThis, "JsonLdProcessor", {
@@ -18090,26 +18217,26 @@ function Mh() {
       configurable: !0,
       value: n.JsonLdProcessor
     });
-  }, us;
+  }, ps;
 }
-var ps, Kc;
-function Oh() {
-  return Kc || (Kc = 1, ps = function(e) {
+var fs, Wc;
+function Lh() {
+  return Wc || (Wc = 1, fs = function(e) {
     e.prototype[Symbol.iterator] = function* () {
       for (let t = this.head; t; t = t.next)
         yield t.value;
     };
-  }), ps;
+  }), fs;
 }
-var fs, Qc;
-function Lh() {
-  if (Qc) return fs;
-  Qc = 1, fs = e, e.Node = o, e.create = e;
+var hs, Xc;
+function Nh() {
+  if (Xc) return hs;
+  Xc = 1, hs = e, e.Node = o, e.create = e;
   function e(r) {
     var s = this;
     if (s instanceof e || (s = new e()), s.tail = null, s.head = null, s.length = 0, r && typeof r.forEach == "function")
-      r.forEach(function(d) {
-        s.push(d);
+      r.forEach(function(l) {
+        s.push(l);
       });
     else if (arguments.length > 0)
       for (var a = 0, c = arguments.length; a < c; a++)
@@ -18187,8 +18314,8 @@ function Lh() {
       c = this.head.next, a = this.head.value;
     else
       throw new TypeError("Reduce of empty list with no initial value");
-    for (var d = 0; c !== null; d++)
-      a = r(a, c.value, d), c = c.next;
+    for (var l = 0; c !== null; l++)
+      a = r(a, c.value, l), c = c.next;
     return a;
   }, e.prototype.reduceReverse = function(r, s) {
     var a, c = this.tail;
@@ -18198,8 +18325,8 @@ function Lh() {
       c = this.tail.prev, a = this.tail.value;
     else
       throw new TypeError("Reduce of empty list with no initial value");
-    for (var d = this.length - 1; c !== null; d--)
-      a = r(a, c.value, d), c = c.prev;
+    for (var l = this.length - 1; c !== null; l--)
+      a = r(a, c.value, l), c = c.prev;
     return a;
   }, e.prototype.toArray = function() {
     for (var r = new Array(this.length), s = 0, a = this.head; a !== null; s++)
@@ -18215,10 +18342,10 @@ function Lh() {
     if (s < r || s < 0)
       return a;
     r < 0 && (r = 0), s > this.length && (s = this.length);
-    for (var c = 0, d = this.head; d !== null && c < r; c++)
-      d = d.next;
-    for (; d !== null && c < s; c++, d = d.next)
-      a.push(d.value);
+    for (var c = 0, l = this.head; l !== null && c < r; c++)
+      l = l.next;
+    for (; l !== null && c < s; c++, l = l.next)
+      a.push(l.value);
     return a;
   }, e.prototype.sliceReverse = function(r, s) {
     s = s || this.length, s < 0 && (s += this.length), r = r || 0, r < 0 && (r += this.length);
@@ -18226,21 +18353,21 @@ function Lh() {
     if (s < r || s < 0)
       return a;
     r < 0 && (r = 0), s > this.length && (s = this.length);
-    for (var c = this.length, d = this.tail; d !== null && c > s; c--)
-      d = d.prev;
-    for (; d !== null && c > r; c--, d = d.prev)
-      a.push(d.value);
+    for (var c = this.length, l = this.tail; l !== null && c > s; c--)
+      l = l.prev;
+    for (; l !== null && c > r; c--, l = l.prev)
+      a.push(l.value);
     return a;
   }, e.prototype.splice = function(r, s, ...a) {
     r > this.length && (r = this.length - 1), r < 0 && (r = this.length + r);
-    for (var c = 0, d = this.head; d !== null && c < r; c++)
-      d = d.next;
-    for (var p = [], c = 0; d && c < s; c++)
-      p.push(d.value), d = this.removeNode(d);
-    d === null && (d = this.tail), d !== this.head && d !== this.tail && (d = d.prev);
+    for (var c = 0, l = this.head; l !== null && c < r; c++)
+      l = l.next;
+    for (var u = [], c = 0; l && c < s; c++)
+      u.push(l.value), l = this.removeNode(l);
+    l === null && (l = this.tail), l !== this.head && l !== this.tail && (l = l.prev);
     for (var c = 0; c < a.length; c++)
-      d = t(this, d, a[c]);
-    return p;
+      l = t(this, l, a[c]);
+    return u;
   }, e.prototype.reverse = function() {
     for (var r = this.head, s = this.tail, a = r; a !== null; a = a.prev) {
       var c = a.prev;
@@ -18264,54 +18391,54 @@ function Lh() {
     this.list = c, this.value = r, s ? (s.next = this, this.prev = s) : this.prev = null, a ? (a.prev = this, this.next = a) : this.next = null;
   }
   try {
-    Oh()(e);
+    Lh()(e);
   } catch {
   }
-  return fs;
+  return hs;
 }
-var hs, Wc;
-function ul() {
-  if (Wc) return hs;
-  Wc = 1;
-  const e = Lh(), t = Symbol("max"), n = Symbol("length"), i = Symbol("lengthCalculator"), o = Symbol("allowStale"), r = Symbol("maxAge"), s = Symbol("dispose"), a = Symbol("noDisposeOnSet"), c = Symbol("lruList"), d = Symbol("cache"), p = Symbol("updateAgeOnGet"), y = () => 1;
+var ms, Yc;
+function fl() {
+  if (Yc) return ms;
+  Yc = 1;
+  const e = Nh(), t = Symbol("max"), n = Symbol("length"), i = Symbol("lengthCalculator"), o = Symbol("allowStale"), r = Symbol("maxAge"), s = Symbol("dispose"), a = Symbol("noDisposeOnSet"), c = Symbol("lruList"), l = Symbol("cache"), u = Symbol("updateAgeOnGet"), y = () => 1;
   class f {
-    constructor(l) {
-      if (typeof l == "number" && (l = { max: l }), l || (l = {}), l.max && (typeof l.max != "number" || l.max < 0))
+    constructor(d) {
+      if (typeof d == "number" && (d = { max: d }), d || (d = {}), d.max && (typeof d.max != "number" || d.max < 0))
         throw new TypeError("max must be a non-negative number");
-      this[t] = l.max || 1 / 0;
-      const u = l.length || y;
-      if (this[i] = typeof u != "function" ? y : u, this[o] = l.stale || !1, l.maxAge && typeof l.maxAge != "number")
+      this[t] = d.max || 1 / 0;
+      const p = d.length || y;
+      if (this[i] = typeof p != "function" ? y : p, this[o] = d.stale || !1, d.maxAge && typeof d.maxAge != "number")
         throw new TypeError("maxAge must be a number");
-      this[r] = l.maxAge || 0, this[s] = l.dispose, this[a] = l.noDisposeOnSet || !1, this[p] = l.updateAgeOnGet || !1, this.reset();
+      this[r] = d.maxAge || 0, this[s] = d.dispose, this[a] = d.noDisposeOnSet || !1, this[u] = d.updateAgeOnGet || !1, this.reset();
     }
     // resize the cache when the max changes.
-    set max(l) {
-      if (typeof l != "number" || l < 0)
+    set max(d) {
+      if (typeof d != "number" || d < 0)
         throw new TypeError("max must be a non-negative number");
-      this[t] = l || 1 / 0, x(this);
+      this[t] = d || 1 / 0, w(this);
     }
     get max() {
       return this[t];
     }
-    set allowStale(l) {
-      this[o] = !!l;
+    set allowStale(d) {
+      this[o] = !!d;
     }
     get allowStale() {
       return this[o];
     }
-    set maxAge(l) {
-      if (typeof l != "number")
+    set maxAge(d) {
+      if (typeof d != "number")
         throw new TypeError("maxAge must be a non-negative number");
-      this[r] = l, x(this);
+      this[r] = d, w(this);
     }
     get maxAge() {
       return this[r];
     }
     // resize the cache when the lengthCalculator changes.
-    set lengthCalculator(l) {
-      typeof l != "function" && (l = y), l !== this[i] && (this[i] = l, this[n] = 0, this[c].forEach((u) => {
-        u.length = this[i](u.value, u.key), this[n] += u.length;
-      })), x(this);
+    set lengthCalculator(d) {
+      typeof d != "function" && (d = y), d !== this[i] && (this[i] = d, this[n] = 0, this[c].forEach((p) => {
+        p.length = this[i](p.value, p.key), this[n] += p.length;
+      })), w(this);
     }
     get lengthCalculator() {
       return this[i];
@@ -18322,132 +18449,132 @@ function ul() {
     get itemCount() {
       return this[c].length;
     }
-    rforEach(l, u) {
-      u = u || this;
+    rforEach(d, p) {
+      p = p || this;
       for (let b = this[c].tail; b !== null; ) {
         const S = b.prev;
-        g(this, l, b, u), b = S;
+        g(this, d, b, p), b = S;
       }
     }
-    forEach(l, u) {
-      u = u || this;
+    forEach(d, p) {
+      p = p || this;
       for (let b = this[c].head; b !== null; ) {
         const S = b.next;
-        g(this, l, b, u), b = S;
+        g(this, d, b, p), b = S;
       }
     }
     keys() {
-      return this[c].toArray().map((l) => l.key);
+      return this[c].toArray().map((d) => d.key);
     }
     values() {
-      return this[c].toArray().map((l) => l.value);
+      return this[c].toArray().map((d) => d.value);
     }
     reset() {
-      this[s] && this[c] && this[c].length && this[c].forEach((l) => this[s](l.key, l.value)), this[d] = /* @__PURE__ */ new Map(), this[c] = new e(), this[n] = 0;
+      this[s] && this[c] && this[c].length && this[c].forEach((d) => this[s](d.key, d.value)), this[l] = /* @__PURE__ */ new Map(), this[c] = new e(), this[n] = 0;
     }
     dump() {
-      return this[c].map((l) => w(this, l) ? !1 : {
-        k: l.key,
-        v: l.value,
-        e: l.now + (l.maxAge || 0)
-      }).toArray().filter((l) => l);
+      return this[c].map((d) => x(this, d) ? !1 : {
+        k: d.key,
+        v: d.value,
+        e: d.now + (d.maxAge || 0)
+      }).toArray().filter((d) => d);
     }
     dumpLru() {
       return this[c];
     }
-    set(l, u, b) {
+    set(d, p, b) {
       if (b = b || this[r], b && typeof b != "number")
         throw new TypeError("maxAge must be a number");
-      const S = b ? Date.now() : 0, I = this[i](u, l);
-      if (this[d].has(l)) {
-        if (I > this[t])
-          return v(this, this[d].get(l)), !1;
-        const E = this[d].get(l).value;
-        return this[s] && (this[a] || this[s](l, E.value)), E.now = S, E.maxAge = b, E.value = u, this[n] += I - E.length, E.length = I, this.get(l), x(this), !0;
+      const S = b ? Date.now() : 0, A = this[i](p, d);
+      if (this[l].has(d)) {
+        if (A > this[t])
+          return v(this, this[l].get(d)), !1;
+        const E = this[l].get(d).value;
+        return this[s] && (this[a] || this[s](d, E.value)), E.now = S, E.maxAge = b, E.value = p, this[n] += A - E.length, E.length = A, this.get(d), w(this), !0;
       }
-      const P = new A(l, u, I, S, b);
-      return P.length > this[t] ? (this[s] && this[s](l, u), !1) : (this[n] += P.length, this[c].unshift(P), this[d].set(l, this[c].head), x(this), !0);
+      const P = new I(d, p, A, S, b);
+      return P.length > this[t] ? (this[s] && this[s](d, p), !1) : (this[n] += P.length, this[c].unshift(P), this[l].set(d, this[c].head), w(this), !0);
     }
-    has(l) {
-      if (!this[d].has(l)) return !1;
-      const u = this[d].get(l).value;
-      return !w(this, u);
+    has(d) {
+      if (!this[l].has(d)) return !1;
+      const p = this[l].get(d).value;
+      return !x(this, p);
     }
-    get(l) {
-      return h(this, l, !0);
+    get(d) {
+      return h(this, d, !0);
     }
-    peek(l) {
-      return h(this, l, !1);
+    peek(d) {
+      return h(this, d, !1);
     }
     pop() {
-      const l = this[c].tail;
-      return l ? (v(this, l), l.value) : null;
+      const d = this[c].tail;
+      return d ? (v(this, d), d.value) : null;
     }
-    del(l) {
-      v(this, this[d].get(l));
+    del(d) {
+      v(this, this[l].get(d));
     }
-    load(l) {
+    load(d) {
       this.reset();
-      const u = Date.now();
-      for (let b = l.length - 1; b >= 0; b--) {
-        const S = l[b], I = S.e || 0;
-        if (I === 0)
+      const p = Date.now();
+      for (let b = d.length - 1; b >= 0; b--) {
+        const S = d[b], A = S.e || 0;
+        if (A === 0)
           this.set(S.k, S.v);
         else {
-          const P = I - u;
+          const P = A - p;
           P > 0 && this.set(S.k, S.v, P);
         }
       }
     }
     prune() {
-      this[d].forEach((l, u) => h(this, u, !1));
+      this[l].forEach((d, p) => h(this, p, !1));
     }
   }
-  const h = (m, l, u) => {
-    const b = m[d].get(l);
+  const h = (m, d, p) => {
+    const b = m[l].get(d);
     if (b) {
       const S = b.value;
-      if (w(m, S)) {
+      if (x(m, S)) {
         if (v(m, b), !m[o])
           return;
       } else
-        u && (m[p] && (b.value.now = Date.now()), m[c].unshiftNode(b));
+        p && (m[u] && (b.value.now = Date.now()), m[c].unshiftNode(b));
       return S.value;
     }
-  }, w = (m, l) => {
-    if (!l || !l.maxAge && !m[r])
+  }, x = (m, d) => {
+    if (!d || !d.maxAge && !m[r])
       return !1;
-    const u = Date.now() - l.now;
-    return l.maxAge ? u > l.maxAge : m[r] && u > m[r];
-  }, x = (m) => {
+    const p = Date.now() - d.now;
+    return d.maxAge ? p > d.maxAge : m[r] && p > m[r];
+  }, w = (m) => {
     if (m[n] > m[t])
-      for (let l = m[c].tail; m[n] > m[t] && l !== null; ) {
-        const u = l.prev;
-        v(m, l), l = u;
+      for (let d = m[c].tail; m[n] > m[t] && d !== null; ) {
+        const p = d.prev;
+        v(m, d), d = p;
       }
-  }, v = (m, l) => {
-    if (l) {
-      const u = l.value;
-      m[s] && m[s](u.key, u.value), m[n] -= u.length, m[d].delete(u.key), m[c].removeNode(l);
+  }, v = (m, d) => {
+    if (d) {
+      const p = d.value;
+      m[s] && m[s](p.key, p.value), m[n] -= p.length, m[l].delete(p.key), m[c].removeNode(d);
     }
   };
-  class A {
-    constructor(l, u, b, S, I) {
-      this.key = l, this.value = u, this.length = b, this.now = S, this.maxAge = I || 0;
+  class I {
+    constructor(d, p, b, S, A) {
+      this.key = d, this.value = p, this.length = b, this.now = S, this.maxAge = A || 0;
     }
   }
-  const g = (m, l, u, b) => {
-    let S = u.value;
-    w(m, S) && (v(m, u), m[o] || (S = void 0)), S && l.call(b, S.value, S.key, m);
+  const g = (m, d, p, b) => {
+    let S = p.value;
+    x(m, S) && (v(m, p), m[o] || (S = void 0)), S && d.call(b, S.value, S.key, m);
   };
-  return hs = f, hs;
+  return ms = f, ms;
 }
-var ms, Xc;
-function Nh() {
-  if (Xc) return ms;
-  Xc = 1;
-  const e = ul(), t = 10;
-  return ms = class {
+var ys, ed;
+function Dh() {
+  if (ed) return ys;
+  ed = 1;
+  const e = fl(), t = 10;
+  return ys = class {
     /**
      * Creates a ResolvedContext.
      *
@@ -18462,20 +18589,20 @@ function Nh() {
     setProcessed(i, o) {
       this.cache.set(i, o);
     }
-  }, ms;
+  }, ys;
 }
-var ys, Yc;
-function Dh() {
-  if (Yc) return ys;
-  Yc = 1;
+var gs, td;
+function zh() {
+  if (td) return gs;
+  td = 1;
   const {
     isArray: e,
     isObject: t,
     isString: n
   } = Ne(), {
     asArray: i
-  } = Ze(), { prependBase: o } = Lt(), r = He(), s = Nh(), a = 10;
-  ys = class {
+  } = Ze(), { prependBase: o } = Dt(), r = He(), s = Dh(), a = 10;
+  gs = class {
     /**
      * Creates a ContextResolver.
      *
@@ -18488,27 +18615,27 @@ function Dh() {
       activeCtx: y,
       context: f,
       documentLoader: h,
-      base: w,
-      cycles: x = /* @__PURE__ */ new Set()
+      base: x,
+      cycles: w = /* @__PURE__ */ new Set()
     }) {
       f && t(f) && f["@context"] && (f = f["@context"]), f = i(f);
       const v = [];
-      for (const A of f) {
-        if (n(A)) {
-          let l = this._get(A);
-          l || (l = await this._resolveRemoteContext(
-            { activeCtx: y, url: A, documentLoader: h, base: w, cycles: x }
-          )), e(l) ? v.push(...l) : v.push(l);
+      for (const I of f) {
+        if (n(I)) {
+          let d = this._get(I);
+          d || (d = await this._resolveRemoteContext(
+            { activeCtx: y, url: I, documentLoader: h, base: x, cycles: w }
+          )), e(d) ? v.push(...d) : v.push(d);
           continue;
         }
-        if (A === null) {
+        if (I === null) {
           v.push(new s({ document: null }));
           continue;
         }
-        t(A) || c(f);
-        const g = JSON.stringify(A);
+        t(I) || c(f);
+        const g = JSON.stringify(I);
         let m = this._get(g);
-        m || (m = new s({ document: A }), this._cacheResolvedContext({ key: g, resolved: m, tag: "static" })), v.push(m);
+        m || (m = new s({ document: I }), this._cacheResolvedContext({ key: g, resolved: m, tag: "static" })), v.push(m);
       }
       return v;
     }
@@ -18522,24 +18649,24 @@ function Dh() {
     }
     _cacheResolvedContext({ key: y, resolved: f, tag: h }) {
       if (this.perOpCache.set(y, f), h !== void 0) {
-        let w = this.sharedCache.get(y);
-        w || (w = /* @__PURE__ */ new Map(), this.sharedCache.set(y, w)), w.set(h, f);
+        let x = this.sharedCache.get(y);
+        x || (x = /* @__PURE__ */ new Map(), this.sharedCache.set(y, x)), x.set(h, f);
       }
       return f;
     }
-    async _resolveRemoteContext({ activeCtx: y, url: f, documentLoader: h, base: w, cycles: x }) {
-      f = o(w, f);
-      const { context: v, remoteDoc: A } = await this._fetchContext(
-        { activeCtx: y, url: f, documentLoader: h, cycles: x }
+    async _resolveRemoteContext({ activeCtx: y, url: f, documentLoader: h, base: x, cycles: w }) {
+      f = o(x, f);
+      const { context: v, remoteDoc: I } = await this._fetchContext(
+        { activeCtx: y, url: f, documentLoader: h, cycles: w }
       );
-      w = A.documentUrl || f, d({ context: v, base: w });
+      x = I.documentUrl || f, l({ context: v, base: x });
       const g = await this.resolve(
-        { activeCtx: y, context: v, documentLoader: h, base: w, cycles: x }
+        { activeCtx: y, context: v, documentLoader: h, base: x, cycles: w }
       );
-      return this._cacheResolvedContext({ key: f, resolved: g, tag: A.tag }), g;
+      return this._cacheResolvedContext({ key: f, resolved: g, tag: I.tag }), g;
     }
-    async _fetchContext({ activeCtx: y, url: f, documentLoader: h, cycles: w }) {
-      if (w.size > a)
+    async _fetchContext({ activeCtx: y, url: f, documentLoader: h, cycles: x }) {
+      if (x.size > a)
         throw new r(
           "Maximum number of @context URLs exceeded.",
           "jsonld.ContextUrlError",
@@ -18548,7 +18675,7 @@ function Dh() {
             max: a
           }
         );
-      if (w.has(f))
+      if (x.has(f))
         throw new r(
           "Cyclical @context URLs detected.",
           "jsonld.ContextUrlError",
@@ -18557,75 +18684,75 @@ function Dh() {
             url: f
           }
         );
-      w.add(f);
-      let x, v;
+      x.add(f);
+      let w, v;
       try {
-        v = await h(f), x = v.document || null, n(x) && (x = JSON.parse(x));
-      } catch (A) {
+        v = await h(f), w = v.document || null, n(w) && (w = JSON.parse(w));
+      } catch (I) {
         throw new r(
           `Dereferencing a URL did not result in a valid JSON-LD object. Possible causes are an inaccessible URL perhaps due to a same-origin policy (ensure the server uses CORS if you are using client-side JavaScript), too many redirects, a non-JSON response, or more than one HTTP Link Header was provided for a remote context. URL: "${f}".`,
           "jsonld.InvalidUrl",
-          { code: "loading remote context failed", url: f, cause: A }
+          { code: "loading remote context failed", url: f, cause: I }
         );
       }
-      if (!t(x))
+      if (!t(w))
         throw new r(
           `Dereferencing a URL did not result in a JSON object. The response was valid JSON, but it was not a JSON object. URL: "${f}".`,
           "jsonld.InvalidUrl",
           { code: "invalid remote context", url: f }
         );
-      return "@context" in x ? x = { "@context": x["@context"] } : x = { "@context": {} }, v.contextUrl && (e(x["@context"]) || (x["@context"] = [x["@context"]]), x["@context"].push(v.contextUrl)), { context: x, remoteDoc: v };
+      return "@context" in w ? w = { "@context": w["@context"] } : w = { "@context": {} }, v.contextUrl && (e(w["@context"]) || (w["@context"] = [w["@context"]]), w["@context"].push(v.contextUrl)), { context: w, remoteDoc: v };
     }
   };
-  function c(p) {
+  function c(u) {
     throw new r(
       "Invalid JSON-LD syntax; @context must be an object.",
       "jsonld.SyntaxError",
       {
         code: "invalid local context",
-        context: p
+        context: u
       }
     );
   }
-  function d({ context: p, base: y }) {
-    if (!p)
+  function l({ context: u, base: y }) {
+    if (!u)
       return;
-    const f = p["@context"];
+    const f = u["@context"];
     if (n(f)) {
-      p["@context"] = o(y, f);
+      u["@context"] = o(y, f);
       return;
     }
     if (e(f)) {
       for (let h = 0; h < f.length; ++h) {
-        const w = f[h];
-        if (n(w)) {
-          f[h] = o(y, w);
+        const x = f[h];
+        if (n(x)) {
+          f[h] = o(y, x);
           continue;
         }
-        t(w) && d({ context: { "@context": w }, base: y });
+        t(x) && l({ context: { "@context": x }, base: y });
       }
       return;
     }
     if (t(f))
       for (const h in f)
-        d({ context: f[h], base: y });
+        l({ context: f[h], base: y });
   }
-  return ys;
+  return gs;
 }
-var gs, ed;
-function zh() {
-  return ed || (ed = 1, gs = ga().NQuads), gs;
+var vs, nd;
+function Uh() {
+  return nd || (nd = 1, vs = ba().NQuads), vs;
 }
-var vs, td;
-function Mn() {
-  if (td) return vs;
-  td = 1;
+var bs, id;
+function Ln() {
+  if (id) return bs;
+  id = 1;
   const e = He(), {
     isArray: t
   } = Ne(), {
     asArray: n
   } = Ze(), i = {};
-  vs = i, i.defaultEventHandler = null, i.setupEventHandler = ({ options: s = {} }) => {
+  bs = i, i.defaultEventHandler = null, i.setupEventHandler = ({ options: s = {} }) => {
     const a = [].concat(
       s.safe ? i.safeEventHandler : [],
       s.eventHandler ? n(s.eventHandler) : [],
@@ -18640,17 +18767,17 @@ function Mn() {
   };
   function o({ event: s, handlers: a }) {
     let c = !0;
-    for (let d = 0; c && d < a.length; ++d) {
+    for (let l = 0; c && l < a.length; ++l) {
       c = !1;
-      const p = a[d];
-      if (t(p))
-        c = o({ event: s, handlers: p });
-      else if (typeof p == "function")
-        p({ event: s, next: () => {
+      const u = a[l];
+      if (t(u))
+        c = o({ event: s, handlers: u });
+      else if (typeof u == "function")
+        u({ event: s, next: () => {
           c = !0;
         } });
-      else if (typeof p == "object")
-        s.code in p ? p[s.code]({ event: s, next: () => {
+      else if (typeof u == "object")
+        s.code in u ? u[s.code]({ event: s, next: () => {
           c = !0;
         } }) : c = !0;
       else
@@ -18709,12 +18836,12 @@ function Mn() {
     );
   }, i.setDefaultEventHandler = function({ eventHandler: s } = {}) {
     i.defaultEventHandler = s ? n(s) : null;
-  }, vs;
+  }, bs;
 }
-var bs, nd;
-function Kt() {
-  if (nd) return bs;
-  nd = 1;
+var ws, rd;
+function Qt() {
+  if (rd) return ws;
+  rd = 1;
   const e = Ze(), t = He(), {
     isArray: n,
     isObject: i,
@@ -18724,37 +18851,37 @@ function Kt() {
     isAbsolute: s,
     isRelative: a,
     prependBase: c
-  } = Lt(), {
-    handleEvent: d
-  } = Mn(), {
-    REGEX_BCP47: p,
+  } = Dt(), {
+    handleEvent: l
+  } = Ln(), {
+    REGEX_BCP47: u,
     REGEX_KEYWORD: y,
     asArray: f,
     compareShortestLeast: h
-  } = Ze(), w = /* @__PURE__ */ new Map(), x = 1e4, v = {};
-  bs = v, v.process = async ({
+  } = Ze(), x = /* @__PURE__ */ new Map(), w = 1e4, v = {};
+  ws = v, v.process = async ({
     activeCtx: m,
-    localCtx: l,
-    options: u,
+    localCtx: d,
+    options: p,
     propagate: b = !0,
     overrideProtected: S = !1,
-    cycles: I = /* @__PURE__ */ new Set()
+    cycles: A = /* @__PURE__ */ new Set()
   }) => {
-    if (i(l) && "@context" in l && n(l["@context"]) && (l = l["@context"]), f(l).length === 0)
+    if (i(d) && "@context" in d && n(d["@context"]) && (d = d["@context"]), f(d).length === 0)
       return m;
     const R = [], E = [
       ({ event: N, next: _ }) => {
         R.push(N), _();
       }
     ];
-    u.eventHandler && E.push(u.eventHandler);
-    const k = u;
-    u = { ...u, eventHandler: E };
-    const M = await u.contextResolver.resolve({
+    p.eventHandler && E.push(p.eventHandler);
+    const k = p;
+    p = { ...p, eventHandler: E };
+    const M = await p.contextResolver.resolve({
       activeCtx: m,
-      context: l,
-      documentLoader: u.documentLoader,
-      base: u.base
+      context: d,
+      documentLoader: p.documentLoader,
+      base: p.base
     });
     i(M[0].document) && typeof M[0].document["@propagate"] == "boolean" && (b = M[0].document["@propagate"]);
     let j = m;
@@ -18768,14 +18895,14 @@ function Kt() {
             "jsonld.SyntaxError",
             { code: "invalid context nullification" }
           );
-        j = m = v.getInitialContext(u).clone();
+        j = m = v.getInitialContext(p).clone();
         continue;
       }
       const G = N.getProcessed(m);
       if (G) {
         if (k.eventHandler)
           for (const B of G.events)
-            d({ event: B, options: k });
+            l({ event: B, options: k });
         j = m = G.context;
         continue;
       }
@@ -18826,15 +18953,15 @@ function Kt() {
               { code: "invalid vocab mapping", context: _ }
             );
           {
-            const T = A(
+            const T = I(
               j,
               B,
               { vocab: !0, base: !0 },
               void 0,
               void 0,
-              u
+              p
             );
-            s(T) || u.eventHandler && d({
+            s(T) || p.eventHandler && l({
               event: {
                 type: ["JsonLdEvent"],
                 code: "relative @vocab reference",
@@ -18844,7 +18971,7 @@ function Kt() {
                   vocab: T
                 }
               },
-              options: u
+              options: p
             }), j["@vocab"] = T;
           }
         } else throw new t(
@@ -18859,7 +18986,7 @@ function Kt() {
         if (B === null)
           delete j["@language"];
         else if (o(B))
-          B.match(p) || u.eventHandler && d({
+          B.match(u) || p.eventHandler && l({
             event: {
               type: ["JsonLdEvent"],
               code: "invalid @language value",
@@ -18869,7 +18996,7 @@ function Kt() {
                 language: B
               }
             },
-            options: u
+            options: p
           }), j["@language"] = B.toLowerCase();
         else
           throw new t(
@@ -18912,7 +19039,7 @@ function Kt() {
           throw new t(
             "Invalid JSON-LD syntax; @propagate value must be a boolean.",
             "jsonld.SyntaxError",
-            { code: "invalid @propagate value", context: l }
+            { code: "invalid @propagate value", context: d }
           );
         L.set("@propagate", !0);
       }
@@ -18928,33 +19055,33 @@ function Kt() {
           throw new t(
             "Invalid JSON-LD syntax; @import must be a string.",
             "jsonld.SyntaxError",
-            { code: "invalid @import value", context: l }
+            { code: "invalid @import value", context: d }
           );
-        const T = await u.contextResolver.resolve({
+        const T = await p.contextResolver.resolve({
           activeCtx: m,
           context: B,
-          documentLoader: u.documentLoader,
-          base: u.base
+          documentLoader: p.documentLoader,
+          base: p.base
         });
         if (T.length !== 1)
           throw new t(
             "Invalid JSON-LD syntax; @import must reference a single context.",
             "jsonld.SyntaxError",
-            { code: "invalid remote context", context: l }
+            { code: "invalid remote context", context: d }
           );
         const O = T[0].getProcessed(m);
         if (O)
           _ = O;
         else {
-          const V = T[0].document;
-          if ("@import" in V)
+          const U = T[0].document;
+          if ("@import" in U)
             throw new t(
               "Invalid JSON-LD syntax: imported context must not include @import.",
               "jsonld.SyntaxError",
-              { code: "invalid context entry", context: l }
+              { code: "invalid context entry", context: d }
             );
-          for (const D in V)
-            _.hasOwnProperty(D) || (_[D] = V[D]);
+          for (const D in U)
+            _.hasOwnProperty(D) || (_[D] = U[D]);
           T[0].setProcessed(m, _);
         }
         L.set("@import", !0);
@@ -18966,14 +19093,14 @@ function Kt() {
           localCtx: _,
           term: B,
           defined: L,
-          options: u,
+          options: p,
           overrideProtected: S
         }), i(_[B]) && "@context" in _[B]) {
           const T = _[B]["@context"];
           let O = !0;
           if (o(T)) {
-            const V = c(u.base, T);
-            I.has(V) ? O = !1 : I.add(V);
+            const U = c(p.base, T);
+            A.has(U) ? O = !1 : A.add(U);
           }
           if (O)
             try {
@@ -18981,8 +19108,8 @@ function Kt() {
                 activeCtx: j.clone(),
                 localCtx: _[B]["@context"],
                 overrideProtected: !0,
-                options: u,
-                cycles: I
+                options: p,
+                cycles: A
               });
             } catch {
               throw new t(
@@ -19004,70 +19131,70 @@ function Kt() {
     return j;
   }, v.createTermDefinition = ({
     activeCtx: m,
-    localCtx: l,
-    term: u,
+    localCtx: d,
+    term: p,
     defined: b,
     options: S,
-    overrideProtected: I = !1
+    overrideProtected: A = !1
   }) => {
-    if (b.has(u)) {
-      if (b.get(u))
+    if (b.has(p)) {
+      if (b.get(p))
         return;
       throw new t(
         "Cyclical context definition detected.",
         "jsonld.CyclicalContext",
-        { code: "cyclic IRI mapping", context: l, term: u }
+        { code: "cyclic IRI mapping", context: d, term: p }
       );
     }
-    b.set(u, !1);
+    b.set(p, !1);
     let P;
-    if (l.hasOwnProperty(u) && (P = l[u]), u === "@type" && i(P) && (P["@container"] || "@set") === "@set" && v.processingMode(m, 1.1)) {
+    if (d.hasOwnProperty(p) && (P = d[p]), p === "@type" && i(P) && (P["@container"] || "@set") === "@set" && v.processingMode(m, 1.1)) {
       const _ = ["@container", "@id", "@protected"], G = Object.keys(P);
       if (G.length === 0 || G.some((L) => !_.includes(L)))
         throw new t(
           "Invalid JSON-LD syntax; keywords cannot be overridden.",
           "jsonld.SyntaxError",
-          { code: "keyword redefinition", context: l, term: u }
+          { code: "keyword redefinition", context: d, term: p }
         );
     } else {
-      if (v.isKeyword(u))
+      if (v.isKeyword(p))
         throw new t(
           "Invalid JSON-LD syntax; keywords cannot be overridden.",
           "jsonld.SyntaxError",
-          { code: "keyword redefinition", context: l, term: u }
+          { code: "keyword redefinition", context: d, term: p }
         );
-      if (u.match(y)) {
-        S.eventHandler && d({
+      if (p.match(y)) {
+        S.eventHandler && l({
           event: {
             type: ["JsonLdEvent"],
             code: "reserved term",
             level: "warning",
             message: 'Terms beginning with "@" are reserved for future use and dropped.',
             details: {
-              term: u
+              term: p
             }
           },
           options: S
         });
         return;
-      } else if (u === "")
+      } else if (p === "")
         throw new t(
           "Invalid JSON-LD syntax; a term cannot be an empty string.",
           "jsonld.SyntaxError",
-          { code: "invalid term definition", context: l }
+          { code: "invalid term definition", context: d }
         );
     }
-    const R = m.mappings.get(u);
-    m.mappings.has(u) && m.mappings.delete(u);
+    const R = m.mappings.get(p);
+    m.mappings.has(p) && m.mappings.delete(p);
     let E = !1;
     if ((o(P) || P === null) && (E = !0, P = { "@id": P }), !i(P))
       throw new t(
         "Invalid JSON-LD syntax; @context term values must be strings or objects.",
         "jsonld.SyntaxError",
-        { code: "invalid term definition", context: l }
+        { code: "invalid term definition", context: d }
       );
     const k = {};
-    m.mappings.set(u, k), k.reverse = !1;
+    m.mappings.set(p, k), k.reverse = !1;
     const M = ["@container", "@id", "@language", "@reverse", "@type"];
     v.processingMode(m, 1.1) && M.push(
       "@context",
@@ -19082,31 +19209,31 @@ function Kt() {
         throw new t(
           "Invalid JSON-LD syntax; a term definition must not contain " + _,
           "jsonld.SyntaxError",
-          { code: "invalid term definition", context: l }
+          { code: "invalid term definition", context: d }
         );
-    const j = u.indexOf(":");
+    const j = p.indexOf(":");
     if (k._termHasColon = j > 0, "@reverse" in P) {
       if ("@id" in P)
         throw new t(
           "Invalid JSON-LD syntax; a @reverse term definition must not contain @id.",
           "jsonld.SyntaxError",
-          { code: "invalid reverse property", context: l }
+          { code: "invalid reverse property", context: d }
         );
       if ("@nest" in P)
         throw new t(
           "Invalid JSON-LD syntax; a @reverse term definition must not contain @nest.",
           "jsonld.SyntaxError",
-          { code: "invalid reverse property", context: l }
+          { code: "invalid reverse property", context: d }
         );
       const _ = P["@reverse"];
       if (!o(_))
         throw new t(
           "Invalid JSON-LD syntax; a @context @reverse value must be a string.",
           "jsonld.SyntaxError",
-          { code: "invalid IRI mapping", context: l }
+          { code: "invalid IRI mapping", context: d }
         );
       if (_.match(y)) {
-        S.eventHandler && d({
+        S.eventHandler && l({
           event: {
             type: ["JsonLdEvent"],
             code: "reserved @reverse value",
@@ -19117,14 +19244,14 @@ function Kt() {
             }
           },
           options: S
-        }), R ? m.mappings.set(u, R) : m.mappings.delete(u);
+        }), R ? m.mappings.set(p, R) : m.mappings.delete(p);
         return;
       }
-      const G = A(
+      const G = I(
         m,
         _,
         { vocab: !0, base: !1 },
-        l,
+        d,
         b,
         S
       );
@@ -19132,7 +19259,7 @@ function Kt() {
         throw new t(
           "Invalid JSON-LD syntax; a @context @reverse value must be an absolute IRI or a blank node identifier.",
           "jsonld.SyntaxError",
-          { code: "invalid IRI mapping", context: l }
+          { code: "invalid IRI mapping", context: d }
         );
       k["@id"] = G, k.reverse = !0;
     } else if ("@id" in P) {
@@ -19141,12 +19268,12 @@ function Kt() {
         throw new t(
           "Invalid JSON-LD syntax; a @context @id value must be an array of strings or a string.",
           "jsonld.SyntaxError",
-          { code: "invalid IRI mapping", context: l }
+          { code: "invalid IRI mapping", context: d }
         );
       if (_ === null)
         k["@id"] = null;
       else if (!v.isKeyword(_) && _.match(y)) {
-        S.eventHandler && d({
+        S.eventHandler && l({
           event: {
             type: ["JsonLdEvent"],
             code: "reserved @id value",
@@ -19157,36 +19284,36 @@ function Kt() {
             }
           },
           options: S
-        }), R ? m.mappings.set(u, R) : m.mappings.delete(u);
+        }), R ? m.mappings.set(p, R) : m.mappings.delete(p);
         return;
-      } else if (_ !== u) {
-        if (_ = A(
+      } else if (_ !== p) {
+        if (_ = I(
           m,
           _,
           { vocab: !0, base: !1 },
-          l,
+          d,
           b,
           S
         ), !s(_) && !v.isKeyword(_))
           throw new t(
             "Invalid JSON-LD syntax; a @context @id value must be an absolute IRI, a blank node identifier, or a keyword.",
             "jsonld.SyntaxError",
-            { code: "invalid IRI mapping", context: l }
+            { code: "invalid IRI mapping", context: d }
           );
-        if (u.match(/(?::[^:])|\//)) {
-          const G = new Map(b).set(u, !0);
-          if (A(
+        if (p.match(/(?::[^:])|\//)) {
+          const G = new Map(b).set(p, !0);
+          if (I(
             m,
-            u,
+            p,
             { vocab: !0, base: !1 },
-            l,
+            d,
             G,
             S
           ) !== _)
             throw new t(
               "Invalid JSON-LD syntax; term in form of IRI must expand to definition.",
               "jsonld.SyntaxError",
-              { code: "invalid IRI mapping", context: l }
+              { code: "invalid IRI mapping", context: d }
             );
         }
         k["@id"] = _, k._prefix = E && !k._termHasColon && _.match(/[:\/\?#\[\]@]$/) !== null;
@@ -19194,63 +19321,63 @@ function Kt() {
     }
     if (!("@id" in k))
       if (k._termHasColon) {
-        const _ = u.substr(0, j);
-        if (l.hasOwnProperty(_) && v.createTermDefinition({
+        const _ = p.substr(0, j);
+        if (d.hasOwnProperty(_) && v.createTermDefinition({
           activeCtx: m,
-          localCtx: l,
+          localCtx: d,
           term: _,
           defined: b,
           options: S
         }), m.mappings.has(_)) {
-          const G = u.substr(j + 1);
+          const G = p.substr(j + 1);
           k["@id"] = m.mappings.get(_)["@id"] + G;
         } else
-          k["@id"] = u;
-      } else if (u === "@type")
-        k["@id"] = u;
+          k["@id"] = p;
+      } else if (p === "@type")
+        k["@id"] = p;
       else {
         if (!("@vocab" in m))
           throw new t(
             "Invalid JSON-LD syntax; @context terms must define an @id.",
             "jsonld.SyntaxError",
-            { code: "invalid IRI mapping", context: l, term: u }
+            { code: "invalid IRI mapping", context: d, term: p }
           );
-        k["@id"] = m["@vocab"] + u;
+        k["@id"] = m["@vocab"] + p;
       }
-    if ((P["@protected"] === !0 || b.get("@protected") === !0 && P["@protected"] !== !1) && (m.protected[u] = !0, k.protected = !0), b.set(u, !0), "@type" in P) {
+    if ((P["@protected"] === !0 || b.get("@protected") === !0 && P["@protected"] !== !1) && (m.protected[p] = !0, k.protected = !0), b.set(p, !0), "@type" in P) {
       let _ = P["@type"];
       if (!o(_))
         throw new t(
           "Invalid JSON-LD syntax; an @context @type value must be a string.",
           "jsonld.SyntaxError",
-          { code: "invalid type mapping", context: l }
+          { code: "invalid type mapping", context: d }
         );
       if (_ === "@json" || _ === "@none") {
         if (v.processingMode(m, 1))
           throw new t(
             `Invalid JSON-LD syntax; an @context @type value must not be "${_}" in JSON-LD 1.0 mode.`,
             "jsonld.SyntaxError",
-            { code: "invalid type mapping", context: l }
+            { code: "invalid type mapping", context: d }
           );
       } else if (_ !== "@id" && _ !== "@vocab") {
-        if (_ = A(
+        if (_ = I(
           m,
           _,
           { vocab: !0, base: !1 },
-          l,
+          d,
           b,
           S
         ), !s(_))
           throw new t(
             "Invalid JSON-LD syntax; an @context @type value must be an absolute IRI.",
             "jsonld.SyntaxError",
-            { code: "invalid type mapping", context: l }
+            { code: "invalid type mapping", context: d }
           );
         if (_.indexOf("_:") === 0)
           throw new t(
             "Invalid JSON-LD syntax; an @context @type value must be an IRI, not a blank node identifier.",
             "jsonld.SyntaxError",
-            { code: "invalid type mapping", context: l }
+            { code: "invalid type mapping", context: d }
           );
       }
       k["@type"] = _;
@@ -19265,14 +19392,14 @@ function Kt() {
             throw new t(
               "Invalid JSON-LD syntax; @context @container with @list must have no other values",
               "jsonld.SyntaxError",
-              { code: "invalid container mapping", context: l }
+              { code: "invalid container mapping", context: d }
             );
         } else if (_.includes("@graph")) {
           if (_.some((T) => T !== "@graph" && T !== "@id" && T !== "@index" && T !== "@set"))
             throw new t(
               "Invalid JSON-LD syntax; @context @container with @graph must have no other values other than @id, @index, and @set",
               "jsonld.SyntaxError",
-              { code: "invalid container mapping", context: l }
+              { code: "invalid container mapping", context: d }
             );
         } else
           L &= _.length <= (B ? 2 : 1);
@@ -19280,7 +19407,7 @@ function Kt() {
           throw new t(
             "Invalid JSON-LD syntax; container: @type requires @type to be @id or @vocab.",
             "jsonld.SyntaxError",
-            { code: "invalid type mapping", context: l }
+            { code: "invalid type mapping", context: d }
           );
       } else
         L &= !n(P["@container"]), L &= _.length <= 1;
@@ -19288,28 +19415,28 @@ function Kt() {
         throw new t(
           "Invalid JSON-LD syntax; @context @container value must be one of the following: " + G.join(", "),
           "jsonld.SyntaxError",
-          { code: "invalid container mapping", context: l }
+          { code: "invalid container mapping", context: d }
         );
       if (k.reverse && !_.every((T) => ["@index", "@set"].includes(T)))
         throw new t(
           "Invalid JSON-LD syntax; @context @container value for a @reverse type definition must be @index or @set.",
           "jsonld.SyntaxError",
-          { code: "invalid reverse property", context: l }
+          { code: "invalid reverse property", context: d }
         );
       k["@container"] = _;
     }
     if ("@index" in P) {
       if (!("@container" in P) || !k["@container"].includes("@index"))
         throw new t(
-          `Invalid JSON-LD syntax; @index without @index in @container: "${P["@index"]}" on term "${u}".`,
+          `Invalid JSON-LD syntax; @index without @index in @container: "${P["@index"]}" on term "${p}".`,
           "jsonld.SyntaxError",
-          { code: "invalid term definition", context: l }
+          { code: "invalid term definition", context: d }
         );
       if (!o(P["@index"]) || P["@index"].indexOf("@") === 0)
         throw new t(
-          `Invalid JSON-LD syntax; @index must expand to an IRI: "${P["@index"]}" on term "${u}".`,
+          `Invalid JSON-LD syntax; @index must expand to an IRI: "${P["@index"]}" on term "${p}".`,
           "jsonld.SyntaxError",
-          { code: "invalid term definition", context: l }
+          { code: "invalid term definition", context: d }
         );
       k["@index"] = P["@index"];
     }
@@ -19319,22 +19446,22 @@ function Kt() {
         throw new t(
           "Invalid JSON-LD syntax; @context @language value must be a string or null.",
           "jsonld.SyntaxError",
-          { code: "invalid language mapping", context: l }
+          { code: "invalid language mapping", context: d }
         );
       _ !== null && (_ = _.toLowerCase()), k["@language"] = _;
     }
     if ("@prefix" in P) {
-      if (u.match(/:|\//))
+      if (p.match(/:|\//))
         throw new t(
           "Invalid JSON-LD syntax; @context @prefix used on a compact IRI term",
           "jsonld.SyntaxError",
-          { code: "invalid term definition", context: l }
+          { code: "invalid term definition", context: d }
         );
       if (v.isKeyword(k["@id"]))
         throw new t(
           "Invalid JSON-LD syntax; keywords may not be used as prefixes",
           "jsonld.SyntaxError",
-          { code: "invalid term definition", context: l }
+          { code: "invalid term definition", context: d }
         );
       if (typeof P["@prefix"] == "boolean")
         k._prefix = P["@prefix"] === !0;
@@ -19342,7 +19469,7 @@ function Kt() {
         throw new t(
           "Invalid JSON-LD syntax; @context value for @prefix must be boolean",
           "jsonld.SyntaxError",
-          { code: "invalid @prefix value", context: l }
+          { code: "invalid @prefix value", context: d }
         );
     }
     if ("@direction" in P) {
@@ -19351,7 +19478,7 @@ function Kt() {
         throw new t(
           'Invalid JSON-LD syntax; @direction value must be null, "ltr", or "rtl".',
           "jsonld.SyntaxError",
-          { code: "invalid base direction", context: l }
+          { code: "invalid base direction", context: d }
         );
       k["@direction"] = _;
     }
@@ -19361,7 +19488,7 @@ function Kt() {
         throw new t(
           "Invalid JSON-LD syntax; @context @nest value must be a string which is not a keyword other than @nest.",
           "jsonld.SyntaxError",
-          { code: "invalid @nest value", context: l }
+          { code: "invalid @nest value", context: d }
         );
       k["@nest"] = _;
     }
@@ -19371,70 +19498,70 @@ function Kt() {
       throw new t(
         "Invalid JSON-LD syntax; @context and @preserve cannot be aliased.",
         "jsonld.SyntaxError",
-        { code: "invalid keyword alias", context: l }
+        { code: "invalid keyword alias", context: d }
       );
-    if (R && R.protected && !I && (m.protected[u] = !0, k.protected = !0, !g(R, k)))
+    if (R && R.protected && !A && (m.protected[p] = !0, k.protected = !0, !g(R, k)))
       throw new t(
         "Invalid JSON-LD syntax; tried to redefine a protected term.",
         "jsonld.SyntaxError",
-        { code: "protected term redefinition", context: l, term: u }
+        { code: "protected term redefinition", context: d, term: p }
       );
-  }, v.expandIri = (m, l, u, b) => A(
+  }, v.expandIri = (m, d, p, b) => I(
     m,
-    l,
-    u,
+    d,
+    p,
     void 0,
     void 0,
     b
   );
-  function A(m, l, u, b, S, I) {
-    if (l === null || !o(l) || v.isKeyword(l))
-      return l;
-    if (l.match(y))
+  function I(m, d, p, b, S, A) {
+    if (d === null || !o(d) || v.isKeyword(d))
+      return d;
+    if (d.match(y))
       return null;
-    if (b && b.hasOwnProperty(l) && S.get(l) !== !0 && v.createTermDefinition({
+    if (b && b.hasOwnProperty(d) && S.get(d) !== !0 && v.createTermDefinition({
       activeCtx: m,
       localCtx: b,
-      term: l,
+      term: d,
       defined: S,
-      options: I
-    }), u = u || {}, u.vocab) {
-      const R = m.mappings.get(l);
+      options: A
+    }), p = p || {}, p.vocab) {
+      const R = m.mappings.get(d);
       if (R === null)
         return null;
       if (i(R) && "@id" in R)
         return R["@id"];
     }
-    const P = l.indexOf(":");
+    const P = d.indexOf(":");
     if (P > 0) {
-      const R = l.substr(0, P), E = l.substr(P + 1);
+      const R = d.substr(0, P), E = d.substr(P + 1);
       if (R === "_" || E.indexOf("//") === 0)
-        return l;
+        return d;
       b && b.hasOwnProperty(R) && v.createTermDefinition({
         activeCtx: m,
         localCtx: b,
         term: R,
         defined: S,
-        options: I
+        options: A
       });
       const k = m.mappings.get(R);
       if (k && k._prefix)
         return k["@id"] + E;
-      if (s(l))
-        return l;
+      if (s(d))
+        return d;
     }
-    if (u.vocab && "@vocab" in m)
-      l = m["@vocab"] + l;
-    else if (u.base) {
+    if (p.vocab && "@vocab" in m)
+      d = m["@vocab"] + d;
+    else if (p.base) {
       let R, E;
-      "@base" in m ? m["@base"] ? (E = c(I.base, m["@base"]), R = c(E, l)) : (E = m["@base"], R = l) : (E = I.base, R = c(I.base, l)), l = R;
+      "@base" in m ? m["@base"] ? (E = c(A.base, m["@base"]), R = c(E, d)) : (E = m["@base"], R = d) : (E = A.base, R = c(A.base, d)), d = R;
     }
-    return l;
+    return d;
   }
   v.getInitialContext = (m) => {
-    const l = JSON.stringify({ processingMode: m.processingMode }), u = w.get(l);
-    if (u)
-      return u;
+    const d = JSON.stringify({ processingMode: m.processingMode }), p = x.get(d);
+    if (p)
+      return p;
     const b = {
       processingMode: m.processingMode,
       mappings: /* @__PURE__ */ new Map(),
@@ -19444,7 +19571,7 @@ function Kt() {
       revertToPreviousContext: E,
       protected: {}
     };
-    return w.size === x && w.clear(), w.set(l, b), b;
+    return x.size === w && x.clear(), x.set(d, b), b;
     function S() {
       const k = this;
       if (k.inverse)
@@ -19454,8 +19581,8 @@ function Kt() {
         const O = L.get(T);
         if (O === null)
           continue;
-        let V = O["@container"] || "@none";
-        if (V = [].concat(V).sort().join(""), O["@id"] === null)
+        let U = O["@container"] || "@none";
+        if (U = [].concat(U).sort().join(""), O["@id"] === null)
           continue;
         const D = f(O["@id"]);
         for (const $ of D) {
@@ -19468,11 +19595,11 @@ function Kt() {
             const z = { iri: $, terms: N[$] };
             $[0] in j ? j[$[0]].push(z) : j[$[0]] = [z];
           }
-          if (q[V] || (q[V] = {
+          if (q[U] || (q[U] = {
             "@language": {},
             "@type": {},
             "@any": {}
-          }), q = q[V], P(T, q["@any"], "@none"), O.reverse)
+          }), q = q[U], P(T, q["@any"], "@none"), O.reverse)
             P(T, q["@type"], "@reverse");
           else if (O["@type"] === "@none")
             P(T, q["@any"], "@none"), P(T, q["@language"], "@none"), P(T, q["@type"], "@none");
@@ -19497,16 +19624,16 @@ function Kt() {
         }
       }
       for (const T in j)
-        I(j, T, 1);
+        A(j, T, 1);
       return M;
     }
-    function I(k, M, j) {
+    function A(k, M, j) {
       const N = k[M], _ = k[M] = {};
       let G, L;
       for (const B of N)
         G = B.iri, j >= G.length ? L = "" : L = G[j], L in _ ? _[L].push(B) : _[L] = [B];
       for (const B in _)
-        B !== "" && I(_, B, j + 1);
+        B !== "" && A(_, B, j + 1);
     }
     function P(k, M, j) {
       M.hasOwnProperty(j) || (M[j] = k);
@@ -19518,21 +19645,21 @@ function Kt() {
     function E() {
       return this.previousContext ? this.previousContext.clone() : this;
     }
-  }, v.getContextValue = (m, l, u) => {
-    if (l === null)
-      return u === "@context" ? void 0 : null;
-    if (m.mappings.has(l)) {
-      const b = m.mappings.get(l);
-      if (r(u))
+  }, v.getContextValue = (m, d, p) => {
+    if (d === null)
+      return p === "@context" ? void 0 : null;
+    if (m.mappings.has(d)) {
+      const b = m.mappings.get(d);
+      if (r(p))
         return b;
-      if (b.hasOwnProperty(u))
-        return b[u];
+      if (b.hasOwnProperty(p))
+        return b[p];
     }
-    if (u === "@language" && u in m || u === "@direction" && u in m)
-      return m[u];
-    if (u !== "@context")
+    if (p === "@language" && p in m || p === "@direction" && p in m)
+      return m[p];
+    if (p !== "@context")
       return null;
-  }, v.processingMode = (m, l) => l.toString() >= "1.1" ? !m.processingMode || m.processingMode >= "json-ld-" + l.toString() : m.processingMode === "json-ld-1.0", v.isKeyword = (m) => {
+  }, v.processingMode = (m, d) => d.toString() >= "1.1" ? !m.processingMode || m.processingMode >= "json-ld-" + d.toString() : m.processingMode === "json-ld-1.0", v.isKeyword = (m) => {
     if (!o(m) || m[0] !== "@")
       return !1;
     switch (m) {
@@ -19567,36 +19694,36 @@ function Kt() {
     }
     return !1;
   };
-  function g(m, l) {
-    if (!(m && typeof m == "object") || !(l && typeof l == "object"))
-      return m === l;
-    const u = Array.isArray(m);
-    if (u !== Array.isArray(l))
+  function g(m, d) {
+    if (!(m && typeof m == "object") || !(d && typeof d == "object"))
+      return m === d;
+    const p = Array.isArray(m);
+    if (p !== Array.isArray(d))
       return !1;
-    if (u) {
-      if (m.length !== l.length)
+    if (p) {
+      if (m.length !== d.length)
         return !1;
-      for (let I = 0; I < m.length; ++I)
-        if (!g(m[I], l[I]))
+      for (let A = 0; A < m.length; ++A)
+        if (!g(m[A], d[A]))
           return !1;
       return !0;
     }
-    const b = Object.keys(m), S = Object.keys(l);
+    const b = Object.keys(m), S = Object.keys(d);
     if (b.length !== S.length)
       return !1;
-    for (const I in m) {
-      let P = m[I], R = l[I];
-      if (I === "@container" && Array.isArray(P) && Array.isArray(R) && (P = P.slice().sort(), R = R.slice().sort()), !g(P, R))
+    for (const A in m) {
+      let P = m[A], R = d[A];
+      if (A === "@container" && Array.isArray(P) && Array.isArray(R) && (P = P.slice().sort(), R = R.slice().sort()), !g(P, R))
         return !1;
     }
     return !0;
   }
-  return bs;
+  return ws;
 }
-var ws, id;
+var xs, sd;
 function Vh() {
-  if (id) return ws;
-  id = 1;
+  if (sd) return xs;
+  sd = 1;
   const e = He(), {
     isArray: t,
     isObject: n,
@@ -19607,26 +19734,26 @@ function Vh() {
     isList: s,
     isValue: a,
     isGraph: c,
-    isSubject: d
-  } = It(), {
-    expandIri: p,
+    isSubject: l
+  } = qt(), {
+    expandIri: u,
     getContextValue: y,
     isKeyword: f,
     process: h,
-    processingMode: w
-  } = Kt(), {
-    isAbsolute: x
-  } = Lt(), {
+    processingMode: x
+  } = Qt(), {
+    isAbsolute: w
+  } = Dt(), {
     REGEX_BCP47: v,
-    REGEX_KEYWORD: A,
+    REGEX_KEYWORD: I,
     addValue: g,
     asArray: m,
-    getValues: l,
-    validateTypeValue: u
+    getValues: d,
+    validateTypeValue: p
   } = Ze(), {
     handleEvent: b
-  } = Mn(), S = {};
-  ws = S, S.expand = async ({
+  } = Ln(), S = {};
+  xs = S, S.expand = async ({
     activeCtx: M,
     activeProperty: j = null,
     element: N,
@@ -19638,7 +19765,7 @@ function Vh() {
     if (N == null)
       return null;
     if (j === "@default" && (_ = Object.assign({}, _, { isFrame: !1 })), !t(N) && !n(N))
-      return !G && (j === null || p(
+      return !G && (j === null || u(
         M,
         j,
         { vocab: !0 },
@@ -19678,17 +19805,17 @@ function Vh() {
       }
       return z;
     }
-    const T = p(
+    const T = u(
       M,
       j,
       { vocab: !0 },
       _
     ), O = y(M, j, "@context");
     B = B || (M.previousContext ? M : null);
-    let V = Object.keys(N).sort(), D = !L;
-    if (D && B && V.length <= 2 && !V.includes("@context"))
-      for (const z of V) {
-        const H = p(
+    let U = Object.keys(N).sort(), D = !L;
+    if (D && B && U.length <= 2 && !U.includes("@context"))
+      for (const z of U) {
+        const H = u(
           B,
           z,
           { vocab: !0 },
@@ -19698,7 +19825,7 @@ function Vh() {
           D = !1, M = B;
           break;
         }
-        if (H === "@id" && V.length === 1) {
+        if (H === "@id" && U.length === 1) {
           D = !1;
           break;
         }
@@ -19713,12 +19840,12 @@ function Vh() {
       { activeCtx: M, localCtx: N["@context"], options: _ }
     )), B = M;
     let $ = null;
-    for (const z of V)
-      if (p(M, z, { vocab: !0 }, _) === "@type") {
+    for (const z of U)
+      if (u(M, z, { vocab: !0 }, _) === "@type") {
         $ = $ || z;
         const Q = N[z], J = Array.isArray(Q) ? Q.length > 1 ? Q.slice().sort() : Q : [Q];
-        for (const U of J) {
-          const F = y(B, U, "@context");
+        for (const V of J) {
+          const F = y(B, V, "@context");
           r(F) || (M = await h({
             activeCtx: M,
             localCtx: F,
@@ -19738,8 +19865,8 @@ function Vh() {
       insideList: G,
       typeKey: $,
       typeScopedContext: B
-    }), V = Object.keys(q);
-    let C = V.length;
+    }), U = Object.keys(q);
+    let C = U.length;
     if ("@value" in q) {
       if ("@type" in q && ("@language" in q || "@direction" in q))
         throw new e(
@@ -19754,8 +19881,8 @@ function Vh() {
           "jsonld.SyntaxError",
           { code: "invalid value object", element: q }
         );
-      const H = q["@value"] === null ? [] : m(q["@value"]), Q = l(q, "@type");
-      if (!(w(M, 1.1) && Q.includes("@json") && Q.length === 1)) if (H.length === 0)
+      const H = q["@value"] === null ? [] : m(q["@value"]), Q = d(q, "@type");
+      if (!(x(M, 1.1) && Q.includes("@json") && Q.length === 1)) if (H.length === 0)
         _.eventHandler && b({
           event: {
             type: ["JsonLdEvent"],
@@ -19775,7 +19902,7 @@ function Vh() {
             "jsonld.SyntaxError",
             { code: "invalid language-tagged value", element: q }
           );
-        if (!Q.every((J) => x(J) && !(o(J) && J.indexOf("_:") === 0) || i(J)))
+        if (!Q.every((J) => w(J) && !(o(J) && J.indexOf("_:") === 0) || i(J)))
           throw new e(
             'Invalid JSON-LD syntax; an element containing "@value" and "@type" must have an absolute IRI for the value of "@type".',
             "jsonld.SyntaxError",
@@ -19791,7 +19918,7 @@ function Vh() {
           "jsonld.SyntaxError",
           { code: "invalid set or list object", element: q }
         );
-      "@set" in q && (q = q["@set"], V = Object.keys(q), C = V.length);
+      "@set" in q && (q = q["@set"], U = Object.keys(q), C = U.length);
     } else C === 1 && "@language" in q && (_.eventHandler && b({
       event: {
         type: ["JsonLdEvent"],
@@ -19804,9 +19931,9 @@ function Vh() {
       },
       options: _
     }), q = null);
-    return n(q) && !_.keepFreeFloatingNodes && !G && (j === null || T === "@graph" || (y(M, j, "@container") || []).includes("@graph")) && (q = I({ value: q, count: C, options: _ })), q;
+    return n(q) && !_.keepFreeFloatingNodes && !G && (j === null || T === "@graph" || (y(M, j, "@container") || []).includes("@graph")) && (q = A({ value: q, count: C, options: _ })), q;
   };
-  function I({
+  function A({
     value: M,
     count: j,
     options: N
@@ -19842,9 +19969,9 @@ function Vh() {
     typeKey: T,
     typeScopedContext: O
   }) {
-    const V = Object.keys(_).sort(), D = [];
+    const U = Object.keys(_).sort(), D = [];
     let $;
-    const q = _[T] && p(
+    const q = _[T] && u(
       M,
       t(_[T]) ? _[T][0] : _[T],
       { vocab: !0 },
@@ -19853,12 +19980,12 @@ function Vh() {
         typeExpansion: !0
       }
     ) === "@json";
-    for (const C of V) {
+    for (const C of U) {
       let z = _[C], H;
       if (C === "@context")
         continue;
-      const Q = p(M, C, { vocab: !0 }, L);
-      if (Q === null || !(x(Q) || f(Q))) {
+      const Q = u(M, C, { vocab: !0 }, L);
+      if (Q === null || !(w(Q) || f(Q))) {
         L.eventHandler && b({
           event: {
             type: ["JsonLdEvent"],
@@ -19922,7 +20049,7 @@ function Vh() {
           "@id",
           m(z).map((Z) => {
             if (o(Z)) {
-              const K = p(M, Z, { base: !0 }, L);
+              const K = u(M, Z, { base: !0 }, L);
               return L.eventHandler && (K === null ? b(Z === null ? {
                 event: {
                   type: ["JsonLdEvent"],
@@ -19945,7 +20072,7 @@ function Vh() {
                   }
                 },
                 options: L
-              }) : x(K) || b({
+              }) : w(K) || b({
                 event: {
                   type: ["JsonLdEvent"],
                   code: "relative @id reference",
@@ -19967,27 +20094,27 @@ function Vh() {
       }
       if (Q === "@type") {
         n(z) && (z = Object.fromEntries(Object.entries(z).map(([Z, K]) => [
-          p(O, Z, { vocab: !0 }),
+          u(O, Z, { vocab: !0 }),
           m(K).map(
-            (W) => p(
+            (W) => u(
               O,
               W,
               { base: !0, vocab: !0 },
               { ...L, typeExpansion: !0 }
             )
           )
-        ]))), u(z, L.isFrame), g(
+        ]))), p(z, L.isFrame), g(
           G,
           "@type",
           m(z).map((Z) => {
             if (o(Z)) {
-              const K = p(
+              const K = u(
                 O,
                 Z,
                 { base: !0, vocab: !0 },
                 { ...L, typeExpansion: !0 }
               );
-              return K !== "@json" && !x(K) && L.eventHandler && b({
+              return K !== "@json" && !w(K) && L.eventHandler && b({
                 event: {
                   type: ["JsonLdEvent"],
                   code: "relative @type reference",
@@ -20006,14 +20133,14 @@ function Vh() {
         );
         continue;
       }
-      if (Q === "@included" && w(M, 1.1)) {
+      if (Q === "@included" && x(M, 1.1)) {
         const Z = m(await S.expand({
           activeCtx: M,
           activeProperty: j,
           element: z,
           options: L
         }));
-        if (!Z.every((K) => d(K)))
+        if (!Z.every((K) => l(K)))
           throw new e(
             "Invalid JSON-LD syntax; values of @included must expand to node objects.",
             "jsonld.SyntaxError",
@@ -20034,7 +20161,7 @@ function Vh() {
           { code: "invalid @graph value", value: z }
         );
       if (Q === "@value") {
-        $ = z, q && w(M, 1.1) ? G["@value"] = z : g(
+        $ = z, q && x(M, 1.1) ? G["@value"] = z : g(
           G,
           "@value",
           z,
@@ -20150,10 +20277,10 @@ function Vh() {
         continue;
       }
       let J = M;
-      const U = y(M, C, "@context");
-      r(U) || (J = await h({
+      const V = y(M, C, "@context");
+      r(V) || (J = await h({
         activeCtx: M,
-        localCtx: U,
+        localCtx: V,
         propagate: !0,
         overrideProtected: !0,
         options: L
@@ -20163,7 +20290,7 @@ function Vh() {
         const Z = y(J, C, "@direction");
         H = E(J, z, Z, L);
       } else if (F.includes("@index") && n(z)) {
-        const Z = F.includes("@graph"), K = y(J, C, "@index") || "@index", W = K !== "@index" && p(M, K, { vocab: !0 }, L);
+        const Z = F.includes("@graph"), K = y(J, C, "@index") || "@index", W = K !== "@index" && u(M, K, { vocab: !0 }, L);
         H = await k({
           activeCtx: J,
           options: L,
@@ -20219,7 +20346,7 @@ function Vh() {
         if (Q !== "@list" && !s(H) && F.includes("@list") && (H = { "@list": m(H) }), F.includes("@graph") && !F.some((Z) => Z === "@id" || Z === "@index")) {
           if (H = m(H), L.isFrame || (H = H.filter((Z) => {
             const K = Object.keys(Z).length;
-            return I({ value: Z, count: K, options: L }) !== null;
+            return A({ value: Z, count: K, options: L }) !== null;
           })), H.length === 0)
             continue;
           H = H.map((Z) => ({ "@graph": m(Z) }));
@@ -20244,7 +20371,7 @@ function Vh() {
         });
       }
     }
-    if ("@value" in G && !(G["@type"] === "@json" && w(M, 1.1))) {
+    if ("@value" in G && !(G["@type"] === "@json" && x(M, 1.1))) {
       if ((n($) || t($)) && !L.isFrame)
         throw new e(
           'Invalid JSON-LD syntax; "@value" value must not be an object or an array.',
@@ -20255,7 +20382,7 @@ function Vh() {
     for (const C of D) {
       const z = t(_[C]) ? _[C] : [_[C]];
       for (const H of z) {
-        if (!n(H) || Object.keys(H).some((Q) => p(M, Q, { vocab: !0 }, L) === "@value"))
+        if (!n(H) || Object.keys(H).some((Q) => u(M, Q, { vocab: !0 }, L) === "@value"))
           throw new e(
             "Invalid JSON-LD syntax; nested value must be a node object.",
             "jsonld.SyntaxError",
@@ -20278,16 +20405,16 @@ function Vh() {
   function R({ activeCtx: M, activeProperty: j, value: N, options: _ }) {
     if (N == null)
       return null;
-    const G = p(
+    const G = u(
       M,
       j,
       { vocab: !0 },
       _
     );
     if (G === "@id")
-      return p(M, N, { base: !0 }, _);
+      return u(M, N, { base: !0 }, _);
     if (G === "@type")
-      return p(
+      return u(
         M,
         N,
         { vocab: !0, base: !0 },
@@ -20295,8 +20422,8 @@ function Vh() {
       );
     const L = y(M, j, "@type");
     if ((L === "@id" || G === "@graph") && o(N)) {
-      const T = p(M, N, { base: !0 }, _);
-      return T === null && N.match(A) && _.eventHandler && b({
+      const T = u(M, N, { base: !0 }, _);
+      return T === null && N.match(I) && _.eventHandler && b({
         event: {
           type: ["JsonLdEvent"],
           code: "reserved @id value",
@@ -20311,7 +20438,7 @@ function Vh() {
     }
     if (L === "@vocab" && o(N))
       return {
-        "@id": p(M, N, { vocab: !0, base: !0 }, _)
+        "@id": u(M, N, { vocab: !0, base: !0 }, _)
       };
     if (f(G))
       return N;
@@ -20329,19 +20456,19 @@ function Vh() {
   function E(M, j, N, _) {
     const G = [], L = Object.keys(j).sort();
     for (const B of L) {
-      const T = p(M, B, { vocab: !0 }, _);
+      const T = u(M, B, { vocab: !0 }, _);
       let O = j[B];
       t(O) || (O = [O]);
-      for (const V of O) {
-        if (V === null)
+      for (const U of O) {
+        if (U === null)
           continue;
-        if (!o(V))
+        if (!o(U))
           throw new e(
             "Invalid JSON-LD syntax; language map values must be strings.",
             "jsonld.SyntaxError",
             { code: "invalid language map value", languageMap: j }
           );
-        const D = { "@value": V };
+        const D = { "@value": U };
         T !== "@none" && (B.match(v) || _.eventHandler && b({
           event: {
             type: ["JsonLdEvent"],
@@ -20367,9 +20494,9 @@ function Vh() {
     indexKey: L,
     propertyIndex: B
   }) {
-    const T = [], O = Object.keys(_).sort(), V = L === "@type";
+    const T = [], O = Object.keys(_).sort(), U = L === "@type";
     for (let D of O) {
-      if (V) {
+      if (U) {
         const C = y(M, D, "@context");
         r(C) || (M = await h({
           activeCtx: M,
@@ -20390,7 +20517,7 @@ function Vh() {
       let q;
       B ? D === "@none" ? q = "@none" : q = R(
         { activeCtx: M, activeProperty: L, value: D, options: j }
-      ) : q = p(M, D, { vocab: !0 }, j), L === "@id" ? D = p(M, D, { base: !0 }, j) : V && (D = q);
+      ) : q = u(M, D, { vocab: !0 }, j), L === "@id" ? D = u(M, D, { base: !0 }, j) : U && (D = q);
       for (let C of $) {
         if (G && !c(C) && (C = { "@graph": [C] }), L === "@type")
           q === "@none" || (C["@type"] ? C["@type"] = [D].concat(C["@type"]) : C["@type"] = [D]);
@@ -20411,21 +20538,21 @@ function Vh() {
     }
     return T;
   }
-  return ws;
+  return xs;
 }
-var xs, rd;
-function mr() {
-  if (rd) return xs;
-  rd = 1;
-  const { isKeyword: e } = Kt(), t = It(), n = Ne(), i = Ze(), o = He(), r = {};
-  return xs = r, r.createMergedNodeMap = (s, a) => {
+var Ss, ad;
+function yr() {
+  if (ad) return Ss;
+  ad = 1;
+  const { isKeyword: e } = Qt(), t = qt(), n = Ne(), i = Ze(), o = He(), r = {};
+  return Ss = r, r.createMergedNodeMap = (s, a) => {
     a = a || {};
-    const c = a.issuer || new i.IdentifierIssuer("_:b"), d = { "@default": {} };
-    return r.createNodeMap(s, d, "@default", c), r.mergeNodeMaps(d);
-  }, r.createNodeMap = (s, a, c, d, p, y) => {
+    const c = a.issuer || new i.IdentifierIssuer("_:b"), l = { "@default": {} };
+    return r.createNodeMap(s, l, "@default", c), r.mergeNodeMaps(l);
+  }, r.createNodeMap = (s, a, c, l, u, y) => {
     if (n.isArray(s)) {
-      for (const x of s)
-        r.createNodeMap(x, a, c, d, void 0, y);
+      for (const w of s)
+        r.createNodeMap(w, a, c, l, void 0, y);
       return;
     }
     if (!n.isObject(s)) {
@@ -20434,113 +20561,113 @@ function mr() {
     }
     if (t.isValue(s)) {
       if ("@type" in s) {
-        let x = s["@type"];
-        x.indexOf("_:") === 0 && (s["@type"] = x = d.getId(x));
+        let w = s["@type"];
+        w.indexOf("_:") === 0 && (s["@type"] = w = l.getId(w));
       }
       y && y.push(s);
       return;
     } else if (y && t.isList(s)) {
-      const x = [];
-      r.createNodeMap(s["@list"], a, c, d, p, x), y.push({ "@list": x });
+      const w = [];
+      r.createNodeMap(s["@list"], a, c, l, u, w), y.push({ "@list": w });
       return;
     }
     if ("@type" in s) {
-      const x = s["@type"];
-      for (const v of x)
-        v.indexOf("_:") === 0 && d.getId(v);
+      const w = s["@type"];
+      for (const v of w)
+        v.indexOf("_:") === 0 && l.getId(v);
     }
-    n.isUndefined(p) && (p = t.isBlankNode(s) ? d.getId(s["@id"]) : s["@id"]), y && y.push({ "@id": p });
-    const f = a[c], h = f[p] = f[p] || {};
-    h["@id"] = p;
-    const w = Object.keys(s).sort();
-    for (let x of w) {
-      if (x === "@id")
+    n.isUndefined(u) && (u = t.isBlankNode(s) ? l.getId(s["@id"]) : s["@id"]), y && y.push({ "@id": u });
+    const f = a[c], h = f[u] = f[u] || {};
+    h["@id"] = u;
+    const x = Object.keys(s).sort();
+    for (let w of x) {
+      if (w === "@id")
         continue;
-      if (x === "@reverse") {
-        const A = { "@id": p }, g = s["@reverse"];
+      if (w === "@reverse") {
+        const I = { "@id": u }, g = s["@reverse"];
         for (const m in g) {
-          const l = g[m];
-          for (const u of l) {
-            let b = u["@id"];
-            t.isBlankNode(u) && (b = d.getId(b)), r.createNodeMap(u, a, c, d, b), i.addValue(
+          const d = g[m];
+          for (const p of d) {
+            let b = p["@id"];
+            t.isBlankNode(p) && (b = l.getId(b)), r.createNodeMap(p, a, c, l, b), i.addValue(
               f[b],
               m,
-              A,
+              I,
               { propertyIsArray: !0, allowDuplicate: !1 }
             );
           }
         }
         continue;
       }
-      if (x === "@graph") {
-        p in a || (a[p] = {}), r.createNodeMap(s[x], a, p, d);
+      if (w === "@graph") {
+        u in a || (a[u] = {}), r.createNodeMap(s[w], a, u, l);
         continue;
       }
-      if (x === "@included") {
-        r.createNodeMap(s[x], a, c, d);
+      if (w === "@included") {
+        r.createNodeMap(s[w], a, c, l);
         continue;
       }
-      if (x !== "@type" && e(x)) {
-        if (x === "@index" && x in h && (s[x] !== h[x] || s[x]["@id"] !== h[x]["@id"]))
+      if (w !== "@type" && e(w)) {
+        if (w === "@index" && w in h && (s[w] !== h[w] || s[w]["@id"] !== h[w]["@id"]))
           throw new o(
             "Invalid JSON-LD syntax; conflicting @index property detected.",
             "jsonld.SyntaxError",
             { code: "conflicting indexes", subject: h }
           );
-        h[x] = s[x];
+        h[w] = s[w];
         continue;
       }
-      const v = s[x];
-      if (x.indexOf("_:") === 0 && (x = d.getId(x)), v.length === 0) {
-        i.addValue(h, x, [], { propertyIsArray: !0 });
+      const v = s[w];
+      if (w.indexOf("_:") === 0 && (w = l.getId(w)), v.length === 0) {
+        i.addValue(h, w, [], { propertyIsArray: !0 });
         continue;
       }
-      for (let A of v)
-        if (x === "@type" && (A = A.indexOf("_:") === 0 ? d.getId(A) : A), t.isSubject(A) || t.isSubjectReference(A)) {
-          if ("@id" in A && !A["@id"])
+      for (let I of v)
+        if (w === "@type" && (I = I.indexOf("_:") === 0 ? l.getId(I) : I), t.isSubject(I) || t.isSubjectReference(I)) {
+          if ("@id" in I && !I["@id"])
             continue;
-          const g = t.isBlankNode(A) ? d.getId(A["@id"]) : A["@id"];
+          const g = t.isBlankNode(I) ? l.getId(I["@id"]) : I["@id"];
           i.addValue(
             h,
-            x,
+            w,
             { "@id": g },
             { propertyIsArray: !0, allowDuplicate: !1 }
-          ), r.createNodeMap(A, a, c, d, g);
-        } else if (t.isValue(A))
+          ), r.createNodeMap(I, a, c, l, g);
+        } else if (t.isValue(I))
           i.addValue(
             h,
-            x,
-            A,
+            w,
+            I,
             { propertyIsArray: !0, allowDuplicate: !1 }
           );
-        else if (t.isList(A)) {
+        else if (t.isList(I)) {
           const g = [];
-          r.createNodeMap(A["@list"], a, c, d, p, g), A = { "@list": g }, i.addValue(
+          r.createNodeMap(I["@list"], a, c, l, u, g), I = { "@list": g }, i.addValue(
             h,
-            x,
-            A,
+            w,
+            I,
             { propertyIsArray: !0, allowDuplicate: !1 }
           );
         } else
-          r.createNodeMap(A, a, c, d, p), i.addValue(
+          r.createNodeMap(I, a, c, l, u), i.addValue(
             h,
-            x,
-            A,
+            w,
+            I,
             { propertyIsArray: !0, allowDuplicate: !1 }
           );
     }
   }, r.mergeNodeMapGraphs = (s) => {
     const a = {};
     for (const c of Object.keys(s).sort())
-      for (const d of Object.keys(s[c]).sort()) {
-        const p = s[c][d];
-        d in a || (a[d] = { "@id": d });
-        const y = a[d];
-        for (const f of Object.keys(p).sort())
+      for (const l of Object.keys(s[c]).sort()) {
+        const u = s[c][l];
+        l in a || (a[l] = { "@id": l });
+        const y = a[l];
+        for (const f of Object.keys(u).sort())
           if (e(f) && f !== "@type")
-            y[f] = i.clone(p[f]);
+            y[f] = i.clone(u[f]);
           else
-            for (const h of p[f])
+            for (const h of u[f])
               i.addValue(
                 y,
                 f,
@@ -20551,58 +20678,58 @@ function mr() {
     return a;
   }, r.mergeNodeMaps = (s) => {
     const a = s["@default"], c = Object.keys(s).sort();
-    for (const d of c) {
-      if (d === "@default")
+    for (const l of c) {
+      if (l === "@default")
         continue;
-      const p = s[d];
-      let y = a[d];
-      y ? "@graph" in y || (y["@graph"] = []) : a[d] = y = {
-        "@id": d,
+      const u = s[l];
+      let y = a[l];
+      y ? "@graph" in y || (y["@graph"] = []) : a[l] = y = {
+        "@id": l,
         "@graph": []
       };
       const f = y["@graph"];
-      for (const h of Object.keys(p).sort()) {
-        const w = p[h];
-        t.isSubjectReference(w) || f.push(w);
+      for (const h of Object.keys(u).sort()) {
+        const x = u[h];
+        t.isSubjectReference(x) || f.push(x);
       }
     }
     return a;
-  }, xs;
+  }, Ss;
 }
-var Ss, sd;
-function Uh() {
-  if (sd) return Ss;
-  sd = 1;
+var Is, od;
+function Gh() {
+  if (od) return Is;
+  od = 1;
   const {
     isSubjectReference: e
-  } = It(), {
+  } = qt(), {
     createMergedNodeMap: t
-  } = mr(), n = {};
-  return Ss = n, n.flatten = (i) => {
+  } = yr(), n = {};
+  return Is = n, n.flatten = (i) => {
     const o = t(i), r = [], s = Object.keys(o).sort();
     for (let a = 0; a < s.length; ++a) {
       const c = o[s[a]];
       e(c) || r.push(c);
     }
     return r;
-  }, Ss;
+  }, Is;
 }
-var As, ad;
-function Gh() {
-  if (ad) return As;
-  ad = 1;
-  const e = He(), t = It(), n = Ne(), {
+var As, cd;
+function Fh() {
+  if (cd) return As;
+  cd = 1;
+  const e = He(), t = qt(), n = Ne(), {
     REGEX_BCP47: i,
     addValue: o
   } = Ze(), {
     handleEvent: r
-  } = Mn(), {
+  } = Ln(), {
     // RDF,
     RDF_LIST: s,
     RDF_FIRST: a,
     RDF_REST: c,
-    RDF_NIL: d,
-    RDF_TYPE: p,
+    RDF_NIL: l,
+    RDF_TYPE: u,
     // RDF_PLAIN_LITERAL,
     // RDF_XML_LITERAL,
     RDF_JSON_LITERAL: y,
@@ -20611,15 +20738,15 @@ function Gh() {
     // XSD,
     XSD_BOOLEAN: f,
     XSD_DOUBLE: h,
-    XSD_INTEGER: w,
-    XSD_STRING: x
-  } = va(), v = {};
+    XSD_INTEGER: x,
+    XSD_STRING: w
+  } = wa(), v = {};
   As = v, v.fromRDF = async (g, m) => {
     const {
-      useRdfType: l = !1,
-      useNativeTypes: u = !1,
+      useRdfType: d = !1,
+      useNativeTypes: p = !1,
       rdfDirection: b = null
-    } = m, S = {}, I = { "@default": S }, P = {};
+    } = m, S = {}, A = { "@default": S }, P = {};
     if (b) {
       if (b === "compound-literal")
         throw new e(
@@ -20636,17 +20763,17 @@ function Gh() {
     }
     for (const k of g) {
       const M = k.graph.termType === "DefaultGraph" ? "@default" : k.graph.value;
-      M in I || (I[M] = {}), M !== "@default" && !(M in S) && (S[M] = { "@id": M });
-      const j = I[M], N = k.subject.value, _ = k.predicate.value, G = k.object;
+      M in A || (A[M] = {}), M !== "@default" && !(M in S) && (S[M] = { "@id": M });
+      const j = A[M], N = k.subject.value, _ = k.predicate.value, G = k.object;
       N in j || (j[N] = { "@id": N });
       const L = j[N], B = G.termType.endsWith("Node");
-      if (B && !(G.value in j) && (j[G.value] = { "@id": G.value }), _ === p && !l && B) {
+      if (B && !(G.value in j) && (j[G.value] = { "@id": G.value }), _ === u && !d && B) {
         o(L, "@type", G.value, { propertyIsArray: !0 });
         continue;
       }
-      const T = A(G, u, b, m);
+      const T = I(G, p, b, m);
       if (o(L, _, T, { propertyIsArray: !0 }), B)
-        if (G.value === d) {
+        if (G.value === l) {
           const O = j[G.value];
           "usages" in O || (O.usages = []), O.usages.push({
             node: L,
@@ -20659,11 +20786,11 @@ function Gh() {
           value: T
         };
     }
-    for (const k in I) {
-      const M = I[k];
-      if (!(d in M))
+    for (const k in A) {
+      const M = A[k];
+      if (!(l in M))
         continue;
-      const j = M[d];
+      const j = M[l];
       if (j.usages) {
         for (let N of j.usages) {
           let _ = N.node, G = N.property, L = N.value;
@@ -20672,8 +20799,8 @@ function Gh() {
           for (; G === c && n.isObject(P[_["@id"]]) && n.isArray(_[a]) && _[a].length === 1 && n.isArray(_[c]) && _[c].length === 1 && (O === 3 || O === 4 && n.isArray(_["@type"]) && _["@type"].length === 1 && _["@type"][0] === s) && (B.push(_[a][0]), T.push(_["@id"]), N = P[_["@id"]], _ = N.node, G = N.property, L = N.value, O = Object.keys(_).length, !!t.isBlankNode(_)); )
             ;
           delete L["@id"], L["@list"] = B.reverse();
-          for (const V of T)
-            delete M[V];
+          for (const U of T)
+            delete M[U];
         }
         delete j.usages;
       }
@@ -20681,8 +20808,8 @@ function Gh() {
     const R = [], E = Object.keys(S).sort();
     for (const k of E) {
       const M = S[k];
-      if (k in I) {
-        const j = M["@graph"] = [], N = I[k], _ = Object.keys(N).sort();
+      if (k in A) {
+        const j = M["@graph"] = [], N = A[k], _ = Object.keys(N).sort();
         for (const G of _) {
           const L = N[G];
           t.isSubjectReference(L) || j.push(L);
@@ -20692,12 +20819,12 @@ function Gh() {
     }
     return R;
   };
-  function A(g, m, l, u) {
+  function I(g, m, d, p) {
     if (g.termType.endsWith("Node"))
       return { "@id": g.value };
     const b = { "@value": g.value };
     if (g.language)
-      g.language.match(i) || u.eventHandler && r({
+      g.language.match(i) || p.eventHandler && r({
         event: {
           type: ["JsonLdEvent"],
           code: "invalid @language value",
@@ -20707,19 +20834,19 @@ function Gh() {
             language: g.language
           }
         },
-        options: u
+        options: p
       }), b["@language"] = g.language;
     else {
       let S = g.datatype.value;
-      if (S || (S = x), S === y) {
+      if (S || (S = w), S === y) {
         S = "@json";
         try {
           b["@value"] = JSON.parse(b["@value"]);
-        } catch (I) {
+        } catch (A) {
           throw new e(
             "JSON literal could not be parsed.",
             "jsonld.InvalidJsonLiteral",
-            { code: "invalid JSON literal", value: b["@value"], cause: I }
+            { code: "invalid JSON literal", value: b["@value"], cause: A }
           );
         }
       }
@@ -20727,34 +20854,34 @@ function Gh() {
         if (S === f)
           b["@value"] === "true" ? b["@value"] = !0 : b["@value"] === "false" && (b["@value"] = !1);
         else if (n.isNumeric(b["@value"]))
-          if (S === w) {
-            const I = parseInt(b["@value"], 10);
-            I.toFixed(0) === b["@value"] && (b["@value"] = I);
+          if (S === x) {
+            const A = parseInt(b["@value"], 10);
+            A.toFixed(0) === b["@value"] && (b["@value"] = A);
           } else S === h && (b["@value"] = parseFloat(b["@value"]));
-        [f, w, h, x].includes(S) || (b["@type"] = S);
-      } else if (l === "i18n-datatype" && S.startsWith("https://www.w3.org/ns/i18n#")) {
-        const [, I, P] = S.split(/[#_]/);
-        I.length > 0 && (b["@language"] = I, I.match(i) || u.eventHandler && r({
+        [f, x, h, w].includes(S) || (b["@type"] = S);
+      } else if (d === "i18n-datatype" && S.startsWith("https://www.w3.org/ns/i18n#")) {
+        const [, A, P] = S.split(/[#_]/);
+        A.length > 0 && (b["@language"] = A, A.match(i) || p.eventHandler && r({
           event: {
             type: ["JsonLdEvent"],
             code: "invalid @language value",
             level: "warning",
             message: "@language value must be valid BCP47.",
             details: {
-              language: I
+              language: A
             }
           },
-          options: u
+          options: p
         })), b["@direction"] = P;
-      } else S !== x && (b["@type"] = S);
+      } else S !== w && (b["@type"] = S);
     }
     return b;
   }
   return As;
 }
-var Is, od;
-function Fh() {
-  return od || (od = 1, Is = function e(t) {
+var qs, dd;
+function Bh() {
+  return dd || (dd = 1, qs = function e(t) {
     return t === null || typeof t != "object" || t.toJSON != null ? JSON.stringify(t) : Array.isArray(t) ? "[" + t.reduce((n, i, o) => {
       const r = o === 0 ? "" : ",", s = i === void 0 || typeof i == "symbol" ? null : i;
       return n + r + e(s);
@@ -20764,20 +20891,20 @@ function Fh() {
       const r = n.length === 0 ? "" : ",";
       return n + r + e(i) + ":" + e(t[i]);
     }, "") + "}";
-  }), Is;
+  }), qs;
 }
-var qs, cd;
-function Bh() {
-  if (cd) return qs;
-  cd = 1;
-  const { createNodeMap: e } = mr(), { isKeyword: t } = Kt(), n = It(), i = Fh(), o = He(), r = Ne(), s = Ze(), {
+var Rs, ld;
+function Zh() {
+  if (ld) return Rs;
+  ld = 1;
+  const { createNodeMap: e } = yr(), { isKeyword: t } = Qt(), n = qt(), i = Bh(), o = He(), r = Ne(), s = Ze(), {
     handleEvent: a
-  } = Mn(), {
+  } = Ln(), {
     // RDF,
     // RDF_LIST,
     RDF_FIRST: c,
-    RDF_REST: d,
-    RDF_NIL: p,
+    RDF_REST: l,
+    RDF_NIL: u,
     RDF_TYPE: y,
     // RDF_PLAIN_LITERAL,
     // RDF_XML_LITERAL,
@@ -20785,14 +20912,14 @@ function Bh() {
     // RDF_OBJECT,
     RDF_LANGSTRING: h,
     // XSD,
-    XSD_BOOLEAN: w,
-    XSD_DOUBLE: x,
+    XSD_BOOLEAN: x,
+    XSD_DOUBLE: w,
     XSD_INTEGER: v,
-    XSD_STRING: A
-  } = va(), {
+    XSD_STRING: I
+  } = wa(), {
     isAbsolute: g
-  } = Lt(), m = {};
-  qs = m, m.toRDF = (S, I) => {
+  } = Dt(), m = {};
+  Rs = m, m.toRDF = (S, A) => {
     const P = new s.IdentifierIssuer("_:b"), R = { "@default": {} };
     e(S, R, "@default", P);
     const E = [], k = Object.keys(R).sort();
@@ -20803,7 +20930,7 @@ function Bh() {
       else if (g(M))
         M.startsWith("_:") ? j = { termType: "BlankNode" } : j = { termType: "NamedNode" }, j.value = M;
       else {
-        I.eventHandler && a({
+        A.eventHandler && a({
           event: {
             type: ["JsonLdEvent"],
             code: "relative graph reference",
@@ -20813,18 +20940,18 @@ function Bh() {
               graph: M
             }
           },
-          options: I
+          options: A
         });
         continue;
       }
-      l(E, R[M], j, P, I);
+      d(E, R[M], j, P, A);
     }
     return E;
   };
-  function l(S, I, P, R, E) {
-    const k = Object.keys(I).sort();
+  function d(S, A, P, R, E) {
+    const k = Object.keys(A).sort();
     for (const M of k) {
-      const j = I[M], N = Object.keys(j).sort();
+      const j = A[M], N = Object.keys(j).sort();
       for (let _ of N) {
         const G = j[_];
         if (_ === "@type")
@@ -20879,7 +21006,7 @@ function Bh() {
                 message: "Dropping blank node predicate.",
                 details: {
                   // FIXME: add better issuer API to get reverse mapping
-                  property: R.getOldIds().find((V) => R.getId(V) === _)
+                  property: R.getOldIds().find((U) => R.getId(U) === _)
                 }
               },
               options: E
@@ -20904,18 +21031,18 @@ function Bh() {
       }
     }
   }
-  function u(S, I, P, R, E, k) {
-    const M = { termType: "NamedNode", value: c }, j = { termType: "NamedNode", value: d }, N = { termType: "NamedNode", value: p }, _ = S.pop(), G = _ ? { termType: "BlankNode", value: I.getId() } : N;
+  function p(S, A, P, R, E, k) {
+    const M = { termType: "NamedNode", value: c }, j = { termType: "NamedNode", value: l }, N = { termType: "NamedNode", value: u }, _ = S.pop(), G = _ ? { termType: "BlankNode", value: A.getId() } : N;
     let L = G;
     for (const B of S) {
       const T = b(
         B,
-        I,
+        A,
         P,
         R,
         E,
         k
-      ), O = { termType: "BlankNode", value: I.getId() };
+      ), O = { termType: "BlankNode", value: A.getId() };
       P.push({
         subject: L,
         predicate: M,
@@ -20931,7 +21058,7 @@ function Bh() {
     if (_) {
       const B = b(
         _,
-        I,
+        A,
         P,
         R,
         E,
@@ -20951,7 +21078,7 @@ function Bh() {
     }
     return G;
   }
-  function b(S, I, P, R, E, k) {
+  function b(S, A, P, R, E, k) {
     const M = {};
     if (n.isValue(S)) {
       M.termType = "Literal", M.value = void 0, M.datatype = {
@@ -20962,9 +21089,9 @@ function Bh() {
       if (N === "@json")
         M.value = i(j), M.datatype.value = f;
       else if (r.isBoolean(j))
-        M.value = j.toString(), M.datatype.value = N || w;
-      else if (r.isDouble(j) || N === x)
-        r.isDouble(j) || (j = parseFloat(j)), M.value = j.toExponential(15).replace(/(\d)0*e\+?/, "$1E"), M.datatype.value = N || x;
+        M.value = j.toString(), M.datatype.value = N || x;
+      else if (r.isDouble(j) || N === w)
+        r.isDouble(j) || (j = parseFloat(j)), M.value = j.toExponential(15).replace(/(\d)0*e\+?/, "$1E"), M.datatype.value = N || w;
       else if (r.isNumber(j))
         M.value = j.toFixed(0), M.datatype.value = N || v;
       else if ("@direction" in S && E === "i18n-datatype") {
@@ -21005,12 +21132,12 @@ function Bh() {
             }
           },
           options: k
-        }), M.value = j, M.datatype.value = N || A);
+        }), M.value = j, M.datatype.value = N || I);
       }
     } else if (n.isList(S)) {
-      const j = u(
+      const j = p(
         S["@list"],
-        I,
+        A,
         P,
         R,
         E,
@@ -21034,17 +21161,17 @@ function Bh() {
       options: k
     }), null) : M;
   }
-  return qs;
+  return Rs;
 }
-var Rs, dd;
-function Zh() {
-  if (dd) return Rs;
-  dd = 1;
-  const { isKeyword: e } = Kt(), t = It(), n = Ne(), i = Ze(), o = Lt(), r = He(), {
+var js, ud;
+function Hh() {
+  if (ud) return js;
+  ud = 1;
+  const { isKeyword: e } = Qt(), t = qt(), n = Ne(), i = Ze(), o = Dt(), r = He(), {
     createNodeMap: s,
     mergeNodeMapGraphs: a
-  } = mr(), c = {};
-  Rs = c, c.frameMergedOrDefault = (l, u, b) => {
+  } = yr(), c = {};
+  js = c, c.frameMergedOrDefault = (d, p, b) => {
     const S = {
       options: b,
       embedded: !1,
@@ -21053,56 +21180,56 @@ function Zh() {
       subjectStack: [],
       link: {},
       bnodeMap: {}
-    }, I = new i.IdentifierIssuer("_:b");
-    s(l, S.graphMap, "@default", I), b.merged && (S.graphMap["@merged"] = a(S.graphMap), S.graph = "@merged"), S.subjects = S.graphMap[S.graph];
+    }, A = new i.IdentifierIssuer("_:b");
+    s(d, S.graphMap, "@default", A), b.merged && (S.graphMap["@merged"] = a(S.graphMap), S.graph = "@merged"), S.subjects = S.graphMap[S.graph];
     const P = [];
-    c.frame(S, Object.keys(S.subjects).sort(), u, P), b.pruneBlankNodeIdentifiers && (b.bnodesToClear = Object.keys(S.bnodeMap).filter((R) => S.bnodeMap[R].length === 1));
+    c.frame(S, Object.keys(S.subjects).sort(), p, P), b.pruneBlankNodeIdentifiers && (b.bnodesToClear = Object.keys(S.bnodeMap).filter((R) => S.bnodeMap[R].length === 1));
     // remove @preserve from results
     return b.link = {}, v(P, b);
-  }, c.frame = (l, u, b, S, I = null) => {
+  }, c.frame = (d, p, b, S, A = null) => {
     f(b), b = b[0];
-    const P = l.options, R = {
+    const P = d.options, R = {
       embed: y(b, P, "embed"),
       explicit: y(b, P, "explicit"),
       requireAll: y(b, P, "requireAll")
     };
-    l.link.hasOwnProperty(l.graph) || (l.link[l.graph] = {});
-    const E = l.link[l.graph], k = h(l, u, b, R), M = Object.keys(k).sort();
+    d.link.hasOwnProperty(d.graph) || (d.link[d.graph] = {});
+    const E = d.link[d.graph], k = h(d, p, b, R), M = Object.keys(k).sort();
     for (const j of M) {
       const N = k[j];
-      if (I === null ? l.uniqueEmbeds = { [l.graph]: {} } : l.uniqueEmbeds[l.graph] = l.uniqueEmbeds[l.graph] || {}, R.embed === "@link" && j in E) {
-        A(S, I, E[j]);
+      if (A === null ? d.uniqueEmbeds = { [d.graph]: {} } : d.uniqueEmbeds[d.graph] = d.uniqueEmbeds[d.graph] || {}, R.embed === "@link" && j in E) {
+        I(S, A, E[j]);
         continue;
       }
       const _ = { "@id": j };
-      if (j.indexOf("_:") === 0 && i.addValue(l.bnodeMap, j, _, { propertyIsArray: !0 }), E[j] = _, (R.embed === "@first" || R.embed === "@last") && l.is11)
+      if (j.indexOf("_:") === 0 && i.addValue(d.bnodeMap, j, _, { propertyIsArray: !0 }), E[j] = _, (R.embed === "@first" || R.embed === "@last") && d.is11)
         throw new r(
           "Invalid JSON-LD syntax; invalid value of @embed.",
           "jsonld.SyntaxError",
           { code: "invalid @embed value", frame: b }
         );
-      if (!(!l.embedded && l.uniqueEmbeds[l.graph].hasOwnProperty(j))) {
-        if (l.embedded && (R.embed === "@never" || p(N, l.graph, l.subjectStack))) {
-          A(S, I, _);
+      if (!(!d.embedded && d.uniqueEmbeds[d.graph].hasOwnProperty(j))) {
+        if (d.embedded && (R.embed === "@never" || u(N, d.graph, d.subjectStack))) {
+          I(S, A, _);
           continue;
         }
-        if (l.embedded && (R.embed == "@first" || R.embed == "@once") && l.uniqueEmbeds[l.graph].hasOwnProperty(j)) {
-          A(S, I, _);
+        if (d.embedded && (R.embed == "@first" || R.embed == "@once") && d.uniqueEmbeds[d.graph].hasOwnProperty(j)) {
+          I(S, A, _);
           continue;
         }
-        if (R.embed === "@last" && j in l.uniqueEmbeds[l.graph] && x(l, j), l.uniqueEmbeds[l.graph][j] = { parent: S, property: I }, l.subjectStack.push({ subject: N, graph: l.graph }), j in l.graphMap) {
+        if (R.embed === "@last" && j in d.uniqueEmbeds[d.graph] && w(d, j), d.uniqueEmbeds[d.graph][j] = { parent: S, property: A }, d.subjectStack.push({ subject: N, graph: d.graph }), j in d.graphMap) {
           let G = !1, L = null;
-          "@graph" in b ? (L = b["@graph"][0], G = !(j === "@merged" || j === "@default"), n.isObject(L) || (L = {})) : (G = l.graph !== "@merged", L = {}), G && c.frame(
-            { ...l, graph: j, embedded: !1 },
-            Object.keys(l.graphMap[j]).sort(),
+          "@graph" in b ? (L = b["@graph"][0], G = !(j === "@merged" || j === "@default"), n.isObject(L) || (L = {})) : (G = d.graph !== "@merged", L = {}), G && c.frame(
+            { ...d, graph: j, embedded: !1 },
+            Object.keys(d.graphMap[j]).sort(),
             [L],
             _,
             "@graph"
           );
         }
         "@included" in b && c.frame(
-          { ...l, embedded: !1 },
-          u,
+          { ...d, embedded: !1 },
+          p,
           b["@included"],
           _,
           "@included"
@@ -21112,7 +21239,7 @@ function Zh() {
             if (_[G] = i.clone(N[G]), G === "@type")
               for (const L of N["@type"])
                 L.indexOf("_:") === 0 && i.addValue(
-                  l.bnodeMap,
+                  d.bnodeMap,
                   L,
                   _,
                   { propertyIsArray: !0 }
@@ -21121,26 +21248,26 @@ function Zh() {
           }
           if (!(R.explicit && !(G in b)))
             for (const L of N[G]) {
-              const B = G in b ? b[G] : d(R);
+              const B = G in b ? b[G] : l(R);
               if (t.isList(L)) {
-                const T = b[G] && b[G][0] && b[G][0]["@list"] ? b[G][0]["@list"] : d(R), O = { "@list": [] };
-                A(_, G, O);
-                const V = L["@list"];
-                for (const D of V)
+                const T = b[G] && b[G][0] && b[G][0]["@list"] ? b[G][0]["@list"] : l(R), O = { "@list": [] };
+                I(_, G, O);
+                const U = L["@list"];
+                for (const D of U)
                   t.isSubjectReference(D) ? c.frame(
-                    { ...l, embedded: !0 },
+                    { ...d, embedded: !0 },
                     [D["@id"]],
                     T,
                     O,
                     "@list"
-                  ) : A(O, "@list", i.clone(D));
+                  ) : I(O, "@list", i.clone(D));
               } else t.isSubjectReference(L) ? c.frame(
-                { ...l, embedded: !0 },
+                { ...d, embedded: !0 },
                 [L["@id"]],
                 B,
                 _,
                 G
-              ) : m(B[0], L) && A(_, G, i.clone(L));
+              ) : m(B[0], L) && I(_, G, i.clone(L));
             }
         }
         for (const G of Object.keys(b).sort()) {
@@ -21157,119 +21284,119 @@ function Zh() {
         }
         for (const G of Object.keys(b["@reverse"] || {}).sort()) {
           const L = b["@reverse"][G];
-          for (const B of Object.keys(l.subjects))
-            i.getValues(l.subjects[B], G).some((O) => O["@id"] === j) && (_["@reverse"] = _["@reverse"] || {}, i.addValue(
+          for (const B of Object.keys(d.subjects))
+            i.getValues(d.subjects[B], G).some((O) => O["@id"] === j) && (_["@reverse"] = _["@reverse"] || {}, i.addValue(
               _["@reverse"],
               G,
               [],
               { propertyIsArray: !0 }
             ), c.frame(
-              { ...l, embedded: !0 },
+              { ...d, embedded: !0 },
               [B],
               L,
               _["@reverse"][G],
-              I
+              A
             ));
         }
-        A(S, I, _), l.subjectStack.pop();
+        I(S, A, _), d.subjectStack.pop();
       }
     }
-  }, c.cleanupNull = (l, u) => {
-    if (n.isArray(l))
-      return l.map((S) => c.cleanupNull(S, u)).filter((S) => S);
-    if (l === "@null")
+  }, c.cleanupNull = (d, p) => {
+    if (n.isArray(d))
+      return d.map((S) => c.cleanupNull(S, p)).filter((S) => S);
+    if (d === "@null")
       return null;
-    if (n.isObject(l)) {
-      if ("@id" in l) {
-        const b = l["@id"];
-        if (u.link.hasOwnProperty(b)) {
-          const S = u.link[b].indexOf(l);
+    if (n.isObject(d)) {
+      if ("@id" in d) {
+        const b = d["@id"];
+        if (p.link.hasOwnProperty(b)) {
+          const S = p.link[b].indexOf(d);
           if (S !== -1)
-            return u.link[b][S];
-          u.link[b].push(l);
+            return p.link[b][S];
+          p.link[b].push(d);
         } else
-          u.link[b] = [l];
+          p.link[b] = [d];
       }
-      for (const b in l)
-        l[b] = c.cleanupNull(l[b], u);
+      for (const b in d)
+        d[b] = c.cleanupNull(d[b], p);
     }
-    return l;
+    return d;
   };
-  function d(l) {
-    const u = {};
-    for (const b in l)
-      l[b] !== void 0 && (u["@" + b] = [l[b]]);
-    return [u];
+  function l(d) {
+    const p = {};
+    for (const b in d)
+      d[b] !== void 0 && (p["@" + b] = [d[b]]);
+    return [p];
   }
-  function p(l, u, b) {
+  function u(d, p, b) {
     for (let S = b.length - 1; S >= 0; --S) {
-      const I = b[S];
-      if (I.graph === u && I.subject["@id"] === l["@id"])
+      const A = b[S];
+      if (A.graph === p && A.subject["@id"] === d["@id"])
         return !0;
     }
     return !1;
   }
-  function y(l, u, b) {
+  function y(d, p, b) {
     const S = "@" + b;
-    let I = S in l ? l[S][0] : u[b];
+    let A = S in d ? d[S][0] : p[b];
     if (b === "embed") {
-      if (I === !0)
-        I = "@once";
-      else if (I === !1)
-        I = "@never";
-      else if (I !== "@always" && I !== "@never" && I !== "@link" && I !== "@first" && I !== "@last" && I !== "@once")
+      if (A === !0)
+        A = "@once";
+      else if (A === !1)
+        A = "@never";
+      else if (A !== "@always" && A !== "@never" && A !== "@link" && A !== "@first" && A !== "@last" && A !== "@once")
         throw new r(
           "Invalid JSON-LD syntax; invalid value of @embed.",
           "jsonld.SyntaxError",
-          { code: "invalid @embed value", frame: l }
+          { code: "invalid @embed value", frame: d }
         );
     }
-    return I;
+    return A;
   }
-  function f(l) {
-    if (!n.isArray(l) || l.length !== 1 || !n.isObject(l[0]))
+  function f(d) {
+    if (!n.isArray(d) || d.length !== 1 || !n.isObject(d[0]))
       throw new r(
         "Invalid JSON-LD syntax; a JSON-LD frame must be a single object.",
         "jsonld.SyntaxError",
-        { frame: l }
+        { frame: d }
       );
-    if ("@id" in l[0]) {
-      for (const u of i.asArray(l[0]["@id"]))
-        if (!(n.isObject(u) || o.isAbsolute(u)) || n.isString(u) && u.indexOf("_:") === 0)
+    if ("@id" in d[0]) {
+      for (const p of i.asArray(d[0]["@id"]))
+        if (!(n.isObject(p) || o.isAbsolute(p)) || n.isString(p) && p.indexOf("_:") === 0)
           throw new r(
             "Invalid JSON-LD syntax; invalid @id in frame.",
             "jsonld.SyntaxError",
-            { code: "invalid frame", frame: l }
+            { code: "invalid frame", frame: d }
           );
     }
-    if ("@type" in l[0]) {
-      for (const u of i.asArray(l[0]["@type"]))
-        if (!(n.isObject(u) || o.isAbsolute(u) || u === "@json") || n.isString(u) && u.indexOf("_:") === 0)
+    if ("@type" in d[0]) {
+      for (const p of i.asArray(d[0]["@type"]))
+        if (!(n.isObject(p) || o.isAbsolute(p) || p === "@json") || n.isString(p) && p.indexOf("_:") === 0)
           throw new r(
             "Invalid JSON-LD syntax; invalid @type in frame.",
             "jsonld.SyntaxError",
-            { code: "invalid frame", frame: l }
+            { code: "invalid frame", frame: d }
           );
     }
   }
-  function h(l, u, b, S) {
-    const I = {};
-    for (const P of u) {
-      const R = l.graphMap[l.graph][P];
-      w(l, R, b, S) && (I[P] = R);
+  function h(d, p, b, S) {
+    const A = {};
+    for (const P of p) {
+      const R = d.graphMap[d.graph][P];
+      x(d, R, b, S) && (A[P] = R);
     }
-    return I;
+    return A;
   }
-  function w(l, u, b, S) {
-    let I = !0, P = !1;
+  function x(d, p, b, S) {
+    let A = !0, P = !1;
     for (const R in b) {
       let E = !1;
-      const k = i.getValues(u, R), M = i.getValues(b, R).length === 0;
+      const k = i.getValues(p, R), M = i.getValues(b, R).length === 0;
       if (R === "@id") {
         if (n.isEmptyObject(b["@id"][0] || {}) ? E = !0 : b["@id"].length >= 0 && (E = b["@id"].includes(k[0])), !S.requireAll)
           return E;
       } else if (R === "@type") {
-        if (I = !1, M) {
+        if (A = !1, M) {
           if (k.length > 0)
             return !1;
           E = !0;
@@ -21286,7 +21413,7 @@ function Zh() {
         {
           const j = i.getValues(b, R)[0];
           let N = !1;
-          if (j && (f([j]), N = "@default" in j), I = !1, k.length === 0 && N)
+          if (j && (f([j]), N = "@default" in j), A = !1, k.length === 0 && N)
             continue;
           if (k.length > 0 && M)
             return !1;
@@ -21299,39 +21426,39 @@ function Zh() {
             if (t.isList(k[0])) {
               const G = k[0]["@list"];
               t.isValue(_) ? E = G.some((L) => m(_, L)) : (t.isSubject(_) || t.isSubjectReference(_)) && (E = G.some((L) => g(
-                l,
+                d,
                 _,
                 L,
                 S
               )));
             }
-          } else t.isValue(j) ? E = k.some((_) => m(j, _)) : t.isSubjectReference(j) ? E = k.some((_) => g(l, j, _, S)) : n.isObject(j) ? E = k.length > 0 : E = !1;
+          } else t.isValue(j) ? E = k.some((_) => m(j, _)) : t.isSubjectReference(j) ? E = k.some((_) => g(d, j, _, S)) : n.isObject(j) ? E = k.length > 0 : E = !1;
         }
       }
       if (!E && S.requireAll)
         return !1;
       P = P || E;
     }
-    return I || P;
+    return A || P;
   }
-  function x(l, u) {
-    const b = l.uniqueEmbeds[l.graph], S = b[u], I = S.parent, P = S.property, R = { "@id": u };
-    if (n.isArray(I)) {
-      for (let k = 0; k < I.length; ++k)
-        if (i.compareValues(I[k], R)) {
-          I[k] = R;
+  function w(d, p) {
+    const b = d.uniqueEmbeds[d.graph], S = b[p], A = S.parent, P = S.property, R = { "@id": p };
+    if (n.isArray(A)) {
+      for (let k = 0; k < A.length; ++k)
+        if (i.compareValues(A[k], R)) {
+          A[k] = R;
           break;
         }
     } else {
-      const k = n.isArray(I[P]);
-      i.removeValue(I, P, R, { propertyIsArray: k }), i.addValue(I, P, R, { propertyIsArray: k });
+      const k = n.isArray(A[P]);
+      i.removeValue(A, P, R, { propertyIsArray: k }), i.addValue(A, P, R, { propertyIsArray: k });
     }
     const E = (k) => {
       const M = Object.keys(b);
       for (const j of M)
         j in b && n.isObject(b[j].parent) && b[j].parent["@id"] === k && (delete b[j], E(j));
     };
-    E(u);
+    E(p);
   }
   /**
    * Removes the @preserve keywords from expanded result of framing.
@@ -21341,56 +21468,56 @@ function Zh() {
    *
    * @return the resulting output.
    */
-  function v(l, u) {
-    if (n.isArray(l))
-      return l.map((b) => v(b, u));
-    if (n.isObject(l)) {
+  function v(d, p) {
+    if (n.isArray(d))
+      return d.map((b) => v(b, p));
+    if (n.isObject(d)) {
       // remove @preserve
-      if ("@preserve" in l)
-        return l["@preserve"][0];
-      if (t.isValue(l))
-        return l;
-      if (t.isList(l))
-        return l["@list"] = v(l["@list"], u), l;
-      if ("@id" in l) {
-        const b = l["@id"];
-        if (u.link.hasOwnProperty(b)) {
-          const S = u.link[b].indexOf(l);
+      if ("@preserve" in d)
+        return d["@preserve"][0];
+      if (t.isValue(d))
+        return d;
+      if (t.isList(d))
+        return d["@list"] = v(d["@list"], p), d;
+      if ("@id" in d) {
+        const b = d["@id"];
+        if (p.link.hasOwnProperty(b)) {
+          const S = p.link[b].indexOf(d);
           if (S !== -1)
-            return u.link[b][S];
-          u.link[b].push(l);
+            return p.link[b][S];
+          p.link[b].push(d);
         } else
-          u.link[b] = [l];
+          p.link[b] = [d];
       }
-      for (const b in l) {
-        if (b === "@id" && u.bnodesToClear.includes(l[b])) {
-          delete l["@id"];
+      for (const b in d) {
+        if (b === "@id" && p.bnodesToClear.includes(d[b])) {
+          delete d["@id"];
           continue;
         }
-        l[b] = v(l[b], u);
+        d[b] = v(d[b], p);
       }
     }
-    return l;
+    return d;
   }
-  function A(l, u, b) {
-    n.isObject(l) ? i.addValue(l, u, b, { propertyIsArray: !0 }) : l.push(b);
+  function I(d, p, b) {
+    n.isObject(d) ? i.addValue(d, p, b, { propertyIsArray: !0 }) : d.push(b);
   }
-  function g(l, u, b, S) {
+  function g(d, p, b, S) {
     if (!("@id" in b))
       return !1;
-    const I = l.subjects[b["@id"]];
-    return I && w(l, I, u, S);
+    const A = d.subjects[b["@id"]];
+    return A && x(d, A, p, S);
   }
-  function m(l, u) {
-    const b = u["@value"], S = u["@type"], I = u["@language"], P = l["@value"] ? n.isArray(l["@value"]) ? l["@value"] : [l["@value"]] : [], R = l["@type"] ? n.isArray(l["@type"]) ? l["@type"] : [l["@type"]] : [], E = l["@language"] ? n.isArray(l["@language"]) ? l["@language"] : [l["@language"]] : [];
-    return P.length === 0 && R.length === 0 && E.length === 0 ? !0 : !(!(P.includes(b) || n.isEmptyObject(P[0])) || !(!S && R.length === 0 || R.includes(S) || S && n.isEmptyObject(R[0])) || !(!I && E.length === 0 || E.includes(I) || I && n.isEmptyObject(E[0])));
+  function m(d, p) {
+    const b = p["@value"], S = p["@type"], A = p["@language"], P = d["@value"] ? n.isArray(d["@value"]) ? d["@value"] : [d["@value"]] : [], R = d["@type"] ? n.isArray(d["@type"]) ? d["@type"] : [d["@type"]] : [], E = d["@language"] ? n.isArray(d["@language"]) ? d["@language"] : [d["@language"]] : [];
+    return P.length === 0 && R.length === 0 && E.length === 0 ? !0 : !(!(P.includes(b) || n.isEmptyObject(P[0])) || !(!S && R.length === 0 || R.includes(S) || S && n.isEmptyObject(R[0])) || !(!A && E.length === 0 || E.includes(A) || A && n.isEmptyObject(E[0])));
   }
-  return Rs;
+  return js;
 }
-var js, ld;
-function Hh() {
-  if (ld) return js;
-  ld = 1;
+var $s, pd;
+function Jh() {
+  if (pd) return $s;
+  pd = 1;
   const e = He(), {
     isArray: t,
     isObject: n,
@@ -21401,24 +21528,24 @@ function Hh() {
     isValue: s,
     isGraph: a,
     isSimpleGraph: c,
-    isSubjectReference: d
-  } = It(), {
-    expandIri: p,
+    isSubjectReference: l
+  } = qt(), {
+    expandIri: u,
     getContextValue: y,
     isKeyword: f,
     process: h,
-    processingMode: w
-  } = Kt(), {
-    removeBase: x,
+    processingMode: x
+  } = Qt(), {
+    removeBase: w,
     prependBase: v
-  } = Lt(), {
-    REGEX_KEYWORD: A,
+  } = Dt(), {
+    REGEX_KEYWORD: I,
     addValue: g,
     asArray: m,
-    compareShortestLeast: l
-  } = Ze(), u = {};
-  js = u, u.compact = async ({
-    activeCtx: I,
+    compareShortestLeast: d
+  } = Ze(), p = {};
+  $s = p, p.compact = async ({
+    activeCtx: A,
     activeProperty: P = null,
     element: R,
     options: E = {}
@@ -21426,8 +21553,8 @@ function Hh() {
     if (t(R)) {
       let M = [];
       for (let j = 0; j < R.length; ++j) {
-        const N = await u.compact({
-          activeCtx: I,
+        const N = await p.compact({
+          activeCtx: A,
           activeProperty: P,
           element: R[j],
           options: E
@@ -21435,14 +21562,14 @@ function Hh() {
         N !== null && M.push(N);
       }
       return E.compactArrays && M.length === 1 && (y(
-        I,
+        A,
         P,
         "@container"
       ) || []).length === 0 && (M = M[0]), M;
     }
-    const k = y(I, P, "@context");
-    if (o(k) || (I = await h({
-      activeCtx: I,
+    const k = y(A, P, "@context");
+    if (o(k) || (A = await h({
+      activeCtx: A,
       localCtx: k,
       propagate: !0,
       overrideProtected: !0,
@@ -21454,26 +21581,26 @@ function Hh() {
           if (T[O].expanded === R)
             return T[O].compacted;
       }
-      if (s(R) || d(R)) {
-        const T = u.compactValue({ activeCtx: I, activeProperty: P, value: R, options: E });
-        return E.link && d(R) && (E.link.hasOwnProperty(R["@id"]) || (E.link[R["@id"]] = []), E.link[R["@id"]].push({ expanded: R, compacted: T })), T;
+      if (s(R) || l(R)) {
+        const T = p.compactValue({ activeCtx: A, activeProperty: P, value: R, options: E });
+        return E.link && l(R) && (E.link.hasOwnProperty(R["@id"]) || (E.link[R["@id"]] = []), E.link[R["@id"]].push({ expanded: R, compacted: T })), T;
       }
       if (r(R) && (y(
-        I,
+        A,
         P,
         "@container"
       ) || []).includes("@list"))
-        return u.compact({
-          activeCtx: I,
+        return p.compact({
+          activeCtx: A,
           activeProperty: P,
           element: R["@list"],
           options: E
         });
-      const M = P === "@reverse", j = {}, N = I;
-      !s(R) && !d(R) && (I = I.revertToPreviousContext());
+      const M = P === "@reverse", j = {}, N = A;
+      !s(R) && !l(R) && (A = A.revertToPreviousContext());
       const _ = y(N, P, "@context");
-      o(_) || (I = await h({
-        activeCtx: I,
+      o(_) || (A = await h({
+        activeCtx: A,
         localCtx: _,
         propagate: !0,
         overrideProtected: !0,
@@ -21481,14 +21608,14 @@ function Hh() {
       })), E.link && "@id" in R && (E.link.hasOwnProperty(R["@id"]) || (E.link[R["@id"]] = []), E.link[R["@id"]].push({ expanded: R, compacted: j }));
       let G = R["@type"] || [];
       G.length > 1 && (G = Array.from(G).sort());
-      const L = I;
+      const L = A;
       for (const T of G) {
-        const O = u.compactIri(
+        const O = p.compactIri(
           { activeCtx: L, iri: T, relativeTo: { vocab: !0 } }
-        ), V = y(N, O, "@context");
-        o(V) || (I = await h({
-          activeCtx: I,
-          localCtx: V,
+        ), U = y(N, O, "@context");
+        o(U) || (A = await h({
+          activeCtx: A,
+          localCtx: U,
           options: E,
           propagate: !1
         }));
@@ -21497,51 +21624,51 @@ function Hh() {
       for (const T of B) {
         const O = R[T];
         if (T === "@id") {
-          let V = m(O).map(
-            ($) => u.compactIri({
-              activeCtx: I,
+          let U = m(O).map(
+            ($) => p.compactIri({
+              activeCtx: A,
               iri: $,
               relativeTo: { vocab: !1 },
               base: E.base
             })
           );
-          V.length === 1 && (V = V[0]);
-          const D = u.compactIri(
-            { activeCtx: I, iri: "@id", relativeTo: { vocab: !0 } }
+          U.length === 1 && (U = U[0]);
+          const D = p.compactIri(
+            { activeCtx: A, iri: "@id", relativeTo: { vocab: !0 } }
           );
-          j[D] = V;
+          j[D] = U;
           continue;
         }
         if (T === "@type") {
-          let V = m(O).map(
-            (z) => u.compactIri({
+          let U = m(O).map(
+            (z) => p.compactIri({
               activeCtx: N,
               iri: z,
               relativeTo: { vocab: !0 }
             })
           );
-          V.length === 1 && (V = V[0]);
-          const D = u.compactIri(
-            { activeCtx: I, iri: "@type", relativeTo: { vocab: !0 } }
+          U.length === 1 && (U = U[0]);
+          const D = p.compactIri(
+            { activeCtx: A, iri: "@type", relativeTo: { vocab: !0 } }
           ), C = (y(
-            I,
+            A,
             D,
             "@container"
-          ) || []).includes("@set") && w(I, 1.1) || t(V) && O.length === 0;
-          g(j, D, V, { propertyIsArray: C });
+          ) || []).includes("@set") && x(A, 1.1) || t(U) && O.length === 0;
+          g(j, D, U, { propertyIsArray: C });
           continue;
         }
         if (T === "@reverse") {
-          const V = await u.compact({
-            activeCtx: I,
+          const U = await p.compact({
+            activeCtx: A,
             activeProperty: "@reverse",
             element: O,
             options: E
           });
-          for (const D in V)
-            if (I.mappings.has(D) && I.mappings.get(D).reverse) {
-              const $ = V[D], C = (y(
-                I,
+          for (const D in U)
+            if (A.mappings.has(D) && A.mappings.get(D).reverse) {
+              const $ = U[D], C = (y(
+                A,
                 D,
                 "@container"
               ) || []).includes("@set") || !E.compactArrays;
@@ -21550,37 +21677,37 @@ function Hh() {
                 D,
                 $,
                 { propertyIsArray: C }
-              ), delete V[D];
+              ), delete U[D];
             }
-          if (Object.keys(V).length > 0) {
-            const D = u.compactIri({
-              activeCtx: I,
+          if (Object.keys(U).length > 0) {
+            const D = p.compactIri({
+              activeCtx: A,
               iri: T,
               relativeTo: { vocab: !0 }
             });
-            g(j, D, V);
+            g(j, D, U);
           }
           continue;
         }
         if (T === "@preserve") {
-          const V = await u.compact({
-            activeCtx: I,
+          const U = await p.compact({
+            activeCtx: A,
             activeProperty: P,
             element: O,
             options: E
           });
-          t(V) && V.length === 0 || g(j, T, V);
+          t(U) && U.length === 0 || g(j, T, U);
           continue;
         }
         if (T === "@index") {
           if ((y(
-            I,
+            A,
             P,
             "@container"
           ) || []).includes("@index"))
             continue;
-          const D = u.compactIri({
-            activeCtx: I,
+          const D = p.compactIri({
+            activeCtx: A,
             iri: T,
             relativeTo: { vocab: !0 }
           });
@@ -21588,12 +21715,12 @@ function Hh() {
           continue;
         }
         if (T !== "@graph" && T !== "@list" && T !== "@included" && f(T)) {
-          const V = u.compactIri({
-            activeCtx: I,
+          const U = p.compactIri({
+            activeCtx: A,
             iri: T,
             relativeTo: { vocab: !0 }
           });
-          g(j, V, O);
+          g(j, U, O);
           continue;
         }
         if (!t(O))
@@ -21602,59 +21729,59 @@ function Hh() {
             "jsonld.SyntaxError"
           );
         if (O.length === 0) {
-          const V = u.compactIri({
-            activeCtx: I,
+          const U = p.compactIri({
+            activeCtx: A,
             iri: T,
             value: O,
             relativeTo: { vocab: !0 },
             reverse: M
-          }), D = I.mappings.has(V) ? I.mappings.get(V)["@nest"] : null;
+          }), D = A.mappings.has(U) ? A.mappings.get(U)["@nest"] : null;
           let $ = j;
-          D && (S(I, D, E), n(j[D]) || (j[D] = {}), $ = j[D]), g(
+          D && (S(A, D, E), n(j[D]) || (j[D] = {}), $ = j[D]), g(
             $,
-            V,
+            U,
             O,
             {
               propertyIsArray: !0
             }
           );
         }
-        for (const V of O) {
-          const D = u.compactIri({
-            activeCtx: I,
+        for (const U of O) {
+          const D = p.compactIri({
+            activeCtx: A,
             iri: T,
-            value: V,
+            value: U,
             relativeTo: { vocab: !0 },
             reverse: M
-          }), $ = I.mappings.has(D) ? I.mappings.get(D)["@nest"] : null;
+          }), $ = A.mappings.has(D) ? A.mappings.get(D)["@nest"] : null;
           let q = j;
-          $ && (S(I, $, E), n(j[$]) || (j[$] = {}), q = j[$]);
+          $ && (S(A, $, E), n(j[$]) || (j[$] = {}), q = j[$]);
           const C = y(
-            I,
+            A,
             D,
             "@container"
-          ) || [], z = a(V), H = r(V);
+          ) || [], z = a(U), H = r(U);
           let Q;
-          H ? Q = V["@list"] : z && (Q = V["@graph"]);
-          let J = await u.compact({
-            activeCtx: I,
+          H ? Q = U["@list"] : z && (Q = U["@graph"]);
+          let J = await p.compact({
+            activeCtx: A,
             activeProperty: D,
-            element: H || z ? Q : V,
+            element: H || z ? Q : U,
             options: E
           });
           if (H)
             if (t(J) || (J = [J]), !C.includes("@list"))
               J = {
-                [u.compactIri({
-                  activeCtx: I,
+                [p.compactIri({
+                  activeCtx: A,
                   iri: "@list",
                   relativeTo: { vocab: !0 }
                 })]: J
-              }, "@index" in V && (J[u.compactIri({
-                activeCtx: I,
+              }, "@index" in U && (J[p.compactIri({
+                activeCtx: A,
                 iri: "@index",
                 relativeTo: { vocab: !0 }
-              })] = V["@index"]);
+              })] = U["@index"]);
             else {
               g(q, D, J, {
                 valueIsArray: !0,
@@ -21663,23 +21790,23 @@ function Hh() {
               continue;
             }
           if (z)
-            if (C.includes("@graph") && (C.includes("@id") || C.includes("@index") && c(V))) {
-              let U;
-              q.hasOwnProperty(D) ? U = q[D] : q[D] = U = {};
-              const F = (C.includes("@id") ? V["@id"] : V["@index"]) || u.compactIri({
-                activeCtx: I,
+            if (C.includes("@graph") && (C.includes("@id") || C.includes("@index") && c(U))) {
+              let V;
+              q.hasOwnProperty(D) ? V = q[D] : q[D] = V = {};
+              const F = (C.includes("@id") ? U["@id"] : U["@index"]) || p.compactIri({
+                activeCtx: A,
                 iri: "@none",
                 relativeTo: { vocab: !0 }
               });
               g(
-                U,
+                V,
                 F,
                 J,
                 {
                   propertyIsArray: !E.compactArrays || C.includes("@set")
                 }
               );
-            } else C.includes("@graph") && c(V) ? (t(J) && J.length > 1 && (J = { "@included": J }), g(
+            } else C.includes("@graph") && c(U) ? (t(J) && J.length > 1 && (J = { "@included": J }), g(
               q,
               D,
               J,
@@ -21687,20 +21814,20 @@ function Hh() {
                 propertyIsArray: !E.compactArrays || C.includes("@set")
               }
             )) : (t(J) && J.length === 1 && E.compactArrays && (J = J[0]), J = {
-              [u.compactIri({
-                activeCtx: I,
+              [p.compactIri({
+                activeCtx: A,
                 iri: "@graph",
                 relativeTo: { vocab: !0 }
               })]: J
-            }, "@id" in V && (J[u.compactIri({
-              activeCtx: I,
+            }, "@id" in U && (J[p.compactIri({
+              activeCtx: A,
               iri: "@id",
               relativeTo: { vocab: !0 }
-            })] = V["@id"]), "@index" in V && (J[u.compactIri({
-              activeCtx: I,
+            })] = U["@id"]), "@index" in U && (J[p.compactIri({
+              activeCtx: A,
               iri: "@index",
               relativeTo: { vocab: !0 }
-            })] = V["@index"]), g(
+            })] = U["@index"]), g(
               q,
               D,
               J,
@@ -21709,21 +21836,21 @@ function Hh() {
               }
             ));
           else if (C.includes("@language") || C.includes("@index") || C.includes("@id") || C.includes("@type")) {
-            let U;
-            q.hasOwnProperty(D) ? U = q[D] : q[D] = U = {};
+            let V;
+            q.hasOwnProperty(D) ? V = q[D] : q[D] = V = {};
             let F;
             if (C.includes("@language"))
-              s(J) && (J = J["@value"]), F = V["@language"];
+              s(J) && (J = J["@value"]), F = U["@language"];
             else if (C.includes("@index")) {
               const Z = y(
-                I,
+                A,
                 D,
                 "@index"
-              ) || "@index", K = u.compactIri(
-                { activeCtx: I, iri: Z, relativeTo: { vocab: !0 } }
+              ) || "@index", K = p.compactIri(
+                { activeCtx: A, iri: Z, relativeTo: { vocab: !0 } }
               );
               if (Z === "@index")
-                F = V["@index"], delete J[K];
+                F = U["@index"], delete J[K];
               else {
                 let W;
                 if ([F, ...W] = m(J[Z] || []), !i(F))
@@ -21742,15 +21869,15 @@ function Hh() {
                   }
               }
             } else if (C.includes("@id")) {
-              const Z = u.compactIri({
-                activeCtx: I,
+              const Z = p.compactIri({
+                activeCtx: A,
                 iri: "@id",
                 relativeTo: { vocab: !0 }
               });
               F = J[Z], delete J[Z];
             } else if (C.includes("@type")) {
-              const Z = u.compactIri({
-                activeCtx: I,
+              const Z = p.compactIri({
+                activeCtx: A,
                 iri: "@type",
                 relativeTo: { vocab: !0 }
               });
@@ -21766,19 +21893,19 @@ function Hh() {
                   J[Z] = K;
                   break;
               }
-              Object.keys(J).length === 1 && "@id" in V && (J = await u.compact({
-                activeCtx: I,
+              Object.keys(J).length === 1 && "@id" in U && (J = await p.compact({
+                activeCtx: A,
                 activeProperty: D,
-                element: { "@id": V["@id"] },
+                element: { "@id": U["@id"] },
                 options: E
               }));
             }
-            F || (F = u.compactIri({
-              activeCtx: I,
+            F || (F = p.compactIri({
+              activeCtx: A,
               iri: "@none",
               relativeTo: { vocab: !0 }
             })), g(
-              U,
+              V,
               F,
               J,
               {
@@ -21786,12 +21913,12 @@ function Hh() {
               }
             );
           } else {
-            const U = !E.compactArrays || C.includes("@set") || C.includes("@list") || t(J) && J.length === 0 || T === "@list" || T === "@graph";
+            const V = !E.compactArrays || C.includes("@set") || C.includes("@list") || t(J) && J.length === 0 || T === "@list" || T === "@graph";
             g(
               q,
               D,
               J,
-              { propertyIsArray: U }
+              { propertyIsArray: V }
             );
           }
         }
@@ -21799,8 +21926,8 @@ function Hh() {
       return j;
     }
     return R;
-  }, u.compactIri = ({
-    activeCtx: I,
+  }, p.compactIri = ({
+    activeCtx: A,
     iri: P,
     value: R = null,
     relativeTo: E = { vocab: !1 },
@@ -21809,12 +21936,12 @@ function Hh() {
   }) => {
     if (P === null)
       return P;
-    I.isPropertyTermScoped && I.previousContext && (I = I.previousContext);
-    const j = I.getInverse();
+    A.isPropertyTermScoped && A.previousContext && (A = A.previousContext);
+    const j = A.getInverse();
     if (f(P) && P in j && "@none" in j[P] && "@type" in j[P]["@none"] && "@none" in j[P]["@none"]["@type"])
       return j[P]["@none"]["@type"]["@none"];
     if (E.vocab && P in j) {
-      const B = I["@language"] || "@none", T = [];
+      const B = A["@language"] || "@none", T = [];
       n(R) && "@index" in R && !("@graph" in R) && T.push("@index", "@index@set"), n(R) && "@preserve" in R && (R = R["@preserve"][0]), a(R) ? ("@index" in R && T.push(
         "@graph@index",
         "@graph@index@set",
@@ -21829,14 +21956,14 @@ function Hh() {
         "@index",
         "@index@set"
       ), "@id" in R || T.push("@graph@id", "@graph@id@set")) : n(R) && !s(R) && T.push("@id", "@id@set", "@type", "@set@type");
-      let O = "@language", V = "@null";
+      let O = "@language", U = "@null";
       if (k)
-        O = "@type", V = "@reverse", T.push("@set");
+        O = "@type", U = "@reverse", T.push("@set");
       else if (r(R)) {
         "@index" in R || T.push("@list");
         const $ = R["@list"];
         if ($.length === 0)
-          O = "@any", V = "@none";
+          O = "@any", U = "@none";
         else {
           let q = $.length === 0 ? B : null, C = null;
           for (let z = 0; z < $.length; ++z) {
@@ -21844,147 +21971,147 @@ function Hh() {
             let Q = "@none", J = "@none";
             if (s(H))
               if ("@direction" in H) {
-                const U = (H["@language"] || "").toLowerCase(), F = H["@direction"];
-                Q = `${U}_${F}`;
+                const V = (H["@language"] || "").toLowerCase(), F = H["@direction"];
+                Q = `${V}_${F}`;
               } else "@language" in H ? Q = H["@language"].toLowerCase() : "@type" in H ? J = H["@type"] : Q = "@null";
             else
               J = "@id";
             if (q === null ? q = Q : Q !== q && s(H) && (q = "@none"), C === null ? C = J : J !== C && (C = "@none"), q === "@none" && C === "@none")
               break;
           }
-          q = q || "@none", C = C || "@none", C !== "@none" ? (O = "@type", V = C) : V = q;
+          q = q || "@none", C = C || "@none", C !== "@none" ? (O = "@type", U = C) : U = q;
         }
       } else {
         if (s(R))
           if ("@language" in R && !("@index" in R)) {
-            T.push("@language", "@language@set"), V = R["@language"];
+            T.push("@language", "@language@set"), U = R["@language"];
             const $ = R["@direction"];
-            $ && (V = `${V}_${$}`);
-          } else "@direction" in R && !("@index" in R) ? V = `_${R["@direction"]}` : "@type" in R && (O = "@type", V = R["@type"]);
+            $ && (U = `${U}_${$}`);
+          } else "@direction" in R && !("@index" in R) ? U = `_${R["@direction"]}` : "@type" in R && (O = "@type", U = R["@type"]);
         else
-          O = "@type", V = "@id";
+          O = "@type", U = "@id";
         T.push("@set");
       }
       T.push("@none"), n(R) && !("@index" in R) && T.push("@index", "@index@set"), s(R) && Object.keys(R).length === 1 && T.push("@language", "@language@set");
       const D = b(
-        I,
+        A,
         P,
         R,
         T,
         O,
-        V
+        U
       );
       if (D !== null)
         return D;
     }
-    if (E.vocab && "@vocab" in I) {
-      const B = I["@vocab"];
+    if (E.vocab && "@vocab" in A) {
+      const B = A["@vocab"];
       if (P.indexOf(B) === 0 && P !== B) {
         const T = P.substr(B.length);
-        if (!I.mappings.has(T))
+        if (!A.mappings.has(T))
           return T;
       }
     }
     let N = null;
     const _ = [];
-    let G = I.fastCurieMap;
+    let G = A.fastCurieMap;
     const L = P.length - 1;
     for (let B = 0; B < L && P[B] in G; ++B)
       G = G[P[B]], "" in G && _.push(G[""][0]);
     for (let B = _.length - 1; B >= 0; --B) {
       const T = _[B], O = T.terms;
-      for (const V of O) {
-        const D = V + ":" + P.substr(T.iri.length);
-        I.mappings.get(V)._prefix && (!I.mappings.has(D) || R === null && I.mappings.get(D)["@id"] === P) && (N === null || l(D, N) < 0) && (N = D);
+      for (const U of O) {
+        const D = U + ":" + P.substr(T.iri.length);
+        A.mappings.get(U)._prefix && (!A.mappings.has(D) || R === null && A.mappings.get(D)["@id"] === P) && (N === null || d(D, N) < 0) && (N = D);
       }
     }
     if (N !== null)
       return N;
-    for (const [B, T] of I.mappings)
+    for (const [B, T] of A.mappings)
       if (T && T._prefix && P.startsWith(B + ":"))
         throw new e(
           `Absolute IRI "${P}" confused with prefix "${B}".`,
           "jsonld.SyntaxError",
-          { code: "IRI confused with prefix", context: I }
+          { code: "IRI confused with prefix", context: A }
         );
     if (!E.vocab)
-      if ("@base" in I)
-        if (I["@base"]) {
-          const B = x(v(M, I["@base"]), P);
-          return A.test(B) ? `./${B}` : B;
+      if ("@base" in A)
+        if (A["@base"]) {
+          const B = w(v(M, A["@base"]), P);
+          return I.test(B) ? `./${B}` : B;
         } else
           return P;
       else
-        return x(M, P);
+        return w(M, P);
     return P;
-  }, u.compactValue = ({ activeCtx: I, activeProperty: P, value: R, options: E }) => {
+  }, p.compactValue = ({ activeCtx: A, activeProperty: P, value: R, options: E }) => {
     if (s(R)) {
-      const N = y(I, P, "@type"), _ = y(I, P, "@language"), G = y(I, P, "@direction"), L = y(I, P, "@container") || [], B = "@index" in R && !L.includes("@index");
+      const N = y(A, P, "@type"), _ = y(A, P, "@language"), G = y(A, P, "@direction"), L = y(A, P, "@container") || [], B = "@index" in R && !L.includes("@index");
       if (!B && N !== "@none" && (R["@type"] === N || "@language" in R && R["@language"] === _ && "@direction" in R && R["@direction"] === G || "@language" in R && R["@language"] === _ || "@direction" in R && R["@direction"] === G))
         return R["@value"];
-      const T = Object.keys(R).length, O = T === 1 || T === 2 && "@index" in R && !B, V = "@language" in I, D = i(R["@value"]), $ = I.mappings.has(P) && I.mappings.get(P)["@language"] === null;
-      if (O && N !== "@none" && (!V || !D || $))
+      const T = Object.keys(R).length, O = T === 1 || T === 2 && "@index" in R && !B, U = "@language" in A, D = i(R["@value"]), $ = A.mappings.has(P) && A.mappings.get(P)["@language"] === null;
+      if (O && N !== "@none" && (!U || !D || $))
         return R["@value"];
       const q = {};
-      return B && (q[u.compactIri({
-        activeCtx: I,
+      return B && (q[p.compactIri({
+        activeCtx: A,
         iri: "@index",
         relativeTo: { vocab: !0 }
-      })] = R["@index"]), "@type" in R ? q[u.compactIri({
-        activeCtx: I,
+      })] = R["@index"]), "@type" in R ? q[p.compactIri({
+        activeCtx: A,
         iri: "@type",
         relativeTo: { vocab: !0 }
-      })] = u.compactIri(
-        { activeCtx: I, iri: R["@type"], relativeTo: { vocab: !0 } }
-      ) : "@language" in R && (q[u.compactIri({
-        activeCtx: I,
+      })] = p.compactIri(
+        { activeCtx: A, iri: R["@type"], relativeTo: { vocab: !0 } }
+      ) : "@language" in R && (q[p.compactIri({
+        activeCtx: A,
         iri: "@language",
         relativeTo: { vocab: !0 }
-      })] = R["@language"]), "@direction" in R && (q[u.compactIri({
-        activeCtx: I,
+      })] = R["@language"]), "@direction" in R && (q[p.compactIri({
+        activeCtx: A,
         iri: "@direction",
         relativeTo: { vocab: !0 }
-      })] = R["@direction"]), q[u.compactIri({
-        activeCtx: I,
+      })] = R["@direction"]), q[p.compactIri({
+        activeCtx: A,
         iri: "@value",
         relativeTo: { vocab: !0 }
       })] = R["@value"], q;
     }
-    const k = p(
-      I,
+    const k = u(
+      A,
       P,
       { vocab: !0 },
       E
-    ), M = y(I, P, "@type"), j = u.compactIri({
-      activeCtx: I,
+    ), M = y(A, P, "@type"), j = p.compactIri({
+      activeCtx: A,
       iri: R["@id"],
       relativeTo: { vocab: M === "@vocab" },
       base: E.base
     });
     return M === "@id" || M === "@vocab" || k === "@graph" ? j : {
-      [u.compactIri({
-        activeCtx: I,
+      [p.compactIri({
+        activeCtx: A,
         iri: "@id",
         relativeTo: { vocab: !0 }
       })]: j
     };
   };
-  function b(I, P, R, E, k, M) {
+  function b(A, P, R, E, k, M) {
     M === null && (M = "@null");
     const j = [];
     if ((M === "@id" || M === "@reverse") && n(R) && "@id" in R) {
       M === "@reverse" && j.push("@reverse");
-      const _ = u.compactIri(
-        { activeCtx: I, iri: R["@id"], relativeTo: { vocab: !0 } }
+      const _ = p.compactIri(
+        { activeCtx: A, iri: R["@id"], relativeTo: { vocab: !0 } }
       );
-      I.mappings.has(_) && I.mappings.get(_) && I.mappings.get(_)["@id"] === R["@id"] ? j.push.apply(j, ["@vocab", "@id"]) : j.push.apply(j, ["@id", "@vocab"]);
+      A.mappings.has(_) && A.mappings.get(_) && A.mappings.get(_)["@id"] === R["@id"] ? j.push.apply(j, ["@vocab", "@id"]) : j.push.apply(j, ["@id", "@vocab"]);
     } else {
       j.push(M);
       const _ = j.find((G) => G.includes("_"));
       _ && j.push(_.replace(/^[^_]+_/, "_"));
     }
     j.push("@none");
-    const N = I.inverse[P];
+    const N = A.inverse[P];
     for (const _ of E) {
       if (!(_ in N))
         continue;
@@ -21995,19 +22122,19 @@ function Hh() {
     }
     return null;
   }
-  function S(I, P, R) {
-    if (p(I, P, { vocab: !0 }, R) !== "@nest")
+  function S(A, P, R) {
+    if (u(A, P, { vocab: !0 }, R) !== "@nest")
       throw new e(
         "JSON-LD compact error; nested property must have an @nest value resolving to @nest.",
         "jsonld.SyntaxError",
         { code: "invalid @nest value" }
       );
   }
-  return js;
+  return $s;
 }
-var $s, ud;
-function Jh() {
-  return ud || (ud = 1, $s = (e) => {
+var Ps, fd;
+function Kh() {
+  return fd || (fd = 1, Ps = (e) => {
     class t {
       toString() {
         return "[object JsonLdProcessor]";
@@ -22034,7 +22161,7 @@ function Jh() {
         new TypeError("Could not flatten, too few arguments.")
       ) : e.flatten(n);
     }, t;
-  }), $s;
+  }), Ps;
 }
 /**
  * A JavaScript implementation of the JSON-LD API.
@@ -22071,32 +22198,32 @@ function Jh() {
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-var Ps, pd;
-function Kh() {
-  if (pd) return Ps;
-  pd = 1;
-  const e = ga(), t = Mh(), n = Ze(), i = Dh(), o = n.IdentifierIssuer, r = He(), s = ul(), a = zh(), { expand: c } = Vh(), { flatten: d } = Uh(), { fromRDF: p } = Gh(), { toRDF: y } = Bh(), {
+var _s, hd;
+function Qh() {
+  if (hd) return _s;
+  hd = 1;
+  const e = ba(), t = Oh(), n = Ze(), i = zh(), o = n.IdentifierIssuer, r = He(), s = fl(), a = Uh(), { expand: c } = Vh(), { flatten: l } = Gh(), { fromRDF: u } = Fh(), { toRDF: y } = Zh(), {
     frameMergedOrDefault: f,
     cleanupNull: h
-  } = Zh(), {
-    isArray: w,
-    isObject: x,
+  } = Hh(), {
+    isArray: x,
+    isObject: w,
     isString: v
   } = Ne(), {
-    isSubjectReference: A
-  } = It(), {
+    isSubjectReference: I
+  } = qt(), {
     expandIri: g,
     getInitialContext: m,
-    process: l,
-    processingMode: u
-  } = Kt(), {
+    process: d,
+    processingMode: p
+  } = Qt(), {
     compact: b,
     compactIri: S
-  } = Hh(), {
-    createNodeMap: I,
+  } = Jh(), {
+    createNodeMap: A,
     createMergedNodeMap: P,
     mergeNodeMaps: R
-  } = mr(), {
+  } = yr(), {
     logEventHandler: E,
     logWarningEventHandler: k,
     safeEventHandler: M,
@@ -22104,7 +22231,7 @@ function Kh() {
     setupEventHandler: N,
     strictEventHandler: _,
     unhandledEventHandler: G
-  } = Mn(), L = function(T) {
+  } = Ln(), L = function(T) {
     const O = {}, D = new s({ max: 100 });
     T.compact = async function(q, C, z) {
       if (arguments.length < 2)
@@ -22141,20 +22268,20 @@ function Kh() {
         element: H,
         options: z
       });
-      z.compactArrays && !z.graph && w(J) ? J.length === 1 ? J = J[0] : J.length === 0 && (J = {}) : z.graph && x(J) && (J = [J]), x(C) && "@context" in C && (C = C["@context"]), C = n.clone(C), w(C) || (C = [C]);
-      const U = C;
+      z.compactArrays && !z.graph && x(J) ? J.length === 1 ? J = J[0] : J.length === 0 && (J = {}) : z.graph && w(J) && (J = [J]), w(C) && "@context" in C && (C = C["@context"]), C = n.clone(C), x(C) || (C = [C]);
+      const V = C;
       C = [];
-      for (let Z = 0; Z < U.length; ++Z)
-        (!x(U[Z]) || Object.keys(U[Z]).length > 0) && C.push(U[Z]);
+      for (let Z = 0; Z < V.length; ++Z)
+        (!w(V[Z]) || Object.keys(V[Z]).length > 0) && C.push(V[Z]);
       const F = C.length > 0;
-      if (C.length === 1 && (C = C[0]), w(J)) {
+      if (C.length === 1 && (C = C[0]), x(J)) {
         const Z = S({
           activeCtx: Q,
           iri: "@graph",
           relativeTo: { vocab: !0 }
         }), K = J;
         J = {}, F && (J["@context"] = C), J[Z] = K;
-      } else if (x(J) && F) {
+      } else if (w(J) && F) {
         const Z = J;
         J = { "@context": C };
         for (const K in Z)
@@ -22173,7 +22300,7 @@ function Kh() {
       const z = {}, H = [];
       if ("expandContext" in C) {
         const F = n.clone(C.expandContext);
-        x(F) && "@context" in F ? z.expandContext = F : z.expandContext = { "@context": F }, H.push(z.expandContext);
+        w(F) && "@context" in F ? z.expandContext = F : z.expandContext = { "@context": F }, H.push(z.expandContext);
       }
       let Q;
       if (!v(q))
@@ -22185,13 +22312,13 @@ function Kh() {
       "base" in C || (C.base = Q || "");
       let J = m(C);
       for (const F of H)
-        J = await l({ activeCtx: J, localCtx: F, options: C });
-      let U = await c({
+        J = await d({ activeCtx: J, localCtx: F, options: C });
+      let V = await c({
         activeCtx: J,
         element: z.input,
         options: C
       });
-      return x(U) && "@graph" in U && Object.keys(U).length === 1 ? U = U["@graph"] : U === null && (U = []), w(U) || (U = [U]), U;
+      return w(V) && "@graph" in V && Object.keys(V).length === 1 ? V = V["@graph"] : V === null && (V = []), x(V) || (V = [V]), V;
     }, T.flatten = async function(q, C, z) {
       if (arguments.length < 1)
         return new TypeError("Could not flatten, too few arguments.");
@@ -22201,7 +22328,7 @@ function Kh() {
           { sharedCache: D }
         )
       });
-      const H = await T.expand(q, z), Q = d(H);
+      const H = await T.expand(q, z), Q = l(H);
       return C === null ? Q : (z.graph = !0, z.skipExpansion = !0, await T.compact(Q, C, z));
     }, T.frame = async function(q, C, z) {
       if (arguments.length < 2)
@@ -22220,7 +22347,7 @@ function Kh() {
         const ee = await T.get(C, z);
         if (C = ee.document, ee.contextUrl) {
           let re = C["@context"];
-          re ? w(re) ? re.push(ee.contextUrl) : re = [re, ee.contextUrl] : re = ee.contextUrl, C["@context"] = re;
+          re ? x(re) ? re.push(ee.contextUrl) : re = [re, ee.contextUrl] : re = ee.contextUrl, C["@context"] = re;
         }
       }
       const H = C ? C["@context"] || {} : {}, Q = await T.processContext(
@@ -22228,15 +22355,15 @@ function Kh() {
         H,
         z
       );
-      z.hasOwnProperty("omitGraph") || (z.omitGraph = u(Q, 1.1)), z.hasOwnProperty("pruneBlankNodeIdentifiers") || (z.pruneBlankNodeIdentifiers = u(Q, 1.1));
-      const J = await T.expand(q, z), U = { ...z };
-      U.isFrame = !0, U.keepFreeFloatingNodes = !0;
-      const F = await T.expand(C, U), Z = Object.keys(C).map((ee) => g(Q, ee, { vocab: !0 }));
-      U.merged = !Z.includes("@graph"), U.is11 = u(Q, 1.1);
-      const K = f(J, F, U);
-      U.graph = !z.omitGraph, U.skipExpansion = !0, U.link = {}, U.framing = !0;
-      let W = await T.compact(K, H, U);
-      return U.link = {}, W = h(W, U), W;
+      z.hasOwnProperty("omitGraph") || (z.omitGraph = p(Q, 1.1)), z.hasOwnProperty("pruneBlankNodeIdentifiers") || (z.pruneBlankNodeIdentifiers = p(Q, 1.1));
+      const J = await T.expand(q, z), V = { ...z };
+      V.isFrame = !0, V.keepFreeFloatingNodes = !0;
+      const F = await T.expand(C, V), Z = Object.keys(C).map((ee) => g(Q, ee, { vocab: !0 }));
+      V.merged = !Z.includes("@graph"), V.is11 = p(Q, 1.1);
+      const K = f(J, F, V);
+      V.graph = !z.omitGraph, V.skipExpansion = !0, V.link = {}, V.framing = !0;
+      let W = await T.compact(K, H, V);
+      return V.link = {}, W = h(W, V), W;
     }, T.link = async function(q, C, z) {
       const H = {};
       return C && (H["@context"] = C), H["@embed"] = "@link", T.frame(q, H, z);
@@ -22282,7 +22409,7 @@ function Kh() {
       } else
         H = () => q;
       const Q = await H(q);
-      return p(Q, C);
+      return u(Q, C);
     }, T.toRDF = async function(q, C) {
       if (arguments.length < 1)
         throw new TypeError("Could not convert to RDF, too few arguments.");
@@ -22320,7 +22447,7 @@ function Kh() {
     }, T.merge = async function(q, C, z) {
       if (arguments.length < 1)
         throw new TypeError("Could not merge, too few arguments.");
-      if (!w(q))
+      if (!x(q))
         throw new TypeError('Could not merge, "docs" must be an array.');
       typeof C == "function" ? C = null : C = C || null, z = $(z, {
         contextResolver: new i(
@@ -22333,27 +22460,27 @@ function Kh() {
       }));
       let Q = !0;
       "mergeNodes" in z && (Q = z.mergeNodes);
-      const J = z.issuer || new o("_:b"), U = { "@default": {} };
+      const J = z.issuer || new o("_:b"), V = { "@default": {} };
       for (let ee = 0; ee < H.length; ++ee) {
         const re = n.relabelBlankNodes(H[ee], {
           issuer: new o("_:b" + ee + "-")
-        }), Se = Q || ee === 0 ? U : { "@default": {} };
-        if (I(re, Se, "@default", J), Se !== U)
-          for (const he in Se) {
-            const ye = Se[he];
-            if (!(he in U)) {
-              U[he] = ye;
+        }), Se = Q || ee === 0 ? V : { "@default": {} };
+        if (A(re, Se, "@default", J), Se !== V)
+          for (const me in Se) {
+            const ge = Se[me];
+            if (!(me in V)) {
+              V[me] = ge;
               continue;
             }
-            const fe = U[he];
-            for (const nt in ye)
-              nt in fe || (fe[nt] = ye[nt]);
+            const fe = V[me];
+            for (const nt in ge)
+              nt in fe || (fe[nt] = ge[nt]);
           }
       }
-      const F = R(U), Z = [], K = Object.keys(F).sort();
+      const F = R(V), Z = [], K = Object.keys(F).sort();
       for (let ee = 0; ee < K.length; ++ee) {
         const re = F[K[ee]];
-        A(re) || Z.push(re);
+        I(re) || Z.push(re);
       }
       return C === null ? Z : (z.graph = !0, z.skipExpansion = !0, await T.compact(Z, C, z));
     }, Object.defineProperty(T, "documentLoader", {
@@ -22394,8 +22521,8 @@ function Kh() {
         contextResolver: new i(
           { sharedCache: D }
         )
-      }), C === null ? m(z) : (C = n.clone(C), x(C) && "@context" in C || (C = { "@context": C }), l({ activeCtx: q, localCtx: C, options: z }));
-    }, T.getContextValue = Kt().getContextValue, T.documentLoaders = {}, T.useDocumentLoader = function(q) {
+      }), C === null ? m(z) : (C = n.clone(C), w(C) && "@context" in C || (C = { "@context": C }), d({ activeCtx: q, localCtx: C, options: z }));
+    }, T.getContextValue = Qt().getContextValue, T.documentLoaders = {}, T.useDocumentLoader = function(q) {
       if (!(q in T.documentLoaders))
         throw new r(
           'Unknown document loader type: "' + q + '"',
@@ -22410,7 +22537,7 @@ function Kh() {
       O[q] = C;
     }, T.unregisterRDFParser = function(q) {
       delete O[q];
-    }, T.registerRDFParser("application/n-quads", a.parse), T.registerRDFParser("application/nquads", a.parse), T.url = Lt(), T.logEventHandler = E, T.logWarningEventHandler = k, T.safeEventHandler = M, T.setDefaultEventHandler = j, T.strictEventHandler = _, T.unhandledEventHandler = G, T.util = n, Object.assign(T, n), T.promises = T, T.RequestQueue = ll(), T.JsonLdProcessor = Jh()(T), t.setupGlobals(T), t.setupDocumentLoaders(T);
+    }, T.registerRDFParser("application/n-quads", a.parse), T.registerRDFParser("application/nquads", a.parse), T.url = Dt(), T.logEventHandler = E, T.logWarningEventHandler = k, T.safeEventHandler = M, T.setDefaultEventHandler = j, T.strictEventHandler = _, T.unhandledEventHandler = G, T.util = n, Object.assign(T, n), T.promises = T, T.RequestQueue = pl(), T.JsonLdProcessor = Kh()(T), t.setupGlobals(T), t.setupDocumentLoaders(T);
     function $(q, {
       documentLoader: C = T.documentLoader,
       ...z
@@ -22439,19 +22566,19 @@ function Kh() {
       return B();
     });
   };
-  return L(B), Ps = B, Ps;
+  return L(B), _s = B, _s;
 }
-var Qh = Kh();
-const Wh = /* @__PURE__ */ aa(Qh);
-async function fd(e, t, n = {}) {
+var Wh = Qh();
+const Xh = /* @__PURE__ */ ca(Wh);
+async function md(e, t, n = {}) {
   const i = {
     algorithm: "URDNA2015",
     format: "application/n-quads",
     safe: n.safe ?? !1
   };
-  return t && (i.documentLoader = t), await Wh.normalize(e, i);
+  return t && (i.documentLoader = t), await Xh.normalize(e, i);
 }
-function Xh(e, t, n) {
+function Yh(e, t, n) {
   return {
     "@context": e,
     type: "DataIntegrityProof",
@@ -22461,24 +22588,24 @@ function Xh(e, t, n) {
     created: n
   };
 }
-async function pl(e, t, n, i = !1) {
+async function hl(e, t, n, i = !1) {
   const [o, r] = await Promise.all([
-    fd(e, n, { safe: i }),
-    fd(t, n, { safe: i })
-  ]), s = Ls("sha256").update(o, "utf8").digest(), a = Ls("sha256").update(r, "utf8").digest(), c = new Uint8Array(64);
+    md(e, n, { safe: i }),
+    md(t, n, { safe: i })
+  ]), s = Ns("sha256").update(o, "utf8").digest(), a = Ns("sha256").update(r, "utf8").digest(), c = new Uint8Array(64);
   return c.set(a, 0), c.set(s, 32), c;
 }
-async function Yh(e, t, n = {}) {
-  const i = n.created ?? (/* @__PURE__ */ new Date()).toISOString(), o = Xh(
+async function em(e, t, n = {}) {
+  const i = n.created ?? (/* @__PURE__ */ new Date()).toISOString(), o = Yh(
     e["@context"],
     t.id,
     i
-  ), r = await pl(
+  ), r = await hl(
     e,
     o,
     n.documentLoader,
     n.safe ?? !1
-  ), s = await wh(r, t.privateKey), a = bu(s);
+  ), s = await xh(r, t.privateKey), a = wu(s);
   return {
     type: "DataIntegrityProof",
     cryptosuite: "eddsa-rdfc-2022",
@@ -22488,7 +22615,7 @@ async function Yh(e, t, n = {}) {
     proofValue: a
   };
 }
-async function em(e, t, n = {}) {
+async function tm(e, t, n = {}) {
   const i = e.proof;
   if (!i) throw new Error("No proof found on credential");
   if (i.cryptosuite !== "eddsa-rdfc-2022")
@@ -22497,36 +22624,36 @@ async function em(e, t, n = {}) {
     throw new Error('eddsa-rdfc-2022 proof is missing the required "created" property.');
   const o = ["type", "cryptosuite", "proofPurpose", "verificationMethod", "created", "proofValue"];
   if (i.type !== "DataIntegrityProof" || i.proofPurpose !== "assertionMethod" || Object.keys(i).some((y) => !o.includes(y)) || typeof i.verificationMethod != "string" || typeof i.created != "string" || typeof i.proofValue != "string") return !1;
-  const { proof: r, ...s } = e, { proofValue: a, ...c } = i, d = { ...c, "@context": s["@context"] }, p = await pl(
+  const { proof: r, ...s } = e, { proofValue: a, ...c } = i, l = { ...c, "@context": s["@context"] }, u = await hl(
     s,
-    d,
+    l,
     n.documentLoader,
     n.safe ?? !1
   );
   try {
-    const y = ra(i.proofValue);
-    return await Sh(y, p, t);
+    const y = aa(i.proofValue);
+    return await Ih(y, u, t);
   } catch {
     return !1;
   }
 }
-const tm = Jf, nm = ch, im = Object.freeze({
-  RmAccreditation: `${Dt}accreditation.json`,
-  RmOperationalScope: `${Dt}operational-scope.json`,
-  RmCertificate: `${Dt}certificate.json`,
-  RmStudy: `${Dt}study.json`,
-  RmLabAuthority: `${Dt}lab-authority.json`,
-  BitstringStatusListCredential: `${Dt}status-list.json`,
-  RecognizedEntityCredential: `${Dt}recognized-entity.json`
+const nm = Kf, im = dh, rm = Object.freeze({
+  RmAccreditation: `${Ut}accreditation.json`,
+  RmOperationalScope: `${Ut}operational-scope.json`,
+  RmCertificate: `${Ut}certificate.json`,
+  RmStudy: `${Ut}study.json`,
+  RmLabAuthority: `${Ut}lab-authority.json`,
+  BitstringStatusListCredential: `${Ut}status-list.json`,
+  RecognizedEntityCredential: `${Ut}recognized-entity.json`
 });
-function rm(e) {
-  return e === "BitstringStatusListCredential" ? [Zt] : e === "RecognizedEntityCredential" ? [Zt, yu] : [Zt, mu];
+function sm(e) {
+  return e === "BitstringStatusListCredential" ? [Ht] : e === "RecognizedEntityCredential" ? [Ht, gu] : [Ht, yu];
 }
-const sm = Object.freeze({
+const am = Object.freeze({
   name: "RM v1",
-  schemas: im,
-  contexts: rm
-}), am = Object.freeze({
+  schemas: rm,
+  contexts: sm
+}), om = Object.freeze({
   resolve: 1,
   parse: 0,
   carrier: 0,
@@ -22536,7 +22663,7 @@ const sm = Object.freeze({
   key: 2,
   signature: 2
 });
-function yr(e, t, n, i) {
+function gr(e, t, n, i) {
   return [
     e,
     t ?? "unresolved",
@@ -22546,29 +22673,29 @@ function yr(e, t, n, i) {
     i.evaluationTime
   ].join(" | ");
 }
-function an(e) {
+function on(e) {
   return e !== null && typeof e == "object" && !Array.isArray(e);
 }
-const om = (e) => e.replace(/~/g, "~0").replace(/\//g, "~1");
-function cm(e, t) {
+const cm = (e) => e.replace(/~/g, "~0").replace(/\//g, "~1");
+function dm(e, t) {
   if (!t.startsWith("/")) return [];
   let n = [{ pointer: "", value: e }];
   for (const i of t.slice(1).split("/")) {
     const o = [];
     for (const { pointer: r, value: s } of n)
-      i === "*" ? Array.isArray(s) && s.forEach((a, c) => o.push({ pointer: `${r}/${c}`, value: a })) : an(s) && Object.hasOwn(s, i) && o.push({ pointer: `${r}/${om(i)}`, value: s[i] });
+      i === "*" ? Array.isArray(s) && s.forEach((a, c) => o.push({ pointer: `${r}/${c}`, value: a })) : on(s) && Object.hasOwn(s, i) && o.push({ pointer: `${r}/${cm(i)}`, value: s[i] });
     n = o;
   }
   return n;
 }
-function un(e, t) {
+function pn(e, t) {
   if (t === "") return e;
   if (!t.startsWith("/")) return;
   let n = e;
   for (const i of t.slice(1).split("/")) {
     const o = i.replace(/~1/g, "/").replace(/~0/g, "~");
     if (Array.isArray(n) && /^(0|[1-9][0-9]*)$/.test(o)) n = n[Number(o)];
-    else if (an(n) && Object.hasOwn(n, o)) n = n[o];
+    else if (on(n) && Object.hasOwn(n, o)) n = n[o];
     else return;
   }
   return n;
@@ -22581,28 +22708,28 @@ function ce(e, t, n = [], i = "executed") {
     sourcePointers: Object.freeze(n)
   });
 }
-const pn = (e) => ce("not_established", [e], [], "not_run");
-function dm(e, t) {
+const fn = (e) => ce("not_established", [e], [], "not_run");
+function lm(e, t) {
   const n = Date.parse(t), i = typeof e.validFrom == "string" ? Date.parse(e.validFrom) : NaN, o = typeof e.validUntil == "string" ? Date.parse(e.validUntil) : NaN;
   if (!Number.isFinite(n) || !Number.isFinite(i) || !Number.isFinite(o))
     return ce("not_established", ["Validity period or evaluation time is missing or invalid."]);
   const r = ["/validFrom", "/validUntil"];
   return n < i ? ce("contradicted", [`Not yet valid at ${t}.`], r) : n > o ? ce("contradicted", [`Expired before ${t}.`], r) : ce("established", [`Valid at ${t}.`], r);
 }
-function lm(e, t) {
-  return (Array.isArray(e.relatedResource) ? e.relatedResource : []).filter(an).map((i) => {
+function um(e, t) {
+  return (Array.isArray(e.relatedResource) ? e.relatedResource : []).filter(on).map((i) => {
     const o = String(i.id);
     try {
-      const r = ar(t.resolve(o).bytes);
+      const r = or(t.resolve(o).bytes);
       return r === i.digestSRI ? { id: o, state: "established", reason: "Digest matches the exact referenced bytes." } : { id: o, state: "contradicted", reason: `Digest mismatch: referenced bytes hash to ${r}.` };
     } catch (r) {
-      const s = r instanceof Ce ? r.code : "UNAVAILABLE";
+      const s = r instanceof Ee ? r.code : "UNAVAILABLE";
       return { id: o, state: "not_established", reason: `Referenced resource unavailable: ${s}.` };
     }
   });
 }
-async function Ui(e, t, n) {
-  const i = [], o = n.staticResolver ?? t, r = n.binding ?? sm, s = pn("Not evaluated because protection is not established."), a = (u = {}) => {
+async function Fi(e, t, n) {
+  const i = [], o = n.staticResolver ?? t, r = n.binding ?? am, s = fn("Not evaluated because protection is not established."), a = (p = {}) => {
     const b = xe(i.map((S) => S.state));
     return Object.freeze({
       artifactId: e,
@@ -22614,115 +22741,115 @@ async function Ui(e, t, n) {
       validity: s,
       relatedResources: Object.freeze([]),
       facts: Object.freeze([]),
-      ...u
+      ...p
     });
-  }, c = (u, b, S, I = {}) => (i.push({ check: u, state: b, reason: S }), a(I));
-  let d;
+  }, c = (p, b, S, A = {}) => (i.push({ check: p, state: b, reason: S }), a(A));
+  let l;
   try {
-    d = t.resolve(e).bytes;
-  } catch (u) {
-    const b = u instanceof Ce ? u.code : "UNAVAILABLE";
+    l = t.resolve(e).bytes;
+  } catch (p) {
+    const b = p instanceof Ee ? p.code : "UNAVAILABLE";
     return c("resolve", "not_established", `Artifact is not available: ${b}.`);
   }
-  const p = ar(d);
-  i.push({ check: "resolve", state: "established", reason: `Resolved ${d.byteLength} bytes.` });
+  const u = or(l);
+  i.push({ check: "resolve", state: "established", reason: `Resolved ${l.byteLength} bytes.` });
   let y;
   try {
-    y = JSON.parse(new TextDecoder("utf-8", { fatal: !0 }).decode(d));
+    y = JSON.parse(new TextDecoder("utf-8", { fatal: !0 }).decode(l));
   } catch {
-    return c("parse", "contradicted", "Artifact bytes are not valid UTF-8 JSON.", { digestSRI: p });
+    return c("parse", "contradicted", "Artifact bytes are not valid UTF-8 JSON.", { digestSRI: u });
   }
-  if (!an(y)) return c("parse", "contradicted", "Artifact is not a JSON object.", { digestSRI: p });
+  if (!on(y)) return c("parse", "contradicted", "Artifact is not a JSON object.", { digestSRI: u });
   i.push({ check: "parse", state: "established", reason: "Strict UTF-8 JSON object." });
   const f = y["@context"], h = r.contexts(Array.isArray(y.type) ? y.type[1] : void 0);
-  if (!Array.isArray(f) || f.length !== h.length || h.some((u, b) => f[b] !== u))
+  if (!Array.isArray(f) || f.length !== h.length || h.some((p, b) => f[b] !== p))
     return c(
       "carrier",
       "not_established",
       "Only the exact supported context combination for this type is accepted.",
-      { digestSRI: p }
+      { digestSRI: u }
     );
   i.push({ check: "carrier", state: "established", reason: "Exact supported context combination." });
-  const w = Array.isArray(y.type) ? y.type : [], x = w.length === 2 && w[0] === "VerifiableCredential" ? String(w[1]) : void 0, v = x === void 0 ? void 0 : r.schemas[x];
+  const x = Array.isArray(y.type) ? y.type : [], w = x.length === 2 && x[0] === "VerifiableCredential" ? String(x[1]) : void 0, v = w === void 0 ? void 0 : r.schemas[w];
   if (v === void 0)
-    return c("type", "not_established", `Credential type is not a recognized ${r.name} artifact type.`, { digestSRI: p });
+    return c("type", "not_established", `Credential type is not a recognized ${r.name} artifact type.`, { digestSRI: u });
   if (Array.isArray(y.credentialSchema))
     return c(
       "type",
       "not_established",
       "Multiple credentialSchema declarations have no accepted composition in this binding.",
-      { digestSRI: p, artifactType: x }
+      { digestSRI: u, artifactType: w }
     );
-  if ((an(y.credentialSchema) ? y.credentialSchema.id : void 0) !== v)
-    return c("type", "contradicted", `${x} must declare schema ${v}.`, { digestSRI: p, artifactType: x });
-  i.push({ check: "type", state: "established", reason: `${x} with its pinned schema.` });
+  if ((on(y.credentialSchema) ? y.credentialSchema.id : void 0) !== v)
+    return c("type", "contradicted", `${w} must declare schema ${v}.`, { digestSRI: u, artifactType: w });
+  i.push({ check: "type", state: "established", reason: `${w} with its pinned schema.` });
   try {
-    const u = new tm({ allErrors: !0, strict: !0 });
-    nm(u);
-    const b = JSON.parse(new TextDecoder().decode(o.resolve(v).bytes)), S = u.compile(b);
+    const p = new nm({ allErrors: !0, strict: !0 });
+    im(p);
+    const b = JSON.parse(new TextDecoder().decode(o.resolve(v).bytes)), S = p.compile(b);
     if (!S(y)) {
-      const I = (S.errors ?? []).map((P) => `${P.instancePath || "/"} ${P.message ?? ""}`).join("; ");
-      return c("schema", "contradicted", `Schema validation failed: ${I}`, { digestSRI: p, artifactType: x });
+      const A = (S.errors ?? []).map((P) => `${P.instancePath || "/"} ${P.message ?? ""}`).join("; ");
+      return c("schema", "contradicted", `Schema validation failed: ${A}`, { digestSRI: u, artifactType: w });
     }
-  } catch (u) {
-    const b = u instanceof Ce ? u.code : "INVALID_SCHEMA";
-    return c("schema", "not_established", `Pinned schema unavailable: ${b}.`, { digestSRI: p, artifactType: x });
+  } catch (p) {
+    const b = p instanceof Ee ? p.code : "INVALID_SCHEMA";
+    return c("schema", "not_established", `Pinned schema unavailable: ${b}.`, { digestSRI: u, artifactType: w });
   }
   i.push({ check: "schema", state: "established", reason: "Valid against the pinned schema." });
   const g = y.proof;
   if (Array.isArray(g))
-    return c("proof", "not_established", "Proof sets and chains are unsupported in the initial slice.", { digestSRI: p, artifactType: x });
-  if (!an(g))
-    return c("proof", "not_established", "The artifact carries no proof.", { digestSRI: p, artifactType: x });
+    return c("proof", "not_established", "Proof sets and chains are unsupported in the initial slice.", { digestSRI: u, artifactType: w });
+  if (!on(g))
+    return c("proof", "not_established", "The artifact carries no proof.", { digestSRI: u, artifactType: w });
   i.push({ check: "proof", state: "established", reason: "One eddsa-rdfc-2022 assertionMethod proof." });
-  const m = Iu(y.issuer, g.verificationMethod, o);
+  const m = qu(y.issuer, g.verificationMethod, o);
   if (m.state !== "established" || m.publicKey === void 0)
     return c(
       "key",
       m.state === "established" ? "not_established" : m.state,
       `${m.code}: ${m.reason}`,
-      { digestSRI: p, artifactType: x, keyAuthorization: m }
+      { digestSRI: u, artifactType: w, keyAuthorization: m }
     );
   i.push({ check: "key", state: "established", reason: m.reason });
   try {
-    const u = Td(o);
-    if (!await em(y, m.publicKey, {
-      documentLoader: u,
+    const p = Ed(o);
+    if (!await tm(y, m.publicKey, {
+      documentLoader: p,
       safe: !0
     }))
       return c(
         "signature",
         "contradicted",
         "Signature does not verify over the safe canonical form.",
-        { digestSRI: p, artifactType: x, keyAuthorization: m }
+        { digestSRI: u, artifactType: w, keyAuthorization: m }
       );
-  } catch (u) {
-    const b = u instanceof Error ? u.message.split(`
-`)[0] : String(u);
+  } catch (p) {
+    const b = p instanceof Error ? p.message.split(`
+`)[0] : String(p);
     return c(
       "signature",
       "contradicted",
       `Safe JSON-LD processing rejected the artifact: ${b}`,
-      { digestSRI: p, artifactType: x, keyAuthorization: m }
+      { digestSRI: u, artifactType: w, keyAuthorization: m }
     );
   }
   i.push({ check: "signature", state: "established", reason: "Ed25519 signature verifies (safe mode, offline catalog)." });
-  const l = [];
-  for (const u of n.manifest.factMappings) {
-    const b = String(u.fact);
-    for (const { pointer: S, value: I } of cm(y, String(u.nativePath)))
-      l.push(Object.freeze({ fact: b, pointer: S, value: structuredClone(I) }));
+  const d = [];
+  for (const p of n.manifest.factMappings) {
+    const b = String(p.fact);
+    for (const { pointer: S, value: A } of dm(y, String(p.nativePath)))
+      d.push(Object.freeze({ fact: b, pointer: S, value: structuredClone(A) }));
   }
   return a({
-    digestSRI: p,
-    artifactType: x,
+    digestSRI: u,
+    artifactType: w,
     keyAuthorization: m,
-    validity: dm(y, n.evaluationTime),
-    relatedResources: Object.freeze(lm(y, t).map((u) => Object.freeze(u))),
-    facts: Object.freeze(l)
+    validity: lm(y, n.evaluationTime),
+    relatedResources: Object.freeze(um(y, t).map((p) => Object.freeze(p))),
+    facts: Object.freeze(d)
   });
 }
-var we = Uint8Array, Oe = Uint16Array, ba = Int32Array, gr = new we([
+var we = Uint8Array, Le = Uint16Array, xa = Int32Array, vr = new we([
   0,
   0,
   0,
@@ -22757,7 +22884,7 @@ var we = Uint8Array, Oe = Uint16Array, ba = Int32Array, gr = new we([
   0,
   /* impossible */
   0
-]), vr = new we([
+]), br = new we([
   0,
   0,
   0,
@@ -22791,65 +22918,65 @@ var we = Uint8Array, Oe = Uint16Array, ba = Int32Array, gr = new we([
   /* unused */
   0,
   0
-]), Us = new we([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]), fl = function(e, t) {
-  for (var n = new Oe(31), i = 0; i < 31; ++i)
+]), Gs = new we([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]), ml = function(e, t) {
+  for (var n = new Le(31), i = 0; i < 31; ++i)
     n[i] = t += 1 << e[i - 1];
-  for (var o = new ba(n[30]), i = 1; i < 30; ++i)
+  for (var o = new xa(n[30]), i = 1; i < 30; ++i)
     for (var r = n[i]; r < n[i + 1]; ++r)
       o[r] = r - n[i] << 5 | i;
   return { b: n, r: o };
-}, hl = fl(gr, 2), ml = hl.b, Gs = hl.r;
-ml[28] = 258, Gs[258] = 28;
-var yl = fl(vr, 0), um = yl.b, hd = yl.r, Fs = new Oe(32768);
+}, yl = ml(vr, 2), gl = yl.b, Fs = yl.r;
+gl[28] = 258, Fs[258] = 28;
+var vl = ml(br, 0), pm = vl.b, yd = vl.r, Bs = new Le(32768);
 for (var de = 0; de < 32768; ++de) {
-  var _t = (de & 43690) >> 1 | (de & 21845) << 1;
-  _t = (_t & 52428) >> 2 | (_t & 13107) << 2, _t = (_t & 61680) >> 4 | (_t & 3855) << 4, Fs[de] = ((_t & 65280) >> 8 | (_t & 255) << 8) >> 1;
+  var Tt = (de & 43690) >> 1 | (de & 21845) << 1;
+  Tt = (Tt & 52428) >> 2 | (Tt & 13107) << 2, Tt = (Tt & 61680) >> 4 | (Tt & 3855) << 4, Bs[de] = ((Tt & 65280) >> 8 | (Tt & 255) << 8) >> 1;
 }
 var ct = (function(e, t, n) {
-  for (var i = e.length, o = 0, r = new Oe(t); o < i; ++o)
+  for (var i = e.length, o = 0, r = new Le(t); o < i; ++o)
     e[o] && ++r[e[o] - 1];
-  var s = new Oe(t);
+  var s = new Le(t);
   for (o = 1; o < t; ++o)
     s[o] = s[o - 1] + r[o - 1] << 1;
   var a;
   if (n) {
-    a = new Oe(1 << t);
+    a = new Le(1 << t);
     var c = 15 - t;
     for (o = 0; o < i; ++o)
       if (e[o])
-        for (var d = o << 4 | e[o], p = t - e[o], y = s[e[o] - 1]++ << p, f = y | (1 << p) - 1; y <= f; ++y)
-          a[Fs[y] >> c] = d;
+        for (var l = o << 4 | e[o], u = t - e[o], y = s[e[o] - 1]++ << u, f = y | (1 << u) - 1; y <= f; ++y)
+          a[Bs[y] >> c] = l;
   } else
-    for (a = new Oe(i), o = 0; o < i; ++o)
-      e[o] && (a[o] = Fs[s[e[o] - 1]++] >> 15 - e[o]);
+    for (a = new Le(i), o = 0; o < i; ++o)
+      e[o] && (a[o] = Bs[s[e[o] - 1]++] >> 15 - e[o]);
   return a;
-}), Mt = new we(288);
+}), Lt = new we(288);
 for (var de = 0; de < 144; ++de)
-  Mt[de] = 8;
+  Lt[de] = 8;
 for (var de = 144; de < 256; ++de)
-  Mt[de] = 9;
+  Lt[de] = 9;
 for (var de = 256; de < 280; ++de)
-  Mt[de] = 7;
+  Lt[de] = 7;
 for (var de = 280; de < 288; ++de)
-  Mt[de] = 8;
-var _n = new we(32);
+  Lt[de] = 8;
+var Cn = new we(32);
 for (var de = 0; de < 32; ++de)
-  _n[de] = 5;
-var pm = /* @__PURE__ */ ct(Mt, 9, 0), fm = /* @__PURE__ */ ct(Mt, 9, 1), hm = /* @__PURE__ */ ct(_n, 5, 0), mm = /* @__PURE__ */ ct(_n, 5, 1), _s = function(e) {
+  Cn[de] = 5;
+var fm = /* @__PURE__ */ ct(Lt, 9, 0), hm = /* @__PURE__ */ ct(Lt, 9, 1), mm = /* @__PURE__ */ ct(Cn, 5, 0), ym = /* @__PURE__ */ ct(Cn, 5, 1), Ts = function(e) {
   for (var t = e[0], n = 1; n < e.length; ++n)
     e[n] > t && (t = e[n]);
   return t;
 }, Qe = function(e, t, n) {
   var i = t / 8 | 0;
   return (e[i] | e[i + 1] << 8) >> (t & 7) & n;
-}, Ts = function(e, t) {
+}, Cs = function(e, t) {
   var n = t / 8 | 0;
   return (e[n] | e[n + 1] << 8 | e[n + 2] << 16) >> (t & 7);
-}, wa = function(e) {
+}, Sa = function(e) {
   return (e + 7) / 8 | 0;
-}, gl = function(e, t, n) {
+}, bl = function(e, t, n) {
   return (n == null || n > e.length) && (n = e.length), new we(e.subarray(t, n));
-}, ym = [
+}, gm = [
   "unexpected EOF",
   "invalid block type",
   "invalid length/literal",
@@ -22866,37 +22993,37 @@ var pm = /* @__PURE__ */ ct(Mt, 9, 0), fm = /* @__PURE__ */ ct(Mt, 9, 1), hm = /
   "invalid zip data"
   // determined by unknown compression method
 ], We = function(e, t, n) {
-  var i = new Error(t || ym[e]);
+  var i = new Error(t || gm[e]);
   if (i.code = e, Error.captureStackTrace && Error.captureStackTrace(i, We), !n)
     throw i;
   return i;
-}, gm = function(e, t, n, i) {
+}, vm = function(e, t, n, i) {
   var o = e.length, r = 0;
   if (!o || t.f && !t.l)
     return n || new we(0);
   var s = !n, a = s || t.i != 2, c = t.i;
   s && (n = new we(o * 3));
-  var d = function(U) {
+  var l = function(V) {
     var F = n.length;
-    if (U > F) {
-      var Z = new we(Math.max(F * 2, U));
+    if (V > F) {
+      var Z = new we(Math.max(F * 2, V));
       Z.set(n), n = Z;
     }
-  }, p = t.f || 0, y = t.p || 0, f = t.b || 0, h = t.l, w = t.d, x = t.m, v = t.n, A = o * 8;
+  }, u = t.f || 0, y = t.p || 0, f = t.b || 0, h = t.l, x = t.d, w = t.m, v = t.n, I = o * 8;
   do {
     if (!h) {
-      p = Qe(e, y, 1);
+      u = Qe(e, y, 1);
       var g = Qe(e, y + 1, 3);
       if (y += 3, g)
         if (g == 1)
-          h = fm, w = mm, x = 9, v = 5;
+          h = hm, x = ym, w = 9, v = 5;
         else if (g == 2) {
-          var b = Qe(e, y, 31) + 257, S = Qe(e, y + 10, 15) + 4, I = b + Qe(e, y + 5, 31) + 1;
+          var b = Qe(e, y, 31) + 257, S = Qe(e, y + 10, 15) + 4, A = b + Qe(e, y + 5, 31) + 1;
           y += 14;
-          for (var P = new we(I), R = new we(19), E = 0; E < S; ++E)
-            R[Us[E]] = Qe(e, y + E * 3, 7);
+          for (var P = new we(A), R = new we(19), E = 0; E < S; ++E)
+            R[Gs[E]] = Qe(e, y + E * 3, 7);
           y += S * 3;
-          for (var k = _s(R), M = (1 << k) - 1, j = ct(R, k, 1), E = 0; E < I; ) {
+          for (var k = Ts(R), M = (1 << k) - 1, j = ct(R, k, 1), E = 0; E < A; ) {
             var N = j[Qe(e, y, M)];
             y += N & 15;
             var m = N >> 4;
@@ -22909,53 +23036,53 @@ var pm = /* @__PURE__ */ ct(Mt, 9, 0), fm = /* @__PURE__ */ ct(Mt, 9, 1), hm = /
             }
           }
           var L = P.subarray(0, b), B = P.subarray(b);
-          x = _s(L), v = _s(B), h = ct(L, x, 1), w = ct(B, v, 1);
+          w = Ts(L), v = Ts(B), h = ct(L, w, 1), x = ct(B, v, 1);
         } else
           We(1);
       else {
-        var m = wa(y) + 4, l = e[m - 4] | e[m - 3] << 8, u = m + l;
-        if (u > o) {
+        var m = Sa(y) + 4, d = e[m - 4] | e[m - 3] << 8, p = m + d;
+        if (p > o) {
           c && We(0);
           break;
         }
-        a && d(f + l), n.set(e.subarray(m, u), f), t.b = f += l, t.p = y = u * 8, t.f = p;
+        a && l(f + d), n.set(e.subarray(m, p), f), t.b = f += d, t.p = y = p * 8, t.f = u;
         continue;
       }
-      if (y > A) {
+      if (y > I) {
         c && We(0);
         break;
       }
     }
-    a && d(f + 131072);
-    for (var T = (1 << x) - 1, O = (1 << v) - 1, V = y; ; V = y) {
-      var _ = h[Ts(e, y) & T], D = _ >> 4;
-      if (y += _ & 15, y > A) {
+    a && l(f + 131072);
+    for (var T = (1 << w) - 1, O = (1 << v) - 1, U = y; ; U = y) {
+      var _ = h[Cs(e, y) & T], D = _ >> 4;
+      if (y += _ & 15, y > I) {
         c && We(0);
         break;
       }
       if (_ || We(2), D < 256)
         n[f++] = D;
       else if (D == 256) {
-        V = y, h = null;
+        U = y, h = null;
         break;
       } else {
         var $ = D - 254;
         if (D > 264) {
-          var E = D - 257, q = gr[E];
-          $ = Qe(e, y, (1 << q) - 1) + ml[E], y += q;
+          var E = D - 257, q = vr[E];
+          $ = Qe(e, y, (1 << q) - 1) + gl[E], y += q;
         }
-        var C = w[Ts(e, y) & O], z = C >> 4;
+        var C = x[Cs(e, y) & O], z = C >> 4;
         C || We(3), y += C & 15;
-        var B = um[z];
+        var B = pm[z];
         if (z > 3) {
-          var q = vr[z];
-          B += Ts(e, y) & (1 << q) - 1, y += q;
+          var q = br[z];
+          B += Cs(e, y) & (1 << q) - 1, y += q;
         }
-        if (y > A) {
+        if (y > I) {
           c && We(0);
           break;
         }
-        a && d(f + 131072);
+        a && l(f + 131072);
         var H = f + $;
         if (f < B) {
           var Q = r - B, J = Math.min(B, H);
@@ -22966,64 +23093,64 @@ var pm = /* @__PURE__ */ ct(Mt, 9, 0), fm = /* @__PURE__ */ ct(Mt, 9, 1), hm = /
           n[f] = n[f - B];
       }
     }
-    t.l = h, t.p = V, t.b = f, t.f = p, h && (p = 1, t.m = x, t.d = w, t.n = v);
-  } while (!p);
-  return f != n.length && s ? gl(n, 0, f) : n.subarray(0, f);
+    t.l = h, t.p = U, t.b = f, t.f = u, h && (u = 1, t.m = w, t.d = x, t.n = v);
+  } while (!u);
+  return f != n.length && s ? bl(n, 0, f) : n.subarray(0, f);
 }, wt = function(e, t, n) {
   n <<= t & 7;
   var i = t / 8 | 0;
   e[i] |= n, e[i + 1] |= n >> 8;
-}, vn = function(e, t, n) {
+}, bn = function(e, t, n) {
   n <<= t & 7;
   var i = t / 8 | 0;
   e[i] |= n, e[i + 1] |= n >> 8, e[i + 2] |= n >> 16;
-}, Cs = function(e, t) {
+}, Es = function(e, t) {
   for (var n = [], i = 0; i < e.length; ++i)
     e[i] && n.push({ s: i, f: e[i] });
   var o = n.length, r = n.slice();
   if (!o)
-    return { t: bl, l: 0 };
+    return { t: xl, l: 0 };
   if (o == 1) {
     var s = new we(n[0].s + 1);
     return s[n[0].s] = 1, { t: s, l: 1 };
   }
-  n.sort(function(u, b) {
-    return u.f - b.f;
+  n.sort(function(p, b) {
+    return p.f - b.f;
   }), n.push({ s: -1, f: 25001 });
-  var a = n[0], c = n[1], d = 0, p = 1, y = 2;
-  for (n[0] = { s: -1, f: a.f + c.f, l: a, r: c }; p != o - 1; )
-    a = n[n[d].f < n[y].f ? d++ : y++], c = n[d != p && n[d].f < n[y].f ? d++ : y++], n[p++] = { s: -1, f: a.f + c.f, l: a, r: c };
+  var a = n[0], c = n[1], l = 0, u = 1, y = 2;
+  for (n[0] = { s: -1, f: a.f + c.f, l: a, r: c }; u != o - 1; )
+    a = n[n[l].f < n[y].f ? l++ : y++], c = n[l != u && n[l].f < n[y].f ? l++ : y++], n[u++] = { s: -1, f: a.f + c.f, l: a, r: c };
   for (var f = r[0].s, i = 1; i < o; ++i)
     r[i].s > f && (f = r[i].s);
-  var h = new Oe(f + 1), w = Bs(n[p - 1], h, 0);
-  if (w > t) {
-    var i = 0, x = 0, v = w - t, A = 1 << v;
+  var h = new Le(f + 1), x = Zs(n[u - 1], h, 0);
+  if (x > t) {
+    var i = 0, w = 0, v = x - t, I = 1 << v;
     for (r.sort(function(b, S) {
       return h[S.s] - h[b.s] || b.f - S.f;
     }); i < o; ++i) {
       var g = r[i].s;
       if (h[g] > t)
-        x += A - (1 << w - h[g]), h[g] = t;
+        w += I - (1 << x - h[g]), h[g] = t;
       else
         break;
     }
-    for (x >>= v; x > 0; ) {
+    for (w >>= v; w > 0; ) {
       var m = r[i].s;
-      h[m] < t ? x -= 1 << t - h[m]++ - 1 : ++i;
+      h[m] < t ? w -= 1 << t - h[m]++ - 1 : ++i;
     }
-    for (; i >= 0 && x; --i) {
-      var l = r[i].s;
-      h[l] == t && (--h[l], ++x);
+    for (; i >= 0 && w; --i) {
+      var d = r[i].s;
+      h[d] == t && (--h[d], ++w);
     }
-    w = t;
+    x = t;
   }
-  return { t: new we(h), l: w };
-}, Bs = function(e, t, n) {
-  return e.s == -1 ? Math.max(Bs(e.l, t, n + 1), Bs(e.r, t, n + 1)) : t[e.s] = n;
-}, md = function(e) {
+  return { t: new we(h), l: x };
+}, Zs = function(e, t, n) {
+  return e.s == -1 ? Math.max(Zs(e.l, t, n + 1), Zs(e.r, t, n + 1)) : t[e.s] = n;
+}, gd = function(e) {
   for (var t = e.length; t && !e[--t]; )
     ;
-  for (var n = new Oe(++t), i = 0, o = e[0], r = 1, s = function(c) {
+  for (var n = new Le(++t), i = 0, o = e[0], r = 1, s = function(c) {
     n[i++] = c;
   }, a = 1; a <= t; ++a)
     if (e[a] == o && a != t)
@@ -23043,273 +23170,273 @@ var pm = /* @__PURE__ */ ct(Mt, 9, 0), fm = /* @__PURE__ */ ct(Mt, 9, 1), hm = /
       r = 1, o = e[a];
     }
   return { c: n.subarray(0, i), n: t };
-}, bn = function(e, t) {
+}, wn = function(e, t) {
   for (var n = 0, i = 0; i < t.length; ++i)
     n += e[i] * t[i];
   return n;
-}, vl = function(e, t, n) {
-  var i = n.length, o = wa(t + 2);
+}, wl = function(e, t, n) {
+  var i = n.length, o = Sa(t + 2);
   e[o] = i & 255, e[o + 1] = i >> 8, e[o + 2] = e[o] ^ 255, e[o + 3] = e[o + 1] ^ 255;
   for (var r = 0; r < i; ++r)
     e[o + r + 4] = n[r];
   return (o + 4 + i) * 8;
-}, yd = function(e, t, n, i, o, r, s, a, c, d, p) {
-  wt(t, p++, n), ++o[256];
-  for (var y = Cs(o, 15), f = y.t, h = y.l, w = Cs(r, 15), x = w.t, v = w.l, A = md(f), g = A.c, m = A.n, l = md(x), u = l.c, b = l.n, S = new Oe(19), I = 0; I < g.length; ++I)
-    ++S[g[I] & 31];
-  for (var I = 0; I < u.length; ++I)
-    ++S[u[I] & 31];
-  for (var P = Cs(S, 7), R = P.t, E = P.l, k = 19; k > 4 && !R[Us[k - 1]]; --k)
+}, vd = function(e, t, n, i, o, r, s, a, c, l, u) {
+  wt(t, u++, n), ++o[256];
+  for (var y = Es(o, 15), f = y.t, h = y.l, x = Es(r, 15), w = x.t, v = x.l, I = gd(f), g = I.c, m = I.n, d = gd(w), p = d.c, b = d.n, S = new Le(19), A = 0; A < g.length; ++A)
+    ++S[g[A] & 31];
+  for (var A = 0; A < p.length; ++A)
+    ++S[p[A] & 31];
+  for (var P = Es(S, 7), R = P.t, E = P.l, k = 19; k > 4 && !R[Gs[k - 1]]; --k)
     ;
-  var M = d + 5 << 3, j = bn(o, Mt) + bn(r, _n) + s, N = bn(o, f) + bn(r, x) + s + 14 + 3 * k + bn(S, R) + 2 * S[16] + 3 * S[17] + 7 * S[18];
+  var M = l + 5 << 3, j = wn(o, Lt) + wn(r, Cn) + s, N = wn(o, f) + wn(r, w) + s + 14 + 3 * k + wn(S, R) + 2 * S[16] + 3 * S[17] + 7 * S[18];
   if (c >= 0 && M <= j && M <= N)
-    return vl(t, p, e.subarray(c, c + d));
+    return wl(t, u, e.subarray(c, c + l));
   var _, G, L, B;
-  if (wt(t, p, 1 + (N < j)), p += 2, N < j) {
-    _ = ct(f, h, 0), G = f, L = ct(x, v, 0), B = x;
+  if (wt(t, u, 1 + (N < j)), u += 2, N < j) {
+    _ = ct(f, h, 0), G = f, L = ct(w, v, 0), B = w;
     var T = ct(R, E, 0);
-    wt(t, p, m - 257), wt(t, p + 5, b - 1), wt(t, p + 10, k - 4), p += 14;
-    for (var I = 0; I < k; ++I)
-      wt(t, p + 3 * I, R[Us[I]]);
-    p += 3 * k;
-    for (var O = [g, u], V = 0; V < 2; ++V)
-      for (var D = O[V], I = 0; I < D.length; ++I) {
-        var $ = D[I] & 31;
-        wt(t, p, T[$]), p += R[$], $ > 15 && (wt(t, p, D[I] >> 5 & 127), p += D[I] >> 12);
+    wt(t, u, m - 257), wt(t, u + 5, b - 1), wt(t, u + 10, k - 4), u += 14;
+    for (var A = 0; A < k; ++A)
+      wt(t, u + 3 * A, R[Gs[A]]);
+    u += 3 * k;
+    for (var O = [g, p], U = 0; U < 2; ++U)
+      for (var D = O[U], A = 0; A < D.length; ++A) {
+        var $ = D[A] & 31;
+        wt(t, u, T[$]), u += R[$], $ > 15 && (wt(t, u, D[A] >> 5 & 127), u += D[A] >> 12);
       }
   } else
-    _ = pm, G = Mt, L = hm, B = _n;
-  for (var I = 0; I < a; ++I) {
-    var q = i[I];
+    _ = fm, G = Lt, L = mm, B = Cn;
+  for (var A = 0; A < a; ++A) {
+    var q = i[A];
     if (q > 255) {
       var $ = q >> 18 & 31;
-      vn(t, p, _[$ + 257]), p += G[$ + 257], $ > 7 && (wt(t, p, q >> 23 & 31), p += gr[$]);
+      bn(t, u, _[$ + 257]), u += G[$ + 257], $ > 7 && (wt(t, u, q >> 23 & 31), u += vr[$]);
       var C = q & 31;
-      vn(t, p, L[C]), p += B[C], C > 3 && (vn(t, p, q >> 5 & 8191), p += vr[C]);
+      bn(t, u, L[C]), u += B[C], C > 3 && (bn(t, u, q >> 5 & 8191), u += br[C]);
     } else
-      vn(t, p, _[q]), p += G[q];
+      bn(t, u, _[q]), u += G[q];
   }
-  return vn(t, p, _[256]), p + G[256];
-}, vm = /* @__PURE__ */ new ba([65540, 131080, 131088, 131104, 262176, 1048704, 1048832, 2114560, 2117632]), bl = /* @__PURE__ */ new we(0), bm = function(e, t, n, i, o, r) {
-  var s = r.z || e.length, a = new we(i + s + 5 * (1 + Math.ceil(s / 7e3)) + o), c = a.subarray(i, a.length - o), d = r.l, p = (r.r || 0) & 7;
+  return bn(t, u, _[256]), u + G[256];
+}, bm = /* @__PURE__ */ new xa([65540, 131080, 131088, 131104, 262176, 1048704, 1048832, 2114560, 2117632]), xl = /* @__PURE__ */ new we(0), wm = function(e, t, n, i, o, r) {
+  var s = r.z || e.length, a = new we(i + s + 5 * (1 + Math.ceil(s / 7e3)) + o), c = a.subarray(i, a.length - o), l = r.l, u = (r.r || 0) & 7;
   if (t) {
-    p && (c[0] = r.r >> 3);
-    for (var y = vm[t - 1], f = y >> 13, h = y & 8191, w = (1 << n) - 1, x = r.p || new Oe(32768), v = r.h || new Oe(w + 1), A = Math.ceil(n / 3), g = 2 * A, m = function(K) {
-      return (e[K] ^ e[K + 1] << A ^ e[K + 2] << g) & w;
-    }, l = new ba(25e3), u = new Oe(288), b = new Oe(32), S = 0, I = 0, P = r.i || 0, R = 0, E = r.w || 0, k = 0; P + 2 < s; ++P) {
+    u && (c[0] = r.r >> 3);
+    for (var y = bm[t - 1], f = y >> 13, h = y & 8191, x = (1 << n) - 1, w = r.p || new Le(32768), v = r.h || new Le(x + 1), I = Math.ceil(n / 3), g = 2 * I, m = function(K) {
+      return (e[K] ^ e[K + 1] << I ^ e[K + 2] << g) & x;
+    }, d = new xa(25e3), p = new Le(288), b = new Le(32), S = 0, A = 0, P = r.i || 0, R = 0, E = r.w || 0, k = 0; P + 2 < s; ++P) {
       var M = m(P), j = P & 32767, N = v[M];
-      if (x[j] = N, v[M] = j, E <= P) {
+      if (w[j] = N, v[M] = j, E <= P) {
         var _ = s - P;
-        if ((S > 7e3 || R > 24576) && (_ > 423 || !d)) {
-          p = yd(e, c, 0, l, u, b, I, R, k, P - k, p), R = S = I = 0, k = P;
+        if ((S > 7e3 || R > 24576) && (_ > 423 || !l)) {
+          u = vd(e, c, 0, d, p, b, A, R, k, P - k, u), R = S = A = 0, k = P;
           for (var G = 0; G < 286; ++G)
-            u[G] = 0;
+            p[G] = 0;
           for (var G = 0; G < 30; ++G)
             b[G] = 0;
         }
         var L = 2, B = 0, T = h, O = j - N & 32767;
         if (_ > 2 && M == m(P - O))
-          for (var V = Math.min(f, _) - 1, D = Math.min(32767, P), $ = Math.min(258, _); O <= D && --T && j != N; ) {
+          for (var U = Math.min(f, _) - 1, D = Math.min(32767, P), $ = Math.min(258, _); O <= D && --T && j != N; ) {
             if (e[P + L] == e[P + L - O]) {
               for (var q = 0; q < $ && e[P + q] == e[P + q - O]; ++q)
                 ;
               if (q > L) {
-                if (L = q, B = O, q > V)
+                if (L = q, B = O, q > U)
                   break;
                 for (var C = Math.min(O, q - 2), z = 0, G = 0; G < C; ++G) {
-                  var H = P - O + G & 32767, Q = x[H], J = H - Q & 32767;
+                  var H = P - O + G & 32767, Q = w[H], J = H - Q & 32767;
                   J > z && (z = J, N = H);
                 }
               }
             }
-            j = N, N = x[j], O += j - N & 32767;
+            j = N, N = w[j], O += j - N & 32767;
           }
         if (B) {
-          l[R++] = 268435456 | Gs[L] << 18 | hd[B];
-          var U = Gs[L] & 31, F = hd[B] & 31;
-          I += gr[U] + vr[F], ++u[257 + U], ++b[F], E = P + L, ++S;
+          d[R++] = 268435456 | Fs[L] << 18 | yd[B];
+          var V = Fs[L] & 31, F = yd[B] & 31;
+          A += vr[V] + br[F], ++p[257 + V], ++b[F], E = P + L, ++S;
         } else
-          l[R++] = e[P], ++u[e[P]];
+          d[R++] = e[P], ++p[e[P]];
       }
     }
     for (P = Math.max(P, E); P < s; ++P)
-      l[R++] = e[P], ++u[e[P]];
-    p = yd(e, c, d, l, u, b, I, R, k, P - k, p), d || (r.r = p & 7 | c[p / 8 | 0] << 3, p -= 7, r.h = v, r.p = x, r.i = P, r.w = E);
+      d[R++] = e[P], ++p[e[P]];
+    u = vd(e, c, l, d, p, b, A, R, k, P - k, u), l || (r.r = u & 7 | c[u / 8 | 0] << 3, u -= 7, r.h = v, r.p = w, r.i = P, r.w = E);
   } else {
-    for (var P = r.w || 0; P < s + d; P += 65535) {
+    for (var P = r.w || 0; P < s + l; P += 65535) {
       var Z = P + 65535;
-      Z >= s && (c[p / 8 | 0] = d, Z = s), p = vl(c, p + 1, e.subarray(P, Z));
+      Z >= s && (c[u / 8 | 0] = l, Z = s), u = wl(c, u + 1, e.subarray(P, Z));
     }
     r.i = s;
   }
-  return gl(a, 0, i + wa(p) + o);
-}, wm = /* @__PURE__ */ (function() {
+  return bl(a, 0, i + Sa(u) + o);
+}, xm = /* @__PURE__ */ (function() {
   for (var e = new Int32Array(256), t = 0; t < 256; ++t) {
     for (var n = t, i = 9; --i; )
       n = (n & 1 && -306674912) ^ n >>> 1;
     e[t] = n;
   }
   return e;
-})(), xm = function() {
+})(), Sm = function() {
   var e = -1;
   return {
     p: function(t) {
       for (var n = e, i = 0; i < t.length; ++i)
-        n = wm[n & 255 ^ t[i]] ^ n >>> 8;
+        n = xm[n & 255 ^ t[i]] ^ n >>> 8;
       e = n;
     },
     d: function() {
       return ~e;
     }
   };
-}, Sm = function(e, t, n, i, o) {
+}, Im = function(e, t, n, i, o) {
   if (!o && (o = { l: 1 }, t.dictionary)) {
     var r = t.dictionary.subarray(-32768), s = new we(r.length + e.length);
     s.set(r), s.set(e, r.length), e = s, o.w = r.length;
   }
-  return bm(e, t.level == null ? 6 : t.level, t.mem == null ? o.l ? Math.ceil(Math.max(8, Math.min(13, Math.log(e.length))) * 1.5) : 20 : 12 + t.mem, n, i, o);
-}, Zs = function(e, t, n) {
+  return wm(e, t.level == null ? 6 : t.level, t.mem == null ? o.l ? Math.ceil(Math.max(8, Math.min(13, Math.log(e.length))) * 1.5) : 20 : 12 + t.mem, n, i, o);
+}, Hs = function(e, t, n) {
   for (; n; ++t)
     e[t] = n, n >>>= 8;
 }, Am = function(e, t) {
   var n = t.filename;
-  if (e[0] = 31, e[1] = 139, e[2] = 8, e[8] = t.level < 2 ? 4 : t.level == 9 ? 2 : 0, e[9] = 3, t.mtime != 0 && Zs(e, 4, Math.floor(new Date(t.mtime || Date.now()) / 1e3)), n) {
+  if (e[0] = 31, e[1] = 139, e[2] = 8, e[8] = t.level < 2 ? 4 : t.level == 9 ? 2 : 0, e[9] = 3, t.mtime != 0 && Hs(e, 4, Math.floor(new Date(t.mtime || Date.now()) / 1e3)), n) {
     e[3] = 8;
     for (var i = 0; i <= n.length; ++i)
       e[i + 10] = n.charCodeAt(i);
   }
-}, Im = function(e) {
+}, qm = function(e) {
   (e[0] != 31 || e[1] != 139 || e[2] != 8) && We(6, "invalid gzip data");
   var t = e[3], n = 10;
   t & 4 && (n += (e[10] | e[11] << 8) + 2);
   for (var i = (t >> 3 & 1) + (t >> 4 & 1); i > 0; i -= !e[n++])
     ;
   return n + (t & 2);
-}, qm = function(e) {
+}, Rm = function(e) {
   var t = e.length;
   return (e[t - 4] | e[t - 3] << 8 | e[t - 2] << 16 | e[t - 1] << 24) >>> 0;
-}, Rm = function(e) {
+}, jm = function(e) {
   return 10 + (e.filename ? e.filename.length + 1 : 0);
 };
-function jm(e, t) {
-  t || (t = {});
-  var n = xm(), i = e.length;
-  n.p(e);
-  var o = Sm(e, t, Rm(t), 8), r = o.length;
-  return Am(o, t), Zs(o, r - 8, n.d()), Zs(o, r - 4, i), o;
-}
 function $m(e, t) {
-  var n = Im(e);
-  return n + 8 > e.length && We(6, "invalid gzip data"), gm(e.subarray(n, -8), { i: 2 }, new we(qm(e)), t);
+  t || (t = {});
+  var n = Sm(), i = e.length;
+  n.p(e);
+  var o = Im(e, t, jm(t), 8), r = o.length;
+  return Am(o, t), Hs(o, r - 8, n.d()), Hs(o, r - 4, i), o;
 }
-var Pm = typeof TextDecoder < "u" && /* @__PURE__ */ new TextDecoder(), _m = 0;
+function Pm(e, t) {
+  var n = qm(e);
+  return n + 8 > e.length && We(6, "invalid gzip data"), vm(e.subarray(n, -8), { i: 2 }, new we(Rm(e)), t);
+}
+var _m = typeof TextDecoder < "u" && /* @__PURE__ */ new TextDecoder(), Tm = 0;
 try {
-  Pm.decode(bl, { stream: !0 }), _m = 1;
+  _m.decode(xl, { stream: !0 }), Tm = 1;
 } catch {
 }
-function gd(e) {
+function bd(e) {
   return Object.assign(new RangeError(`Cannot create a buffer larger than maxOutputLength ${e}.`), { code: "ERR_BUFFER_TOO_LARGE" });
 }
-function Tm(e, t = {}) {
+function Cm(e, t = {}) {
   const n = t.maxOutputLength ?? Number.MAX_SAFE_INTEGER;
   if (e.length >= 18) {
     const o = e.length - 4;
-    if ((e[o] | e[o + 1] << 8 | e[o + 2] << 16 | e[o + 3] << 24) >>> 0 > n) throw gd(n);
+    if ((e[o] | e[o + 1] << 8 | e[o + 2] << 16 | e[o + 3] << 24) >>> 0 > n) throw bd(n);
   }
-  const i = $m(e);
-  if (i.length > n) throw gd(n);
+  const i = Pm(e);
+  if (i.length > n) throw bd(n);
   return i;
 }
-const Hs = 131072, Cm = 2 * 1024 * 1024;
-class Gi extends Error {
+const Js = 131072, Em = 2 * 1024 * 1024;
+class Bi extends Error {
   constructor(t, n) {
     super(n), this.code = t, this.name = "StatusListError";
   }
 }
-function Em(e, t = Cm) {
+function km(e, t = Em) {
   if (typeof e != "string" || !/^u[A-Za-z0-9_-]+$/.test(e))
-    throw new Gi("MALFORMED", 'encodedList must be multibase base64url (prefix "u").');
+    throw new Bi("MALFORMED", 'encodedList must be multibase base64url (prefix "u").');
   let n;
   try {
-    n = Tm(km(e.slice(1)), { maxOutputLength: t });
+    n = Cm(Mm(e.slice(1)), { maxOutputLength: t });
   } catch (i) {
-    throw i.code === "ERR_BUFFER_TOO_LARGE" || /maxOutputLength|buffer/i.test(String(i)) ? new Gi("TOO_LARGE", `Decompressed status list exceeds ${t} bytes.`) : new Gi("MALFORMED", "encodedList is not valid GZIP data.");
+    throw i.code === "ERR_BUFFER_TOO_LARGE" || /maxOutputLength|buffer/i.test(String(i)) ? new Bi("TOO_LARGE", `Decompressed status list exceeds ${t} bytes.`) : new Bi("MALFORMED", "encodedList is not valid GZIP data.");
   }
-  if (n.byteLength * 8 < Hs)
-    throw new Gi("TOO_SHORT", `Status list has fewer than ${Hs} bits.`);
+  if (n.byteLength * 8 < Js)
+    throw new Bi("TOO_SHORT", `Status list has fewer than ${Js} bits.`);
   return new Uint8Array(n);
 }
-function km(e) {
+function Mm(e) {
   const t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_", n = new Uint8Array(Math.floor(e.length * 6 / 8));
   let i = 0, o = 0, r = 0;
   for (const s of e)
     i = i << 6 | t.indexOf(s), o += 6, o >= 8 && (o -= 8, n[r++] = i >> o & 255);
   return n;
 }
-function Mm(e, t) {
+function Om(e, t) {
   const n = e[Math.floor(t / 8)];
   if (n === void 0) throw new RangeError(`Status index ${t} is outside the list.`);
   return (n >> 7 - t % 8 & 1) === 1;
 }
-function Js(e) {
+function Ks(e) {
   return e !== null && typeof e == "object" && !Array.isArray(e);
 }
-function Ks(e, t) {
+function Qs(e, t) {
   const n = e.credentialStatus;
   if (n === void 0) return {};
   const i = Array.isArray(n) ? n : [n];
-  if (i.length === 0 || !i.every(Js)) return { reason: "Unsupported credentialStatus form." };
+  if (i.length === 0 || !i.every(Ks)) return { reason: "Unsupported credentialStatus form." };
   const o = i.filter((r) => t.includes(String(r.statusPurpose)));
   return o.length > 1 ? { reason: `Several status entries for ${t.join("/")}.` } : o.length === 0 ? { reason: `No status entry has an accepted purpose (${t.join(", ")}); found ${i.map((r) => String(r.statusPurpose)).join(", ")}.` } : { entry: o[0] };
 }
-function Om(e, t, n, i, o, r = o) {
-  const s = Ks(e, i.purposes), a = s.entry;
+function Lm(e, t, n, i, o, r = o) {
+  const s = Qs(e, i.purposes), a = s.entry;
   if (a === void 0 && s.reason === void 0)
     return i.required ? { state: "not_established", reason: "Status is required by the profile but the credential names none.", sources: [] } : { state: "established", reason: "The profile does not require status for this credential.", sources: [] };
   if (a === void 0) return { state: "not_established", reason: s.reason, sources: ["/credentialStatus"] };
   if (a.type !== "BitstringStatusListEntry" || typeof a.statusListCredential != "string" || typeof a.statusListIndex != "string")
     return { state: "not_established", reason: "Unsupported credentialStatus form.", sources: ["/credentialStatus"] };
-  const c = a.statusListCredential, d = ["/credentialStatus", c];
+  const c = a.statusListCredential, l = ["/credentialStatus", c];
   if (t === void 0)
-    return { state: "not_established", reason: `Status list ${c} is unavailable.`, listUri: c, sources: d };
+    return { state: "not_established", reason: `Status list ${c} is unavailable.`, listUri: c, sources: l };
   if (n !== "established")
-    return { state: "not_established", reason: `Status list ${c} is not protected and valid.`, listUri: c, sources: d };
+    return { state: "not_established", reason: `Status list ${c} is not protected and valid.`, listUri: c, sources: l };
   if (t.id !== c)
-    return { state: "not_established", reason: `Resolved status list identifies itself as ${String(t.id)}.`, listUri: c, sources: d };
-  const p = (g) => Js(g) ? g.id : g;
-  if (typeof p(t.issuer) != "string" || p(t.issuer) !== p(e.issuer))
-    return { state: "not_established", reason: `Status list is signed by ${String(p(t.issuer))}, who may not state status for credentials of ${String(p(e.issuer))}.`, listUri: c, sources: d };
+    return { state: "not_established", reason: `Resolved status list identifies itself as ${String(t.id)}.`, listUri: c, sources: l };
+  const u = (g) => Ks(g) ? g.id : g;
+  if (typeof u(t.issuer) != "string" || u(t.issuer) !== u(e.issuer))
+    return { state: "not_established", reason: `Status list is signed by ${String(u(t.issuer))}, who may not state status for credentials of ${String(u(e.issuer))}.`, listUri: c, sources: l };
   const y = t.credentialSubject;
-  if (!Js(y) || y.type !== "BitstringStatusList" || y.statusPurpose !== a.statusPurpose)
-    return { state: "not_established", reason: "Status list purpose does not match the entry.", listUri: c, sources: d };
-  const f = Date.parse(String(t.validFrom)), h = Date.parse(String(t.validUntil)), w = Date.parse(r);
+  if (!Ks(y) || y.type !== "BitstringStatusList" || y.statusPurpose !== a.statusPurpose)
+    return { state: "not_established", reason: "Status list purpose does not match the entry.", listUri: c, sources: l };
+  const f = Date.parse(String(t.validFrom)), h = Date.parse(String(t.validUntil)), x = Date.parse(r);
   if (!Number.isFinite(Date.parse(o)) || !Number.isFinite(f))
-    return { state: "not_established", reason: `Status list is older than the profile's ${i.maxAgeSeconds} s freshness limit.`, listUri: c, sources: d };
-  if (!Number.isFinite(w) || w < f)
-    return { state: "not_established", reason: `Status list observed at ${String(t.validFrom)} cannot establish status at the earlier activity time ${r}; historical status is unavailable.`, listUri: c, sources: d };
-  if (Number.isFinite(h) && w > h)
-    return { state: "not_established", reason: `Status list in force until ${String(t.validUntil)} cannot establish status at ${r}.`, listUri: c, sources: d };
-  if ((w - f) / 1e3 > i.maxAgeSeconds)
-    return { state: "not_established", reason: `Status list is older than the profile's ${i.maxAgeSeconds} s freshness limit.`, listUri: c, sources: d };
+    return { state: "not_established", reason: `Status list is older than the profile's ${i.maxAgeSeconds} s freshness limit.`, listUri: c, sources: l };
+  if (!Number.isFinite(x) || x < f)
+    return { state: "not_established", reason: `Status list observed at ${String(t.validFrom)} cannot establish status at the earlier activity time ${r}; historical status is unavailable.`, listUri: c, sources: l };
+  if (Number.isFinite(h) && x > h)
+    return { state: "not_established", reason: `Status list in force until ${String(t.validUntil)} cannot establish status at ${r}.`, listUri: c, sources: l };
+  if ((x - f) / 1e3 > i.maxAgeSeconds)
+    return { state: "not_established", reason: `Status list is older than the profile's ${i.maxAgeSeconds} s freshness limit.`, listUri: c, sources: l };
   if (!/^(0|[1-9][0-9]*)$/.test(a.statusListIndex))
-    return { state: "not_established", reason: "statusListIndex is not a non-negative integer.", listUri: c, sources: d };
-  let x;
+    return { state: "not_established", reason: "statusListIndex is not a non-negative integer.", listUri: c, sources: l };
+  let w;
   try {
-    x = Mm(Em(y.encodedList), Number(a.statusListIndex));
+    w = Om(km(y.encodedList), Number(a.statusListIndex));
   } catch (g) {
-    return { state: "not_established", reason: `Status list cannot be read: ${g.message}`, listUri: c, sources: d };
+    return { state: "not_established", reason: `Status list cannot be read: ${g.message}`, listUri: c, sources: l };
   }
-  const [v, A] = a.statusPurpose === "suspension" ? ["Suspended", "Not suspended"] : ["Revoked", "Not revoked"];
-  return x ? { state: "contradicted", reason: `${v}: bit ${a.statusListIndex} of ${c} is set.`, listUri: c, sources: d } : { state: "established", reason: `${A}: bit ${a.statusListIndex} of ${c} is clear.`, listUri: c, sources: d };
+  const [v, I] = a.statusPurpose === "suspension" ? ["Suspended", "Not suspended"] : ["Revoked", "Not revoked"];
+  return w ? { state: "contradicted", reason: `${v}: bit ${a.statusListIndex} of ${c} is set.`, listUri: c, sources: l } : { state: "established", reason: `${I}: bit ${a.statusListIndex} of ${c} is clear.`, listUri: c, sources: l };
 }
-const Lm = Object.freeze({ maxResources: 1e3, maxBytes: 2e7 });
-function xa(e, t, n) {
+const Nm = Object.freeze({ maxResources: 1e3, maxBytes: 2e7 });
+function Ia(e, t, n) {
   if (!(e.binding.id === t.id && e.binding.version === t.version && e.profile.id === n.id && e.profile.version === n.version))
     return `Requested ${e.profile.id}@${e.profile.version} with binding ${e.binding.id}@${e.binding.version} is not the verifier-selected profile ${n.id}@${n.version} for ${t.id}@${t.version}.`;
 }
-function Sa(e, t) {
+function Aa(e, t) {
   const n = `${e.targetId} | plan`;
-  return cr({
+  return dr({
     requestId: e.requestId,
     targetId: e.targetId,
     binding: e.binding,
@@ -23318,10 +23445,10 @@ function Sa(e, t) {
     authorization: e.selectedClaims.map((i) => ({
       claimId: i.id,
       routeWitnessIds: [],
-      ...pn("Not evaluated: the plan was refused at gate 0.")
+      ...fn("Not evaluated: the plan was refused at gate 0.")
     })),
     support: [],
-    conformity: e.conformity ? { requested: !0, ...e.conformity, ...pn("Not evaluated: the plan was refused at gate 0.") } : { requested: !1, execution: "not_run" },
+    conformity: e.conformity ? { requested: !0, ...e.conformity, ...fn("Not evaluated: the plan was refused at gate 0.") } : { requested: !1, execution: "not_run" },
     decision: "not_established",
     trace: [{
       gate: 0,
@@ -23336,33 +23463,33 @@ function Sa(e, t) {
     limitations: ["The request did not name the verifier-selected profile and binding; nothing was evaluated."]
   });
 }
-async function Aa(e, t, n, i, o) {
-  const r = Da(t.openSession({
+async function qa(e, t, n, i, o) {
+  const r = Ua(t.openSession({
     maxResources: e.resolverLimits.maxResources,
     maxBytes: e.resolverLimits.maxBytes
-  })), s = Da(t.openSession(Lm)), a = { manifest: n, evaluationTime: e.evaluationTime, staticResolver: s, ...o ? { binding: o } : {} }, c = (S) => JSON.parse(new TextDecoder().decode(r.resolve(S).bytes)), d = await Ui(e.targetId, r, a), p = [d], y = /* @__PURE__ */ new Map([[e.targetId, 0]]);
+  })), s = Ua(t.openSession(Nm)), a = { manifest: n, evaluationTime: e.evaluationTime, staticResolver: s, ...o ? { binding: o } : {} }, c = (S) => JSON.parse(new TextDecoder().decode(r.resolve(S).bytes)), l = await Fi(e.targetId, r, a), u = [l], y = /* @__PURE__ */ new Map([[e.targetId, 0]]);
   for (const S of e.suppliedEvidence)
-    y.has(S) || (y.set(S, 1), p.push(await Ui(S, r, a)));
-  for (let S = 0; S < p.length; S++) {
-    const I = p[S], P = y.get(I.artifactId);
-    if (I.protection.state !== "established" || P + 1 > e.resolverLimits.maxDepth) continue;
-    const R = c(I.artifactId), E = [
-      ...(Array.isArray(R.termsOfUse) ? R.termsOfUse : []).map((k) => k?.authorizationCredential?.id),
+    y.has(S) || (y.set(S, 1), u.push(await Fi(S, r, a)));
+  for (let S = 0; S < u.length; S++) {
+    const A = u[S], P = y.get(A.artifactId);
+    if (A.protection.state !== "established" || P + 1 > e.resolverLimits.maxDepth) continue;
+    const R = c(A.artifactId), E = [
+      ...(Array.isArray(R.termsOfUse) ? R.termsOfUse : []).map((k) => k).map((k) => k?.authorizationCredential?.id ?? k?.recognitionCredential?.id),
       ...(Array.isArray(R.evidence) ? R.evidence : []).map((k) => k?.id)
     ].filter((k) => typeof k == "string");
     for (const k of E)
-      y.has(k) || (y.set(k, P + 1), p.push(await Ui(k, r, a)));
+      y.has(k) || (y.set(k, P + 1), u.push(await Fi(k, r, a)));
   }
-  const f = /* @__PURE__ */ new Map(), h = /* @__PURE__ */ new Map(), w = /* @__PURE__ */ new Map();
-  for (const S of p) {
+  const f = /* @__PURE__ */ new Map(), h = /* @__PURE__ */ new Map(), x = /* @__PURE__ */ new Map();
+  for (const S of u) {
     if (S.protection.state !== "established") {
-      w.set(S.artifactId, void 0);
+      x.set(S.artifactId, void 0);
       continue;
     }
-    const I = c(S.artifactId).id;
-    w.set(S.artifactId, I === S.artifactId ? ce("established", ["Artifact identifies itself by its resolved identity."], ["/id"]) : ce("contradicted", [`Artifact resolved as ${S.artifactId} identifies itself as ${String(I)}.`], ["/id"]));
+    const A = c(S.artifactId).id;
+    x.set(S.artifactId, A === S.artifactId ? ce("established", ["Artifact identifies itself by its resolved identity."], ["/id"]) : ce("contradicted", [`Artifact resolved as ${S.artifactId} identifies itself as ${String(A)}.`], ["/id"]));
   }
-  const x = Date.parse(e.activityTime) < Date.parse(e.evaluationTime), v = async (S, I, P) => {
+  const w = Date.parse(e.activityTime) < Date.parse(e.evaluationTime), v = async (S, A, P) => {
     const R = y.get(S) + 1;
     if (R > e.resolverLimits.maxDepth)
       return {
@@ -23370,34 +23497,34 @@ async function Aa(e, t, n, i, o) {
         sources: ["/credentialStatus"],
         reason: `Status list is at depth ${R}, beyond the request's maxDepth ${e.resolverLimits.maxDepth}.`
       };
-    const E = Ks(I, P.purposes).entry, k = typeof E?.statusListCredential == "string" ? E.statusListCredential : void 0;
+    const E = Qs(A, P.purposes).entry, k = typeof E?.statusListCredential == "string" ? E.statusListCredential : void 0;
     let M, j = "not_established";
     if (k !== void 0) {
-      f.has(k) || f.set(k, await Ui(k, r, a));
+      f.has(k) || f.set(k, await Fi(k, r, a));
       const N = f.get(k);
-      N.digestSRI !== void 0 && N.protection.state === "established" ? (M = c(k), j = x ? N.protection.state : xe([N.protection.state, N.validity.state])) : N.digestSRI !== void 0 && (M = {}, j = N.protection.state);
+      N.digestSRI !== void 0 && N.protection.state === "established" ? (M = c(k), j = w ? N.protection.state : xe([N.protection.state, N.validity.state])) : N.digestSRI !== void 0 && (M = {}, j = N.protection.state);
     }
-    return Om(I, M, j, P, e.evaluationTime, e.activityTime);
-  }, A = { required: !0, purposes: ["suspension"], maxAgeSeconds: i.credentialStatus.maxAgeSeconds }, g = /* @__PURE__ */ new Map();
-  for (const S of p) {
+    return Lm(A, M, j, P, e.evaluationTime, e.activityTime);
+  }, I = { required: !0, purposes: ["suspension"], maxAgeSeconds: i.credentialStatus.maxAgeSeconds }, g = /* @__PURE__ */ new Map();
+  for (const S of u) {
     if (S.protection.state !== "established") {
       h.set(S.artifactId, void 0);
       continue;
     }
-    const I = c(S.artifactId);
-    h.set(S.artifactId, await v(S.artifactId, I, i.credentialStatus)), Ks(I, ["suspension"]).entry !== void 0 && g.set(S.artifactId, await v(S.artifactId, I, A));
+    const A = c(S.artifactId);
+    h.set(S.artifactId, await v(S.artifactId, A, i.credentialStatus)), Qs(A, ["suspension"]).entry !== void 0 && g.set(S.artifactId, await v(S.artifactId, A, I));
   }
   const m = (S) => [
     S.protection,
-    w.get(S.artifactId) ? {
+    x.get(S.artifactId) ? {
       artifactId: S.artifactId,
-      ...w.get(S.artifactId),
-      reasons: w.get(S.artifactId).reasons.map((I) => `identity: ${I}`)
-    } : { artifactId: S.artifactId, ...pn("identity: Not evaluated because protection is not established.") },
+      ...x.get(S.artifactId),
+      reasons: x.get(S.artifactId).reasons.map((A) => `identity: ${A}`)
+    } : { artifactId: S.artifactId, ...fn("identity: Not evaluated because protection is not established.") },
     {
       artifactId: S.artifactId,
       ...S.validity,
-      reasons: S.validity.reasons.map((I) => `validity: ${I}`)
+      reasons: S.validity.reasons.map((A) => `validity: ${A}`)
     },
     ...h.get(S.artifactId) ? [{ artifactId: S.artifactId, ...ce(
       h.get(S.artifactId).state,
@@ -23405,34 +23532,34 @@ async function Aa(e, t, n, i, o) {
       [...h.get(S.artifactId).sources]
     ) }] : [{
       artifactId: S.artifactId,
-      ...pn("status: Not evaluated because protection is not established.")
+      ...fn("status: Not evaluated because protection is not established.")
     }],
-    ...S.relatedResources.map((I) => ({
-      artifactId: I.id,
-      ...ce(I.state, [`integrity (from ${S.artifactId}): ${I.reason}`], ["/relatedResource"])
+    ...S.relatedResources.map((A) => ({
+      artifactId: A.id,
+      ...ce(A.state, [`integrity (from ${S.artifactId}): ${A.reason}`], ["/relatedResource"])
     }))
-  ], l = /* @__PURE__ */ new Map();
-  for (const S of p) {
-    const I = [
+  ], d = /* @__PURE__ */ new Map();
+  for (const S of u) {
+    const A = [
       ["protection", S.protection.state, S.protection.reasons.join(" ")],
-      ["identity", w.get(S.artifactId)?.state ?? "not_established", w.get(S.artifactId)?.reasons.join(" ") ?? "not evaluated"],
+      ["identity", x.get(S.artifactId)?.state ?? "not_established", x.get(S.artifactId)?.reasons.join(" ") ?? "not evaluated"],
       ["validity", S.validity.state, S.validity.reasons.join(" ")],
       ["status", h.get(S.artifactId)?.state ?? "not_established", h.get(S.artifactId)?.reason ?? "not evaluated"]
-    ], P = xe(I.map((E) => E[1])), R = g.get(S.artifactId);
-    l.set(S.artifactId, {
+    ], P = xe(A.map((E) => E[1])), R = g.get(S.artifactId);
+    d.set(S.artifactId, {
       uri: S.artifactId,
       usable: P,
-      reason: I.filter((E) => E[1] !== "established").map((E) => `${E[0]}: ${E[2]}`).join("; ") || "usable",
+      reason: A.filter((E) => E[1] !== "established").map((E) => `${E[0]}: ${E[2]}`).join("; ") || "usable",
       ...P === "established" ? { document: c(S.artifactId) } : {},
       ...R ? { suspension: { state: R.state, reason: R.reason } } : {}
     });
   }
-  const u = [], b = [];
-  p.forEach((S, I) => {
-    const P = I === 0 ? "target" : "supplied-evidence", R = yr(S.artifactId, S.digestSRI, P, e);
+  const p = [], b = [];
+  u.forEach((S, A) => {
+    const P = A === 0 ? "target" : "supplied-evidence", R = gr(S.artifactId, S.digestSRI, P, e);
     for (const M of S.checks)
-      u.push({
-        gate: am[M.check],
+      p.push({
+        gate: om[M.check],
         nodeUse: R,
         predicate: M.check,
         state: M.state,
@@ -23441,7 +23568,7 @@ async function Aa(e, t, n, i, o) {
         sources: [S.artifactId]
       });
     for (const M of S.relatedResources)
-      u.push({
+      p.push({
         gate: 1,
         nodeUse: R,
         predicate: "related-resource-integrity",
@@ -23450,8 +23577,8 @@ async function Aa(e, t, n, i, o) {
         reason: `${M.id}: ${M.reason}`,
         sources: ["/relatedResource", M.id]
       });
-    const E = w.get(S.artifactId);
-    u.push(E ? {
+    const E = x.get(S.artifactId);
+    p.push(E ? {
       gate: 1,
       nodeUse: R,
       predicate: "resource-identity",
@@ -23467,7 +23594,7 @@ async function Aa(e, t, n, i, o) {
       execution: "not_run",
       reason: "Not evaluated because protection is not established.",
       sources: []
-    }), u.push({
+    }), p.push({
       gate: 3,
       nodeUse: R,
       predicate: "validity-period",
@@ -23477,7 +23604,7 @@ async function Aa(e, t, n, i, o) {
       sources: [...S.validity.sourcePointers]
     });
     const k = h.get(S.artifactId);
-    u.push(k ? {
+    p.push(k ? {
       gate: 3,
       nodeUse: R,
       predicate: "credential-status",
@@ -23501,135 +23628,149 @@ async function Aa(e, t, n, i, o) {
       observedAt: e.evaluationTime
     });
   });
-  for (const [S, I] of f)
-    I.digestSRI !== void 0 && b.push({ uri: S, digestSRI: I.digestSRI, kind: "status", source: "catalog", observedAt: e.evaluationTime });
+  for (const [S, A] of f)
+    A.digestSRI !== void 0 && b.push({ uri: S, digestSRI: A.digestSRI, kind: "status", source: "catalog", observedAt: e.evaluationTime });
   return {
-    target: d,
-    artifacts: p,
-    facts: l,
+    target: l,
+    artifacts: u,
+    facts: d,
     verificationOf: m,
-    artifactVerification: p.flatMap(m),
-    trace: u,
+    artifactVerification: u.flatMap(m),
+    trace: p,
     resources: b
   };
 }
-const ir = "RecognizedEntityCredential", Le = (e) => e !== null && typeof e == "object" && !Array.isArray(e), Bt = (e) => typeof e == "string" && e.trim().length > 0, Ji = (e) => Array.isArray(e) ? e : Le(e) ? [e] : [], wl = (e) => Bt(e) ? e : Le(e) && Bt(e.id) ? e.id : void 0;
-function Nm(e) {
+const rr = "RecognizedEntityCredential", Re = (e) => e !== null && typeof e == "object" && !Array.isArray(e), kt = (e) => typeof e == "string" && e.trim().length > 0, qn = (e) => Array.isArray(e) ? e : Re(e) ? [e] : [], It = (e) => kt(e) ? e : Re(e) && kt(e.id) ? e.id : void 0;
+function Dm(e) {
   const t = e.bindingRules.recognition;
   if (t === void 0) return;
-  if (!Le(t) || !Bt(t.recognizerPurpose) || !Bt(t.action) || !Le(t.purposes)) return "invalid";
+  if (!Re(t) || !kt(t.recognizerPurpose) || !kt(t.action) || !Re(t.purposes)) return "invalid";
   const n = {};
   for (const [i, o] of Object.entries(t.purposes)) {
-    if (!Le(o) || !Bt(o.activity) || !Bt(o.standardId)) return "invalid";
+    if (!Re(o) || !kt(o.activity) || !kt(o.standardId)) return "invalid";
     n[i] = { activity: o.activity, standardId: o.standardId };
   }
   return { recognizerPurpose: t.recognizerPurpose, action: t.action, purposes: n };
 }
-function Dm(e) {
-  return Ji(e.termsOfUse).filter(Le).filter((t) => t.type === "RmAuthorizationPolicy" && Le(t.authorizationCredential) && t.authorizationCredential.type === ir).map((t) => t.authorizationCredential.id).filter(Bt);
+const Ws = "RecognitionPolicy";
+function zm(e) {
+  return qn(e.termsOfUse).filter(Re).filter((t) => t.type === Ws && Re(t.recognitionCredential) && t.recognitionCredential.type === rr).map((t) => t.recognitionCredential.id).filter(kt);
 }
-const ge = (e, t, n, i) => ({ id: e, state: t, reason: n, sources: i }), vd = (e) => {
-  if (!Le(e)) return "no main scope";
-  const t = Le(e.standard) ? e.standard : {};
+const Um = (e) => Re(e) && Re(e.recognizedIn) && kt(e.recognizedIn.id) ? e.recognizedIn.id : void 0, he = (e, t, n, i) => ({ id: e, state: t, reason: n, sources: i }), wd = (e) => {
+  if (!Re(e)) return "no main scope";
+  const t = Re(e.standard) ? e.standard : {};
   return `${String(e.activity)} under ${String(t.name ?? t.id)}`;
 };
-function zm(e, t, n, i, o, r, s, a) {
-  const c = ["/termsOfUse", t], d = s(t);
-  if (d === void 0) return ge(e, "not_established", `Recognition ${t} is unavailable.`, c);
-  if (d.usable !== "established" || d.document === void 0)
-    return ge(
+function Vm(e, t, n, i, o, r, s, a) {
+  const c = ["/termsOfUse", t], l = (A) => Re(A.mainScope) ? A.mainScope : void 0, u = s(t);
+  if (u === void 0) return he(e, "not_established", `Recognition ${t} is unavailable.`, c);
+  if (u.usable !== "established" || u.document === void 0)
+    return he(
       e,
-      d.usable === "contradicted" ? "contradicted" : "not_established",
-      `Recognition ${t} is not usable: ${d.reason}`,
+      u.usable === "contradicted" ? "contradicted" : "not_established",
+      `Recognition ${t} is not usable: ${u.reason}`,
       c
     );
-  const p = d.document;
-  if (!Ji(p.type).includes(ir))
-    return ge(e, "contradicted", `${t} is not a ${ir}.`, c);
-  const y = wl(p.issuer), f = a.trustAnchors.find((u) => u.id === y);
-  if (f === void 0 || !f.purposes.includes(o.recognizerPurpose))
-    return ge(e, "not_established", `${String(y)}, issuer of ${t}, is not a configured anchor for ${o.recognizerPurpose}.`, c);
-  if (d.suspension !== void 0 && d.suspension.state !== "established")
-    return ge(
+  const y = u.document;
+  if (!qn(y.type).includes(rr))
+    return he(e, "contradicted", `${t} is not a ${rr}.`, c);
+  const f = It(y.issuer), h = a.trustAnchors.find((A) => A.id === f);
+  if (h === void 0 || !h.purposes.includes(o.recognizerPurpose))
+    return he(e, "not_established", `${String(f)}, issuer of ${t}, is not a configured anchor for ${o.recognizerPurpose}.`, c);
+  if (u.suspension !== void 0 && u.suspension.state !== "established")
+    return he(
       e,
-      d.suspension.state,
-      d.suspension.state === "contradicted" ? `${String(y)} has suspended its recognition ${t}. ${d.suspension.reason}` : `The suspension status of ${t} is not established: ${d.suspension.reason}`,
+      u.suspension.state,
+      u.suspension.state === "contradicted" ? `${String(f)} has suspended its recognition ${t}. ${u.suspension.reason}` : `The suspension status of ${t} is not established: ${u.suspension.reason}`,
       c
     );
-  const h = Ji(p.credentialSubject).filter(Le), w = h.find((u) => u.id === n);
+  const x = qn(y.credentialSubject).filter(Re), w = x.find((A) => A.id === n);
   if (w === void 0)
-    return ge(
+    return he(
       e,
       "contradicted",
-      `${t} recognizes ${h.map((u) => String(u.id)).join(", ") || "no subject"}, not ${n}, the grant's issuer.`,
+      `${t} recognizes ${x.map((A) => String(A.id)).join(", ") || "no subject"}, not ${n}, the grant's issuer.`,
       c
     );
-  const x = Ji(w.recognizedTo).filter(Le);
-  if (x.length === 0)
-    return ge(
+  const v = qn(w.recognizedTo).filter(Re);
+  if (v.length === 0)
+    return he(
       e,
       "not_established",
       `${t} recognizes ${n} without recognized actions; this profile does not accept recognition without stated actions.`,
       c
     );
-  const v = `${i.activity} under ${i.standardId}`, A = x.filter((u) => u.action === o.action && Le(u.mainScope) && u.mainScope.activity === i.activity && Le(u.mainScope.standard) && u.mainScope.standard.id === i.standardId);
-  if (A.length === 0) {
-    const u = x.map((b) => `${String(b.action)} (${vd(b.mainScope)})`).join(", ");
-    return ge(
+  const I = `${i.activity} under ${i.standardId}`, g = v.filter((A) => A.action === o.action);
+  if (g.length === 0)
+    return he(
       e,
       "contradicted",
-      `${t} recognizes ${n} for ${u}, not to ${o.action} for ${v}.`,
+      `${t} recognizes ${n} to ${v.map((A) => String(A.action)).join(", ")}, not to ${o.action}.`,
+      c
+    );
+  const m = qn(w.registration).filter(Re), d = m.map(l).find((A) => A !== void 0 && A.activity === i.activity && Re(A.standard) && A.standard.id === i.standardId);
+  if (d === void 0) {
+    const A = m.map((P) => wd(l(P))).join(", ") || "no main scope";
+    return he(
+      e,
+      "contradicted",
+      `${t} registers ${n} for ${A}, not for ${I}.`,
       c
     );
   }
-  const g = A.filter((u) => u.recognizedBy === void 0 || u.recognizedBy === y);
-  if (g.length === 0)
-    return ge(e, "contradicted", `The matching action in ${t} names another recognizer than its issuer ${String(y)}.`, c);
-  const m = Date.parse(String(r));
-  if (typeof r != "string" || !Number.isFinite(m))
-    return ge(e, "not_established", "No activity time is stated, so recognition at that time is not established.", c);
-  const l = g.find((u) => {
-    const b = Date.parse(String(u.validFrom ?? p.validFrom)), S = Date.parse(String(u.validUntil ?? p.validUntil));
-    return Number.isFinite(b) && Number.isFinite(S) && b <= m && m <= S;
-  });
-  return l === void 0 ? ge(e, "not_established", `${String(y)} did not recognize ${n} for ${v} at the activity time ${r}.`, c) : ge(
+  const p = g.filter((A) => A.recognizedBy === void 0 || A.recognizedBy === f);
+  if (p.length === 0)
+    return he(e, "contradicted", `The matching action in ${t} names another recognizer than its issuer ${String(f)}.`, c);
+  const b = Date.parse(String(r));
+  return typeof r != "string" || !Number.isFinite(b) ? he(e, "not_established", "No activity time is stated, so recognition at that time is not established.", c) : p.find((A) => {
+    const P = Date.parse(String(A.validFrom ?? y.validFrom)), R = Date.parse(String(A.validUntil ?? y.validUntil));
+    return Number.isFinite(P) && Number.isFinite(R) && P <= b && b <= R;
+  }) === void 0 ? he(e, "not_established", `${String(f)} did not recognize ${n} for ${I} at the activity time ${r}.`, c) : he(
     e,
     "established",
-    `${n} is recognized by ${String(y)} (a configured anchor for ${o.recognizerPurpose}) to ${o.action} for ${vd(l.mainScope)}, in force at ${r}, in ${t}.`,
+    `${n} is recognized by ${String(f)} (a configured anchor for ${o.recognizerPurpose}) to ${o.action} for ${wd(d)}, in force at ${r}, in ${t}. Recognition grants no authority; it accepts the body for this verifier.`,
     c
   );
 }
-function br(e, t, n, i, o, r) {
-  const s = wl(t.issuer), a = i.trustAnchors.find((w) => w.id === s);
+function wr(e, t, n, i, o, r) {
+  const s = It(t.issuer), a = i.trustAnchors.find((w) => w.id === s);
   if (a?.purposes.includes(n))
-    return { basis: ge(e, "established", `${String(s)} is a configured anchor for ${n}.`, ["/issuer"]) };
-  const c = a === void 0 ? `${String(s)} is not a configured trust anchor.` : `${String(s)} is an anchor, but not for ${n}.`, d = Nm(i);
-  if (d === void 0) return { basis: ge(e, "not_established", c, ["/issuer"]) };
-  if (d === "invalid")
-    return { basis: ge(e, "not_established", `${c} The profile's recognition rules are malformed.`, ["/issuer"]) };
-  const p = d.purposes[n];
-  if (p === void 0 || s === void 0)
-    return { basis: ge(e, "not_established", `${c} The profile accepts no recognition for ${n}.`, ["/issuer"]) };
-  const y = Dm(t);
+    return { basis: he(e, "established", `${String(s)} is a configured anchor for ${n}.`, ["/issuer"]) };
+  const c = a === void 0 ? `${String(s)} is not a configured trust anchor.` : `${String(s)} is an anchor, but not for ${n}.`, l = Dm(i);
+  if (l === void 0) return { basis: he(e, "not_established", c, ["/issuer"]) };
+  if (l === "invalid")
+    return { basis: he(e, "not_established", `${c} The profile's recognition rules are malformed.`, ["/issuer"]) };
+  const u = l.purposes[n];
+  if (u === void 0 || s === void 0)
+    return { basis: he(e, "not_established", `${c} The profile accepts no recognition for ${n}.`, ["/issuer"]) };
+  const y = zm(t);
   if (y.length === 0)
-    return { basis: ge(
+    return { basis: he(
       e,
       "not_established",
-      `${c} The grant points up to no ${ir} in its termsOfUse.`,
+      `${c} The grant names no ${rr} in a ${Ws} of its termsOfUse.`,
       ["/issuer", "/termsOfUse"]
     ) };
-  const f = y.map((w) => ({ uri: w, result: zm(e, w, s, p, d, r, o, i) })), h = f.find((w) => w.result.state === "established");
-  return h ? { basis: h.result, recognition: h.uri } : {
-    basis: ge(
+  const f = Um(t.issuer);
+  if (f !== void 0 && !y.includes(f))
+    return { basis: he(
       e,
-      fn(f.map((w) => w.result.state)),
-      `${c} ${f.map((w) => w.result.reason).join(" ")}`,
-      ["/issuer", "/termsOfUse", ...f.map((w) => w.uri)]
+      "contradicted",
+      `${c} The issuer's recognizedIn names ${f}, but the grant's ${Ws} names ${y.join(", ")}.`,
+      ["/issuer/recognizedIn", "/termsOfUse"]
+    ) };
+  const h = y.map((w) => ({ uri: w, result: Vm(e, w, s, u, l, r, o, i) })), x = h.find((w) => w.result.state === "established");
+  return x ? { basis: x.result, recognition: x.uri } : {
+    basis: he(
+      e,
+      hn(h.map((w) => w.result.state)),
+      `${c} ${h.map((w) => w.result.reason).join(" ")}`,
+      ["/issuer", "/termsOfUse", ...h.map((w) => w.uri)]
     )
   };
 }
-const On = Object.freeze({ within: (e, t) => typeof e == "string" && e === t });
-function Vm(e) {
+const Nn = Object.freeze({ within: (e, t) => typeof e == "string" && e === t });
+function Gm(e) {
   const t = /* @__PURE__ */ new Map();
   for (const n of Array.isArray(e.broader) ? e.broader : []) {
     const { narrower: i, broader: o } = n ?? {};
@@ -23648,51 +23789,51 @@ function Vm(e) {
     }
   });
 }
-const Um = /^(0|[1-9][0-9]*)(\.[0-9]+)?$/, Ia = Object.freeze({ "kg/kg": 0, "mg/kg": -6 });
-function wr(e) {
-  if (typeof e != "string" || !Um.test(e)) return;
+const Fm = /^(0|[1-9][0-9]*)(\.[0-9]+)?$/, Ra = Object.freeze({ "kg/kg": 0, "mg/kg": -6 });
+function xr(e) {
+  if (typeof e != "string" || !Fm.test(e)) return;
   const [t, n = ""] = e.split(".");
   return { n: BigInt(`${t}${n}`), scale: n.length };
 }
-function Tn(e, t) {
-  const n = wr(e), i = typeof t == "string" ? Ia[t] : void 0;
+function En(e, t) {
+  const n = xr(e), i = typeof t == "string" ? Ra[t] : void 0;
   if (!(n === void 0 || i === void 0))
     return i <= 0 ? { n: n.n, scale: n.scale - i } : { n: n.n * 10n ** BigInt(i), scale: n.scale };
 }
-function Pe(e, t) {
+function _e(e, t) {
   const n = Math.max(e.scale, t.scale), i = e.n * 10n ** BigInt(n - e.scale), o = t.n * 10n ** BigInt(n - t.scale);
   return i < o ? -1 : i > o ? 1 : 0;
 }
-function Gm(e, t) {
+function Bm(e, t) {
   const n = Math.max(e.scale, t.scale);
   return { n: e.n * 10n ** BigInt(n - e.scale) + t.n * 10n ** BigInt(n - t.scale), scale: n };
 }
-function In(e) {
+function Rn(e) {
   const t = e.n.toString().padStart(e.scale + 1, "0");
   if (e.scale === 0) return t;
   const n = t.slice(-e.scale).replace(/0+$/, "");
   return n.length === 0 ? t.slice(0, -e.scale) : `${t.slice(0, -e.scale)}.${n}`;
 }
-function Qs(e) {
+function Xs(e) {
   const t = e.range;
   if (t === void 0) return "Scope record has no range.";
-  const n = Tn(t.from, t.unit), i = Tn(t.to, t.unit);
-  return n === void 0 || i === void 0 ? `Unsupported or malformed range ${String(t.from)}–${String(t.to)} ${String(t.unit)}.` : Pe(n, i) > 0 ? "Scope record range is reversed." : { low: n, high: i };
+  const n = En(t.from, t.unit), i = En(t.to, t.unit);
+  return n === void 0 || i === void 0 ? `Unsupported or malformed range ${String(t.from)}–${String(t.to)} ${String(t.unit)}.` : _e(n, i) > 0 ? "Scope record range is reversed." : { low: n, high: i };
 }
-const Fi = (e) => Array.isArray(e) ? e.filter((t) => typeof t == "string") : [], Fm = (e, t) => e.length > 0 && e.every((n) => t.includes(n)), Bm = (e, t, n) => e.length > 0 && e.every((i) => t.some((o) => n.within(i, o)));
-function Zm(e, t, n = On) {
+const Zi = (e) => Array.isArray(e) ? e.filter((t) => typeof t == "string") : [], Zm = (e, t) => e.length > 0 && e.every((n) => t.includes(n)), Hm = (e, t, n) => e.length > 0 && e.every((i) => t.some((o) => n.within(i, o)));
+function Jm(e, t, n = Nn) {
   if (e.length === 0) return { state: "not_established", reason: "The projected scope has no records.", witnesses: [] };
   const i = [];
   for (const o of e) {
-    const r = Qs(o);
+    const r = Xs(o);
     if (typeof r == "string")
       return { state: /reversed/.test(r) ? "contradicted" : "not_established", reason: `${String(o.id)}: ${r}`, witnesses: i };
-    const s = Fi(o.allowedPropertyIris), a = Fi(o.allowedMethodIris);
+    const s = Zi(o.allowedPropertyIris), a = Zi(o.allowedMethodIris);
     if (s.length === 0 || a.length === 0 || typeof o.matrixIri != "string" || typeof o.formIri != "string" || typeof o.quantityKindIri != "string")
       return { state: "not_established", reason: `${String(o.id)}: a restricted dimension is missing or empty.`, witnesses: i };
-    const c = t.find((d) => {
-      const p = Qs(d);
-      return typeof p != "string" && n.within(o.matrixIri, d.matrixIri) && n.within(o.formIri, d.formIri) && d.quantityKindIri === o.quantityKindIri && Bm(s, Fi(d.allowedPropertyIris), n) && Fm(a, Fi(d.allowedMethodIris)) && Pe(r.low, p.low) >= 0 && Pe(r.high, p.high) <= 0;
+    const c = t.find((l) => {
+      const u = Xs(l);
+      return typeof u != "string" && n.within(o.matrixIri, l.matrixIri) && n.within(o.formIri, l.formIri) && l.quantityKindIri === o.quantityKindIri && Hm(s, Zi(l.allowedPropertyIris), n) && Zm(a, Zi(l.allowedMethodIris)) && _e(r.low, u.low) >= 0 && _e(r.high, u.high) <= 0;
     });
     if (c === void 0)
       return { state: "contradicted", reason: `${String(o.id)} is not contained in any single parent record.`, witnesses: i };
@@ -23700,160 +23841,160 @@ function Zm(e, t, n = On) {
   }
   return { state: "established", reason: `Each projected record lies within one parent record (${i.map((o) => `${o.child} ⊆ ${o.parent}`).join("; ")}).`, witnesses: i };
 }
-const qn = "https://vc4qi.example/bindings/rm/1#", Rn = Object.freeze({
-  issueRmCertificate: `${qn}issueRmCertificate`,
-  maintainRmScope: `${qn}maintainRmScope`,
-  issueRmStudy: `${qn}issueRmStudy`
-}), $e = (e, t, n = []) => ({ id: e, state: "established", reason: t, sources: n }), Ge = (e, t, n = []) => ({ id: e, state: "contradicted", reason: t, sources: n }), me = (e, t, n = []) => ({ id: e, state: "not_established", reason: t, sources: n }), Ot = (e) => e !== null && typeof e == "object" && !Array.isArray(e), Ue = (e) => Array.isArray(e) ? e : [], Te = (e) => Ot(e.credentialSubject) ? e.credentialSubject : {}, Ws = (e) => Array.isArray(e.type) ? String(e.type[1]) : void 0, dt = (e, t) => Ue(Te(e).permittedActivity).includes(t);
-function xl(e, t = "RmAuthorizationPolicy") {
-  return Ue(e.termsOfUse).filter(Ot).filter((n) => n.type === t && Ot(n.authorizationCredential)).map((n) => n.authorizationCredential).filter((n) => typeof n.id == "string").map((n) => ({ id: n.id, type: n.type }));
+const jn = "https://vc4qi.example/bindings/rm/1#", $n = Object.freeze({
+  issueRmCertificate: `${jn}issueRmCertificate`,
+  maintainRmScope: `${jn}maintainRmScope`,
+  issueRmStudy: `${jn}issueRmStudy`
+}), Pe = (e, t, n = []) => ({ id: e, state: "established", reason: t, sources: n }), Ge = (e, t, n = []) => ({ id: e, state: "contradicted", reason: t, sources: n }), ye = (e, t, n = []) => ({ id: e, state: "not_established", reason: t, sources: n }), Nt = (e) => e !== null && typeof e == "object" && !Array.isArray(e), Ve = (e) => Array.isArray(e) ? e : [], Ce = (e) => Nt(e.credentialSubject) ? e.credentialSubject : {}, Ys = (e) => Array.isArray(e.type) ? String(e.type[1]) : void 0, dt = (e, t) => Ve(Ce(e).permittedActivity).includes(t);
+function Sl(e, t = "IssuedUnderPolicy") {
+  return Ve(e.termsOfUse).filter(Nt).filter((n) => n.type === t && Nt(n.authorizationCredential)).map((n) => n.authorizationCredential).filter((n) => typeof n.id == "string").map((n) => ({ id: n.id, type: n.type }));
 }
-function Ye(e, t, n, i, o, r = "RmAuthorizationPolicy") {
-  const s = xl(t, r).filter((d) => d.type === n).map((d) => d.id);
+function Ye(e, t, n, i, o, r = "IssuedUnderPolicy") {
+  const s = Sl(t, r).filter((l) => l.type === n).map((l) => l.id);
   if (s.length === 0)
-    return { basis: me(e, `No recognized authorization policy references a ${n}.`, ["/termsOfUse"]) };
+    return { basis: ye(e, `No recognized authorization policy references a ${n}.`, ["/termsOfUse"]) };
   if (s.length > 1)
-    return { basis: me(e, `Several ${n} references; this binding has no deterministic selection.`, ["/termsOfUse"]) };
+    return { basis: ye(e, `Several ${n} references; this binding has no deterministic selection.`, ["/termsOfUse"]) };
   const a = s[0];
   if (o.includes(a))
-    return { basis: me(e, `Circular authorization: ${a} is already on the evaluation path.`, ["/termsOfUse", a]) };
+    return { basis: ye(e, `Circular authorization: ${a} is already on the evaluation path.`, ["/termsOfUse", a]) };
   const c = i(a);
-  return c === void 0 ? { basis: me(e, `Referenced ${n} ${a} is unavailable.`, ["/termsOfUse", a]) } : c.usable !== "established" || c.document === void 0 ? { basis: {
+  return c === void 0 ? { basis: ye(e, `Referenced ${n} ${a} is unavailable.`, ["/termsOfUse", a]) } : c.usable !== "established" || c.document === void 0 ? { basis: {
     id: e,
     state: c.usable === "contradicted" ? "contradicted" : "not_established",
     reason: `Referenced ${n} ${a} is not usable: ${c.reason}`,
     sources: ["/termsOfUse", a]
-  } } : Ws(c.document) !== n ? { basis: Ge(e, `Reference declares ${n}, but ${a} is a ${String(Ws(c.document))}.`, ["/termsOfUse", a]) } : { basis: $e(e, `References ${n} ${a}.`, ["/termsOfUse", a]), node: c };
+  } } : Ys(c.document) !== n ? { basis: Ge(e, `Reference declares ${n}, but ${a} is a ${String(Ys(c.document))}.`, ["/termsOfUse", a]) } : { basis: Pe(e, `References ${n} ${a}.`, ["/termsOfUse", a]), node: c };
 }
 function ft(e, t, n, i) {
-  const o = Te(t).id;
-  return typeof o != "string" || typeof n != "string" ? me(e, `${i}: grantee or exercising actor is missing.`, ["/credentialSubject/id", "/issuer"]) : o === n ? $e(e, `${i}: grantee ${o} is the exercising actor.`, ["/credentialSubject/id", "/issuer"]) : Ge(e, `${i}: grantee ${o} is not the exercising actor ${n}.`, ["/credentialSubject/id", "/issuer"]);
+  const o = Ce(t).id;
+  return typeof o != "string" || typeof n != "string" ? ye(e, `${i}: grantee or exercising actor is missing.`, ["/credentialSubject/id", "/issuer"]) : o === n ? Pe(e, `${i}: grantee ${o} is the exercising actor.`, ["/credentialSubject/id", "/issuer"]) : Ge(e, `${i}: grantee ${o} is not the exercising actor ${n}.`, ["/credentialSubject/id", "/issuer"]);
 }
-function Ln(e, t, n, i) {
-  const o = i.trustAnchors.find((r) => r.id === t.issuer);
-  return o === void 0 ? me(e, `${String(t.issuer)} is not a configured trust anchor.`, ["/issuer"]) : o.purposes.includes(n) ? $e(e, `${String(t.issuer)} is a configured anchor for ${n}.`, ["/issuer"]) : me(e, `${String(t.issuer)} is an anchor, but not for ${n}.`, ["/issuer"]);
+function Dn(e, t, n, i) {
+  const o = It(t.issuer), r = i.trustAnchors.find((s) => s.id === o);
+  return r === void 0 ? ye(e, `${String(o)} is not a configured trust anchor.`, ["/issuer"]) : r.purposes.includes(n) ? Pe(e, `${String(o)} is a configured anchor for ${n}.`, ["/issuer"]) : ye(e, `${String(o)} is an anchor, but not for ${n}.`, ["/issuer"]);
 }
-function Nt(e, t) {
-  const n = "scope-in-force-at-activity", i = Te(e).activityTime, o = Date.parse(String(i));
+function zt(e, t) {
+  const n = "scope-in-force-at-activity", i = Ce(e).activityTime, o = Date.parse(String(i));
   if (typeof i != "string" || !Number.isFinite(o))
-    return me(n, "The certificate states no activity time.", ["/credentialSubject/activityTime"]);
+    return ye(n, "The certificate states no activity time.", ["/credentialSubject/activityTime"]);
   for (const [r, s] of t) {
     const a = Date.parse(String(s.validFrom)), c = Date.parse(String(s.validUntil));
     if (!Number.isFinite(a) || o < a)
-      return me(n, `${r} is valid only from ${String(s.validFrom)}, after the activity at ${i}; a later scope cannot authorize it.`, ["/credentialSubject/activityTime", "/validFrom"]);
+      return ye(n, `${r} is valid only from ${String(s.validFrom)}, after the activity at ${i}; a later scope cannot authorize it.`, ["/credentialSubject/activityTime", "/validFrom"]);
     if (Number.isFinite(c) && o > c)
-      return me(n, `${r} expired at ${String(s.validUntil)}, before the activity at ${i}.`, ["/credentialSubject/activityTime", "/validUntil"]);
+      return ye(n, `${r} expired at ${String(s.validUntil)}, before the activity at ${i}.`, ["/credentialSubject/activityTime", "/validUntil"]);
   }
-  return $e(n, `${t.map((r) => r[0]).join(" and ")} ${t.length > 1 ? "were" : "was"} in force at the activity time ${i}.`, ["/credentialSubject/activityTime"]);
+  return Pe(n, `${t.map((r) => r[0]).join(" and ")} ${t.length > 1 ? "were" : "was"} in force at the activity time ${i}.`, ["/credentialSubject/activityTime"]);
 }
 function pe(e, t, n, i) {
   return { id: e, state: xe(t.map((o) => o.state)), execution: "executed", bases: t, chain: n, ...i ? { scope: i } : {} };
 }
-function Hm(e, t, n, i, o) {
+function Km(e, t, n, i, o) {
   const r = e.document, s = [], a = [e.uri], c = Ye("authorizing-reference", r, "RmOperationalScope", t, i);
   if (s.push(c.basis), !c.node) return pe("operational-scope", s, a);
-  const d = c.node.document;
-  a.push(c.node.uri), s.push(ft("principal-binding", d, r.issuer, "Operational scope O")), s.push(d.issuer === Te(d).id ? $e("self-maintained-scope", "O is issued by its own grantee.", ["/issuer"]) : Ge("self-maintained-scope", "O is not issued by its own grantee.", ["/issuer"])), s.push(dt(d, Rn.issueRmCertificate) ? $e("activity-permission", "O permits issuing RM certificates.", ["/credentialSubject/permittedActivity"]) : Ge("activity-permission", "O does not permit issuing RM certificates.", ["/credentialSubject/permittedActivity"]));
-  const p = Ye("maintenance-grant", d, "RmAccreditation", t, [...i, c.node.uri]);
-  if (s.push(p.basis), !p.node) return pe("operational-scope", s, a);
-  const y = p.node.document;
-  a.push(p.node.uri), s.push(ft("accreditation-grantee", y, d.issuer, "Accreditation A")), s.push(dt(y, Rn.maintainRmScope) && dt(y, Rn.issueRmCertificate) ? $e("projection-permission", "A permits maintaining an operational scope for RM certification.", ["/credentialSubject/permittedActivity"]) : Ge("projection-permission", "A does not permit maintaining an operational scope for RM certification.", ["/credentialSubject/permittedActivity"]));
-  const f = Zm(Ue(Te(d).scope).filter(Ot), Ue(Te(y).scope).filter(Ot), o);
+  const l = c.node.document;
+  a.push(c.node.uri), s.push(ft("principal-binding", l, It(r.issuer), "Operational scope O")), s.push(It(l.issuer) === Ce(l).id ? Pe("self-maintained-scope", "O is issued by its own grantee.", ["/issuer"]) : Ge("self-maintained-scope", "O is not issued by its own grantee.", ["/issuer"])), s.push(dt(l, $n.issueRmCertificate) ? Pe("activity-permission", "O permits issuing RM certificates.", ["/credentialSubject/permittedActivity"]) : Ge("activity-permission", "O does not permit issuing RM certificates.", ["/credentialSubject/permittedActivity"]));
+  const u = Ye("maintenance-grant", l, "RmAccreditation", t, [...i, c.node.uri]);
+  if (s.push(u.basis), !u.node) return pe("operational-scope", s, a);
+  const y = u.node.document;
+  a.push(u.node.uri), s.push(ft("accreditation-grantee", y, It(l.issuer), "Accreditation A")), s.push(dt(y, $n.maintainRmScope) && dt(y, $n.issueRmCertificate) ? Pe("projection-permission", "A permits maintaining an operational scope for RM certification.", ["/credentialSubject/permittedActivity"]) : Ge("projection-permission", "A does not permit maintaining an operational scope for RM certification.", ["/credentialSubject/permittedActivity"]));
+  const f = Jm(Ve(Ce(l).scope).filter(Nt), Ve(Ce(y).scope).filter(Nt), o);
   s.push({ id: "bounded-projection", state: f.state, reason: f.reason, sources: ["/credentialSubject/scope"] });
-  const h = br("trust-anchor", y, "accredit-rm-producers", n, t, Te(r).activityTime);
-  return s.push(h.basis), h.recognition && a.push(h.recognition), s.push(Nt(r, [["O", d], ["A", y]])), pe("operational-scope", s, a, c.node.uri);
+  const h = wr("trust-anchor", y, "accredit-rm-producers", n, t, Ce(r).activityTime);
+  return s.push(h.basis), h.recognition && a.push(h.recognition), s.push(zt(r, [["O", l], ["A", y]])), pe("operational-scope", s, a, c.node.uri);
 }
-function Jm(e, t, n, i, o) {
+function Qm(e, t, n, i, o) {
   const r = e.document, s = [], a = [e.uri], c = Ye("authorizing-reference", r, "RmAccreditation", t, i);
   if (s.push(c.basis), !c.node) return pe("direct-accreditation", s, a);
-  const d = c.node.document;
-  a.push(c.node.uri), s.push(ft("principal-binding", d, r.issuer, "Accreditation A")), s.push(dt(d, Rn.issueRmCertificate) ? $e("activity-permission", "A permits issuing RM certificates.", ["/credentialSubject/permittedActivity"]) : Ge("activity-permission", "A does not permit issuing RM certificates.", ["/credentialSubject/permittedActivity"]));
-  const p = br("trust-anchor", d, "accredit-rm-producers", n, t, Te(r).activityTime);
-  return s.push(p.basis), p.recognition && a.push(p.recognition), s.push(Nt(r, [["A", d]])), pe("direct-accreditation", s, a, c.node.uri);
+  const l = c.node.document;
+  a.push(c.node.uri), s.push(ft("principal-binding", l, It(r.issuer), "Accreditation A")), s.push(dt(l, $n.issueRmCertificate) ? Pe("activity-permission", "A permits issuing RM certificates.", ["/credentialSubject/permittedActivity"]) : Ge("activity-permission", "A does not permit issuing RM certificates.", ["/credentialSubject/permittedActivity"]));
+  const u = wr("trust-anchor", l, "accredit-rm-producers", n, t, Ce(r).activityTime);
+  return s.push(u.basis), u.recognition && a.push(u.recognition), s.push(zt(r, [["A", l]])), pe("direct-accreditation", s, a, c.node.uri);
 }
-const Km = Object.freeze({
-  "operational-scope": Hm,
-  "direct-accreditation": Jm
+const Wm = Object.freeze({
+  "operational-scope": Km,
+  "direct-accreditation": Qm
 });
-function Qm(e, t, n) {
-  const i = "restriction:accreditation-suspension", o = e.document.issuer, r = /* @__PURE__ */ new Set([e.uri]), s = [e.document], a = [];
+function Xm(e, t, n) {
+  const i = "restriction:accreditation-suspension", o = It(e.document.issuer), r = /* @__PURE__ */ new Set([e.uri]), s = [e.document], a = [];
   for (; s.length > 0; )
-    for (const p of xl(s.shift())) {
-      if (r.has(p.id)) continue;
-      r.add(p.id);
-      const y = t(p.id);
+    for (const u of Sl(s.shift())) {
+      if (r.has(u.id)) continue;
+      r.add(u.id);
+      const y = t(u.id);
       if (y?.usable !== "established" || y.document === void 0) continue;
       s.push(y.document);
       const f = y.document;
-      Ws(f) === "RmAccreditation" && Te(f).id === o && br(
+      Ys(f) === "RmAccreditation" && Ce(f).id === o && wr(
         "anchor",
         f,
         "accredit-rm-producers",
         n,
         t,
-        Te(e.document).activityTime
+        Ce(e.document).activityTime
       ).basis.state === "established" && a.push(y);
     }
   if (a.length === 0)
-    return me(i, `No accreditation of ${String(o)} is reached, so the absence of a suspension is not established.`);
-  const c = a.map((p) => p.suspension === void 0 ? me(i, `${p.uri} carries no suspension status.`, [p.uri]) : { id: i, state: p.suspension.state, reason: `${p.uri}: ${p.suspension.reason}`, sources: [p.uri] }), d = xe(c.map((p) => p.state));
+    return ye(i, `No accreditation of ${String(o)} is reached, so the absence of a suspension is not established.`);
+  const c = a.map((u) => u.suspension === void 0 ? ye(i, `${u.uri} carries no suspension status.`, [u.uri]) : { id: i, state: u.suspension.state, reason: `${u.uri}: ${u.suspension.reason}`, sources: [u.uri] }), l = xe(c.map((u) => u.state));
   return {
     id: i,
-    state: d,
-    reason: d === "contradicted" ? `The actor's certification activity is suspended. ${c.filter((p) => p.state === "contradicted").map((p) => p.reason).join(" ")}` : c.map((p) => p.reason).join(" "),
-    sources: a.map((p) => p.uri)
+    state: l,
+    reason: l === "contradicted" ? `The actor's certification activity is suspended. ${c.filter((u) => u.state === "contradicted").map((u) => u.reason).join(" ")}` : c.map((u) => u.reason).join(" "),
+    sources: a.map((u) => u.uri)
   };
 }
-const Wm = Object.freeze({
-  "accreditation-suspension": Qm
+const Ym = Object.freeze({
+  "accreditation-suspension": Xm
 });
-function Nn(e, t, n) {
+function zn(e, t, n) {
   const i = [
     ...t,
-    ...n.map((d) => ({ id: d, state: "not_established", execution: "not_run", bases: [], chain: [] }))
-  ], o = e.length === 0 ? "established" : xe(e.map((d) => d.state)), r = i.length === 0 ? "not_established" : fn(i.map((d) => d.state)), s = xe([o, r]), a = i.find((d) => d.state === "established"), c = s === "established" ? `Authorized through route ${a.id}; global restrictions hold.` : o === "contradicted" ? "An applicable global restriction applies to every route." : r === "contradicted" ? "Every permitted route is contradicted." : n.length > 0 ? "The route search stopped at its budget before every route was evaluated." : "No complete route is established.";
+    ...n.map((l) => ({ id: l, state: "not_established", execution: "not_run", bases: [], chain: [] }))
+  ], o = e.length === 0 ? "established" : xe(e.map((l) => l.state)), r = i.length === 0 ? "not_established" : hn(i.map((l) => l.state)), s = xe([o, r]), a = i.find((l) => l.state === "established"), c = s === "established" ? `Authorized through route ${a.id}; global restrictions hold.` : o === "contradicted" ? "An applicable global restriction applies to every route." : r === "contradicted" ? "Every permitted route is contradicted." : n.length > 0 ? "The route search stopped at its budget before every route was evaluated." : "No complete route is established.";
   return { state: s, reason: c, restrictions: e, routes: i };
 }
-function xr(e, t) {
+function Sr(e, t) {
   const n = e.routes.filter((o) => o.execution === "executed").map((o) => {
-    const s = (o.scope === void 0 ? void 0 : t(o)) ?? me("claim-coverage", "The route did not reach a scope credential.");
+    const s = (o.scope === void 0 ? void 0 : t(o)) ?? ye("claim-coverage", "The route did not reach a scope credential.");
     return { ...o, bases: [...o.bases, s], state: xe([o.state, s.state]) };
   }), i = e.routes.filter((o) => o.execution === "not_run").map((o) => o.id);
-  return Nn(e.restrictions, n, i);
+  return zn(e.restrictions, n, i);
 }
-function Xm(e, t, n, i = On) {
+function ey(e, t, n, i = Nn) {
   if (e.usable !== "established" || e.document === void 0)
     return { state: "not_established", reason: "The target is not usable, so its authority is not evaluated.", restrictions: [], routes: [] };
-  const o = e, r = n.authority.certificateRoutes, s = n.authority.maxRoutes, a = r.slice(0, s).map((d) => {
-    const p = Km[d];
-    return p === void 0 ? pe(d, [me("installed-evaluator", `Route ${d} has no installed evaluator.`)], [o.uri]) : p(o, t, n, [o.uri], i);
-  }), c = n.authority.globalRestrictions.map((d) => {
-    const p = Wm[d];
-    return p === void 0 ? me(`restriction:${d}`, `Global restriction ${d} has no installed evaluator.`) : p(o, t, n);
+  const o = e, r = n.authority.certificateRoutes, s = n.authority.maxRoutes, a = r.slice(0, s).map((l) => {
+    const u = Wm[l];
+    return u === void 0 ? pe(l, [ye("installed-evaluator", `Route ${l} has no installed evaluator.`)], [o.uri]) : u(o, t, n, [o.uri], i);
+  }), c = n.authority.globalRestrictions.map((l) => {
+    const u = Ym[l];
+    return u === void 0 ? ye(`restriction:${l}`, `Global restriction ${l} has no installed evaluator.`) : u(o, t, n);
   });
-  return Nn(c, a, r.slice(s));
+  return zn(c, a, r.slice(s));
 }
-function Ym(e, t, n, i, o = On) {
+function ty(e, t, n, i, o = Nn) {
   const r = e.document, s = [], a = [e.uri], c = Ye("laboratory-authority-reference", r, "RmLabAuthority", t, i);
   if (s.push(c.basis), !c.node) return pe("laboratory-authority", s, a);
-  const d = c.node.document;
-  a.push(c.node.uri), s.push(ft("laboratory-binding", d, r.issuer, "Laboratory authority H")), s.push(dt(d, Rn.issueRmStudy) ? $e("study-permission", "H permits issuing RM studies.", ["/credentialSubject/permittedActivity"]) : Ge("study-permission", "H does not permit issuing RM studies.", ["/credentialSubject/permittedActivity"]));
-  const p = Te(r), y = Ue(Te(d).scope).filter(Ot).some((h) => o.within(p.matrixIri, h.matrixIri) && Ue(h.allowedPropertyIris).some((w) => o.within(p.propertyIri, w)) && Ue(h.studyTypeIris).includes(p.studyTypeIri));
-  s.push(y ? $e("study-scope", "H covers this matrix, property and study type.", ["/credentialSubject/scope"]) : Ge("study-scope", "H does not cover this matrix, property and study type.", ["/credentialSubject/scope"]));
-  const f = br("laboratory-anchor", d, "accredit-rm-laboratories", n, t, p.activityTime);
+  const l = c.node.document;
+  a.push(c.node.uri), s.push(ft("laboratory-binding", l, It(r.issuer), "Laboratory authority H")), s.push(dt(l, $n.issueRmStudy) ? Pe("study-permission", "H permits issuing RM studies.", ["/credentialSubject/permittedActivity"]) : Ge("study-permission", "H does not permit issuing RM studies.", ["/credentialSubject/permittedActivity"]));
+  const u = Ce(r), y = Ve(Ce(l).scope).filter(Nt).some((h) => o.within(u.matrixIri, h.matrixIri) && Ve(h.allowedPropertyIris).some((x) => o.within(u.propertyIri, x)) && Ve(h.studyTypeIris).includes(u.studyTypeIri));
+  s.push(y ? Pe("study-scope", "H covers this matrix, property and study type.", ["/credentialSubject/scope"]) : Ge("study-scope", "H does not cover this matrix, property and study type.", ["/credentialSubject/scope"]));
+  const f = wr("laboratory-anchor", l, "accredit-rm-laboratories", n, t, u.activityTime);
   return s.push(f.basis), f.recognition && a.push(f.recognition), pe("laboratory-authority", s, a);
 }
-function ey(e, t, n, i = On) {
+function ny(e, t, n, i = Nn) {
   if (e.usable !== "established" || e.document === void 0)
     return { state: "not_established", reason: "The target is not usable, so its support is not evaluated.", bases: [], chain: [] };
-  const o = e.document, r = Ue(o.evidence).filter(Ot).filter((g) => g.type === "RmStudyReference").map((g) => String(g.id));
+  const o = e.document, r = Ve(o.evidence).filter(Nt).filter((g) => g.type === "RmStudyReference").map((g) => String(g.id));
   if (r.length === 0)
-    return { state: "not_established", reason: "D cites no required study.", bases: [me("study-reference", "No RmStudyReference in evidence.", ["/evidence"])], chain: [e.uri] };
+    return { state: "not_established", reason: "D cites no required study.", bases: [ye("study-reference", "No RmStudyReference in evidence.", ["/evidence"])], chain: [e.uri] };
   if (r.length > 1)
-    return { state: "not_established", reason: "Several study references; this binding has no composition for them.", bases: [me("study-reference", "Ambiguous study references.", ["/evidence"])], chain: [e.uri] };
+    return { state: "not_established", reason: "Several study references; this binding has no composition for them.", bases: [ye("study-reference", "Ambiguous study references.", ["/evidence"])], chain: [e.uri] };
   const s = r[0], a = t(s);
   if (a === void 0) {
-    const g = me("study-reference", `Required study ${s} is unavailable.`, ["/evidence", s]);
+    const g = ye("study-reference", `Required study ${s} is unavailable.`, ["/evidence", s]);
     return { state: "not_established", reason: g.reason, bases: [g], chain: [e.uri] };
   }
   if (a.usable !== "established" || a.document === void 0) {
@@ -23865,35 +24006,35 @@ function ey(e, t, n, i = On) {
     };
     return { state: g.state, reason: g.reason, bases: [g], chain: [e.uri] };
   }
-  const c = a.document, d = Te(c), p = Te(o), y = Ot(Ue(p.materialPropertiesList)[0]) ? Ue(Ue(p.materialPropertiesList)[0].results)[0] : void 0, f = Ue(p.materials)[0], h = [$e("study-reference", `Cites study ${s}.`, ["/evidence", s])];
-  h.push(d.id === p.id ? $e("same-batch", `S concerns batch ${String(d.id)}.`, ["/credentialSubject/id"]) : Ge("same-batch", `S concerns ${String(d.id)}, not batch ${String(p.id)}.`, ["/credentialSubject/id"])), h.push(d.propertyIri === y?.propertyIri && d.matrixIri === f?.matrixIri ? $e("same-property-and-matrix", "S concerns the certified property and matrix.", ["/credentialSubject/propertyIri"]) : Ge("same-property-and-matrix", "S concerns another property or matrix.", ["/credentialSubject/propertyIri"])), h.push(d.studyTypeIri === `${qn}Homogeneity` && d.outcomeIri === `${qn}Homogeneous` ? $e("study-outcome", "S reports the batch homogeneous.", ["/credentialSubject/outcomeIri"]) : Ge("study-outcome", "S does not report a homogeneous batch.", ["/credentialSubject/outcomeIri"]));
-  const w = Date.parse(String(d.activityTime)), x = Date.parse(String(p.activityTime));
-  h.push(Number.isFinite(w) && Number.isFinite(x) ? w <= x ? $e("study-precedes-certification", "The study precedes the certification activity.", ["/credentialSubject/activityTime"]) : Ge("study-precedes-certification", "The study postdates the certification activity.", ["/credentialSubject/activityTime"]) : me("study-precedes-certification", "An activity time is missing.", ["/credentialSubject/activityTime"]));
-  const v = Ym(a, t, n, [e.uri, s], i);
+  const c = a.document, l = Ce(c), u = Ce(o), y = Nt(Ve(u.materialPropertiesList)[0]) ? Ve(Ve(u.materialPropertiesList)[0].results)[0] : void 0, f = Ve(u.materials)[0], h = [Pe("study-reference", `Cites study ${s}.`, ["/evidence", s])];
+  h.push(l.id === u.id ? Pe("same-batch", `S concerns batch ${String(l.id)}.`, ["/credentialSubject/id"]) : Ge("same-batch", `S concerns ${String(l.id)}, not batch ${String(u.id)}.`, ["/credentialSubject/id"])), h.push(l.propertyIri === y?.propertyIri && l.matrixIri === f?.matrixIri ? Pe("same-property-and-matrix", "S concerns the certified property and matrix.", ["/credentialSubject/propertyIri"]) : Ge("same-property-and-matrix", "S concerns another property or matrix.", ["/credentialSubject/propertyIri"])), h.push(l.studyTypeIri === `${jn}Homogeneity` && l.outcomeIri === `${jn}Homogeneous` ? Pe("study-outcome", "S reports the batch homogeneous.", ["/credentialSubject/outcomeIri"]) : Ge("study-outcome", "S does not report a homogeneous batch.", ["/credentialSubject/outcomeIri"]));
+  const x = Date.parse(String(l.activityTime)), w = Date.parse(String(u.activityTime));
+  h.push(Number.isFinite(x) && Number.isFinite(w) ? x <= w ? Pe("study-precedes-certification", "The study precedes the certification activity.", ["/credentialSubject/activityTime"]) : Ge("study-precedes-certification", "The study postdates the certification activity.", ["/credentialSubject/activityTime"]) : ye("study-precedes-certification", "An activity time is missing.", ["/credentialSubject/activityTime"]));
+  const v = ty(a, t, n, [e.uri, s], i);
   h.push(...v.bases);
-  const A = xe(h.map((g) => g.state));
+  const I = xe(h.map((g) => g.state));
   return {
-    state: A,
-    reason: A === "established" ? "Required study is applicable and independently authorized." : A === "contradicted" ? "Required study is contradicted." : "Required study is not established.",
+    state: I,
+    reason: I === "established" ? "Required study is applicable and independently authorized." : I === "contradicted" ? "Required study is contradicted." : "Required study is not established.",
     bases: h,
     chain: [e.uri, ...v.chain]
   };
 }
-const Gt = (e) => e !== null && typeof e == "object" && !Array.isArray(e), Sl = (e) => Array.isArray(e) ? e : [], bd = (e) => Sl(e).filter((t) => typeof t == "string"), le = (e) => String(e).split(/[#/]/).pop();
-function ty(e, t, n) {
-  const i = [t], o = Gt(e.credentialSubject) ? e.credentialSubject : {}, r = Sl(o.materials).filter(Gt);
+const Bt = (e) => e !== null && typeof e == "object" && !Array.isArray(e), Il = (e) => Array.isArray(e) ? e : [], xd = (e) => Il(e).filter((t) => typeof t == "string"), le = (e) => String(e).split(/[#/]/).pop();
+function iy(e, t, n) {
+  const i = [t], o = Bt(e.credentialSubject) ? e.credentialSubject : {}, r = Il(o.materials).filter(Bt);
   if (r.length !== 1) return { state: "not_established", reason: "The certificate must name exactly one material.", sources: ["/credentialSubject/materials"] };
   const s = r[0];
-  if (!Gt(n)) return { state: "not_established", reason: `No result at ${t}.`, sources: i };
-  const a = Gt(n.data) && Gt(n.data.quantity) ? n.data.quantity : void 0;
+  if (!Bt(n)) return { state: "not_established", reason: `No result at ${t}.`, sources: i };
+  const a = Bt(n.data) && Bt(n.data.quantity) ? n.data.quantity : void 0;
   if (a === void 0) return { state: "not_established", reason: "The result has no quantity.", sources: i };
-  const c = Gt(a.unit) ? a.unit.ucumCode : void 0;
-  if (typeof c != "string" || Ia[c] === void 0)
+  const c = Bt(a.unit) ? a.unit.ucumCode : void 0;
+  if (typeof c != "string" || Ra[c] === void 0)
     return { state: "not_established", reason: `Unit ${String(c)} has no supported mapping (mg/kg, kg/kg).`, sources: [`${t}/data/quantity/unit`] };
-  const d = Gt(a.uncertainty) ? a.uncertainty : void 0, p = wr(d?.coverageFactor);
-  if (p === void 0 || Pe(p, { n: 2n, scale: 0 }) !== 0)
-    return { state: "not_established", reason: `Coverage factor ${String(d?.coverageFactor)} is not the binding's k = 2.`, sources: [`${t}/data/quantity/uncertainty`] };
-  const y = Tn(a.value, c), f = Tn(d?.expandedUncertainty, c);
+  const l = Bt(a.uncertainty) ? a.uncertainty : void 0, u = xr(l?.coverageFactor);
+  if (u === void 0 || _e(u, { n: 2n, scale: 0 }) !== 0)
+    return { state: "not_established", reason: `Coverage factor ${String(l?.coverageFactor)} is not the binding's k = 2.`, sources: [`${t}/data/quantity/uncertainty`] };
+  const y = En(a.value, c), f = En(l?.expandedUncertainty, c);
   if (y === void 0 || f === void 0)
     return { state: "not_established", reason: "Value or expanded uncertainty is not a supported decimal.", sources: [`${t}/data/quantity`] };
   const h = {
@@ -23902,15 +24043,15 @@ function ty(e, t, n) {
     propertyIri: n.propertyIri,
     methodIri: n.methodIri,
     quantityKindIri: a.quantityKind
-  }, w = Object.entries(h).filter(([, x]) => typeof x != "string").map(([x]) => x);
-  return w.length > 0 ? { state: "not_established", reason: `Missing governed identifier: ${w.join(", ")}.`, sources: i } : {
+  }, x = Object.entries(h).filter(([, w]) => typeof w != "string").map(([w]) => w);
+  return x.length > 0 ? { state: "not_established", reason: `Missing governed identifier: ${x.join(", ")}.`, sources: i } : {
     state: "established",
-    reason: `Mapped ${le(h.propertyIri)} by ${le(h.methodIri)} in ${le(h.matrixIri)}: ${String(a.value)} ± ${String(d?.expandedUncertainty)} ${c} (k = 2).`,
+    reason: `Mapped ${le(h.propertyIri)} by ${le(h.methodIri)} in ${le(h.matrixIri)}: ${String(a.value)} ± ${String(l?.expandedUncertainty)} ${c} (k = 2).`,
     sources: i,
     coordinates: { ...h, value: y, uncertainty: f }
   };
 }
-function ny(e, t, n, i) {
+function ry(e, t, n, i) {
   if (t.includes(e)) return { state: "established", reason: `method ${le(e)}` };
   const o = n.find((s) => s.method === e && t.includes(s.revises));
   if (o === void 0) return { state: "contradicted", reason: `method ${le(e)} is not allowed` };
@@ -23924,25 +24065,25 @@ function ny(e, t, n, i) {
       return { state: "not_established", reason: `no governed ${r} succession rule in the profile` };
   }
 }
-function iy(e, t, n, i, o = On) {
+function sy(e, t, n, i, o = Nn) {
   if (t.length === 0) return { state: "not_established", reason: "The scope has no records.", sources: ["/credentialSubject/scope"] };
   const r = t.map((c) => {
-    const d = String(c.id), p = Qs(c);
-    if (typeof p == "string")
-      return { id: d, state: /reversed/.test(p) ? "contradicted" : "not_established", reason: `${le(d)}: ${p}` };
+    const l = String(c.id), u = Xs(c);
+    if (typeof u == "string")
+      return { id: l, state: /reversed/.test(u) ? "contradicted" : "not_established", reason: `${le(l)}: ${u}` };
     const y = [];
-    o.within(e.matrixIri, c.matrixIri) || y.push(`matrix ${le(e.matrixIri)} ≠ ${le(c.matrixIri)}`), o.within(e.formIri, c.formIri) || y.push(`form ${le(e.formIri)} ≠ ${le(c.formIri)}`), c.quantityKindIri !== e.quantityKindIri && y.push(`quantity kind ${le(e.quantityKindIri)} ≠ ${le(c.quantityKindIri)}`), bd(c.allowedPropertyIris).some((x) => o.within(e.propertyIri, x)) || y.push(`property ${le(e.propertyIri)} is not allowed`), Pe(e.value, p.low) < 0 && y.push("value is below the range"), Pe(e.value, p.high) > 0 && y.push("value is above the range");
-    const f = ny(e.methodIri, bd(c.allowedMethodIris), n, i);
+    o.within(e.matrixIri, c.matrixIri) || y.push(`matrix ${le(e.matrixIri)} ≠ ${le(c.matrixIri)}`), o.within(e.formIri, c.formIri) || y.push(`form ${le(e.formIri)} ≠ ${le(c.formIri)}`), c.quantityKindIri !== e.quantityKindIri && y.push(`quantity kind ${le(e.quantityKindIri)} ≠ ${le(c.quantityKindIri)}`), xd(c.allowedPropertyIris).some((w) => o.within(e.propertyIri, w)) || y.push(`property ${le(e.propertyIri)} is not allowed`), _e(e.value, u.low) < 0 && y.push("value is below the range"), _e(e.value, u.high) > 0 && y.push("value is above the range");
+    const f = ry(e.methodIri, xd(c.allowedMethodIris), n, i);
     if (y.length > 0 || f.state === "contradicted")
-      return { id: d, state: "contradicted", reason: `${le(d)}: ${[...y, ...f.state === "contradicted" ? [f.reason] : []].join("; ")}` };
-    if (f.state === "not_established") return { id: d, state: "not_established", reason: `${le(d)}: ${f.reason}` };
-    const h = In(Ki(p.low, "mg/kg")), w = In(Ki(p.high, "mg/kg"));
+      return { id: l, state: "contradicted", reason: `${le(l)}: ${[...y, ...f.state === "contradicted" ? [f.reason] : []].join("; ")}` };
+    if (f.state === "not_established") return { id: l, state: "not_established", reason: `${le(l)}: ${f.reason}` };
+    const h = Rn(Qi(u.low, "mg/kg")), x = Rn(Qi(u.high, "mg/kg"));
     return {
-      id: d,
+      id: l,
       state: "established",
-      reason: `${le(d)} covers ${le(e.propertyIri)}, ${f.reason}, ${le(e.matrixIri)}/${le(e.formIri)}, ${In(Ki(e.value, "mg/kg"))} mg/kg within ${h}–${w} mg/kg`
+      reason: `${le(l)} covers ${le(e.propertyIri)}, ${f.reason}, ${le(e.matrixIri)}/${le(e.formIri)}, ${Rn(Qi(e.value, "mg/kg"))} mg/kg within ${h}–${x} mg/kg`
     };
-  }), s = fn(r.map((c) => c.state)), a = r.find((c) => c.state === "established");
+  }), s = hn(r.map((c) => c.state)), a = r.find((c) => c.state === "established");
   return {
     state: s,
     reason: a ? a.reason : `No single scope record covers the claim (${r.map((c) => c.reason).join(" | ")}).`,
@@ -23950,65 +24091,65 @@ function iy(e, t, n, i, o = On) {
     ...a ? { record: a.id } : {}
   };
 }
-function Ki(e, t) {
-  const n = Ia[t];
+function Qi(e, t) {
+  const n = Ra[t];
   return n >= 0 ? { n: e.n, scale: e.scale + n } : e.scale + n >= 0 ? { n: e.n, scale: e.scale + n } : { n: e.n * 10n ** BigInt(-(e.scale + n)), scale: 0 };
 }
-function ry(e, t, n) {
+function ay(e, t, n) {
   if (e.propertyIri !== t.propertyIri || e.quantityKindIri !== t.quantityKindIri)
     return { state: "not_established", reason: `Requirement ${t.id} does not apply to this claim's property and quantity kind.`, sources: [] };
-  const i = Tn(t.upperLimit.value, t.upperLimit.unit);
+  const i = En(t.upperLimit.value, t.upperLimit.unit);
   if (i === void 0) return { state: "not_established", reason: `Requirement ${t.id} has an unsupported limit.`, sources: [] };
-  const o = t.upperLimit.unit, r = (y) => In(Ki(y, o)), s = n.acceptWhen === "value-plus-expanded-uncertainty-at-most-limit", a = s ? Gm(e.value, e.uncertainty) : e.value, c = Pe(a, i) <= 0, p = `${s ? `${r(e.value)} + ${r(e.uncertainty)} = ${r(a)}` : r(e.value)} ${c ? "≤" : ">"} ${r(i)} ${o}`;
+  const o = t.upperLimit.unit, r = (y) => Rn(Qi(y, o)), s = n.acceptWhen === "value-plus-expanded-uncertainty-at-most-limit", a = s ? Bm(e.value, e.uncertainty) : e.value, c = _e(a, i) <= 0, u = `${s ? `${r(e.value)} + ${r(e.uncertainty)} = ${r(a)}` : r(e.value)} ${c ? "≤" : ">"} ${r(i)} ${o}`;
   return {
     state: c ? "established" : "contradicted",
-    reason: `${c ? "Conforms" : "Does not conform"} under ${n.id}: ${p}.`,
+    reason: `${c ? "Conforms" : "Does not conform"} under ${n.id}: ${u}.`,
     sources: [],
-    arithmetic: p
+    arithmetic: u
   };
 }
-const sy = /^\/credentialSubject\/materialPropertiesList\/(0|[1-9][0-9]*)\/results\/(0|[1-9][0-9]*)$/;
-async function ay(e, t, n, i) {
-  if (n.id !== za || i.binding.id !== n.id || i.binding.version !== n.version)
-    throw new Error(`Profile ${i.id}@${i.version} is not configured for ${za}@${n.version}.`);
-  const o = xa(e, n, i);
-  if (o !== void 0) return Object.freeze({ result: Sa(e, o), artifacts: Object.freeze([]) });
-  const r = await Aa(e, t, n, i), { target: s, artifacts: a, facts: c, verificationOf: d, artifactVerification: p } = r, y = (j) => c.get(j), f = Vm(n.scopeAndMapping), h = Xm(c.get(e.targetId), y, i, f), w = ey(c.get(e.targetId), y, i, f), x = h.routes.find((j) => j.state === "established"), v = c.get(e.targetId)?.document, A = (Array.isArray(n.scopeAndMapping.methodRevisions) ? n.scopeAndMapping.methodRevisions : []).filter((j) => typeof j?.method == "string" && typeof j?.revises == "string"), g = (j) => {
+const oy = /^\/credentialSubject\/materialPropertiesList\/(0|[1-9][0-9]*)\/results\/(0|[1-9][0-9]*)$/;
+async function cy(e, t, n, i) {
+  if (n.id !== Va || i.binding.id !== n.id || i.binding.version !== n.version)
+    throw new Error(`Profile ${i.id}@${i.version} is not configured for ${Va}@${n.version}.`);
+  const o = Ia(e, n, i);
+  if (o !== void 0) return Object.freeze({ result: Aa(e, o), artifacts: Object.freeze([]) });
+  const r = await qa(e, t, n, i), { target: s, artifacts: a, facts: c, verificationOf: l, artifactVerification: u } = r, y = (j) => c.get(j), f = Gm(n.scopeAndMapping), h = ey(c.get(e.targetId), y, i, f), x = ny(c.get(e.targetId), y, i, f), w = h.routes.find((j) => j.state === "established"), v = c.get(e.targetId)?.document, I = (Array.isArray(n.scopeAndMapping.methodRevisions) ? n.scopeAndMapping.methodRevisions : []).filter((j) => typeof j?.method == "string" && typeof j?.revises == "string"), g = (j) => {
     const N = c.get(j)?.document?.credentialSubject;
     return Array.isArray(N?.scope) ? N.scope : [];
   }, m = e.selectedClaims.map((j) => {
-    if (!(v !== void 0 && sy.test(j.sourcePointer) && un(v, j.sourcePointer) !== void 0)) {
-      const V = v === void 0 ? "The target is not usable, so its claims are not read." : `Selected claim ${j.sourcePointer} is not a result in the usable target.`;
+    if (!(v !== void 0 && oy.test(j.sourcePointer) && pn(v, j.sourcePointer) !== void 0)) {
+      const U = v === void 0 ? "The target is not usable, so its claims are not read." : `Selected claim ${j.sourcePointer} is not a result in the usable target.`;
       return {
         claim: j,
         mapping: void 0,
         coverage: /* @__PURE__ */ new Map(),
-        result: { claimId: j.id, routeWitnessIds: [], ...ce("not_established", [V]) }
+        result: { claimId: j.id, routeWitnessIds: [], ...ce("not_established", [U]) }
       };
     }
-    const _ = ty(v, j.sourcePointer, un(v, j.sourcePointer)), G = /* @__PURE__ */ new Map();
+    const _ = iy(v, j.sourcePointer, pn(v, j.sourcePointer)), G = /* @__PURE__ */ new Map();
     if (_.coordinates === void 0)
       return { claim: j, mapping: _, coverage: G, result: {
         claimId: j.id,
         routeWitnessIds: [],
         ...ce(_.state, [`Gate 4: ${_.reason}`], [j.sourcePointer])
       } };
-    const L = _.coordinates, B = xr(h, (V) => {
-      const D = iy(L, g(V.scope), A, i.mapping.methodSuccession, f), $ = [V.scope, ...D.sources];
-      return G.set(V.id, { ...D, sources: $ }), { id: "claim-coverage", state: D.state, reason: D.reason, sources: $ };
-    }), T = B.routes.find((V) => V.state === "established"), O = T ? G.get(T.id)?.record : void 0;
+    const L = _.coordinates, B = Sr(h, (U) => {
+      const D = sy(L, g(U.scope), I, i.mapping.methodSuccession, f), $ = [U.scope, ...D.sources];
+      return G.set(U.id, { ...D, sources: $ }), { id: "claim-coverage", state: D.state, reason: D.reason, sources: $ };
+    }), T = B.routes.find((U) => U.state === "established"), O = T ? G.get(T.id)?.record : void 0;
     return { claim: j, mapping: _, coverage: G, result: {
       claimId: j.id,
       routeWitnessIds: B.state === "established" && T ? [`route:${T.id}`, ...T.chain, `record:${O}`] : [],
       ...ce(B.state, [
         B.reason,
-        ...T ? [G.get(T.id).reason] : [...G].map(([V, D]) => `${V}: ${D.reason}`)
+        ...T ? [G.get(T.id).reason] : [...G].map(([U, D]) => `${U}: ${D.reason}`)
       ], [j.sourcePointer])
     } };
-  }), l = m.map((j) => j.result), u = [{
+  }), d = m.map((j) => j.result), p = [{
     obligationId: "rm-v1:required-study",
-    witnessIds: w.state === "established" ? [...w.chain] : [],
-    ...ce(w.state, [w.reason], ["/evidence"])
+    witnessIds: x.state === "established" ? [...x.chain] : [],
+    ...ce(x.state, [x.reason], ["/evidence"])
   }], b = (() => {
     if (!e.conformity) return { requested: !1, execution: "not_run" };
     const j = { requested: !0, ...e.conformity }, N = i.conformity.requirements.find((T) => T.id === e.conformity.requirementId), _ = i.conformity.decisionRules.find((T) => T.id === e.conformity.decisionRuleId);
@@ -24019,19 +24160,19 @@ async function ay(e, t, n, i) {
       return { ...j, ...ce("not_established", [`Requirement ${N.id} must apply to exactly one selected claim; ${G.length} match.`]) };
     const L = G[0];
     if (L.result.state !== "established")
-      return { ...j, ...pn(`Not evaluated: claim ${L.claim.id} is not authorized.`) };
-    const B = ry(L.mapping.coordinates, N, _);
+      return { ...j, ...fn(`Not evaluated: claim ${L.claim.id} is not authorized.`) };
+    const B = ay(L.mapping.coordinates, N, _);
     return { ...j, ...ce(B.state, [B.reason], [L.claim.sourcePointer]) };
   })(), S = /* @__PURE__ */ new Set([
     e.targetId,
-    ...x?.chain ?? [],
-    ...w.state === "established" ? w.chain : []
-  ]), I = [
-    ...a.filter((j) => S.has(j.artifactId)).flatMap(d).filter((j) => S.has(j.artifactId)).map((j) => j.state),
-    ...l.map((j) => j.state),
-    ...u.map((j) => j.state),
+    ...w?.chain ?? [],
+    ...x.state === "established" ? x.chain : []
+  ]), A = [
+    ...a.filter((j) => S.has(j.artifactId)).flatMap(l).filter((j) => S.has(j.artifactId)).map((j) => j.state),
+    ...d.map((j) => j.state),
+    ...p.map((j) => j.state),
     ...b.requested ? [b.state] : []
-  ], P = sa(I), R = [...r.trace], E = [...r.resources], k = yr(s.artifactId, s.digestSRI, "target", e);
+  ], P = oa(A), R = [...r.trace], E = [...r.resources], k = gr(s.artifactId, s.digestSRI, "target", e);
   for (const { claim: j, mapping: N, coverage: _ } of m) {
     N && R.push({
       gate: 4,
@@ -24053,7 +24194,7 @@ async function ay(e, t, n, i) {
         sources: [...L.sources]
       });
   }
-  for (const j of l)
+  for (const j of d)
     R.push({
       gate: 5,
       nodeUse: k,
@@ -24080,7 +24221,7 @@ async function ay(e, t, n, i) {
     state: h.state,
     execution: "executed",
     reason: h.reason,
-    sources: x ? [...x.chain] : []
+    sources: w ? [...w.chain] : []
   });
   for (const j of h.routes) {
     R.push(j.execution === "not_run" ? {
@@ -24111,7 +24252,7 @@ async function ay(e, t, n, i) {
         sources: [...N.sources]
       });
   }
-  for (const j of w.bases)
+  for (const j of x.bases)
     R.push({
       gate: 6,
       nodeUse: k,
@@ -24121,7 +24262,7 @@ async function ay(e, t, n, i) {
       reason: j.reason,
       sources: [...j.sources]
     });
-  for (const j of u)
+  for (const j of p)
     R.push({
       gate: 6,
       nodeUse: k,
@@ -24140,14 +24281,14 @@ async function ay(e, t, n, i) {
     reason: b.reasons.join(" "),
     sources: []
   });
-  const M = cr({
+  const M = dr({
     requestId: e.requestId,
     targetId: e.targetId,
     binding: e.binding,
     profile: e.profile,
-    artifactVerification: p,
-    authorization: l,
-    support: u,
+    artifactVerification: u,
+    authorization: d,
+    support: p,
     conformity: b,
     decision: P,
     trace: R,
@@ -24158,37 +24299,37 @@ async function ay(e, t, n, i) {
   });
   return Object.freeze({ result: M, artifacts: Object.freeze(a) });
 }
-const Xs = "https://vc4qi.example/bindings/cal/1", oy = "https://vc4qi.example/contexts/cal/1", Ys = "https://vc4qi.example/bindings/cal/1#", nn = "https://vc4qi.example/schemas/cal/1/", cy = Object.freeze({
+const ea = "https://vc4qi.example/bindings/cal/1", dy = "https://vc4qi.example/contexts/cal/1", ta = "https://vc4qi.example/bindings/cal/1#", rn = "https://vc4qi.example/schemas/cal/1/", ly = Object.freeze({
   name: "calibration v1",
   schemas: Object.freeze({
-    CalAccreditation: `${nn}accreditation.json`,
-    CalOperationalScope: `${nn}operational-scope.json`,
-    CalLegalMandate: `${nn}legal-mandate.json`,
-    CalCertificate: `${nn}certificate.json`,
-    CalTestReport: `${nn}test-report.json`,
-    BitstringStatusListCredential: `${nn}status-list.json`
+    CalAccreditation: `${rn}accreditation.json`,
+    CalOperationalScope: `${rn}operational-scope.json`,
+    CalLegalMandate: `${rn}legal-mandate.json`,
+    CalCertificate: `${rn}certificate.json`,
+    CalTestReport: `${rn}test-report.json`,
+    BitstringStatusListCredential: `${rn}status-list.json`
   }),
-  contexts: (e) => e === "BitstringStatusListCredential" ? [Zt] : [Zt, oy]
-}), _e = (e) => e !== null && typeof e == "object" && !Array.isArray(e), Be = (e) => Array.isArray(e) ? e : [], se = (e) => String(e).split(/[#/]/).pop(), dy = Object.freeze({ Pa: 0, kPa: 3, MPa: 6 });
+  contexts: (e) => e === "BitstringStatusListCredential" ? [Ht] : [Ht, dy]
+}), Te = (e) => e !== null && typeof e == "object" && !Array.isArray(e), Be = (e) => Array.isArray(e) ? e : [], se = (e) => String(e).split(/[#/]/).pop(), uy = Object.freeze({ Pa: 0, kPa: 3, MPa: 6 });
 function Xe(e, t) {
-  const n = wr(e), i = typeof t == "string" ? dy[t] : void 0;
+  const n = xr(e), i = typeof t == "string" ? uy[t] : void 0;
   if (!(n === void 0 || i === void 0))
     return n.scale >= i ? { n: n.n, scale: n.scale - i } : { n: n.n * 10n ** BigInt(i - n.scale), scale: 0 };
 }
-const je = (e) => In({ n: e.n, scale: e.scale + 3 });
+const $e = (e) => Rn({ n: e.n, scale: e.scale + 3 });
 function Al(e, t) {
   const n = [t];
-  if (!_e(e) || typeof e.id != "string" || typeof e.quantityKindIri != "string")
+  if (!Te(e) || typeof e.id != "string" || typeof e.quantityKindIri != "string")
     return { state: "not_established", reason: "The selected measurement group has no identifier or quantity kind.", sources: n };
   const i = [];
   for (const [r, s] of Be(e.results).entries()) {
-    const a = _e(s) ? s : {}, c = wr(a.coverageFactor);
-    if (c === void 0 || Pe(c, { n: 2n, scale: 0 }) !== 0)
+    const a = Te(s) ? s : {}, c = xr(a.coverageFactor);
+    if (c === void 0 || _e(c, { n: 2n, scale: 0 }) !== 0)
       return { state: "not_established", reason: `Result ${r}: coverage factor ${String(a.coverageFactor)} is not the binding's k = 2.`, sources: n };
-    const d = Xe(a.value, a.unit), p = Xe(a.expandedUncertainty, a.unit);
-    if (d === void 0 || p === void 0)
+    const l = Xe(a.value, a.unit), u = Xe(a.expandedUncertainty, a.unit);
+    if (l === void 0 || u === void 0)
       return { state: "not_established", reason: `Result ${r}: unit ${String(a.unit)} or a number has no supported mapping (Pa, kPa, MPa).`, sources: n };
-    i.push({ value: d, uncertainty: p });
+    i.push({ value: l, uncertainty: u });
   }
   if (i.length === 0) return { state: "not_established", reason: "The measurement group has no results.", sources: n };
   const o = Be(e.methodIris).filter((r) => typeof r == "string");
@@ -24199,129 +24340,129 @@ function Al(e, t) {
     group: { id: e.id, quantityKindIri: e.quantityKindIri, methodIris: o, results: i }
   };
 }
-function Il(e, t, n) {
+function ql(e, t, n) {
   const i = ["/credentialSubject/scope"];
   if (t.length === 0) return { state: "not_established", reason: "The scope has no records.", sources: i };
   const o = t.map((a) => {
-    const c = String(a.id), d = _e(a.range) ? a.range : {}, p = Xe(d.from, d.unit), y = Xe(d.to, d.unit);
-    if (p === void 0 || y === void 0) return { id: c, state: "not_established", reason: `${se(c)}: unsupported or malformed range.` };
-    if (Pe(p, y) > 0) return { id: c, state: "contradicted", reason: `${se(c)}: range is reversed.` };
-    const f = _e(a.cmcFloor) ? a.cmcFloor : void 0, h = f === void 0 ? void 0 : Xe(f.value, f.unit);
+    const c = String(a.id), l = Te(a.range) ? a.range : {}, u = Xe(l.from, l.unit), y = Xe(l.to, l.unit);
+    if (u === void 0 || y === void 0) return { id: c, state: "not_established", reason: `${se(c)}: unsupported or malformed range.` };
+    if (_e(u, y) > 0) return { id: c, state: "contradicted", reason: `${se(c)}: range is reversed.` };
+    const f = Te(a.cmcFloor) ? a.cmcFloor : void 0, h = f === void 0 ? void 0 : Xe(f.value, f.unit);
     if (f !== void 0 && h === void 0) return { id: c, state: "not_established", reason: `${se(c)}: unsupported CMC floor.` };
-    const w = [];
-    a.quantityKindIri !== e.quantityKindIri && w.push(`quantity kind ${se(e.quantityKindIri)} ≠ ${se(a.quantityKindIri)}`);
-    const x = Be(a.allowedMethodIris).filter((A) => typeof A == "string"), v = e.methodIris.filter((A) => !x.includes(A));
-    return v.length > 0 && w.push(`method ${v.map(se).join(", ")} is not allowed`), e.results.forEach((A, g) => {
-      (Pe(A.value, p) < 0 || Pe(A.value, y) > 0) && w.push(`result ${g} ${je(A.value)} kPa is outside ${je(p)}–${je(y)} kPa`), n && h !== void 0 && Pe(A.uncertainty, h) < 0 && w.push(`result ${g} U = ${je(A.uncertainty)} kPa is below the admitted CMC ${je(h)} kPa`);
-    }), w.length > 0 ? { id: c, state: "contradicted", reason: `${se(c)}: ${w.join("; ")}` } : e.methodIris.length === 0 && x.length > 0 ? {
+    const x = [];
+    a.quantityKindIri !== e.quantityKindIri && x.push(`quantity kind ${se(e.quantityKindIri)} ≠ ${se(a.quantityKindIri)}`);
+    const w = Be(a.allowedMethodIris).filter((I) => typeof I == "string"), v = e.methodIris.filter((I) => !w.includes(I));
+    return v.length > 0 && x.push(`method ${v.map(se).join(", ")} is not allowed`), e.results.forEach((I, g) => {
+      (_e(I.value, u) < 0 || _e(I.value, y) > 0) && x.push(`result ${g} ${$e(I.value)} kPa is outside ${$e(u)}–${$e(y)} kPa`), n && h !== void 0 && _e(I.uncertainty, h) < 0 && x.push(`result ${g} U = ${$e(I.uncertainty)} kPa is below the admitted CMC ${$e(h)} kPa`);
+    }), x.length > 0 ? { id: c, state: "contradicted", reason: `${se(c)}: ${x.join("; ")}` } : e.methodIris.length === 0 && w.length > 0 ? {
       id: c,
       state: "not_established",
-      reason: `${se(c)} restricts methods to [${x.map(se).join(", ")}], but the group names no governed method.`
+      reason: `${se(c)} restricts methods to [${w.map(se).join(", ")}], but the group names no governed method.`
     } : {
       id: c,
       state: "established",
-      reason: `${se(c)} covers ${se(e.id)}: ${se(e.quantityKindIri)}, methods [${e.methodIris.map(se).join(", ")}], ${e.results.length} result(s) within ${je(p)}–${je(y)} kPa${n && h !== void 0 ? ` and not below the CMC ${je(h)} kPa` : ""}`
+      reason: `${se(c)} covers ${se(e.id)}: ${se(e.quantityKindIri)}, methods [${e.methodIris.map(se).join(", ")}], ${e.results.length} result(s) within ${$e(u)}–${$e(y)} kPa${n && h !== void 0 ? ` and not below the CMC ${$e(h)} kPa` : ""}`
     };
-  }), r = fn(o.map((a) => a.state)), s = o.find((a) => a.state === "established");
+  }), r = hn(o.map((a) => a.state)), s = o.find((a) => a.state === "established");
   return s ? { state: r, reason: s.reason, sources: i, record: s.id } : { state: r, reason: `No single scope record covers the group (${o.map((a) => a.reason).join(" | ")}).`, sources: i };
 }
-function ly(e, t, n) {
+function py(e, t, n) {
   const i = ["/credentialSubject/scope"];
   if (e.length === 0) return { state: "not_established", reason: "The operational scope has no records.", sources: i };
   const o = e.map((s) => {
-    const a = _e(s.range) ? s.range : {}, c = Xe(a.from, a.unit), d = Xe(a.to, a.unit), p = _e(s.cmcFloor) ? s.cmcFloor : void 0, y = p === void 0 ? void 0 : Xe(p.value, p.unit);
-    if (c === void 0 || d === void 0 || p !== void 0 && y === void 0)
+    const a = Te(s.range) ? s.range : {}, c = Xe(a.from, a.unit), l = Xe(a.to, a.unit), u = Te(s.cmcFloor) ? s.cmcFloor : void 0, y = u === void 0 ? void 0 : Xe(u.value, u.unit);
+    if (c === void 0 || l === void 0 || u !== void 0 && y === void 0)
       return { state: "not_established", reason: `${se(s.id)}: unsupported or malformed range or CMC floor.` };
-    const f = Be(s.allowedMethodIris), h = t.map((x) => {
-      const v = _e(x.range) ? x.range : {}, A = Xe(v.from, v.unit), g = Xe(v.to, v.unit), m = _e(x.cmcFloor) ? x.cmcFloor : void 0, l = m === void 0 ? void 0 : Xe(m.value, m.unit);
-      if (A === void 0 || g === void 0 || m !== void 0 && l === void 0)
-        return { state: "not_established", reason: `${se(x.id)}: unsupported or malformed range or CMC floor.` };
-      const u = [];
-      s.quantityKindIri !== x.quantityKindIri && u.push(`quantity kind ${se(s.quantityKindIri)} ≠ ${se(x.quantityKindIri)}`);
-      const b = Be(x.allowedMethodIris), S = f.filter((I) => !b.includes(I));
-      return f.length === 0 && b.length > 0 && u.push("the parent restricts methods, the child does not"), S.length > 0 && u.push(`method ${S.map(se).join(", ")} is not in ${se(x.id)}`), (Pe(c, A) < 0 || Pe(d, g) > 0) && u.push(`range ${je(c)}–${je(d)} kPa is not within ${je(A)}–${je(g)} kPa`), n && l !== void 0 && (y === void 0 ? u.push(`it states no CMC floor, but ${se(x.id)} admits only ${je(l)} kPa`) : Pe(y, l) < 0 && u.push(`CMC ${je(y)} kPa is below the admitted ${je(l)} kPa`)), u.length > 0 ? { state: "contradicted", reason: `${se(s.id)} widens ${se(x.id)}: ${u.join("; ")}` } : { state: "established", reason: `${se(s.id)} lies within ${se(x.id)}` };
+    const f = Be(s.allowedMethodIris), h = t.map((w) => {
+      const v = Te(w.range) ? w.range : {}, I = Xe(v.from, v.unit), g = Xe(v.to, v.unit), m = Te(w.cmcFloor) ? w.cmcFloor : void 0, d = m === void 0 ? void 0 : Xe(m.value, m.unit);
+      if (I === void 0 || g === void 0 || m !== void 0 && d === void 0)
+        return { state: "not_established", reason: `${se(w.id)}: unsupported or malformed range or CMC floor.` };
+      const p = [];
+      s.quantityKindIri !== w.quantityKindIri && p.push(`quantity kind ${se(s.quantityKindIri)} ≠ ${se(w.quantityKindIri)}`);
+      const b = Be(w.allowedMethodIris), S = f.filter((A) => !b.includes(A));
+      return f.length === 0 && b.length > 0 && p.push("the parent restricts methods, the child does not"), S.length > 0 && p.push(`method ${S.map(se).join(", ")} is not in ${se(w.id)}`), (_e(c, I) < 0 || _e(l, g) > 0) && p.push(`range ${$e(c)}–${$e(l)} kPa is not within ${$e(I)}–${$e(g)} kPa`), n && d !== void 0 && (y === void 0 ? p.push(`it states no CMC floor, but ${se(w.id)} admits only ${$e(d)} kPa`) : _e(y, d) < 0 && p.push(`CMC ${$e(y)} kPa is below the admitted ${$e(d)} kPa`)), p.length > 0 ? { state: "contradicted", reason: `${se(s.id)} widens ${se(w.id)}: ${p.join("; ")}` } : { state: "established", reason: `${se(s.id)} lies within ${se(w.id)}` };
     });
     if (h.length === 0) return { state: "not_established", reason: "The parent grant has no records." };
-    const w = fn(h.map((x) => x.state));
-    return w === "established" ? h.find((x) => x.state === "established") : { state: w, reason: h.map((x) => x.reason).join(" | ") };
-  }), r = Ra(o.map((s) => s.state));
+    const x = hn(h.map((w) => w.state));
+    return x === "established" ? h.find((w) => w.state === "established") : { state: x, reason: h.map((w) => w.reason).join(" | ") };
+  }), r = $a(o.map((s) => s.state));
   return { state: r, reason: `${r === "established" ? "Bounded projection holds" : "Bounded projection fails"}: ${o.map((s) => s.reason).join("; ")}.`, sources: i };
 }
-const Ht = (e) => _e(e.credentialSubject) ? e.credentialSubject : {}, qa = (e, t, n, i, o) => dt(t, `${Ys}${n}`) ? { id: e, state: "established", reason: `${o} permits ${i}.`, sources: ["/credentialSubject/permittedActivity"] } : { id: e, state: "contradicted", reason: `${o} does not permit ${i}.`, sources: ["/credentialSubject/permittedActivity"] }, uy = Object.freeze({
+const Jt = (e) => Te(e.credentialSubject) ? e.credentialSubject : {}, ja = (e, t, n, i, o) => dt(t, `${ta}${n}`) ? { id: e, state: "established", reason: `${o} permits ${i}.`, sources: ["/credentialSubject/permittedActivity"] } : { id: e, state: "contradicted", reason: `${o} does not permit ${i}.`, sources: ["/credentialSubject/permittedActivity"] }, fy = Object.freeze({
   CalCertificate: { activity: "issueCalibrationCertificate", what: "issuing calibration certificates", purpose: "accredit-calibration-laboratories" },
   CalTestReport: { activity: "issueTestReport", what: "issuing test reports", purpose: "accredit-testing-laboratories" }
-}), rr = (e) => Array.isArray(e.type) ? String(e.type[1]) : void 0;
-function py(e, t, n) {
-  const i = e.document, o = [], r = [e.uri], s = uy[rr(i) ?? ""];
+}), sr = (e) => Array.isArray(e.type) ? String(e.type[1]) : void 0;
+function hy(e, t, n) {
+  const i = e.document, o = [], r = [e.uri], s = fy[sr(i) ?? ""];
   if (s === void 0)
     return pe("direct-accreditation", [{
       id: "target-type",
       state: "not_established",
-      reason: `No accreditation activity is installed for ${String(rr(i))}.`,
+      reason: `No accreditation activity is installed for ${String(sr(i))}.`,
       sources: ["/type"]
     }], r);
   const a = Ye("authorizing-reference", i, "CalAccreditation", t, [e.uri], "CalAuthorizationPolicy");
   if (o.push(a.basis), !a.node) return pe("direct-accreditation", o, r);
   const c = a.node.document;
-  return r.push(a.node.uri), o.push(ft("principal-binding", c, i.issuer, "Accreditation CA")), o.push(qa("activity-permission", c, s.activity, s.what, "CA")), o.push(Ln("trust-anchor", c, s.purpose, n)), o.push(Nt(i, [["CA", c]])), pe("direct-accreditation", o, r, a.node.uri);
+  return r.push(a.node.uri), o.push(ft("principal-binding", c, i.issuer, "Accreditation CA")), o.push(ja("activity-permission", c, s.activity, s.what, "CA")), o.push(Dn("trust-anchor", c, s.purpose, n)), o.push(zt(i, [["CA", c]])), pe("direct-accreditation", o, r, a.node.uri);
 }
-function fy(e, t, n) {
+function my(e, t, n) {
   const i = e.document, o = [], r = [e.uri], s = Ye("authorizing-reference", i, "CalOperationalScope", t, [e.uri], "CalAuthorizationPolicy");
   if (o.push(s.basis), !s.node) return pe("operational-scope", o, r);
   const a = s.node.document;
-  r.push(s.node.uri), o.push(ft("principal-binding", a, i.issuer, "Operational scope O")), o.push(a.issuer === Ht(a).id ? { id: "self-maintained-scope", state: "established", reason: "O is issued by its own grantee.", sources: ["/issuer"] } : { id: "self-maintained-scope", state: "contradicted", reason: "O is not issued by its own grantee.", sources: ["/issuer"] }), o.push(qa("activity-permission", a, "issueCalibrationCertificate", "issuing calibration certificates", "O"));
+  r.push(s.node.uri), o.push(ft("principal-binding", a, i.issuer, "Operational scope O")), o.push(a.issuer === Jt(a).id ? { id: "self-maintained-scope", state: "established", reason: "O is issued by its own grantee.", sources: ["/issuer"] } : { id: "self-maintained-scope", state: "contradicted", reason: "O is not issued by its own grantee.", sources: ["/issuer"] }), o.push(ja("activity-permission", a, "issueCalibrationCertificate", "issuing calibration certificates", "O"));
   const c = Ye("maintenance-grant", a, "CalAccreditation", t, [e.uri, s.node.uri], "CalAuthorizationPolicy");
   if (o.push(c.basis), !c.node) return pe("operational-scope", o, r);
-  const d = c.node.document;
-  r.push(c.node.uri), o.push(ft("accreditation-grantee", d, a.issuer, "Accreditation CA")), o.push(dt(d, `${Ys}maintainCalibrationScope`) && dt(d, `${Ys}issueCalibrationCertificate`) ? { id: "projection-permission", state: "established", reason: "CA permits maintaining an operational calibration scope.", sources: ["/credentialSubject/permittedActivity"] } : { id: "projection-permission", state: "contradicted", reason: "CA does not permit maintaining an operational calibration scope.", sources: ["/credentialSubject/permittedActivity"] });
-  const p = ly(
-    Be(Ht(a).scope).filter(_e),
-    Be(Ht(d).scope).filter(_e),
+  const l = c.node.document;
+  r.push(c.node.uri), o.push(ft("accreditation-grantee", l, a.issuer, "Accreditation CA")), o.push(dt(l, `${ta}maintainCalibrationScope`) && dt(l, `${ta}issueCalibrationCertificate`) ? { id: "projection-permission", state: "established", reason: "CA permits maintaining an operational calibration scope.", sources: ["/credentialSubject/permittedActivity"] } : { id: "projection-permission", state: "contradicted", reason: "CA does not permit maintaining an operational calibration scope.", sources: ["/credentialSubject/permittedActivity"] });
+  const u = py(
+    Be(Jt(a).scope).filter(Te),
+    Be(Jt(l).scope).filter(Te),
     n.bindingRules.applyCmcFloor === !0
   );
-  return o.push({ id: "bounded-projection", state: p.state, reason: p.reason, sources: p.sources }), o.push(Ln("trust-anchor", d, "accredit-calibration-laboratories", n)), o.push(Nt(i, [["O", a], ["CA", d]])), pe("operational-scope", o, r, s.node.uri);
+  return o.push({ id: "bounded-projection", state: u.state, reason: u.reason, sources: u.sources }), o.push(Dn("trust-anchor", l, "accredit-calibration-laboratories", n)), o.push(zt(i, [["O", a], ["CA", l]])), pe("operational-scope", o, r, s.node.uri);
 }
-function hy(e, t, n) {
+function yy(e, t, n) {
   const i = e.document, o = [], r = [e.uri], s = Ye("authorizing-reference", i, "CalLegalMandate", t, [e.uri], "CalAuthorizationPolicy");
   if (o.push(s.basis), !s.node) return pe("statutory-mandate", o, r);
   const a = s.node.document;
-  return r.push(s.node.uri), o.push(ft("principal-binding", a, i.issuer, "Mandate M")), o.push(qa("activity-permission", a, "issueCalibrationCertificate", "issuing calibration certificates", "M")), o.push(Ln("trust-anchor", a, "designate-national-metrology-institutes", n)), o.push(Nt(i, [["M", a]])), pe("statutory-mandate", o, r, s.node.uri);
+  return r.push(s.node.uri), o.push(ft("principal-binding", a, i.issuer, "Mandate M")), o.push(ja("activity-permission", a, "issueCalibrationCertificate", "issuing calibration certificates", "M")), o.push(Dn("trust-anchor", a, "designate-national-metrology-institutes", n)), o.push(zt(i, [["M", a]])), pe("statutory-mandate", o, r, s.node.uri);
 }
-const ql = Object.freeze({
-  "direct-accreditation": py,
-  "operational-scope": fy,
-  "statutory-mandate": hy
-}), Ra = (e) => e.length === 0 ? "not_established" : xe(e);
-function my(e, t, n, i) {
+const Rl = Object.freeze({
+  "direct-accreditation": hy,
+  "operational-scope": my,
+  "statutory-mandate": yy
+}), $a = (e) => e.length === 0 ? "not_established" : xe(e);
+function gy(e, t, n, i) {
   const o = n.authority.certificateRoutes, r = o.slice(0, n.authority.maxRoutes).map((y) => {
-    const f = ql[y];
+    const f = Rl[y];
     return f === void 0 ? pe(y, [{ id: "installed-evaluator", state: "not_established", reason: `Route ${y} has no installed evaluator.`, sources: [] }], [e.uri]) : f(e, t, n);
-  }), s = Nn([], r, o.slice(n.authority.maxRoutes)), a = Be(Ht(e.document).measurementGroups);
+  }), s = zn([], r, o.slice(n.authority.maxRoutes)), a = Be(Jt(e.document).measurementGroups);
   if (a.length === 0)
     return { state: "not_established", reason: "The certificate has no measurement groups.", chain: [e.uri], bases: [] };
   const c = [];
-  let d = [e.uri];
+  let l = [e.uri];
   a.forEach((y, f) => {
-    const h = `/credentialSubject/measurementGroups/${f}`, w = Al(y, h);
-    if (w.group === void 0) {
-      c.push({ id: `group-${f}`, state: w.state, reason: `Group ${f}: ${w.reason}`, sources: [h] });
+    const h = `/credentialSubject/measurementGroups/${f}`, x = Al(y, h);
+    if (x.group === void 0) {
+      c.push({ id: `group-${f}`, state: x.state, reason: `Group ${f}: ${x.reason}`, sources: [h] });
       return;
     }
-    const x = w.group, v = xr(s, (m) => {
-      const l = Be(Ht(t(m.scope)?.document ?? {}).scope).filter(_e), u = Il(x, l, i);
-      return { id: "claim-coverage", state: u.state, reason: u.reason, sources: [m.scope, ...u.sources] };
-    }), A = v.routes.find((m) => m.state === "established");
-    A && (d = A.chain);
-    const g = A ? `through ${A.id}` : v.routes.map((m) => `${m.id} ${m.state}: ${m.bases.filter((l) => l.state !== "established").map((l) => l.reason).join(" ")}`).join(" | ");
-    c.push({ id: `group-${f}`, state: v.state, reason: `Group ${f} (${se(x.id)}) is ${v.state} ${g}`.trim(), sources: [h] });
+    const w = x.group, v = Sr(s, (m) => {
+      const d = Be(Jt(t(m.scope)?.document ?? {}).scope).filter(Te), p = ql(w, d, i);
+      return { id: "claim-coverage", state: p.state, reason: p.reason, sources: [m.scope, ...p.sources] };
+    }), I = v.routes.find((m) => m.state === "established");
+    I && (l = I.chain);
+    const g = I ? `through ${I.id}` : v.routes.map((m) => `${m.id} ${m.state}: ${m.bases.filter((d) => d.state !== "established").map((d) => d.reason).join(" ")}`).join(" | ");
+    c.push({ id: `group-${f}`, state: v.state, reason: `Group ${f} (${se(w.id)}) is ${v.state} ${g}`.trim(), sources: [h] });
   });
-  const p = Ra(c.map((y) => y.state));
-  return { state: p, reason: `The certificate's own authority is ${p}.`, chain: d, bases: c };
+  const u = $a(c.map((y) => y.state));
+  return { state: u, reason: `The certificate's own authority is ${u}.`, chain: l, bases: c };
 }
-function yy(e, t, n, i) {
+function vy(e, t, n, i) {
   if (e.usable !== "established" || e.document === void 0)
     return { state: "not_established", reason: "The target is not usable, so its support is not evaluated.", bases: [], chain: [] };
-  const o = e.document, r = (b) => ({ state: b.state, reason: b.reason, bases: [b], chain: [e.uri] }), s = Be(o.evidence).filter(_e).filter((b) => b.type === "CalCalibrationReference").map((b) => String(b.id));
+  const o = e.document, r = (b) => ({ state: b.state, reason: b.reason, bases: [b], chain: [e.uri] }), s = Be(o.evidence).filter(Te).filter((b) => b.type === "CalCalibrationReference").map((b) => String(b.id));
   if (s.length === 0) return r({ id: "calibration-reference", state: "not_established", reason: "The report cites no calibration.", sources: ["/evidence"] });
   if (s.length > 1)
     return r({ id: "calibration-reference", state: "not_established", reason: "Several calibration references; this binding has no composition for them.", sources: ["/evidence"] });
@@ -24334,44 +24475,44 @@ function yy(e, t, n, i) {
       reason: `Calibration ${a} is not usable: ${c.reason}`,
       sources: ["/evidence", a]
     });
-  const d = c.document;
-  if (rr(d) !== "CalCertificate")
-    return r({ id: "calibration-reference", state: "contradicted", reason: `${a} is a ${String(rr(d))}, not a calibration certificate.`, sources: ["/evidence", a] });
-  const p = Ht(o), y = Ht(d), f = [{ id: "calibration-reference", state: "established", reason: `Cites calibration ${a}.`, sources: ["/evidence", a] }];
-  f.push(typeof p.instrumentIri != "string" ? { id: "same-instrument", state: "not_established", reason: "The report names no instrument.", sources: ["/credentialSubject/instrumentIri"] } : y.id === p.instrumentIri ? { id: "same-instrument", state: "established", reason: `The calibration concerns instrument ${String(p.instrumentIri)}.`, sources: ["/credentialSubject/instrumentIri"] } : { id: "same-instrument", state: "contradicted", reason: `The calibration concerns ${String(y.id)}, not instrument ${String(p.instrumentIri)}.`, sources: ["/credentialSubject/instrumentIri"] });
-  const h = Be(p.measurementGroups).filter(_e).map((b) => b.quantityKindIri), w = Be(y.measurementGroups).filter(_e).map((b) => b.quantityKindIri), x = h.filter((b) => !w.includes(b));
-  f.push(h.length > 0 && x.length === 0 ? { id: "same-quantity", state: "established", reason: `The calibration covers ${[...new Set(h.map(se))].join(", ")}.`, sources: ["/credentialSubject/measurementGroups"] } : {
+  const l = c.document;
+  if (sr(l) !== "CalCertificate")
+    return r({ id: "calibration-reference", state: "contradicted", reason: `${a} is a ${String(sr(l))}, not a calibration certificate.`, sources: ["/evidence", a] });
+  const u = Jt(o), y = Jt(l), f = [{ id: "calibration-reference", state: "established", reason: `Cites calibration ${a}.`, sources: ["/evidence", a] }];
+  f.push(typeof u.instrumentIri != "string" ? { id: "same-instrument", state: "not_established", reason: "The report names no instrument.", sources: ["/credentialSubject/instrumentIri"] } : y.id === u.instrumentIri ? { id: "same-instrument", state: "established", reason: `The calibration concerns instrument ${String(u.instrumentIri)}.`, sources: ["/credentialSubject/instrumentIri"] } : { id: "same-instrument", state: "contradicted", reason: `The calibration concerns ${String(y.id)}, not instrument ${String(u.instrumentIri)}.`, sources: ["/credentialSubject/instrumentIri"] });
+  const h = Be(u.measurementGroups).filter(Te).map((b) => b.quantityKindIri), x = Be(y.measurementGroups).filter(Te).map((b) => b.quantityKindIri), w = h.filter((b) => !x.includes(b));
+  f.push(h.length > 0 && w.length === 0 ? { id: "same-quantity", state: "established", reason: `The calibration covers ${[...new Set(h.map(se))].join(", ")}.`, sources: ["/credentialSubject/measurementGroups"] } : {
     id: "same-quantity",
     state: h.length === 0 ? "not_established" : "contradicted",
-    reason: h.length === 0 ? "The report has no measurement groups." : `The calibration does not cover ${x.map(se).join(", ")}.`,
+    reason: h.length === 0 ? "The report has no measurement groups." : `The calibration does not cover ${w.map(se).join(", ")}.`,
     sources: ["/credentialSubject/measurementGroups"]
   });
-  const v = Date.parse(String(p.activityTime)), A = Date.parse(String(y.activityTime)), g = Date.parse(String(d.validFrom)), m = Date.parse(String(d.validUntil));
-  !Number.isFinite(v) || !Number.isFinite(A) ? f.push({ id: "calibration-precedes-use", state: "not_established", reason: "An activity time is missing.", sources: ["/credentialSubject/activityTime"] }) : (f.push(A <= v ? { id: "calibration-precedes-use", state: "established", reason: `Calibrated at ${String(y.activityTime)}, before the test at ${String(p.activityTime)}.`, sources: ["/credentialSubject/activityTime"] } : { id: "calibration-precedes-use", state: "contradicted", reason: `Calibrated at ${String(y.activityTime)}, after the test at ${String(p.activityTime)}.`, sources: ["/credentialSubject/activityTime"] }), f.push(Number.isFinite(g) && Number.isFinite(m) && g <= v && v <= m ? { id: "calibration-valid-at-use", state: "established", reason: "The calibration certificate was valid at the test.", sources: ["/validFrom", "/validUntil"] } : { id: "calibration-valid-at-use", state: "contradicted", reason: `The calibration certificate (valid ${String(d.validFrom)} to ${String(d.validUntil)}) was not valid at the test at ${String(p.activityTime)}.`, sources: ["/validFrom", "/validUntil"] }));
-  const l = my(c, t, n, i);
-  f.push({ id: "calibration-authority", state: l.state, reason: l.reason, sources: [a] }, ...l.bases.map((b) => ({ ...b, id: `calibration-authority:${b.id}` })));
-  const u = Ra(f.map((b) => b.state));
+  const v = Date.parse(String(u.activityTime)), I = Date.parse(String(y.activityTime)), g = Date.parse(String(l.validFrom)), m = Date.parse(String(l.validUntil));
+  !Number.isFinite(v) || !Number.isFinite(I) ? f.push({ id: "calibration-precedes-use", state: "not_established", reason: "An activity time is missing.", sources: ["/credentialSubject/activityTime"] }) : (f.push(I <= v ? { id: "calibration-precedes-use", state: "established", reason: `Calibrated at ${String(y.activityTime)}, before the test at ${String(u.activityTime)}.`, sources: ["/credentialSubject/activityTime"] } : { id: "calibration-precedes-use", state: "contradicted", reason: `Calibrated at ${String(y.activityTime)}, after the test at ${String(u.activityTime)}.`, sources: ["/credentialSubject/activityTime"] }), f.push(Number.isFinite(g) && Number.isFinite(m) && g <= v && v <= m ? { id: "calibration-valid-at-use", state: "established", reason: "The calibration certificate was valid at the test.", sources: ["/validFrom", "/validUntil"] } : { id: "calibration-valid-at-use", state: "contradicted", reason: `The calibration certificate (valid ${String(l.validFrom)} to ${String(l.validUntil)}) was not valid at the test at ${String(u.activityTime)}.`, sources: ["/validFrom", "/validUntil"] }));
+  const d = gy(c, t, n, i);
+  f.push({ id: "calibration-authority", state: d.state, reason: d.reason, sources: [a] }, ...d.bases.map((b) => ({ ...b, id: `calibration-authority:${b.id}` })));
+  const p = $a(f.map((b) => b.state));
   return {
-    state: u,
-    reason: u === "established" ? "The instrument calibration is applicable and independently authorized." : u === "contradicted" ? "The instrument calibration is contradicted." : "The instrument calibration is not established.",
+    state: p,
+    reason: p === "established" ? "The instrument calibration is applicable and independently authorized." : p === "contradicted" ? "The instrument calibration is contradicted." : "The instrument calibration is not established.",
     bases: f,
-    chain: [e.uri, ...l.chain]
+    chain: [e.uri, ...d.chain]
   };
 }
-const gy = /^\/credentialSubject\/measurementGroups\/(0|[1-9][0-9]*)$/;
-function vy(e) {
+const by = /^\/credentialSubject\/measurementGroups\/(0|[1-9][0-9]*)$/;
+function wy(e) {
   const t = e.bindingRules.applyCmcFloor;
   if (typeof t != "boolean")
-    throw new Error(`Profile ${e.id}@${e.version} must state bindingRules.applyCmcFloor for ${Xs}.`);
+    throw new Error(`Profile ${e.id}@${e.version} must state bindingRules.applyCmcFloor for ${ea}.`);
   return t;
 }
-async function by(e, t, n, i) {
-  if (n.id !== Xs || i.binding.id !== n.id || i.binding.version !== n.version)
-    throw new Error(`Profile ${i.id}@${i.version} is not configured for ${Xs}@${n.version}.`);
-  const o = vy(i), r = xa(e, n, i);
-  if (r !== void 0) return Object.freeze({ result: Sa(e, r), artifacts: Object.freeze([]) });
-  const s = await Aa(e, t, n, i, cy), { target: a, artifacts: c, facts: d, verificationOf: p, artifactVerification: y } = s, f = (N) => d.get(N), h = d.get(e.targetId), w = i.authority.certificateRoutes, x = h.document === void 0 ? [] : w.slice(0, i.authority.maxRoutes).map((N) => {
-    const _ = ql[N];
+async function xy(e, t, n, i) {
+  if (n.id !== ea || i.binding.id !== n.id || i.binding.version !== n.version)
+    throw new Error(`Profile ${i.id}@${i.version} is not configured for ${ea}@${n.version}.`);
+  const o = wy(i), r = Ia(e, n, i);
+  if (r !== void 0) return Object.freeze({ result: Aa(e, r), artifacts: Object.freeze([]) });
+  const s = await qa(e, t, n, i, ly), { target: a, artifacts: c, facts: l, verificationOf: u, artifactVerification: y } = s, f = (N) => l.get(N), h = l.get(e.targetId), x = i.authority.certificateRoutes, w = h.document === void 0 ? [] : x.slice(0, i.authority.maxRoutes).map((N) => {
+    const _ = Rl[N];
     return _ === void 0 ? {
       id: N,
       state: "not_established",
@@ -24379,35 +24520,35 @@ async function by(e, t, n, i) {
       chain: [h.uri],
       bases: [{ id: "installed-evaluator", state: "not_established", reason: `Route ${N} has no installed evaluator.`, sources: [] }]
     } : _(h, f, i);
-  }), v = h.document === void 0 ? { state: "not_established", reason: "The target is not usable, so its authority is not evaluated.", restrictions: [], routes: [] } : Nn([], x, w.slice(i.authority.maxRoutes)), A = v.routes.find((N) => N.state === "established"), g = (N) => {
-    const _ = d.get(N)?.document?.credentialSubject;
+  }), v = h.document === void 0 ? { state: "not_established", reason: "The target is not usable, so its authority is not evaluated.", restrictions: [], routes: [] } : zn([], w, x.slice(i.authority.maxRoutes)), I = v.routes.find((N) => N.state === "established"), g = (N) => {
+    const _ = l.get(N)?.document?.credentialSubject;
     return Array.isArray(_?.scope) ? _.scope : [];
-  }, m = h.document, l = e.selectedClaims.map((N) => {
+  }, m = h.document, d = e.selectedClaims.map((N) => {
     const _ = /* @__PURE__ */ new Map();
-    if (m === void 0 || !gy.test(N.sourcePointer) || un(m, N.sourcePointer) === void 0) {
+    if (m === void 0 || !by.test(N.sourcePointer) || pn(m, N.sourcePointer) === void 0) {
       const O = m === void 0 ? "The target is not usable, so its claims are not read." : `Selected claim ${N.sourcePointer} is not a measurement group in the usable target.`;
       return { claim: N, mapping: void 0, coverage: _, result: { claimId: N.id, routeWitnessIds: [], ...ce("not_established", [O]) } };
     }
-    const G = Al(un(m, N.sourcePointer), N.sourcePointer);
+    const G = Al(pn(m, N.sourcePointer), N.sourcePointer);
     if (G.group === void 0)
       return { claim: N, mapping: G, coverage: _, result: {
         claimId: N.id,
         routeWitnessIds: [],
         ...ce(G.state, [`Gate 4: ${G.reason}`], [N.sourcePointer])
       } };
-    const L = G.group, B = xr(v, (O) => {
-      const V = Il(L, g(O.scope), o), D = [O.scope, ...V.sources];
-      return _.set(O.id, { ...V, sources: D }), { id: "claim-coverage", state: V.state, reason: V.reason, sources: D };
+    const L = G.group, B = Sr(v, (O) => {
+      const U = ql(L, g(O.scope), o), D = [O.scope, ...U.sources];
+      return _.set(O.id, { ...U, sources: D }), { id: "claim-coverage", state: U.state, reason: U.reason, sources: D };
     }), T = B.routes.find((O) => O.state === "established");
     return { claim: N, mapping: G, coverage: _, result: {
       claimId: N.id,
       routeWitnessIds: B.state === "established" && T ? [`route:${T.id}`, ...T.chain, `record:${_.get(T.id)?.record}`] : [],
       ...ce(B.state, [
         B.reason,
-        ...T ? [_.get(T.id).reason] : [..._].map(([O, V]) => `${O}: ${V.reason}`)
+        ...T ? [_.get(T.id).reason] : [..._].map(([O, U]) => `${O}: ${U.reason}`)
       ], [N.sourcePointer])
     } };
-  }), u = l.map((N) => N.result), S = Array.isArray(m?.type) && m.type[1] === "CalTestReport" ? yy(h, f, i, o) : void 0, I = S === void 0 ? [] : [{
+  }), p = d.map((N) => N.result), S = Array.isArray(m?.type) && m.type[1] === "CalTestReport" ? vy(h, f, i, o) : void 0, A = S === void 0 ? [] : [{
     obligationId: "cal-v1:instrument-calibration",
     witnessIds: S.state === "established" ? [...S.chain] : [],
     ...ce(S.state, [S.reason], ["/evidence"])
@@ -24417,15 +24558,15 @@ async function by(e, t, n, i) {
     ...ce("not_established", ["The calibration v1 binding installs no conformity requirements or decision rules."])
   } : { requested: !1, execution: "not_run" }, R = /* @__PURE__ */ new Set([
     e.targetId,
-    ...A?.chain ?? [],
+    ...I?.chain ?? [],
     ...S?.state === "established" ? S.chain : []
   ]), E = [
-    ...c.filter((N) => R.has(N.artifactId)).flatMap(p).map((N) => N.state),
-    ...u.map((N) => N.state),
-    ...I.map((N) => N.state),
+    ...c.filter((N) => R.has(N.artifactId)).flatMap(u).map((N) => N.state),
+    ...p.map((N) => N.state),
+    ...A.map((N) => N.state),
     ...P.requested ? [P.state] : []
-  ], k = [...s.trace], M = yr(a.artifactId, a.digestSRI, "target", e);
-  for (const { claim: N, mapping: _, coverage: G } of l) {
+  ], k = [...s.trace], M = gr(a.artifactId, a.digestSRI, "target", e);
+  for (const { claim: N, mapping: _, coverage: G } of d) {
     _ && k.push({
       gate: 4,
       nodeUse: M,
@@ -24446,7 +24587,7 @@ async function by(e, t, n, i) {
         sources: [...B.sources]
       });
   }
-  for (const N of u)
+  for (const N of p)
     k.push({
       gate: 5,
       nodeUse: M,
@@ -24463,7 +24604,7 @@ async function by(e, t, n, i) {
     state: v.state,
     execution: "executed",
     reason: v.reason,
-    sources: A ? [...A.chain] : []
+    sources: I ? [...I.chain] : []
   });
   for (const N of v.routes) {
     k.push(N.execution === "not_run" ? {
@@ -24504,7 +24645,7 @@ async function by(e, t, n, i) {
       reason: N.reason,
       sources: [...N.sources]
     });
-  for (const N of I)
+  for (const N of A)
     k.push({
       gate: 6,
       nodeUse: M,
@@ -24523,16 +24664,16 @@ async function by(e, t, n, i) {
     reason: P.reasons.join(" "),
     sources: []
   });
-  const j = cr({
+  const j = dr({
     requestId: e.requestId,
     targetId: e.targetId,
     binding: e.binding,
     profile: e.profile,
     artifactVerification: y,
-    authorization: u,
-    support: I,
+    authorization: p,
+    support: A,
     conformity: P,
-    decision: sa(E),
+    decision: oa(E),
     trace: k,
     resources: s.resources,
     limitations: [
@@ -24544,25 +24685,25 @@ async function by(e, t, n, i) {
   });
   return Object.freeze({ result: j, artifacts: Object.freeze([...c]) });
 }
-const wd = "https://vc4qi.example/bindings/gs/1", wy = "https://vc4qi.example/contexts/gs/1", Sr = "https://vc4qi.example/bindings/gs/1#", Tt = "https://vc4qi.example/schemas/gs/1/", xy = Object.freeze({
+const Sd = "https://vc4qi.example/bindings/gs/1", Sy = "https://vc4qi.example/contexts/gs/1", Ir = "https://vc4qi.example/bindings/gs/1#", Ct = "https://vc4qi.example/schemas/gs/1/", Iy = Object.freeze({
   name: "GS certification v1",
   schemas: Object.freeze({
-    GsAccreditation: `${Tt}accreditation.json`,
-    GsSchemeAuthorization: `${Tt}scheme-authorization.json`,
-    GsCertificate: `${Tt}certificate.json`,
-    GsMarkCredential: `${Tt}mark-credential.json`,
-    ProductPassport: `${Tt}product-passport.json`,
-    GsTestReport: `${Tt}test-report.json`,
-    GsInspectionReport: `${Tt}inspection-report.json`,
-    BitstringStatusListCredential: `${Tt}status-list.json`
+    GsAccreditation: `${Ct}accreditation.json`,
+    GsSchemeAuthorization: `${Ct}scheme-authorization.json`,
+    GsCertificate: `${Ct}certificate.json`,
+    GsMarkCredential: `${Ct}mark-credential.json`,
+    ProductPassport: `${Ct}product-passport.json`,
+    GsTestReport: `${Ct}test-report.json`,
+    GsInspectionReport: `${Ct}inspection-report.json`,
+    BitstringStatusListCredential: `${Ct}status-list.json`
   }),
-  contexts: (e) => e === "BitstringStatusListCredential" ? [Zt] : [Zt, wy]
-}), lt = (e) => e !== null && typeof e == "object" && !Array.isArray(e), Ve = (e) => Array.isArray(e) ? e : [], X = (e) => String(e).split(/[#/]/).pop(), ut = (e) => lt(e.credentialSubject) ? e.credentialSubject : {};
-function Rl(e, t) {
+  contexts: (e) => e === "BitstringStatusListCredential" ? [Ht] : [Ht, Sy]
+}), lt = (e) => e !== null && typeof e == "object" && !Array.isArray(e), Ue = (e) => Array.isArray(e) ? e : [], X = (e) => String(e).split(/[#/]/).pop(), ut = (e) => lt(e.credentialSubject) ? e.credentialSubject : {};
+function jl(e, t) {
   const n = [t];
   if (!lt(e) || typeof e.productCategoryIri != "string")
     return { state: "not_established", reason: "The selected certification names no product category.", sources: n };
-  const i = Ve(e.standardIris).filter((o) => typeof o == "string");
+  const i = Ue(e.standardIris).filter((o) => typeof o == "string");
   return {
     state: "established",
     reason: `Mapped certification of ${X(e.productCategoryIri)} against [${i.map(X).join(", ")}].`,
@@ -24570,47 +24711,47 @@ function Rl(e, t) {
     certification: { productCategoryIri: e.productCategoryIri, standardIris: i }
   };
 }
-function jl(e, t, n) {
+function $l(e, t, n) {
   const i = ["/credentialSubject/scope"], { productCategoryIri: o, standardIris: r } = e, s = t.map((f) => {
-    const h = String(f.id), w = Ve(f.standardIris);
+    const h = String(f.id), x = Ue(f.standardIris);
     if (f.productCategoryIri !== o)
       return { id: h, state: "contradicted", reason: `${X(h)}: category ${X(o)} ≠ ${X(f.productCategoryIri)}` };
-    const x = r.filter((v) => !w.includes(v));
-    return x.length > 0 ? { id: h, state: "contradicted", reason: `${X(h)}: standard ${x.map(X).join(", ")} is not in the accredited scope` } : r.length === 0 && w.length > 0 ? { id: h, state: "not_established", reason: `${X(h)} restricts standards, but the certification names none` } : { id: h, state: "established", reason: `${X(h)} covers ${X(o)} against [${r.map(X).join(", ")}]` };
+    const w = r.filter((v) => !x.includes(v));
+    return w.length > 0 ? { id: h, state: "contradicted", reason: `${X(h)}: standard ${w.map(X).join(", ")} is not in the accredited scope` } : r.length === 0 && x.length > 0 ? { id: h, state: "not_established", reason: `${X(h)} restricts standards, but the certification names none` } : { id: h, state: "established", reason: `${X(h)} covers ${X(o)} against [${r.map(X).join(", ")}]` };
   }), a = n.map((f) => {
     const h = String(f.id);
     return f.productCategoryIri === o ? { id: h, state: "established", reason: `${X(h)} permits the GS mark for ${X(o)}` } : { id: h, state: "contradicted", reason: `${X(h)}: category ${X(o)} ≠ ${X(f.productCategoryIri)}` };
   }), c = (f, h) => {
     if (h.length === 0) return { state: "not_established", reason: `The ${f} scope has no records.`, record: void 0 };
-    const w = h.find((x) => x.state === "established");
-    return w ? { state: "established", reason: w.reason, record: w.id } : { state: fn(h.map((x) => x.state)), reason: `No single ${f} record covers it (${h.map((x) => x.reason).join(" | ")})`, record: void 0 };
-  }, d = c("competence", s), p = c("scheme", a), y = xe([d.state, p.state]);
+    const x = h.find((w) => w.state === "established");
+    return x ? { state: "established", reason: x.reason, record: x.id } : { state: hn(h.map((w) => w.state)), reason: `No single ${f} record covers it (${h.map((w) => w.reason).join(" | ")})`, record: void 0 };
+  }, l = c("competence", s), u = c("scheme", a), y = xe([l.state, u.state]);
   return {
     state: y,
-    reason: `Competence: ${d.reason}. Scheme: ${p.reason}.`,
+    reason: `Competence: ${l.reason}. Scheme: ${u.reason}.`,
     sources: i,
-    ...y === "established" ? { records: [d.record, p.record] } : {}
+    ...y === "established" ? { records: [l.record, u.record] } : {}
   };
 }
-function $l(e, t, n) {
-  const i = e.document, o = [], r = [e.uri], s = (d, p, y, f, h, w) => {
-    const x = Ye(`${d}-reference`, i, p, t, [e.uri], "GsAuthorizationPolicy");
-    if (o.push(x.basis), !x.node) return;
-    const v = x.node.document;
-    return o.push(ft(`${d}-grantee`, v, i.issuer, w)), o.push(dt(v, `${Sr}${y}`) ? { id: `${d}-permission`, state: "established", reason: `${w} permits ${f}.`, sources: ["/credentialSubject/permittedActivity"] } : { id: `${d}-permission`, state: "contradicted", reason: `${w} does not permit ${f}.`, sources: ["/credentialSubject/permittedActivity"] }), o.push(Ln(`${d}-anchor`, v, h, n)), x.node;
+function Pl(e, t, n) {
+  const i = e.document, o = [], r = [e.uri], s = (l, u, y, f, h, x) => {
+    const w = Ye(`${l}-reference`, i, u, t, [e.uri], "GsAuthorizationPolicy");
+    if (o.push(w.basis), !w.node) return;
+    const v = w.node.document;
+    return o.push(ft(`${l}-grantee`, v, i.issuer, x)), o.push(dt(v, `${Ir}${y}`) ? { id: `${l}-permission`, state: "established", reason: `${x} permits ${f}.`, sources: ["/credentialSubject/permittedActivity"] } : { id: `${l}-permission`, state: "contradicted", reason: `${x} does not permit ${f}.`, sources: ["/credentialSubject/permittedActivity"] }), o.push(Dn(`${l}-anchor`, v, h, n)), w.node;
   }, a = s("competence", "GsAccreditation", "certifyProducts", "certifying products", "accredit-certification-bodies", "Accreditation GS-A"), c = s("scheme", "GsSchemeAuthorization", "awardGsMark", "awarding the GS mark", "authorize-gs-certification", "Scheme authorization GS-S");
-  return !a || !c ? pe("competence-and-scheme-permission", o, r) : (r.push(a.uri, c.uri), o.push(Nt(i, [["GS-A", a.document], ["GS-S", c.document]])), pe("competence-and-scheme-permission", o, r, a.uri));
+  return !a || !c ? pe("competence-and-scheme-permission", o, r) : (r.push(a.uri, c.uri), o.push(zt(i, [["GS-A", a.document], ["GS-S", c.document]])), pe("competence-and-scheme-permission", o, r, a.uri));
 }
-function Pl(e, t) {
-  const n = (i) => i === void 0 ? [] : Ve(ut(t(i)?.document ?? {}).scope).filter(lt);
+function _l(e, t) {
+  const n = (i) => i === void 0 ? [] : Ue(ut(t(i)?.document ?? {}).scope).filter(lt);
   return { competence: n(e.scope), scheme: n(e.chain.length === 3 ? e.chain[2] : void 0) };
 }
-const Sy = `${Sr}GsMark`;
-function _l(e, t, n) {
+const Ay = `${Ir}GsMark`;
+function Tl(e, t, n) {
   const i = [t];
   if (!lt(e) || typeof e.markIri != "string" || typeof e.productModelIri != "string")
     return { state: "not_established", reason: "The selected marking names no mark or product model.", sources: i };
-  if (e.markIri !== Sy)
+  if (e.markIri !== Ay)
     return { state: "not_established", reason: `Mark ${X(e.markIri)} has no interpretation in this binding.`, sources: i };
   const o = [t, "/credentialSubject/productModelIri"];
   return typeof n != "string" ? { state: "not_established", reason: "The credential names no product model.", sources: o } : n !== e.productModelIri ? {
@@ -24624,28 +24765,28 @@ function _l(e, t, n) {
     marking: { markIri: e.markIri, productModelIri: e.productModelIri }
   };
 }
-function Tl(e, t) {
+function Cl(e, t) {
   const n = ["/credentialSubject/id"];
   if (t === void 0) return { state: "not_established", reason: "No certificate was reached.", sources: n };
   const i = ut(t).id;
   return i === e.productModelIri ? { state: "established", reason: `${X(t.id)} certifies model ${X(i)}.`, sources: n, records: [String(t.id)] } : { state: "contradicted", reason: `${X(t.id)} certifies ${X(i)}, not model ${X(e.productModelIri)}.`, sources: n };
 }
-function Cl(e, t, n) {
+function El(e, t, n) {
   const i = e.document, o = [], r = [e.uri], s = Ye("certificate-reference", i, "GsCertificate", t, [e.uri], "GsAuthorizationPolicy");
   if (o.push(s.basis), !s.node) return pe("gs-certified-product", o, r);
   const a = s.node.document;
   r.push(s.node.uri);
   const c = ut(a).manufacturerIri;
-  o.push(typeof c != "string" ? { id: "manufacturer-binding", state: "not_established", reason: "The certificate names no manufacturer.", sources: ["/credentialSubject/manufacturerIri"] } : c === i.issuer ? { id: "manufacturer-binding", state: "established", reason: `The certificate names the passport issuer ${c} as manufacturer.`, sources: ["/credentialSubject/manufacturerIri", "/issuer"] } : { id: "manufacturer-binding", state: "contradicted", reason: `The certificate names ${c}, not the passport issuer ${String(i.issuer)}.`, sources: ["/credentialSubject/manufacturerIri", "/issuer"] }), o.push({ ...Nt(i, [["The certificate", a]]), id: "certificate-in-force" });
-  const d = $l(s.node, t, n);
-  o.push(...d.bases.map((f) => ({ ...f, id: `certificate:${f.id}` })));
-  const p = Rl(ut(a).certification, "/credentialSubject/certification"), y = p.certification === void 0 ? { state: p.state, reason: p.reason } : (() => {
-    const { competence: f, scheme: h } = Pl(d, t);
-    return jl(p.certification, f, h);
+  o.push(typeof c != "string" ? { id: "manufacturer-binding", state: "not_established", reason: "The certificate names no manufacturer.", sources: ["/credentialSubject/manufacturerIri"] } : c === i.issuer ? { id: "manufacturer-binding", state: "established", reason: `The certificate names the passport issuer ${c} as manufacturer.`, sources: ["/credentialSubject/manufacturerIri", "/issuer"] } : { id: "manufacturer-binding", state: "contradicted", reason: `The certificate names ${c}, not the passport issuer ${String(i.issuer)}.`, sources: ["/credentialSubject/manufacturerIri", "/issuer"] }), o.push({ ...zt(i, [["The certificate", a]]), id: "certificate-in-force" });
+  const l = Pl(s.node, t, n);
+  o.push(...l.bases.map((f) => ({ ...f, id: `certificate:${f.id}` })));
+  const u = jl(ut(a).certification, "/credentialSubject/certification"), y = u.certification === void 0 ? { state: u.state, reason: u.reason } : (() => {
+    const { competence: f, scheme: h } = _l(l, t);
+    return $l(u.certification, f, h);
   })();
-  return o.push({ id: "certificate:claim-coverage", state: y.state, reason: y.reason, sources: ["/credentialSubject/certification"] }), r.push(...d.chain.slice(1)), pe("gs-certified-product", o, r, s.node.uri);
+  return o.push({ id: "certificate:claim-coverage", state: y.state, reason: y.reason, sources: ["/credentialSubject/certification"] }), r.push(...l.chain.slice(1)), pe("gs-certified-product", o, r, s.node.uri);
 }
-const Ay = `${Sr}Pass`, Iy = [
+const qy = `${Ir}Pass`, Ry = [
   {
     obligationId: "type-examination",
     reference: "GsTypeExaminationReference",
@@ -24664,96 +24805,96 @@ const Ay = `${Sr}Pass`, Iy = [
     purpose: "accredit-certification-bodies",
     what: "factory inspection"
   }
-], Me = (e, t, n, i, o) => t === void 0 ? { id: e, state: "not_established", reason: i, sources: o } : { id: e, state: t ? "established" : "contradicted", reason: t ? n : i, sources: o };
-function qy(e, t, n) {
+], Oe = (e, t, n, i, o) => t === void 0 ? { id: e, state: "not_established", reason: i, sources: o } : { id: e, state: t ? "established" : "contradicted", reason: t ? n : i, sources: o };
+function jy(e, t, n) {
   const i = e.document, o = ut(i), r = lt(o.certification) ? o.certification : {};
-  return Iy.map(({ obligationId: s, reference: a, type: c, activity: d, purpose: p, what: y }) => {
-    const f = [], h = (I) => {
+  return Ry.map(({ obligationId: s, reference: a, type: c, activity: l, purpose: u, what: y }) => {
+    const f = [], h = (A) => {
       const P = xe(f.map((E) => E.state)), R = f.find((E) => E.state === P && P !== "established");
       return {
         obligationId: s,
         state: P,
         bases: f,
-        chain: I,
+        chain: A,
         reason: P === "established" ? `The ${y} applies and is independently authorized.` : `The ${y}: ${R?.reason ?? "not established"}`
       };
-    }, w = Ve(i.evidence).filter(lt).filter((I) => I.type === a).map((I) => String(I.id));
-    if (w.length !== 1)
+    }, x = Ue(i.evidence).filter(lt).filter((A) => A.type === a).map((A) => String(A.id));
+    if (x.length !== 1)
       return f.push({
         id: "reference",
         state: "not_established",
         sources: ["/evidence"],
-        reason: w.length === 0 ? `The certificate cites no ${y}.` : `The certificate cites several ${y}s; none is chosen.`
+        reason: x.length === 0 ? `The certificate cites no ${y}.` : `The certificate cites several ${y}s; none is chosen.`
       }), h([]);
-    const x = w[0], v = t(x);
+    const w = x[0], v = t(w);
     if (v === void 0 || v.usable !== "established" || v.document === void 0)
       return f.push({
         id: "reference",
         state: v?.usable === "contradicted" ? "contradicted" : "not_established",
-        sources: ["/evidence", x],
-        reason: v === void 0 ? `${X(x)} is unavailable.` : `${X(x)} is not usable: ${v.reason}`
+        sources: ["/evidence", w],
+        reason: v === void 0 ? `${X(w)} is unavailable.` : `${X(w)} is not usable: ${v.reason}`
       }), h([]);
-    const A = v.document, g = ut(A), m = Ve(A.type);
-    if (f.push(Me("reference", m.includes(c), `Cites ${y} ${X(x)}.`, `${X(x)} is not a ${c}.`, ["/evidence", x])), s === "type-examination") {
-      f.push(Me(
+    const I = v.document, g = ut(I), m = Ue(I.type);
+    if (f.push(Oe("reference", m.includes(c), `Cites ${y} ${X(w)}.`, `${X(w)} is not a ${c}.`, ["/evidence", w])), s === "type-examination") {
+      f.push(Oe(
         "same-model",
         g.productModelIri === o.id,
-        `${X(x)} examined model ${X(o.id)}.`,
-        `${X(x)} examined ${X(g.productModelIri)}, not model ${X(o.id)}.`,
+        `${X(w)} examined model ${X(o.id)}.`,
+        `${X(w)} examined ${X(g.productModelIri)}, not model ${X(o.id)}.`,
         ["/credentialSubject/productModelIri"]
       ));
-      const I = Ve(g.standardIris), P = Ve(r.standardIris), R = P.filter((E) => !I.includes(E));
-      f.push(Me(
+      const A = Ue(g.standardIris), P = Ue(r.standardIris), R = P.filter((E) => !A.includes(E));
+      f.push(Oe(
         "covers-certification",
         g.productCategoryIri === r.productCategoryIri && R.length === 0,
-        `${X(x)} covers ${X(r.productCategoryIri)} against [${P.map(X).join(", ")}].`,
-        g.productCategoryIri !== r.productCategoryIri ? `${X(x)} examined ${X(g.productCategoryIri)}, not ${X(r.productCategoryIri)}.` : `${X(x)} did not examine ${R.map(X).join(", ")}.`,
+        `${X(w)} covers ${X(r.productCategoryIri)} against [${P.map(X).join(", ")}].`,
+        g.productCategoryIri !== r.productCategoryIri ? `${X(w)} examined ${X(g.productCategoryIri)}, not ${X(r.productCategoryIri)}.` : `${X(w)} did not examine ${R.map(X).join(", ")}.`,
         ["/credentialSubject/standardIris"]
       ));
     } else
-      f.push(Me(
+      f.push(Oe(
         "same-manufacturer",
         typeof g.manufacturerIri == "string" && typeof o.manufacturerIri == "string" ? g.manufacturerIri === o.manufacturerIri : void 0,
-        `${X(x)} inspected the certificate's manufacturer.`,
-        `${X(x)} inspected ${String(g.manufacturerIri)}, not the certificate's manufacturer ${String(o.manufacturerIri)}.`,
+        `${X(w)} inspected the certificate's manufacturer.`,
+        `${X(w)} inspected ${String(g.manufacturerIri)}, not the certificate's manufacturer ${String(o.manufacturerIri)}.`,
         ["/credentialSubject/manufacturerIri"]
       ));
-    f.push(Me("outcome", g.outcomeIri === Ay, `${X(x)} passed.`, `${X(x)} did not pass (${X(g.outcomeIri)}).`, ["/credentialSubject/outcomeIri"]));
-    const l = Date.parse(String(g.activityTime)), u = Date.parse(String(o.activityTime));
-    f.push(Me(
+    f.push(Oe("outcome", g.outcomeIri === qy, `${X(w)} passed.`, `${X(w)} did not pass (${X(g.outcomeIri)}).`, ["/credentialSubject/outcomeIri"]));
+    const d = Date.parse(String(g.activityTime)), p = Date.parse(String(o.activityTime));
+    f.push(Oe(
       "precedes-certification",
-      Number.isFinite(l) && Number.isFinite(u) ? l <= u : void 0,
+      Number.isFinite(d) && Number.isFinite(p) ? d <= p : void 0,
       `The ${y} (${String(g.activityTime)}) precedes the certification.`,
-      Number.isFinite(l) && Number.isFinite(u) ? `The ${y} (${String(g.activityTime)}) follows the certification (${String(o.activityTime)}).` : "An activity time is missing.",
+      Number.isFinite(d) && Number.isFinite(p) ? `The ${y} (${String(g.activityTime)}) follows the certification (${String(o.activityTime)}).` : "An activity time is missing.",
       ["/credentialSubject/activityTime"]
     ));
-    const b = Ye("accreditation-reference", A, "GsAccreditation", t, [e.uri, x], "GsAuthorizationPolicy");
-    if (f.push(b.basis), !b.node) return h([x]);
+    const b = Ye("accreditation-reference", I, "GsAccreditation", t, [e.uri, w], "GsAuthorizationPolicy");
+    if (f.push(b.basis), !b.node) return h([w]);
     const S = b.node.document;
-    if (f.push(ft("accreditation-grantee", S, A.issuer, `Accreditation ${X(b.node.uri)}`)), f.push(Me(
+    if (f.push(ft("accreditation-grantee", S, I.issuer, `Accreditation ${X(b.node.uri)}`)), f.push(Oe(
       "accreditation-permission",
-      dt(S, `${Sr}${d}`),
-      `${X(b.node.uri)} permits ${d}.`,
-      `${X(b.node.uri)} does not permit ${d}.`,
+      dt(S, `${Ir}${l}`),
+      `${X(b.node.uri)} permits ${l}.`,
+      `${X(b.node.uri)} does not permit ${l}.`,
       ["/credentialSubject/permittedActivity"]
-    )), f.push(Ln("accreditation-anchor", S, p, n)), f.push({ ...Nt(A, [[X(b.node.uri), S]]), id: "accreditation-in-force" }), s === "type-examination") {
-      const I = Ve(g.standardIris), R = Ve(ut(S).scope).filter(lt).find((E) => E.productCategoryIri === g.productCategoryIri && I.every((k) => Ve(E.standardIris).includes(k)));
-      f.push(Me(
+    )), f.push(Dn("accreditation-anchor", S, u, n)), f.push({ ...zt(I, [[X(b.node.uri), S]]), id: "accreditation-in-force" }), s === "type-examination") {
+      const A = Ue(g.standardIris), R = Ue(ut(S).scope).filter(lt).find((E) => E.productCategoryIri === g.productCategoryIri && A.every((k) => Ue(E.standardIris).includes(k)));
+      f.push(Oe(
         "accreditation-scope",
         R !== void 0,
         `${X(R?.id)} covers the examination.`,
-        `No record of ${X(b.node.uri)} covers ${X(g.productCategoryIri)} against [${I.map(X).join(", ")}].`,
+        `No record of ${X(b.node.uri)} covers ${X(g.productCategoryIri)} against [${A.map(X).join(", ")}].`,
         ["/credentialSubject/scope"]
       ));
     }
-    return h([x, b.node.uri]);
+    return h([w, b.node.uri]);
   });
 }
-function Ry(e, t, n) {
+function $y(e, t, n) {
   const i = e.document, o = ut(i).economicOperatorIri, r = ["/credentialSubject/economicOperatorIri", "/issuer"];
   return pe(
     "responsible-economic-operator",
-    [typeof o != "string" ? { id: "operator-is-issuer", state: "not_established", reason: "The passport names no responsible economic operator.", sources: r } : Me(
+    [typeof o != "string" ? { id: "operator-is-issuer", state: "not_established", reason: "The passport names no responsible economic operator.", sources: r } : Oe(
       "operator-is-issuer",
       o === i.issuer,
       `The passport is issued by its responsible economic operator ${o}.`,
@@ -24765,77 +24906,77 @@ function Ry(e, t, n) {
     e.uri
   );
 }
-function jy(e, t, n) {
+function Py(e, t, n) {
   const i = e.document, o = ut(i), r = lt(o.complianceInformation) ? o.complianceInformation : {}, s = lt(r.gsMark) ? r.gsMark : {}, a = [], c = (g, m) => {
-    const l = xe(a.map((b) => b.state)), u = a.find((b) => b.state === l && l !== "established");
+    const d = xe(a.map((b) => b.state)), p = a.find((b) => b.state === d && d !== "established");
     return { ...m === void 0 ? {} : { certificateUri: m }, support: {
       obligationId: "gs-mark-credential",
-      state: l,
+      state: d,
       bases: a,
       chain: g,
-      reason: l === "established" ? "The GS-mark credential applies to this unit and holds its own route." : `The GS-mark credential: ${u?.reason ?? "not established"}`
+      reason: d === "established" ? "The GS-mark credential applies to this unit and holds its own route." : `The GS-mark credential: ${p?.reason ?? "not established"}`
     } };
-  }, d = Ve(i.evidence).filter(lt).filter((g) => g.type === "GsMarkCredentialReference").map((g) => String(g.id));
-  if (d.length !== 1)
+  }, l = Ue(i.evidence).filter(lt).filter((g) => g.type === "GsMarkCredentialReference").map((g) => String(g.id));
+  if (l.length !== 1)
     return a.push({
       id: "reference",
       state: "not_established",
       sources: ["/evidence"],
-      reason: d.length === 0 ? "The passport cites no GS-mark credential." : "The passport cites several GS-mark credentials; none is chosen."
+      reason: l.length === 0 ? "The passport cites no GS-mark credential." : "The passport cites several GS-mark credentials; none is chosen."
     }), c([]);
-  const p = d[0], y = t(p);
+  const u = l[0], y = t(u);
   if (y === void 0 || y.usable !== "established" || y.document === void 0)
     return a.push({
       id: "reference",
       state: y?.usable === "contradicted" ? "contradicted" : "not_established",
-      sources: ["/evidence", p],
-      reason: y === void 0 ? `${X(p)} is unavailable.` : `${X(p)} is not usable: ${y.reason}`
+      sources: ["/evidence", u],
+      reason: y === void 0 ? `${X(u)} is unavailable.` : `${X(u)} is not usable: ${y.reason}`
     }), c([]);
   const f = y.document, h = ut(f);
-  a.push(Me(
+  a.push(Oe(
     "reference",
-    Ve(f.type).includes("GsMarkCredential"),
-    `Cites GS-mark credential ${X(p)}.`,
-    `${X(p)} is not a GsMarkCredential.`,
-    ["/evidence", p]
-  )), a.push(Me(
+    Ue(f.type).includes("GsMarkCredential"),
+    `Cites GS-mark credential ${X(u)}.`,
+    `${X(u)} is not a GsMarkCredential.`,
+    ["/evidence", u]
+  )), a.push(Oe(
     "same-unit",
     h.id === o.id,
-    `${X(p)} is for this unit ${X(o.id)}.`,
-    `${X(p)} is for unit ${X(h.id)}, not this unit ${X(o.id)}.`,
+    `${X(u)} is for this unit ${X(o.id)}.`,
+    `${X(u)} is for unit ${X(h.id)}, not this unit ${X(o.id)}.`,
     ["/credentialSubject/id"]
-  )), a.push(Me(
+  )), a.push(Oe(
     "same-operator",
     f.issuer === i.issuer,
-    `${X(p)} is issued by the passport's issuer.`,
-    `${X(p)} is issued by ${String(f.issuer)}, not the passport's issuer ${String(i.issuer)}.`,
+    `${X(u)} is issued by the passport's issuer.`,
+    `${X(u)} is issued by ${String(f.issuer)}, not the passport's issuer ${String(i.issuer)}.`,
     ["/issuer"]
   ));
-  const w = _l(h.marking, "/credentialSubject/marking", h.productModelIri);
-  a.push({ id: "mark-credential:mapping", state: w.state, reason: w.reason, sources: [...w.sources] }), a.push(Me(
+  const x = Tl(h.marking, "/credentialSubject/marking", h.productModelIri);
+  a.push({ id: "mark-credential:mapping", state: x.state, reason: x.reason, sources: [...x.sources] }), a.push(Oe(
     "same-model",
-    w.marking === void 0 ? void 0 : w.marking.productModelIri === s.productModelIri && h.productModelIri === o.productModelIri,
-    `${X(p)} claims the mark for the passport's model ${X(o.productModelIri)}.`,
-    w.marking === void 0 ? `${X(p)} claims no mark for a model.` : `${X(p)} claims the mark for model ${X(w.marking.productModelIri)}, not the passport's model ${X(o.productModelIri)}.`,
+    x.marking === void 0 ? void 0 : x.marking.productModelIri === s.productModelIri && h.productModelIri === o.productModelIri,
+    `${X(u)} claims the mark for the passport's model ${X(o.productModelIri)}.`,
+    x.marking === void 0 ? `${X(u)} claims no mark for a model.` : `${X(u)} claims the mark for model ${X(x.marking.productModelIri)}, not the passport's model ${X(o.productModelIri)}.`,
     ["/credentialSubject/complianceInformation/gsMark/productModelIri", "/credentialSubject/productModelIri"]
   ));
-  const x = Cl(y, t, n);
-  a.push(...x.bases.map((g) => ({ ...g, id: `mark-credential:${g.id}` })));
-  const v = x.scope === void 0 ? void 0 : t(x.scope)?.document, A = w.marking === void 0 ? { state: "not_established", reason: "No mark was mapped.", sources: [] } : Tl(w.marking, v);
-  return a.push({ id: "mark-credential:claim-coverage", state: A.state, reason: A.reason, sources: [...A.sources] }), c([p, ...x.chain.slice(1)], x.scope);
+  const w = El(y, t, n);
+  a.push(...w.bases.map((g) => ({ ...g, id: `mark-credential:${g.id}` })));
+  const v = w.scope === void 0 ? void 0 : t(w.scope)?.document, I = x.marking === void 0 ? { state: "not_established", reason: "No mark was mapped.", sources: [] } : Cl(x.marking, v);
+  return a.push({ id: "mark-credential:claim-coverage", state: I.state, reason: I.reason, sources: [...I.sources] }), c([u, ...w.chain.slice(1)], w.scope);
 }
-const $y = Object.freeze({
-  "competence-and-scheme-permission": $l,
-  "gs-certified-product": Cl,
-  "responsible-economic-operator": Ry
-}), Py = "/credentialSubject/certification", _y = "/credentialSubject/marking", ea = "/credentialSubject/complianceInformation/gsMark", Ty = { GsMarkCredential: "mark", ProductPassport: "passport" }, Cy = { certificate: Py, mark: _y, passport: ea };
-async function Ey(e, t, n, i) {
-  if (n.id !== wd || i.binding.id !== n.id || i.binding.version !== n.version)
-    throw new Error(`Profile ${i.id}@${i.version} is not configured for ${wd}@${n.version}.`);
-  const o = xa(e, n, i);
-  if (o !== void 0) return Object.freeze({ result: Sa(e, o), artifacts: Object.freeze([]) });
-  const r = await Aa(e, t, n, i, xy), { target: s, artifacts: a, facts: c, verificationOf: d, artifactVerification: p } = r, y = (L) => c.get(L), f = c.get(e.targetId), h = f.document, w = i.authority.certificateRoutes, x = h === void 0 ? [] : w.slice(0, i.authority.maxRoutes).map((L) => {
-    const B = $y[L];
+const _y = Object.freeze({
+  "competence-and-scheme-permission": Pl,
+  "gs-certified-product": El,
+  "responsible-economic-operator": $y
+}), Ty = "/credentialSubject/certification", Cy = "/credentialSubject/marking", na = "/credentialSubject/complianceInformation/gsMark", Ey = { GsMarkCredential: "mark", ProductPassport: "passport" }, ky = { certificate: Ty, mark: Cy, passport: na };
+async function My(e, t, n, i) {
+  if (n.id !== Sd || i.binding.id !== n.id || i.binding.version !== n.version)
+    throw new Error(`Profile ${i.id}@${i.version} is not configured for ${Sd}@${n.version}.`);
+  const o = Ia(e, n, i);
+  if (o !== void 0) return Object.freeze({ result: Aa(e, o), artifacts: Object.freeze([]) });
+  const r = await qa(e, t, n, i, Iy), { target: s, artifacts: a, facts: c, verificationOf: l, artifactVerification: u } = r, y = (L) => c.get(L), f = c.get(e.targetId), h = f.document, x = i.authority.certificateRoutes, w = h === void 0 ? [] : x.slice(0, i.authority.maxRoutes).map((L) => {
+    const B = _y[L];
     return B === void 0 ? {
       id: L,
       state: "not_established",
@@ -24843,31 +24984,31 @@ async function Ey(e, t, n, i) {
       chain: [f.uri],
       bases: [{ id: "installed-evaluator", state: "not_established", reason: `Route ${L} has no installed evaluator.`, sources: [] }]
     } : B(f, y, i);
-  }), v = h === void 0 ? { state: "not_established", reason: "The target is not usable, so its authority is not evaluated.", restrictions: [], routes: [] } : Nn([], x, w.slice(i.authority.maxRoutes)), A = v.routes.find((L) => L.state === "established"), g = Array.isArray(h?.type) && Ty[String(h.type[1])] || "certificate", m = Cy[g], l = e.selectedClaims.map((L) => {
+  }), v = h === void 0 ? { state: "not_established", reason: "The target is not usable, so its authority is not evaluated.", restrictions: [], routes: [] } : zn([], w, x.slice(i.authority.maxRoutes)), I = v.routes.find((L) => L.state === "established"), g = Array.isArray(h?.type) && Ey[String(h.type[1])] || "certificate", m = ky[g], d = e.selectedClaims.map((L) => {
     const B = /* @__PURE__ */ new Map();
-    if (h === void 0 || L.sourcePointer !== m || un(h, L.sourcePointer) === void 0) {
-      const z = h === void 0 ? "The target is not usable, so its claims are not read." : g === "passport" ? `This binding interprets only the GS-mark entry (${ea}) of a product passport; ${L.sourcePointer} has no interpretation here.` : `Selected claim ${L.sourcePointer} is not the ${g === "mark" ? "marking" : "certification statement"} of the usable target.`;
+    if (h === void 0 || L.sourcePointer !== m || pn(h, L.sourcePointer) === void 0) {
+      const z = h === void 0 ? "The target is not usable, so its claims are not read." : g === "passport" ? `This binding interprets only the GS-mark entry (${na}) of a product passport; ${L.sourcePointer} has no interpretation here.` : `Selected claim ${L.sourcePointer} is not the ${g === "mark" ? "marking" : "certification statement"} of the usable target.`;
       return { claim: L, mapping: void 0, coverage: B, result: { claimId: L.id, routeWitnessIds: [], ...ce("not_established", [z]) } };
     }
-    const T = un(h, L.sourcePointer), O = g === "certificate" ? void 0 : _l(T, L.sourcePointer, h.credentialSubject?.productModelIri), V = O ?? Rl(T, L.sourcePointer), D = O?.marking, $ = g === "certificate" ? V.certification : void 0;
+    const T = pn(h, L.sourcePointer), O = g === "certificate" ? void 0 : Tl(T, L.sourcePointer, h.credentialSubject?.productModelIri), U = O ?? jl(T, L.sourcePointer), D = O?.marking, $ = g === "certificate" ? U.certification : void 0;
     if (D === void 0 && $ === void 0)
-      return { claim: L, mapping: V, coverage: B, result: {
+      return { claim: L, mapping: U, coverage: B, result: {
         claimId: L.id,
         routeWitnessIds: [],
-        ...ce(V.state, [`Gate 4: ${V.reason}`], [L.sourcePointer])
+        ...ce(U.state, [`Gate 4: ${U.reason}`], [L.sourcePointer])
       } };
-    const q = xr(v, (z) => {
+    const q = Sr(v, (z) => {
       const H = g === "passport" ? {
         state: "established",
-        sources: [ea],
+        sources: [na],
         reason: "The entry is declared by the passport's responsible economic operator; it is relied on through the GS-mark credential it cites (gate 6)."
-      } : D !== void 0 ? Tl(D, y(z.scope)?.document) : (() => {
-        const { competence: J, scheme: U } = Pl(z, y);
-        return jl($, J, U);
+      } : D !== void 0 ? Cl(D, y(z.scope)?.document) : (() => {
+        const { competence: J, scheme: V } = _l(z, y);
+        return $l($, J, V);
       })(), Q = [...z.chain.slice(1), ...H.sources];
       return B.set(z.id, { ...H, sources: Q }), { id: "claim-coverage", state: H.state, reason: H.reason, sources: Q };
     }), C = q.routes.find((z) => z.state === "established");
-    return { claim: L, mapping: V, coverage: B, result: {
+    return { claim: L, mapping: U, coverage: B, result: {
       claimId: L.id,
       routeWitnessIds: q.state === "established" && C ? [`route:${C.id}`, ...C.chain, ...(B.get(C.id)?.records ?? []).map((z) => `record:${z}`)] : [],
       ...ce(q.state, [
@@ -24875,7 +25016,7 @@ async function Ey(e, t, n, i) {
         ...C ? [B.get(C.id).reason] : [...B].map(([z, H]) => `${z}: ${H.reason}`)
       ], [L.sourcePointer])
     } };
-  }), u = l.map((L) => L.result), b = g === "passport" && h !== void 0 ? jy(f, y, i) : void 0, S = h === void 0 ? void 0 : g === "passport" ? b?.certificateUri : g === "mark" ? x.find((L) => L.chain.length > 1)?.chain[1] : e.targetId, I = S === void 0 ? void 0 : y(S), P = h === void 0 ? [] : I?.usable === "established" && I.document !== void 0 ? qy(I, y, i) : ["type-examination", "factory-inspection"].map((L) => ({
+  }), p = d.map((L) => L.result), b = g === "passport" && h !== void 0 ? Py(f, y, i) : void 0, S = h === void 0 ? void 0 : g === "passport" ? b?.certificateUri : g === "mark" ? w.find((L) => L.chain.length > 1)?.chain[1] : e.targetId, A = S === void 0 ? void 0 : y(S), P = h === void 0 ? [] : A?.usable === "established" && A.document !== void 0 ? jy(A, y, i) : ["type-examination", "factory-inspection"].map((L) => ({
     obligationId: L,
     state: "not_established",
     reason: "No usable GS certificate was reached, so its studies are not evaluated.",
@@ -24891,15 +25032,15 @@ async function Ey(e, t, n, i) {
     ...ce("not_established", ["The GS v1 binding installs no conformity requirements or decision rules."])
   } : { requested: !1, execution: "not_run" }, M = /* @__PURE__ */ new Set([
     e.targetId,
-    ...A?.chain ?? [],
+    ...I?.chain ?? [],
     ...R.filter((L) => L.state === "established").flatMap((L) => L.chain)
   ]), j = [
-    ...a.filter((L) => M.has(L.artifactId)).flatMap(d).map((L) => L.state),
-    ...u.map((L) => L.state),
+    ...a.filter((L) => M.has(L.artifactId)).flatMap(l).map((L) => L.state),
+    ...p.map((L) => L.state),
     ...E.map((L) => L.state),
     ...k.requested ? [k.state] : []
-  ], N = [...r.trace], _ = yr(s.artifactId, s.digestSRI, "target", e);
-  for (const { claim: L, mapping: B, coverage: T } of l) {
+  ], N = [...r.trace], _ = gr(s.artifactId, s.digestSRI, "target", e);
+  for (const { claim: L, mapping: B, coverage: T } of d) {
     B && N.push({
       gate: 4,
       nodeUse: _,
@@ -24909,18 +25050,18 @@ async function Ey(e, t, n, i) {
       reason: B.reason,
       sources: [...B.sources]
     });
-    for (const [O, V] of T)
+    for (const [O, U] of T)
       N.push({
         gate: 5,
         nodeUse: _,
         predicate: `claim-coverage:${L.id}:${O}`,
-        state: V.state,
+        state: U.state,
         execution: "executed",
-        reason: V.reason,
-        sources: [...V.sources]
+        reason: U.reason,
+        sources: [...U.sources]
       });
   }
-  for (const L of u)
+  for (const L of p)
     N.push({
       gate: 5,
       nodeUse: _,
@@ -24937,7 +25078,7 @@ async function Ey(e, t, n, i) {
     state: v.state,
     execution: "executed",
     reason: v.reason,
-    sources: A ? [...A.chain] : []
+    sources: I ? [...I.chain] : []
   });
   for (const L of v.routes) {
     N.push(L.execution === "not_run" ? {
@@ -24998,16 +25139,16 @@ async function Ey(e, t, n, i) {
     reason: k.reasons.join(" "),
     sources: []
   });
-  const G = cr({
+  const G = dr({
     requestId: e.requestId,
     targetId: e.targetId,
     binding: e.binding,
     profile: e.profile,
-    artifactVerification: p,
-    authorization: u,
+    artifactVerification: u,
+    authorization: p,
     support: E,
     conformity: k,
-    decision: sa(j),
+    decision: oa(j),
     trace: N,
     resources: r.resources,
     limitations: [
@@ -25020,43 +25161,43 @@ async function Ey(e, t, n, i) {
   });
   return Object.freeze({ result: G, artifacts: Object.freeze([...a]) });
 }
-function ky(e, t, n) {
-  const i = JSON.parse(n), o = ra(i.verificationMethod[0].publicKeyMultibase).slice(2), r = Pd(new TextEncoder().encode(`vc4qi-rm-v1-insecure-fixture-key:${e}`));
+function Oy(e, t, n) {
+  const i = JSON.parse(n), o = aa(i.verificationMethod[0].publicKeyMultibase).slice(2), r = Td(new TextEncoder().encode(`vc4qi-rm-v1-insecure-fixture-key:${e}`));
   return { id: `${t}#key-1`, controller: t, privateKey: r, publicKey: o };
 }
-const My = (e) => `${JSON.stringify(e, null, 2)}
+const Ly = (e) => `${JSON.stringify(e, null, 2)}
 `;
-async function El(e, t, n, i, o, r) {
-  const s = Td(new _d(o).openSession({ maxResources: 64, maxBytes: 1e6 })), a = await Yh(e, ky(t, n, r), { created: i, documentLoader: s, safe: !0 });
-  return My({ ...e, proof: a });
+async function kl(e, t, n, i, o, r) {
+  const s = Ed(new Cd(o).openSession({ maxResources: 64, maxBytes: 1e6 })), a = await em(e, Oy(t, n, r), { created: i, documentLoader: s, safe: !0 });
+  return Ly({ ...e, proof: a });
 }
-function Oy(e) {
-  const t = new Uint8Array(Hs / 8);
+function Ny(e) {
+  const t = new Uint8Array(Js / 8);
   for (const o of e) t[o >> 3] |= 128 >> (o & 7);
-  const n = jm(t, { level: 9, mtime: 0 });
+  const n = $m(t, { level: 9, mtime: 0 });
   let i = "";
   for (const o of n) i += String.fromCharCode(o);
   return `u${btoa(i).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")}`;
 }
-function Ly(e, t, n) {
+function Dy(e, t, n) {
   const { proof: i, ...o } = JSON.parse(e);
-  return { ...o, validFrom: n, credentialSubject: { ...o.credentialSubject, encodedList: Oy(t) } };
+  return { ...o, validFrom: n, credentialSubject: { ...o.credentialSubject, encodedList: Ny(t) } };
 }
-const sr = "2026-09-25T12:00:00Z", Ny = { rm: ay, cal: by, gs: Ey }, pt = Object.fromEntries(["rm", "cal", "gs"].map((e) => [e, {
-  manifest: hu(St[e].manifest),
-  profiles: Object.fromEntries(Object.entries(St[e].profiles).map(([t, n]) => [t, or(n)])),
+const ar = "2026-09-25T12:00:00Z", zy = { rm: cy, cal: xy, gs: My }, pt = Object.fromEntries(["rm", "cal", "gs"].map((e) => [e, {
+  manifest: mu(St[e].manifest),
+  profiles: Object.fromEntries(Object.entries(St[e].profiles).map(([t, n]) => [t, cr(n)])),
   files: St[e].files
-}])), ja = "gs-verifier-dpp-accreditation-only (demonstrator)";
+}])), Pa = "gs-verifier-dpp-accreditation-only (demonstrator)";
 {
   const e = St.gs.profiles["gs-verifier-dpp-1"];
-  pt.gs.profiles[ja] = or({
+  pt.gs.profiles[Pa] = cr({
     ...e,
     id: "https://vc4qi.example/profiles/gs-verifier-dpp-accreditation-only",
     description: "Demonstrator-only variant of gs-verifier-dpp-1 that configures the accreditation body as its only trust anchor. Fictional.",
     trustAnchors: e.trustAnchors.filter((t) => t.id !== "https://zls.vc4qi.example/controller")
   });
 }
-const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
+const Uy = (e) => String(e).split(/[#/:]/).pop() ?? "", ks = (e, t) => ({
   id: e,
   label: `As ${e}`,
   sublabel: t,
@@ -25067,7 +25208,7 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
   supplied: [],
   tamper: [`"value": "${e}"`, '"value": "150"'],
   withhold: { uri: "https://lab.vc4qi.example/credentials/S", label: "Withhold the homogeneity study" }
-}), ke = {
+}), Me = {
   CA: "https://nab.vc4qi.example/credentials/CAL-A",
   DCC1: "https://lab.vc4qi.example/credentials/DCC-1",
   O: "https://lab.vc4qi.example/credentials/CAL-O",
@@ -25076,18 +25217,18 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
   DCCN: "https://nmi.vc4qi.example/credentials/DCC-N",
   T: "https://nab.vc4qi.example/credentials/CAL-T",
   REPORT: "https://testlab.vc4qi.example/credentials/REPORT-1"
-}, wn = (e) => ({ id: `g${e + 1}`, sourcePointer: `/credentialSubject/measurementGroups/${e}` }), zy = [
+}, xn = (e) => ({ id: `g${e + 1}`, sourcePointer: `/credentialSubject/measurementGroups/${e}` }), Vy = [
   {
     id: "direct",
     label: "Accredited lab",
     sublabel: "DCC-1",
     binding: "cal",
     profile: "cal-verifier-1",
-    target: ke.DCC1,
-    claims: [wn(0), wn(1)],
-    supplied: [ke.CA],
+    target: Me.DCC1,
+    claims: [xn(0), xn(1)],
+    supplied: [Me.CA],
     tamper: ['"value": "1000"', '"value": "15000"'],
-    withhold: { uri: ke.CA, label: "Withhold the accreditation" }
+    withhold: { uri: Me.CA, label: "Withhold the accreditation" }
   },
   {
     id: "capability",
@@ -25095,11 +25236,11 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
     sublabel: "DCC-2",
     binding: "cal",
     profile: "cal-verifier-capability-1",
-    target: ke.DCC2,
-    claims: [wn(0)],
-    supplied: [ke.O, ke.CA],
+    target: Me.DCC2,
+    claims: [xn(0)],
+    supplied: [Me.O, Me.CA],
     tamper: ['"value": "1000"', '"value": "5000"'],
-    withhold: { uri: ke.O, label: "Withhold the operational scope" }
+    withhold: { uri: Me.O, label: "Withhold the operational scope" }
   },
   {
     id: "nmi",
@@ -25107,11 +25248,11 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
     sublabel: "DCC-N",
     binding: "cal",
     profile: "cal-verifier-nmi-1",
-    target: ke.DCCN,
-    claims: [wn(0)],
-    supplied: [ke.M],
+    target: Me.DCCN,
+    claims: [xn(0)],
+    supplied: [Me.M],
     tamper: ['"value": "20"', '"value": "200"'],
-    withhold: { uri: ke.M, label: "Withhold the mandate" }
+    withhold: { uri: Me.M, label: "Withhold the mandate" }
   },
   {
     id: "report",
@@ -25119,11 +25260,11 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
     sublabel: "REPORT-1",
     binding: "cal",
     profile: "cal-verifier-test-report-1",
-    target: ke.REPORT,
-    claims: [wn(0)],
-    supplied: [ke.T],
+    target: Me.REPORT,
+    claims: [xn(0)],
+    supplied: [Me.T],
     tamper: ['"value": "2"', '"value": "30"'],
-    withhold: { uri: ke.DCC1, label: "Withhold the instrument's calibration" }
+    withhold: { uri: Me.DCC1, label: "Withhold the instrument's calibration" }
   }
 ], at = {
   C1: "https://gs-body.vc4qi.example/credentials/GSC-1",
@@ -25132,7 +25273,7 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
   TR3: "https://gs-body.vc4qi.example/credentials/TR-3",
   M1: "https://maker.vc4qi.example/credentials/GSM-1",
   M4: "https://maker.vc4qi.example/credentials/GSM-4"
-}, xn = (e, t, n, i, o) => ({
+}, Sn = (e, t, n, i, o) => ({
   id: e,
   label: t,
   sublabel: n,
@@ -25143,7 +25284,7 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
   supplied: [],
   tamper: ["-sn-", "-sn-9"],
   withhold: o
-}), ks = (e, t, n, i, o) => ({
+}), Ms = (e, t, n, i, o) => ({
   id: e,
   label: t,
   sublabel: n,
@@ -25154,14 +25295,14 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
   supplied: [],
   tamper: ["-sn-", "-sn-9"],
   withhold: o
-}), Sn = (e) => ({ uri: e, label: "Withhold the type examination" }), Ms = (e) => ({ uri: e, label: "Withhold the GS-mark credential" }), xd = [
+}), In = (e) => ({ uri: e, label: "Withhold the type examination" }), Os = (e) => ({ uri: e, label: "Withhold the GS-mark credential" }), Id = [
   {
     id: "rm",
     tab: "RM",
     title: "Certified reference material",
     intro: "M375a, leaded brass: may I rely on the certified arsenic value?",
     caseLabel: "Certified As mass fraction (mg/kg)",
-    cases: [Es("178", "certificate"), Es("197", "hypothetical"), Es("520", "hypothetical")],
+    cases: [ks("178", "certificate"), ks("197", "hypothetical"), ks("520", "hypothetical")],
     choice: { label: "The verifier asks", options: [
       { id: "authorized", label: "Authorized?", sublabel: "no limit" },
       { id: "fit", label: "Fit for use?", sublabel: "As + U ≤ 200" }
@@ -25174,7 +25315,7 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
     title: "Calibration certificate",
     intro: "May I rely on each measurement group of this calibration?",
     caseLabel: "Issuer",
-    cases: zy,
+    cases: Vy,
     choice: { label: "The verifier accepts", options: [
       { id: "own", label: "This route", sublabel: "own profile" },
       { id: "direct-only", label: "Direct accreditation only", sublabel: "cal-verifier-1" }
@@ -25188,11 +25329,11 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
     intro: "May I rely on the GS mark on this product?",
     caseLabel: "Product",
     cases: [
-      xn("in-house", "Hair dryer HD-01", "GS body tested", "https://maker.vc4qi.example/credentials/GSM-1", Sn(at.TR1)),
-      xn("external", "Hair dryer HD-02", "external lab tested", "https://maker.vc4qi.example/credentials/GSM-3", Sn(at.TR2)),
-      xn("toy", "Toy 001", "outside ZLS scope", "https://maker.vc4qi.example/credentials/GSM-2", Sn(at.TR3)),
-      xn("clone", "Other company", "cites the HD-01 certificate", "https://clone.vc4qi.example/credentials/GSM-5", Sn(at.TR1)),
-      xn("mismatch", "HD-02 unit", "claims the HD-01 mark", "https://maker.vc4qi.example/credentials/GSM-6", Sn(at.TR1))
+      Sn("in-house", "Hair dryer HD-01", "GS body tested", "https://maker.vc4qi.example/credentials/GSM-1", In(at.TR1)),
+      Sn("external", "Hair dryer HD-02", "external lab tested", "https://maker.vc4qi.example/credentials/GSM-3", In(at.TR2)),
+      Sn("toy", "Toy 001", "outside ZLS scope", "https://maker.vc4qi.example/credentials/GSM-2", In(at.TR3)),
+      Sn("clone", "Other company", "cites the HD-01 certificate", "https://clone.vc4qi.example/credentials/GSM-5", In(at.TR1)),
+      Sn("mismatch", "HD-02 unit", "claims the HD-01 mark", "https://maker.vc4qi.example/credentials/GSM-6", In(at.TR1))
     ],
     note: "Shaped like a GS certification chain: mark → GS certificate → accreditation (a fictional body in the DAkkS role), scheme authorization (ZLS role), type examination and factory inspection. A fictional profile, not a legal GS rule; all parties and keys are fictional."
   },
@@ -25203,9 +25344,9 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
     intro: "The product passport of this unit lists the GS mark in its compliance information. May I rely on that entry?",
     caseLabel: "Passport",
     cases: [
-      ks("unit", "Unit sn-0042", "its own GS-mark credential", "https://maker.vc4qi.example/credentials/DPP-1", Ms(at.M1)),
-      ks("early", "Unit sn-0001", "on market before certification", "https://maker.vc4qi.example/credentials/DPP-2", Ms(at.M4)),
-      ks("borrowed", "Unit sn-0050", "cites another unit's credential", "https://maker.vc4qi.example/credentials/DPP-3", Ms(at.M1))
+      Ms("unit", "Unit sn-0042", "its own GS-mark credential", "https://maker.vc4qi.example/credentials/DPP-1", Os(at.M1)),
+      Ms("early", "Unit sn-0001", "on market before certification", "https://maker.vc4qi.example/credentials/DPP-2", Os(at.M4)),
+      Ms("borrowed", "Unit sn-0050", "cites another unit's credential", "https://maker.vc4qi.example/credentials/DPP-3", Os(at.M1))
     ],
     choice: { label: "The verifier trusts", options: [
       { id: "both", label: "Accreditation body and scheme owner", sublabel: "gs-verifier-dpp-1" },
@@ -25213,7 +25354,7 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
     ] },
     note: "An experimental product passport shaped after the EU Digital Product Passport (ESPR): unique product identifier, GTIN, commodity code, economic operator and facility, technical and sustainability data, and compliance information. Its GS-mark entry is supported by the unit's GS-mark credential, which keeps its own authority route. The GS binding evaluates only that entry. Not ESPR conformance; identifiers are fictional, and today's GS scheme has no per-unit credential. All parties and keys are fictional."
   }
-], Vy = {
+], Gy = {
   nab: "Accreditation body",
   producer: "RM producer",
   lab: "Laboratory",
@@ -25226,10 +25367,10 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
   "testlab-gs": "Test laboratory",
   clone: "Other company",
   "global-aci": "Global ACI (stand-in)"
-}, Sd = (e) => {
+}, Ad = (e) => {
   const t = e !== null && typeof e == "object" ? e.id : e, n = /^https:\/\/([^./]+)\./.exec(String(t))?.[1];
-  return n === void 0 ? String(t).split("#")[0].split(":").pop() : Vy[n] ?? n;
-}, Uy = {
+  return n === void 0 ? String(t).split("#")[0].split(":").pop() : Gy[n] ?? n;
+}, Fy = {
   RmAccreditation: "Accreditation",
   RmLabAuthority: "Laboratory authority",
   RmOperationalScope: "Operational scope",
@@ -25249,47 +25390,48 @@ const Dy = (e) => String(e).split(/[#/:]/).pop() ?? "", Es = (e, t) => ({
   GsMarkCredential: "GS-mark credential",
   ProductPassport: "Product passport (DPP)"
 };
-function Gy(e, t, n, i, o) {
+function By(e, t, n, i, o) {
   const r = /* @__PURE__ */ new Map();
-  for (const [x, v] of Object.entries(t))
+  for (const [w, v] of Object.entries(t))
     try {
-      r.set(x, JSON.parse(v));
+      r.set(w, JSON.parse(v));
     } catch {
     }
-  const s = (x) => [
-    ...(x?.termsOfUse ?? []).map((v) => v.authorizationCredential?.id).filter((v) => typeof v == "string").map((v) => ({ to: v, kind: "authority" })),
-    ...(x?.evidence ?? []).map((v) => v.id).filter((v) => typeof v == "string").map((v) => ({ to: v, kind: "support" }))
-  ], a = new Map(n.artifactVerification.map((x) => [x.artifactId, x.state])), c = n.decision === "accept" ? /* @__PURE__ */ new Set([...n.authorization.flatMap((x) => x.routeWitnessIds), ...n.support.flatMap((x) => x.witnessIds)]) : void 0, d = /* @__PURE__ */ new Map([[e, 0]]), p = /* @__PURE__ */ new Set(), y = [], f = [[e, !1]], h = /* @__PURE__ */ new Set();
+  const s = (w) => [
+    ...(w?.termsOfUse ?? []).map((v) => v.authorizationCredential?.id).filter((v) => typeof v == "string").map((v) => ({ to: v, kind: "authority" })),
+    ...(w?.termsOfUse ?? []).map((v) => v.recognitionCredential?.id).filter((v) => typeof v == "string").map((v) => ({ to: v, kind: "recognition" })),
+    ...(w?.evidence ?? []).map((v) => v.id).filter((v) => typeof v == "string").map((v) => ({ to: v, kind: "support" }))
+  ], a = new Map(n.artifactVerification.map((w) => [w.artifactId, w.state])), c = n.decision === "accept" ? /* @__PURE__ */ new Set([...n.authorization.flatMap((w) => w.routeWitnessIds), ...n.support.flatMap((w) => w.witnessIds)]) : void 0, l = /* @__PURE__ */ new Map([[e, 0]]), u = /* @__PURE__ */ new Set(), y = [], f = [[e, !1]], h = /* @__PURE__ */ new Set();
   for (; f.length > 0; ) {
-    const [x, v] = f.shift();
-    for (const { to: A, kind: g } of s(r.get(x))) {
-      const m = `${x}>${A}`, l = v || g === "support";
+    const [w, v] = f.shift();
+    for (const { to: I, kind: g } of s(r.get(w))) {
+      const m = `${w}>${I}`, d = v || g === "support";
       h.has(m) || (h.add(m), y.push({
-        from: x,
-        to: A,
+        from: w,
+        to: I,
         kind: g,
-        state: x === e ? g === "support" ? o : i : c && !c.has(A) ? "unused" : a.get(A) ?? "not_established"
+        state: w === e ? g === "support" ? o : i : c && !c.has(I) ? "unused" : a.get(I) ?? "not_established"
       }));
-      const u = (d.get(x) ?? 0) + 1;
-      (d.get(A) ?? -1) < u && u < 8 ? (d.set(A, u), f.push([A, l])) : l && !p.has(A) && p.add(A);
+      const p = (l.get(w) ?? 0) + 1;
+      (l.get(I) ?? -1) < p && p < 8 ? (l.set(I, p), f.push([I, d])) : d && !u.has(I) && u.add(I);
     }
   }
-  return { nodes: [...d].map(([x, v]) => {
-    const A = r.get(x), g = Array.isArray(A?.type) ? String(A.type[1]) : "", m = A?.credentialSubject ?? {};
+  return { nodes: [...l].map(([w, v]) => {
+    const I = r.get(w), g = Array.isArray(I?.type) ? String(I.type[1]) : "", m = I?.credentialSubject ?? {};
     return {
-      uri: x,
-      name: Dy(x),
-      role: Uy[g] ?? (g || "not supplied"),
+      uri: w,
+      name: Uy(w),
+      role: Fy[g] ?? (g || "not supplied"),
       layer: v,
-      present: A !== void 0,
-      target: x === e,
-      parties: A === void 0 ? "withheld" : `${Sd(A.issuer)} → ${Sd(m.id)}`,
-      state: a.get(x) ?? "not_established"
+      present: I !== void 0,
+      target: w === e,
+      parties: I === void 0 ? "withheld" : `${Ad(I.issuer)} → ${Ad(m.id)}`,
+      state: a.get(w) ?? "not_established"
     };
   }), edges: y };
 }
-const Ct = (e) => e.length === 0 ? "not_established" : xe(e.map((t) => t.state)), Ad = (e, t) => e.find((n) => n.state === t);
-async function $a(e) {
+const Et = (e) => e.length === 0 ? "not_established" : xe(e.map((t) => t.state)), qd = (e, t) => e.find((n) => n.state === t);
+async function _a(e) {
   const t = pt[e.binding], n = t.profiles[e.profileName], i = e.texts ?? {}, o = new Set(t.files.map((R) => R.uri)), r = t.files.find((R) => R.uri === e.target)?.origin ?? t.files.at(-1).origin, s = {}, a = [
     ...t.files,
     ...Object.entries(i).filter(([R]) => !o.has(R)).map(([R, E]) => ({ uri: R, mediaType: "application/vc", origin: r, version: "1", text: E, digestSRI: void 0 }))
@@ -25301,9 +25443,9 @@ async function $a(e) {
       origin: R.origin,
       version: R.version,
       bytes: k,
-      digestSRI: E === R.text && R.digestSRI ? R.digestSRI : ar(k)
+      digestSRI: E === R.text && R.digestSRI ? R.digestSRI : or(k)
     };
-  }), c = ju({
+  }), c = $u({
     requestId: e.requestId,
     targetId: e.target,
     selectedClaims: e.claims.map((R) => ({ ...R })),
@@ -25311,62 +25453,62 @@ async function $a(e) {
     binding: { id: t.manifest.id, version: t.manifest.version },
     profile: { id: n.id, version: n.version },
     trustConfigId: "https://vc4qi.example/trust/fixture-anchors",
-    evaluationTime: sr,
-    activityTime: e.activityTime ?? sr,
+    evaluationTime: ar,
+    activityTime: e.activityTime ?? ar,
     suppliedEvidence: e.supplied.filter((R) => R !== e.withheld),
     resolverLimits: { maxResources: 64, maxDepth: 4, maxBytes: 5e6 },
     ...e.conformity ? { conformity: { ...e.conformity } } : {}
-  }), { result: d } = await Ny[e.binding](c, new _d(a), t.manifest, n), p = (R, E = () => !0) => d.trace.filter((k) => k.gate === R && E(k)), f = [...p(2), ...p(1)], h = p(3), w = [...p(0), ...p(4)], x = (R, E, k) => E === "established" ? k : (Ad(R, E) ?? Ad(R, "not_established"))?.reason ?? "Not evaluated.", v = d.authorization, A = v.length === 0 ? "not_established" : xe(v.map((R) => R.state)), g = A === "established" ? v.map((R) => R.reasons.at(-1)).join(" ") : v.filter((R) => R.state !== "established").map((R) => `${R.claimId}: ${R.reasons.join(" ")}`).join(" "), m = d.support, l = d.artifactVerification.find((R) => R.artifactId === e.target)?.state === "established", u = m.length > 0 ? xe(m.map((R) => R.state)) : l ? "not_required" : "not_established", b = p(6, (R) => R.predicate.startsWith("conformity:")), S = [
+  }), { result: l } = await zy[e.binding](c, new Cd(a), t.manifest, n), u = (R, E = () => !0) => l.trace.filter((k) => k.gate === R && E(k)), f = [...u(2), ...u(1)], h = u(3), x = [...u(0), ...u(4)], w = (R, E, k) => E === "established" ? k : (qd(R, E) ?? qd(R, "not_established"))?.reason ?? "Not evaluated.", v = l.authorization, I = v.length === 0 ? "not_established" : xe(v.map((R) => R.state)), g = I === "established" ? v.map((R) => R.reasons.at(-1)).join(" ") : v.filter((R) => R.state !== "established").map((R) => `${R.claimId}: ${R.reasons.join(" ")}`).join(" "), m = l.support, d = l.artifactVerification.find((R) => R.artifactId === e.target)?.state === "established", p = m.length > 0 ? xe(m.map((R) => R.state)) : d ? "not_required" : "not_established", b = u(6, (R) => R.predicate.startsWith("conformity:")), S = [
     {
       id: "authentic",
-      state: Ct(f),
+      state: Et(f),
       details: f,
-      summary: x(f, Ct(f), "Every credential is signed by its issuer's own key, and every reference matches the exact bytes.")
+      summary: w(f, Et(f), "Every credential is signed by its issuer's own key, and every reference matches the exact bytes.")
     },
     {
       id: "current",
-      state: Ct(h),
+      state: Et(h),
       details: h,
-      summary: x(h, Ct(h), "Every credential is within its validity period and not revoked.")
+      summary: w(h, Et(h), "Every credential is within its validity period and not revoked.")
     },
     // "Understood" includes reading the claim itself (gate 4); a claim that was never
     // read, because its credential failed a lower gate, is not understood.
-    p(4).length === 0 ? {
+    u(4).length === 0 ? {
       id: "understood",
-      state: Ct(p(0)) === "contradicted" ? "contradicted" : "not_established",
-      details: w,
-      summary: x(p(0), Ct(p(0)), "The claim was not read, because its credential did not pass the earlier checks.")
+      state: Et(u(0)) === "contradicted" ? "contradicted" : "not_established",
+      details: x,
+      summary: w(u(0), Et(u(0)), "The claim was not read, because its credential did not pass the earlier checks.")
     } : {
       id: "understood",
-      state: Ct(w),
-      details: w,
-      summary: x(w, Ct(w), p(4).map((R) => R.reason).join(" "))
+      state: Et(x),
+      details: x,
+      summary: w(x, Et(x), u(4).map((R) => R.reason).join(" "))
     },
     {
       id: "authorized",
-      state: A,
+      state: I,
       summary: g,
-      details: p(5, (R) => R.predicate.startsWith("claim-") || R.predicate.startsWith("restriction:") || R.predicate.startsWith("route:"))
+      details: u(5, (R) => R.predicate.startsWith("claim-") || R.predicate.startsWith("restriction:") || R.predicate.startsWith("route:"))
     },
     {
       id: "supported",
-      state: u,
-      summary: m.length > 0 ? m.map((R) => R.reasons.join(" ")).join(" ") : l ? "This claim needs no supporting credential under the selected profile." : "Not evaluated: the credential did not pass the earlier checks.",
-      details: p(6, (R) => R.predicate.startsWith("support:") || m.some((E) => E.obligationId === R.predicate))
+      state: p,
+      summary: m.length > 0 ? m.map((R) => R.reasons.join(" ")).join(" ") : d ? "This claim needs no supporting credential under the selected profile." : "Not evaluated: the credential did not pass the earlier checks.",
+      details: u(6, (R) => R.predicate.startsWith("support:") || m.some((E) => E.obligationId === R.predicate))
     },
-    d.conformity.requested ? {
+    l.conformity.requested ? {
       id: "fit",
-      state: d.conformity.execution === "not_run" ? "not_asked" : d.conformity.state,
+      state: l.conformity.execution === "not_run" ? "not_asked" : l.conformity.state,
       details: b,
-      summary: d.conformity.reasons.join(" ")
+      summary: l.conformity.reasons.join(" ")
     } : { id: "fit", state: "not_asked", details: [], summary: e.notAsked }
-  ], I = JSON.parse(s[e.target]), P = Gy(e.target, s, d, A, u);
-  return { profile: e.profileName, result: d, questions: S, target: I, texts: s, graph: P };
+  ], A = JSON.parse(s[e.target]), P = By(e.target, s, l, I, p);
+  return { profile: e.profileName, result: l, questions: S, target: A, texts: s, graph: P };
 }
-async function dg(e) {
-  const t = xd.find((s) => s.id === e.example) ?? xd[0], n = t.cases.find((s) => s.id === e.caseId) ?? t.cases[0], i = pt[n.binding].files.find((s) => s.uri === n.target), o = e.tamper ? { [n.target]: i.text.replace(n.tamper[0], n.tamper[1]) } : {}, r = await $a({
+async function ug(e) {
+  const t = Id.find((s) => s.id === e.example) ?? Id[0], n = t.cases.find((s) => s.id === e.caseId) ?? t.cases[0], i = pt[n.binding].files.find((s) => s.uri === n.target), o = e.tamper ? { [n.target]: i.text.replace(n.tamper[0], n.tamper[1]) } : {}, r = await _a({
     binding: n.binding,
-    profileName: t.id === "dcc" && e.choice === "direct-only" ? "cal-verifier-1" : t.id === "dpp" && e.choice === "accreditation-only" ? ja : n.profile,
+    profileName: t.id === "dcc" && e.choice === "direct-only" ? "cal-verifier-1" : t.id === "dpp" && e.choice === "accreditation-only" ? Pa : n.profile,
     requestId: `urn:vc4qi:demonstrator:${t.id}:${n.id}`,
     target: n.target,
     claims: n.claims,
@@ -25378,25 +25520,25 @@ async function dg(e) {
   });
   return { options: e, example: t, spec: n, ...r };
 }
-const lg = [
+const pg = [
   { id: "build", label: "Build the chain" },
   { id: "verify", label: "Verify" },
   { id: "manipulate", label: "Manipulate" },
   { id: "decide", label: "The verifier decides" },
   { id: "present", label: "Present" },
   { id: "play", label: "Your turn" }
-], Os = /* @__PURE__ */ new Map();
-function kl(e, t) {
-  return Os.has(e) || Os.set(e, t()), Os.get(e);
+], Ls = /* @__PURE__ */ new Map();
+function Ml(e, t) {
+  return Ls.has(e) || Ls.set(e, t()), Ls.get(e);
 }
-const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri === t).text, Ml = (e) => pt[e].files.map((t) => ({
+const Rd = "2026-09-20T00:00:00Z", kn = (e, t) => pt[e].files.find((n) => n.uri === t).text, Ol = (e) => pt[e].files.map((t) => ({
   uri: t.uri,
   mediaType: t.mediaType,
   origin: t.origin,
   version: t.version,
   bytes: new TextEncoder().encode(t.text),
   digestSRI: t.digestSRI
-})), on = (e, t, n, i) => kl(`${e}:list:${t}`, () => El(Ly(Cn(e, t), [0], Id), n, i, Id, Ml(e), Cn(e, i))), Ol = (e, t, n) => e.replace(t, n), ug = [
+})), cn = (e, t, n, i) => Ml(`${e}:list:${t}`, () => kl(Dy(kn(e, t), [0], Rd), n, i, Rd, Ol(e), kn(e, i))), Ll = (e, t, n) => e.replace(t, n), fg = [
   { id: "anatomy", label: "The credential" },
   { id: "rules", label: "Design rules" },
   { id: "build", label: "Build the chain" },
@@ -25423,7 +25565,7 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
   GACI_SUSPENSION: "https://global-aci.vc4qi.example/status/suspension/1",
   GACI_STATUS: "https://global-aci.vc4qi.example/status/1",
   R: "https://global-aci.vc4qi.example/credentials/R"
-}, pg = [
+}, hg = [
   {
     id: "gaci",
     mono: "ACI",
@@ -25466,14 +25608,14 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
     does: "Relies on the certificate only as far as its own profile allows.",
     publishes: [{ label: "Profile" }]
   }
-], fg = [
-  { code: "R", label: "Recognition", tag: "proposal", kind: "grant", actor: "gaci", row: 1, about: "ab", heldBy: "ab" },
-  { code: "A", label: "Accreditation", kind: "grant", actor: "ab", row: 1, about: "rmp", heldBy: "rmp" },
+], mg = [
+  { code: "R", label: "Recognition of the body", tag: "proposal", kind: "grant", actor: "gaci", row: 1, about: "ab", heldBy: "ab" },
+  { code: "A", label: "Producer accreditation", kind: "grant", actor: "ab", row: 1, about: "rmp", heldBy: "rmp" },
   { code: "H", label: "Laboratory accreditation", kind: "grant", actor: "ab", row: 2, about: "lab", heldBy: "lab" },
-  { code: "O", label: "Operational scope", kind: "grant", actor: "rmp", row: 1, about: "rmp", heldBy: "rmp" },
+  { code: "O", label: "Producer’s operational scope", kind: "grant", actor: "rmp", row: 1, about: "rmp", heldBy: "rmp" },
   { code: "S", label: "Homogeneity study", kind: "evidence", actor: "lab", row: 2, about: "object", aboutLabel: "disc lot 1", heldBy: "rmp" },
   { code: "D", label: "RM certificate", kind: "claim", actor: "rmp", row: 2, about: "object", aboutLabel: "disc lot 1", heldBy: "holder" }
-], Fy = {
+], Zy = {
   certificate: "178",
   value: "178",
   uncertainty: "5",
@@ -25489,7 +25631,7 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
   limit: "200",
   asOf: "now",
   archive: !1
-}, By = "2026-01-20T00:00:00Z", hg = [
+}, Hy = "2026-01-20T00:00:00Z", yg = [
   {
     id: "anatomy",
     part: "anatomy",
@@ -25513,7 +25655,7 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
     joins: ["gaci", "ab"],
     issues: ["R"],
     title: "Global ACI recognizes the accreditation body",
-    text: "After peer evaluation, Global ACI signs R: this body may accredit RM production (ISO 17034) and testing (ISO/IEC 17025). R names nothing above it; one credential per recognition is our proposal."
+    text: "After peer evaluation, Global ACI recognizes the body for RM production (ISO 17034) and testing (ISO/IEC 17025). Recognition grants no authority: the body’s authority is its national appointment."
   },
   {
     id: "accredit",
@@ -25522,7 +25664,7 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
     joins: ["lab", "rmp"],
     issues: ["A", "H"],
     title: "The accreditation body accredits the producer and the laboratory",
-    text: "The body accredits the producer (A) and the laboratory (H). Each names R in termsOfUse, the authority it acts under, pinned by digest, and must stay within it."
+    text: "The body accredits the producer (A) and the laboratory (H). Each names R as a RecognitionPolicy: issued while recognized, not under R’s authority."
   },
   {
     id: "act",
@@ -25531,7 +25673,7 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
     joins: ["holder"],
     issues: ["O", "S", "D"],
     title: "The producer and the laboratory act",
-    text: "The producer declares its scope O under A, the lab studies the lot (S) under H, and certificate D178 names O as its authority and S as its evidence."
+    text: "The producer issues its scope O under A, the lab its study S under H, and certificate D178 under O, with S as evidence."
   },
   {
     id: "verify",
@@ -25569,7 +25711,7 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
     unlock: ["trust", "suspendGaci", "certificate"],
     expect: "accept",
     title: "A verifier abroad trusts only Global ACI",
-    text: "It climbs one link further: A and H point up to R. Suspend R, or certify 520: recognized is not the same as in scope."
+    text: "It trusts Global ACI: R tells it to accept the body. Suspend R, or certify 520: recognized is not the same as in scope."
   },
   {
     id: "when",
@@ -25586,16 +25728,16 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
     part: "proposal",
     acts: ["gaci", "ab"],
     panel: "proposal",
-    title: "Proposal: from recognized body to accreditation",
-    text: "One recognition credential per body, which its accreditations point up to, and dated status lists for the question at issuance."
+    title: "Proposal: one recognition per body",
+    text: "One recognition credential per body, named by its grants, and dated status lists for the question at issuance."
   },
   {
     id: "reconcile",
     part: "proposal",
     acts: ["gaci", "ab", "rmp"],
     panel: "reconcile",
-    title: "Recognized Entities and terms of use: find, then bind",
-    text: "recognizedIn says where an issuer is recognized; a term of use says which grant this credential was issued under. Our proposal: IssuedUnderPolicy."
+    title: "Recognized Entities and terms of use",
+    text: "Every upward link is a term of use, typed by what it means: IssuedUnderPolicy for a grant, RecognitionPolicy for a recognition. issuer.recognizedIn mirrors the recognition."
   },
   {
     id: "play",
@@ -25605,24 +25747,24 @@ const Id = "2026-09-20T00:00:00Z", Cn = (e, t) => pt[e].files.find((n) => n.uri 
     title: "Your turn",
     text: "Every action is live: leave out, edit, certify, suspend or revoke, and change what the verifier trusts, asks and when."
   }
-], Pa = "rm-verifier-1", _a = "rm-verifier-other-anchor (demonstrator)", Zy = "rm-verifier-global-aci-1";
+], Ta = "rm-verifier-1", Ca = "rm-verifier-other-anchor (demonstrator)", Jy = "rm-verifier-global-aci-1";
 {
-  const e = St.rm.profiles[Pa];
-  pt.rm.profiles[_a] = or({
+  const e = St.rm.profiles[Ta];
+  pt.rm.profiles[Ca] = cr({
     ...e,
     id: "https://vc4qi.example/profiles/rm-verifier-other-anchor",
     description: "Demonstrator-only variant of rm-verifier-1 whose only trust anchor is another, fictional accreditation body.",
     trustAnchors: e.trustAnchors.map((t) => ({ ...t, id: "https://other-ab.vc4qi.example/controller" }))
   });
 }
-function Hy(e, t) {
+function Ky(e, t) {
   if (t === "200") return e;
   const n = `${e} (limit ${t} mg/kg, demonstrator)`;
   if (!pt.rm.profiles[n]) {
-    const i = pt.rm.profiles[e], o = structuredClone(St.rm.profiles[e] ?? St.rm.profiles[Pa]);
-    e === _a && (o.trustAnchors = i.trustAnchors.map((s) => ({ id: s.id, purposes: [...s.purposes] })));
+    const i = pt.rm.profiles[e], o = structuredClone(St.rm.profiles[e] ?? St.rm.profiles[Ta]);
+    e === Ca && (o.trustAnchors = i.trustAnchors.map((s) => ({ id: s.id, purposes: [...s.purposes] })));
     const r = o.conformity;
-    r.requirements[0].upperLimit.value = t, pt.rm.profiles[n] = or({
+    r.requirements[0].upperLimit.value = t, pt.rm.profiles[n] = cr({
       ...o,
       id: `${i.id}-limit-${t}`,
       description: `Demonstrator-only variant of ${i.id} whose As limit is ${t} mg/kg.`
@@ -25630,13 +25772,13 @@ function Hy(e, t) {
   }
   return n;
 }
-const ta = (e) => Cn("rm", e), Jy = (e) => e.certificate === "custom" ? oe.LIVE : `https://producer.vc4qi.example/credentials/D${e.certificate}`;
-function Ky(e) {
-  return kl(`rm:D:${e.value}:${e.uncertainty}:${e.method}`, () => {
-    const { proof: t, ...n } = JSON.parse(ta("https://producer.vc4qi.example/credentials/D178")), i = structuredClone(n.credentialSubject), o = i.materialPropertiesList[0].results[0];
+const ia = (e) => kn("rm", e), Qy = (e) => e.certificate === "custom" ? oe.LIVE : `https://producer.vc4qi.example/credentials/D${e.certificate}`;
+function Wy(e) {
+  return Ml(`rm:D:${e.value}:${e.uncertainty}:${e.method}`, () => {
+    const { proof: t, ...n } = JSON.parse(ia("https://producer.vc4qi.example/credentials/D178")), i = structuredClone(n.credentialSubject), o = i.materialPropertiesList[0].results[0];
     o.methodIri = o.methodIri.replace(/M1$/, e.method), o.data.quantity.value = e.value, o.data.quantity.uncertainty.expandedUncertainty = e.uncertainty;
     const r = { ...n.credentialStatus, id: `${oe.PRODUCER_STATUS}#4`, statusListIndex: "4" };
-    return El(
+    return kl(
       {
         ...n,
         id: oe.LIVE,
@@ -25647,30 +25789,30 @@ function Ky(e) {
       "producer",
       oe.PRODUCER,
       n.validFrom,
-      Ml("rm"),
-      ta(oe.PRODUCER)
+      Ol("rm"),
+      ia(oe.PRODUCER)
     );
   });
 }
-async function mg(e = {}) {
-  const t = { ...Fy, ...e }, n = Jy(t), i = {};
-  if (t.certificate === "custom" && (i[n] = await Ky(t)), t.suspendA && (i[oe.SUSPENSION] = await on("rm", oe.SUSPENSION, "nab", oe.NAB)), t.revokeS && (i[oe.LAB_STATUS] = await on("rm", oe.LAB_STATUS, "lab", oe.LAB)), t.suspendGaci && (i[oe.GACI_SUSPENSION] = await on("rm", oe.GACI_SUSPENSION, "global-aci", oe.GACI)), t.asOf === "issuance" && t.archive) for (const d of St.rm.archive ?? []) i[d.uri] = d.text;
-  const o = new Set((t.asOf === "issuance" && t.archive ? St.rm.archive ?? [] : []).map((d) => d.uri)), r = Object.keys(i).filter((d) => !o.has(d));
+async function gg(e = {}) {
+  const t = { ...Zy, ...e }, n = Qy(t), i = {};
+  if (t.certificate === "custom" && (i[n] = await Wy(t)), t.suspendA && (i[oe.SUSPENSION] = await cn("rm", oe.SUSPENSION, "nab", oe.NAB)), t.revokeS && (i[oe.LAB_STATUS] = await cn("rm", oe.LAB_STATUS, "lab", oe.LAB)), t.suspendGaci && (i[oe.GACI_SUSPENSION] = await cn("rm", oe.GACI_SUSPENSION, "global-aci", oe.GACI)), t.asOf === "issuance" && t.archive) for (const l of St.rm.archive ?? []) i[l.uri] = l.text;
+  const o = new Set((t.asOf === "issuance" && t.archive ? St.rm.archive ?? [] : []).map((l) => l.uri)), r = Object.keys(i).filter((l) => !o.has(l));
   if (t.tamper) {
-    const d = i[n] ?? ta(n), p = JSON.parse(d).credentialSubject.materialPropertiesList[0].results[0].data.quantity.value;
-    i[n] = Ol(d, `"value": "${p}"`, `"value": "${p === "150" ? "151" : "150"}"`);
+    const l = i[n] ?? ia(n), u = JSON.parse(l).credentialSubject.materialPropertiesList[0].results[0].data.quantity.value;
+    i[n] = Ll(l, `"value": "${u}"`, `"value": "${u === "150" ? "151" : "150"}"`);
   }
-  const s = { R: oe.R, A: oe.A, H: oe.H, O: oe.O, S: oe.S, D: n }, a = t.trust === "ab" ? Pa : t.trust === "global-aci" ? Zy : _a;
-  return { ...await $a({
+  const s = { R: oe.R, A: oe.A, H: oe.H, O: oe.O, S: oe.S, D: n }, a = t.trust === "ab" ? Ta : t.trust === "global-aci" ? Jy : Ca;
+  return { ...await _a({
     binding: "rm",
-    profileName: t.ask === "fit" ? Hy(a, t.limit) : a,
+    profileName: t.ask === "fit" ? Ky(a, t.limit) : a,
     requestId: "urn:vc4qi:demonstrator:rm-board",
     target: n,
     claims: [{ id: "as", sourcePointer: "/credentialSubject/materialPropertiesList/0/results/0" }],
     supplied: [],
     texts: i,
     withheld: t.withhold ? s[t.withhold] : void 0,
-    activityTime: t.asOf === "issuance" ? By : sr,
+    activityTime: t.asOf === "issuance" ? Hy : ar,
     ...t.ask === "fit" ? { conformity: {
       requirementId: "as-mass-fraction-max-200-mg-per-kg",
       decisionRuleId: t.rule === "simple" ? "simple-acceptance" : "guarded-acceptance-expanded-u"
@@ -25692,7 +25834,7 @@ const xt = {
   TR: at.TR1,
   FI: "https://gs-body.vc4qi.example/credentials/FI-1",
   C: at.C1
-}, yg = [
+}, vg = [
   {
     id: "ab",
     mono: "AB",
@@ -25728,7 +25870,7 @@ const xt = {
     does: "Relies on the passport's GS mark only as far as its own profile allows.",
     publishes: [{ label: "Profile" }]
   }
-], gg = [
+], bg = [
   { code: "GS-A", label: "Accreditation", kind: "grant", actor: "ab", row: 1, about: "gsb", heldBy: "gsb" },
   { code: "GS-S", label: "Scheme permission", kind: "grant", actor: "so", row: 3, about: "gsb", heldBy: "gsb" },
   { code: "TR-1", label: "Type examination", kind: "evidence", actor: "gsb", row: 1, about: "object", aboutLabel: "model HD-01", heldBy: "mfr" },
@@ -25736,7 +25878,7 @@ const xt = {
   { code: "FI-1", label: "Factory inspection", kind: "evidence", actor: "gsb", row: 3, about: "mfr", heldBy: "mfr" },
   { code: "GSM", label: "GS-mark credential", kind: "evidence", actor: "mfr", row: 2, about: "object", aboutLabel: "the unit", heldBy: "mfr" },
   { code: "DPP", label: "Product passport", kind: "claim", actor: "mfr", row: 3, about: "object", aboutLabel: "the unit", heldBy: "mfr" }
-], Qy = {
+], Xy = {
   unit: "sn-0042",
   revokeA: !1,
   revokeS: !1,
@@ -25744,11 +25886,11 @@ const xt = {
   tamper: !1,
   withholdTR: !1,
   trust: "both"
-}, Wy = {
+}, Yy = {
   "sn-0042": "https://maker.vc4qi.example/credentials/DPP-1",
   "sn-0050": "https://maker.vc4qi.example/credentials/DPP-3",
   "sn-0001": "https://maker.vc4qi.example/credentials/DPP-2"
-}, vg = [
+}, wg = [
   {
     id: "join",
     part: "build",
@@ -25889,14 +26031,14 @@ const xt = {
     text: "Every action is live. Revoke the accreditation, the scheme permission or the certificate, show another unit's passport, edit or leave out a credential, or change whom the verifier trusts. Each change is evaluated at once."
   }
 ];
-async function bg(e = {}) {
-  const t = { ...Qy, ...e }, n = Wy[t.unit], i = xt, o = {};
-  t.revokeA && (o[i.NAB_STATUS] = await on("gs", i.NAB_STATUS, "nab", i.NAB)), t.revokeS && (o[i.ZLS_STATUS] = await on("gs", i.ZLS_STATUS, "zls", i.ZLS)), t.revokeC && (o[i.BODY_STATUS] = await on("gs", i.BODY_STATUS, "gs-body", i.BODY));
+async function xg(e = {}) {
+  const t = { ...Xy, ...e }, n = Yy[t.unit], i = xt, o = {};
+  t.revokeA && (o[i.NAB_STATUS] = await cn("gs", i.NAB_STATUS, "nab", i.NAB)), t.revokeS && (o[i.ZLS_STATUS] = await cn("gs", i.ZLS_STATUS, "zls", i.ZLS)), t.revokeC && (o[i.BODY_STATUS] = await cn("gs", i.BODY_STATUS, "gs-body", i.BODY));
   const r = Object.keys(o);
-  t.tamper && (o[n] = Ol(Cn("gs", n), "-sn-", "-sn-9"));
-  const s = await $a({
+  t.tamper && (o[n] = Ll(kn("gs", n), "-sn-", "-sn-9"));
+  const s = await _a({
     binding: "gs",
-    profileName: t.trust === "both" ? "gs-verifier-dpp-1" : ja,
+    profileName: t.trust === "both" ? "gs-verifier-dpp-1" : Pa,
     requestId: "urn:vc4qi:demonstrator:gs-board",
     target: n,
     claims: [{ id: "mark", sourcePointer: "/credentialSubject/complianceInformation/gsMark" }],
@@ -25904,29 +26046,29 @@ async function bg(e = {}) {
     texts: o,
     withheld: t.withholdTR ? i.TR : void 0,
     notAsked: "The verifier asks only whether the GS-mark entry is authorized; the binding installs no decision rule."
-  }), a = JSON.parse(Cn("gs", n)).evidence[0].id, c = { "GS-A": i.A, "GS-S": i.S, "TR-1": i.TR, "FI-1": i.FI, "GSC-1": i.C, GSM: a, DPP: n };
+  }), a = JSON.parse(kn("gs", n)).evidence[0].id, c = { "GS-A": i.A, "GS-S": i.S, "TR-1": i.TR, "FI-1": i.FI, "GSC-1": i.C, GSM: a, DPP: n };
   return { ...s, state: t, certificate: n, uris: c, signedLive: r };
 }
-const wg = {
-  evaluationTime: sr,
+const Sg = {
+  evaluationTime: ar,
   bindings: Object.fromEntries(Object.entries(pt).map(([e, t]) => [e, `${t.manifest.id}@${t.manifest.version}`]))
 };
 export {
-  lg as BOARD_PARTS,
-  sr as EVALUATION_TIME,
-  xd as EXAMPLES,
-  yg as GS_ACTORS,
-  gg as GS_ASSETS,
-  Qy as GS_DEFAULT,
-  vg as GS_STORY,
-  By as RM_ACTIVITY,
-  pg as RM_ACTORS,
-  fg as RM_ASSETS,
-  Fy as RM_DEFAULT,
-  ug as RM_PARTS,
-  hg as RM_STORY,
-  wg as buildInfo,
-  bg as evaluateGsBoard,
-  mg as evaluateRmBoard,
-  dg as evaluateScenario
+  pg as BOARD_PARTS,
+  ar as EVALUATION_TIME,
+  Id as EXAMPLES,
+  vg as GS_ACTORS,
+  bg as GS_ASSETS,
+  Xy as GS_DEFAULT,
+  wg as GS_STORY,
+  Hy as RM_ACTIVITY,
+  hg as RM_ACTORS,
+  mg as RM_ASSETS,
+  Zy as RM_DEFAULT,
+  fg as RM_PARTS,
+  yg as RM_STORY,
+  Sg as buildInfo,
+  xg as evaluateGsBoard,
+  gg as evaluateRmBoard,
+  ug as evaluateScenario
 };

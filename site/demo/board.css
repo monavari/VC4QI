@@ -237,6 +237,8 @@ body[data-mode="build"] .col.dim > .slot{ opacity:.42; }
 /* lines: solid = authority, dotted = evidence, dashed grey = handed over */
 .edge{ fill:none; stroke-width:2.5; }
 .edge.support{ stroke-dasharray:2 5; stroke-linecap:round; stroke-width:3; }
+/* A recognition (RecognitionPolicy) grants no authority: dash-dot, never solid. */
+.edge.recognition{ stroke-dasharray:12 4 2 4; stroke-width:2.5; }
 .edge.handover{ stroke:var(--soft); stroke-dasharray:8 6; stroke-width:2; }
 .e-established, .e-not_required{ stroke:var(--ok); } .e-unused{ stroke:var(--soft); } .e-contradicted{ stroke:var(--bad); stroke-width:3.5; } .e-not_established{ stroke:var(--unk); stroke-width:3; }
 .e-plain{ stroke:var(--soft); }
@@ -250,6 +252,7 @@ body[data-mode="build"] .col.dim > .slot{ opacity:.42; }
 .legend b{ color:var(--ink); font-weight:650; }
 .legend i{ display:inline-block; width:2rem; height:0; vertical-align:middle; margin:0 .35rem 0 .6rem; border-top:3px solid var(--soft); }
 .legend i.dot{ border-top-style:dotted; } .legend i.dash{ border-top:2px dashed var(--soft); }
+.legend i.rec{ border-top:none; height:3px; background:repeating-linear-gradient(90deg, var(--soft) 0 12px, transparent 12px 16px, var(--soft) 16px 18px, transparent 18px 22px); }
 
 dialog{ border:0; border-radius:14px; width:min(46rem, 100%); padding:var(--s4) var(--s5) var(--s5); background:var(--paper); color:var(--ink); max-height:86vh; }
 dialog::backdrop{ background:rgba(0,20,26,.45); }
@@ -375,37 +378,71 @@ button.code{ cursor:pointer; color:var(--ink); }
 article.explain{ border:1px solid var(--line); border-radius:var(--radius); padding:var(--s3); display:grid; gap:var(--s2); background:var(--raise); }
 #sheetContent .raw pre, .side .raw pre{ max-height:18rem; }
 
-/* the vertical layout: the chain in authority lanes on the left, the explainer on the right */
+/* The vertical layout (rm/vertical.html): the step and the policy check on the left, the
+   chain top to bottom in the middle, the selected credential on the right. The graph stays
+   in one place: compact cards, and the middle column sticks while the page scrolls. */
+.vcols{ display:grid; gap:var(--s4); }
+.vleft{ display:grid; gap:var(--s3); align-content:start; min-width:0; }
+.vleft .stephead{ padding:0; display:grid; grid-template-columns:minmax(0, 1fr); gap:var(--s2); }
+.vleft .stephead > *, .vleft .stephead .lead{ grid-column:1; grid-row:auto; align-self:start; }
+.vleft .stephead h1{ font-size:1.55rem; min-height:0; display:block; }
+.vleft .stephead .lead{ font-size:1rem; }
+.vleft .legend{ margin:0; }
+.vcheck{ display:grid; gap:var(--s2); padding:var(--s3); border:1px solid var(--line); border-radius:12px; background:var(--paper); }
+.vcheck .settings{ display:grid; gap:var(--s2); }
+.vcheck .questions{ grid-template-columns:1fr 1fr; }
+.vmain{ display:grid; gap:var(--s3); min-width:0; align-content:start; }
 .board.vertical{ display:grid; gap:var(--s4); }
 .flow{ position:relative; display:grid; gap:var(--s2); min-width:0; }
 .flow > svg{ display:none; }
-.lane{ position:relative; display:grid; gap:var(--s3); padding:var(--s3) var(--s4); border:1px solid var(--line); border-radius:12px; background:var(--paper); }
+.lane{ position:relative; display:grid; gap:var(--s2); padding:var(--s2) var(--s3); border:1px solid var(--line); border-radius:12px; background:var(--paper); }
 .lane[data-lane="hold"]{ background:var(--wallet); }
 .lane.acting{ border-color:var(--petrol); box-shadow:0 0 0 2px var(--petrol); }
 .lane.absent{ display:none; }
 .lane.dim > .lanehead .actions{ opacity:.42; }
 body[data-mode="build"] .lane.dim .cells{ opacity:.42; }
-.lanehead{ display:grid; gap:.4rem; align-content:start; }
-.lanehead .verb{ margin:0; font-size:.78rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--petrol); }
+.lanehead{ display:grid; gap:.3rem; align-content:start; }
+.lanehead .verb{ margin:0; font-size:.74rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--petrol); }
 .lanehead .name{ display:flex; align-items:center; gap:var(--s2); }
-.lanehead h2{ margin:0; font-size:1.05rem; line-height:1.2; font-weight:700; }
-.lanehead .actions{ margin-top:var(--s1); }
-.cells{ display:grid; gap:var(--s3); }
+.lanehead .mono-badge{ width:1.9rem; height:1.9rem; font-size:.7rem; }
+.lanehead h2{ margin:0; font-size:.95rem; line-height:1.2; font-weight:700; }
+.lanehead .pubs:empty{ display:none; }
+.cells{ display:grid; gap:var(--s2); }
+/* Compact cards in the lanes: the code, the name, the type and the tags; the content is in
+   the right column. */
+.flow .card{ padding:var(--s1) var(--s2); }
+.flow .card .fact, .flow .card .foot{ display:none; }
 .side{ display:grid; grid-template-columns:minmax(0, 1fr); gap:var(--s3); align-content:start; min-width:0; padding:var(--s4); border:1px solid var(--line); border-radius:12px; background:var(--paper); }
-.side .sidehead{ margin:0; display:flex; align-items:center; gap:var(--s2); font-size:1.15rem; }
-.side .back{ justify-self:start; border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:8px; padding:.3rem .75rem; font-weight:650; cursor:pointer; }
-.side .settings{ display:grid; gap:var(--s2); }
 .side .map{ grid-template-columns:7rem 1fr; }
+.newchips{ margin:0; font-size:.85rem; color:var(--muted); display:flex; flex-wrap:wrap; gap:var(--s1); align-items:center; }
+.sidehead{ margin:0; display:flex; align-items:center; gap:var(--s2); font-size:1.05rem; }
+/* What a credential says (cfg.content), laid out for reading. */
+.says{ display:grid; gap:var(--s2); }
+.says .kv{ display:grid; grid-template-columns:8rem 1fr; gap:var(--s1) var(--s3); margin:0; font-size:.95rem; }
+.says .kv dt{ color:var(--muted); font-size:.85rem; padding-top:.1rem; }
+.says .kv dd{ margin:0; overflow-wrap:anywhere; }
+.says table{ font-size:.9rem; margin:0; }
+.says td.num, .says th.num{ text-align:right; font-variant-numeric:tabular-nums; }
+.says tr.sel td{ background:var(--wash); font-weight:650; }
+.says .records{ display:grid; gap:var(--s2); margin:0; padding:0; list-style:none; }
+.says .records li{ border:1px solid var(--line); border-radius:8px; padding:var(--s2) var(--s3); font-size:.92rem; line-height:1.4; }
 @media (min-width:64rem){
-  .board.vertical{ grid-template-columns:minmax(0, 1.4fr) minmax(0, 1fr); grid-template-rows:none; column-gap:var(--s5); align-items:start; }
+  .vcols{ grid-template-columns:minmax(17rem, 21rem) minmax(0, 1fr); column-gap:var(--s5); align-items:start; }
+  .vleft{ position:sticky; top:var(--s3); }
+  .board.vertical{ grid-template-columns:minmax(0, 1fr); grid-template-rows:none; align-items:start; }
+  .board.vertical .side{ display:none; }
   .flow > svg{ display:block; position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:1; }
   .board > svg.labels, .flow > svg.labels{ z-index:3; }
-  .lane{ grid-template-columns:11.5rem minmax(0, 1fr); column-gap:var(--s5); }
+  .lane{ grid-template-columns:10.5rem minmax(0, 1fr); column-gap:var(--s4); }
   .lane.absent{ display:grid; visibility:hidden; }
-  .cells{ grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); column-gap:var(--s7); row-gap:var(--s3); }
+  .cells{ grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); column-gap:var(--s6); row-gap:var(--s2); }
   .cell.c1{ grid-column:1; } .cell.c2{ grid-column:2; }
-  .cell.mid{ grid-column:1 / -1; justify-self:center; width:calc(50% - var(--s7) / 2); }
-  /* The explainer stays in view while the lanes scroll. */
-  .side{ position:sticky; top:var(--s3); max-height:calc(100vh - 2 * var(--s3)); overflow:auto; }
+  .cell.mid{ grid-column:1 / -1; justify-self:center; width:calc(50% - var(--s6) / 2); }
   .flow .card .cites{ display:none; }
+}
+/* Wide screens: the selected credential gets its own right-hand column, which stays in view;
+   narrower, it opens as a floating sheet. */
+@media (min-width:110rem){
+  .board.vertical{ grid-template-columns:minmax(0, 1fr) minmax(0, 27rem); column-gap:var(--s4); }
+  .board.vertical .side{ display:grid; position:sticky; top:var(--s3); max-height:calc(100vh - 2 * var(--s3)); overflow:auto; }
 }
