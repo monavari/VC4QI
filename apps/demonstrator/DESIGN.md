@@ -187,8 +187,9 @@ vocabulary in one line each.
 own: the step (title and sentence), then in evaluated steps the verifier's policy check
 (verdict, the six questions, its live settings) and what the other parties can do in this
 step, each under its monogram; the key at the bottom. In the middle: the
-chain top to bottom in one place, one lane per level of authority and per actor (recognizes,
-accredits, declares its scope, studies the batch, certifies, holds and shows), compact
+chain top to bottom in one place, one lane per actor, from where trust comes from to where it
+is used (recognizes, accredits, studies the batch, declares its scope and certifies,
+holds and shows), compact
 cards in smaller type (code, name,
 type, signer, tags), each credential under what it is issued under, and no controls, so a
 lane never changes height. On the
