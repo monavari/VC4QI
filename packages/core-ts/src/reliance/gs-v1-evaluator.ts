@@ -114,7 +114,7 @@ export function gsCompetenceAndScheme(target: NodeFacts & { document: Doc }, loo
   const bases: BasisResult[] = [];
   const chain = [target.uri];
   const half = (prefix: string, type: string, activity: string, what: string, purpose: string, name: string) => {
-    const ref = authorizingReference(`${prefix}-reference`, D, type, lookup, [target.uri], 'GsAuthorizationPolicy');
+    const ref = authorizingReference(`${prefix}-reference`, D, type, lookup, [target.uri], 'IssuedUnderPolicy');
     bases.push(ref.basis);
     if (!ref.node) return undefined;
     const G = ref.node.document;
@@ -195,7 +195,7 @@ export function gsCertifiedProduct(target: NodeFacts & { document: Doc }, lookup
   const P = target.document;
   const bases: BasisResult[] = [];
   const chain = [target.uri];
-  const ref = authorizingReference('certificate-reference', P, 'GsCertificate', lookup, [target.uri], 'GsAuthorizationPolicy');
+  const ref = authorizingReference('certificate-reference', P, 'GsCertificate', lookup, [target.uri], 'IssuedUnderPolicy');
   bases.push(ref.basis);
   if (!ref.node) return route('gs-certified-product', bases, chain);
   const C = ref.node.document;
@@ -299,7 +299,7 @@ export function certificateSupport(certificate: NodeFacts & { document: Doc }, l
       Number.isFinite(studied) && Number.isFinite(certifiedAt) ? `The ${what} (${String(r.activityTime)}) follows the certification (${String(c.activityTime)}).` : 'An activity time is missing.',
       ['/credentialSubject/activityTime']));
     // Independent authorization of the study.
-    const ref = authorizingReference('accreditation-reference', R, 'GsAccreditation', lookup, [certificate.uri, uri], 'GsAuthorizationPolicy');
+    const ref = authorizingReference('accreditation-reference', R, 'GsAccreditation', lookup, [certificate.uri, uri], 'IssuedUnderPolicy');
     bases.push(ref.basis);
     if (!ref.node) return done([uri]);
     const G = ref.node.document;

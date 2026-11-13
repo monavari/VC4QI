@@ -51,7 +51,7 @@ const statusEntry = closed({
   statusListCredential: iri,
 });
 const authorizationPolicy = closed({
-  type: { const: 'CalAuthorizationPolicy' },
+  type: { const: 'IssuedUnderPolicy' },
   authorizationCredential: closed({ id: iri, type: { enum: ['CalAccreditation', 'CalOperationalScope', 'CalLegalMandate'] } }),
 });
 const relatedResource = nonemptySet(closed({

@@ -110,7 +110,8 @@ describe('experimental RM v1 pinned resources', () => {
     const nquads = await safeNQuads(sampleCertificate());
     expect(nquads).toContain(`<${rm('value')}> "178"^^<http://www.w3.org/2001/XMLSchema#decimal>`);
     expect(nquads).toContain(`<${rm('methodIri')}> <${rm('M1')}>`);
-    expect(nquads).toContain(`<${rm('authorizationCredential')}> <https://producer.vc4qi.example/credentials/O>`);
+    // The link terms are the shared chain vocabulary, the same IRI in every binding.
+    expect(nquads).toContain('<https://vc4qi.example/ns/chain#authorizationCredential> <https://producer.vc4qi.example/credentials/O>');
     expect(nquads).toContain('<https://www.w3.org/2018/credentials#digestSRI>');
   });
 

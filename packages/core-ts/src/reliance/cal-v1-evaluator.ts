@@ -206,7 +206,7 @@ export function calDirectAccreditation(target: NodeFacts & { document: Doc }, lo
     return route('direct-accreditation', [{ id: 'target-type', state: 'not_established',
       reason: `No accreditation activity is installed for ${String(targetType(D))}.`, sources: ['/type'] }], chain);
   }
-  const ref = authorizingReference('authorizing-reference', D, 'CalAccreditation', lookup, [target.uri], 'CalAuthorizationPolicy');
+  const ref = authorizingReference('authorizing-reference', D, 'CalAccreditation', lookup, [target.uri], 'IssuedUnderPolicy');
   bases.push(ref.basis);
   if (!ref.node) return route('direct-accreditation', bases, chain);
   const A = ref.node.document;
@@ -228,7 +228,7 @@ export function calOperationalScope(target: NodeFacts & { document: Doc }, looku
   const D = target.document;
   const bases: BasisResult[] = [];
   const chain = [target.uri];
-  const ref = authorizingReference('authorizing-reference', D, 'CalOperationalScope', lookup, [target.uri], 'CalAuthorizationPolicy');
+  const ref = authorizingReference('authorizing-reference', D, 'CalOperationalScope', lookup, [target.uri], 'IssuedUnderPolicy');
   bases.push(ref.basis);
   if (!ref.node) return route('operational-scope', bases, chain);
   const O = ref.node.document;
@@ -238,7 +238,7 @@ export function calOperationalScope(target: NodeFacts & { document: Doc }, looku
     ? { id: 'self-maintained-scope', state: 'established', reason: 'O is issued by its own grantee.', sources: ['/issuer'] }
     : { id: 'self-maintained-scope', state: 'contradicted', reason: 'O is not issued by its own grantee.', sources: ['/issuer'] });
   bases.push(permission('activity-permission', O, 'issueCalibrationCertificate', 'issuing calibration certificates', 'O'));
-  const grant = authorizingReference('maintenance-grant', O, 'CalAccreditation', lookup, [target.uri, ref.node.uri], 'CalAuthorizationPolicy');
+  const grant = authorizingReference('maintenance-grant', O, 'CalAccreditation', lookup, [target.uri, ref.node.uri], 'IssuedUnderPolicy');
   bases.push(grant.basis);
   if (!grant.node) return route('operational-scope', bases, chain);
   const A = grant.node.document;
@@ -264,7 +264,7 @@ export function calStatutoryMandate(target: NodeFacts & { document: Doc }, looku
   const D = target.document;
   const bases: BasisResult[] = [];
   const chain = [target.uri];
-  const ref = authorizingReference('authorizing-reference', D, 'CalLegalMandate', lookup, [target.uri], 'CalAuthorizationPolicy');
+  const ref = authorizingReference('authorizing-reference', D, 'CalLegalMandate', lookup, [target.uri], 'IssuedUnderPolicy');
   bases.push(ref.basis);
   if (!ref.node) return route('statutory-mandate', bases, chain);
   const M = ref.node.document;

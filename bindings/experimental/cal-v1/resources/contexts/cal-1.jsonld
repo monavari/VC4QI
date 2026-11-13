@@ -3,6 +3,7 @@
     "@version": 1.1,
     "@protected": true,
     "cal": "https://vc4qi.example/bindings/cal/1#",
+    "chain": "https://vc4qi.example/ns/chain#",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
 
     "CalAccreditation": "cal:CalAccreditation",
@@ -11,9 +12,9 @@
     "CalCertificate": "cal:CalCertificate",
     "CalTestReport": "cal:CalTestReport",
     "CalCalibrationReference": "cal:CalCalibrationReference",
-    "CalAuthorizationPolicy": "cal:CalAuthorizationPolicy",
+    "IssuedUnderPolicy": "chain:IssuedUnderPolicy",
 
-    "authorizationCredential": "cal:authorizationCredential",
+    "authorizationCredential": "chain:authorizationCredential",
     "permittedActivity": {"@id": "cal:permittedActivity", "@type": "@id", "@container": "@set"},
     "scope": {"@id": "cal:scope", "@container": "@set"},
     "quantityKindIri": {"@id": "cal:quantityKind", "@type": "@id"},

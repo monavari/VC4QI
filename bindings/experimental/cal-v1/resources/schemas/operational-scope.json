@@ -180,7 +180,7 @@
         ],
         "properties": {
           "type": {
-            "const": "CalAuthorizationPolicy"
+            "const": "IssuedUnderPolicy"
           },
           "authorizationCredential": {
             "type": "object",

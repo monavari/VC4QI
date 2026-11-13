@@ -54,8 +54,8 @@
     {"fact": "grantee", "nativePath": "/credentialSubject/id", "expandedIri": "@id"},
     {"fact": "permittedActivity", "nativePath": "/credentialSubject/permittedActivity", "expandedIri": "https://vc4qi.example/bindings/rm/1#permittedActivity"},
     {"fact": "scopeRecords", "nativePath": "/credentialSubject/scope", "expandedIri": "https://vc4qi.example/bindings/rm/1#scope"},
-    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/bindings/rm/1#authorizationCredential"},
-    {"fact": "recognitionReference", "nativePath": "/termsOfUse/*/recognitionCredential/id", "expandedIri": "https://vc4qi.example/bindings/rm/1#recognitionCredential"},
+    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/ns/chain#authorizationCredential"},
+    {"fact": "recognitionReference", "nativePath": "/termsOfUse/*/recognitionCredential/id", "expandedIri": "https://vc4qi.example/ns/chain#recognitionCredential"},
     {"fact": "requiredStudy", "nativePath": "/evidence/*/id", "expandedIri": "https://www.w3.org/2018/credentials#evidence"},
     {"fact": "validFrom", "nativePath": "/validFrom", "expandedIri": "https://www.w3.org/2018/credentials#validFrom"},
     {"fact": "validUntil", "nativePath": "/validUntil", "expandedIri": "https://www.w3.org/2018/credentials#validUntil"},
@@ -84,9 +84,9 @@
     "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse IssuedUnderPolicy authorizationCredential references on the credential chain; an authenticated grant found by other means establishes nothing (not_established); a RecognitionPolicy reference never establishes authority"
   },
   "recognizedTypes": {
-    "authorizationPolicy": "https://vc4qi.example/bindings/rm/1#IssuedUnderPolicy",
+    "authorizationPolicy": "https://vc4qi.example/ns/chain#IssuedUnderPolicy",
     "authorizationPolicyEstablishes": ["authorizing-reference-candidate"],
-    "recognitionPolicy": "https://vc4qi.example/bindings/rm/1#RecognitionPolicy",
+    "recognitionPolicy": "https://vc4qi.example/ns/chain#RecognitionPolicy",
     "recognitionPolicyEstablishes": ["recognition-reference-candidate"],
     "supportEvidence": "https://vc4qi.example/bindings/rm/1#RmStudyReference",
     "supportEvidenceEstablishes": ["support-reference-candidate"],

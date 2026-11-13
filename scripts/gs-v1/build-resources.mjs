@@ -42,7 +42,7 @@ const statusEntry = closed({
   statusListCredential: iri,
 });
 const authorizationPolicy = closed({
-  type: { const: 'GsAuthorizationPolicy' },
+  type: { const: 'IssuedUnderPolicy' },
   authorizationCredential: closed({ id: iri, type: { enum: ['GsAccreditation', 'GsSchemeAuthorization', 'GsCertificate'] } }),
 });
 const relatedResource = nonemptySet(closed({

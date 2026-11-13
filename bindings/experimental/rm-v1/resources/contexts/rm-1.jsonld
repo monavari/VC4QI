@@ -3,6 +3,7 @@
     "@version": 1.1,
     "@protected": true,
     "rm": "https://vc4qi.example/bindings/rm/1#",
+    "chain": "https://vc4qi.example/ns/chain#",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
 
     "RmAccreditation": "rm:RmAccreditation",
@@ -10,8 +11,8 @@
     "RmCertificate": "rm:RmCertificate",
     "RmStudy": "rm:RmStudy",
     "RmLabAuthority": "rm:RmLabAuthority",
-    "IssuedUnderPolicy": "rm:IssuedUnderPolicy",
-    "RecognitionPolicy": "rm:RecognitionPolicy",
+    "IssuedUnderPolicy": "chain:IssuedUnderPolicy",
+    "RecognitionPolicy": "chain:RecognitionPolicy",
     "RmStudyReference": "rm:RmStudyReference",
     "RecognizedEntityCredential": "https://www.w3.org/ns/credentials/recognized-entities#RecognizedEntityCredential",
 
@@ -27,8 +28,8 @@
     "to": {"@id": "rm:to", "@type": "xsd:decimal"},
     "unit": "rm:unit",
 
-    "authorizationCredential": "rm:authorizationCredential",
-    "recognitionCredential": "rm:recognitionCredential",
+    "authorizationCredential": "chain:authorizationCredential",
+    "recognitionCredential": "chain:recognitionCredential",
     "recognizedIn": "https://www.w3.org/ns/credentials/recognized-entities#recognizedIn",
     "activityTime": {"@id": "rm:activityTime", "@type": "xsd:dateTime"},
 

@@ -117,7 +117,7 @@
         ],
         "properties": {
           "type": {
-            "const": "GsAuthorizationPolicy"
+            "const": "IssuedUnderPolicy"
           },
           "authorizationCredential": {
             "type": "object",

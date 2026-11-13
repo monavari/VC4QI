@@ -342,7 +342,7 @@ def cal_direct_accreditation(
         "CalAccreditation",
         lookup,
         (target.uri,),
-        "CalAuthorizationPolicy",
+        "IssuedUnderPolicy",
     )
     bases.append(basis)
     if a_node is None or a_node.document is None:
@@ -508,7 +508,7 @@ def cal_operational_scope(
         "CalOperationalScope",
         lookup,
         (target.uri,),
-        "CalAuthorizationPolicy",
+        "IssuedUnderPolicy",
     )
     bases.append(basis)
     if o_node is None or o_node.document is None:
@@ -540,7 +540,7 @@ def cal_operational_scope(
         "CalAccreditation",
         lookup,
         (target.uri, o_node.uri),
-        "CalAuthorizationPolicy",
+        "IssuedUnderPolicy",
     )
     bases.append(grant_basis)
     if a_node is None or a_node.document is None:
@@ -602,7 +602,7 @@ def cal_statutory_mandate(
         "CalLegalMandate",
         lookup,
         (target.uri,),
-        "CalAuthorizationPolicy",
+        "IssuedUnderPolicy",
     )
     bases.append(basis)
     if m_node is None or m_node.document is None:

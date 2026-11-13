@@ -155,7 +155,7 @@ async function main() {
   }
 
   const sri = (text: string) => sha384SRI(new TextEncoder().encode(text));
-  const policy = (id: string, type: string) => ({ type: 'GsAuthorizationPolicy', authorizationCredential: { id, type } });
+  const policy = (id: string, type: string) => ({ type: 'IssuedUnderPolicy', authorizationCredential: { id, type } });
   const household = [gs('EN-60335-1'), gs('EN-60335-2-23')];
 
   const aText = record(A_ID, 'credentials/GS-A.json', 'application/vc', serialize(await sign({

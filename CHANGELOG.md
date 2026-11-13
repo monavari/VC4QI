@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **One link vocabulary for every binding.** `IssuedUnderPolicy`,
+  `authorizationCredential`, `RecognitionPolicy` and `recognitionCredential` now expand
+  to one shared namespace, `https://vc4qi.example/ns/chain#`, in the RM, calibration and
+  GS contexts alike. The calibration binding's `CalAuthorizationPolicy` and the GS
+  binding's `GsAuthorizationPolicy` are replaced by `IssuedUnderPolicy`; manifests,
+  schemas, generators and both evaluators (TypeScript and Python) follow, and all three
+  bindings' fixtures are re-signed. If the link types are to be proposed as a standard,
+  they cannot differ per domain; with identical definitions the protected contexts can
+  also be combined in one document. Verdicts are unchanged.
 - **One recognition credential per accreditation body (RM, experimental).** A fictional
   Global ACI stand-in issues R, a W3C Recognized Entities credential (Working Draft of
   4 November 2026) with one subject, the NAB, recognized to accredit for RM production
