@@ -91,6 +91,8 @@ export async function verifyChain(
   }
   // Follow the chain's own references (termsOfUse, evidence) from protected
   // credentials, within maxDepth; supplied-but-unreferenced credentials stay inert.
+  // A grant's termsOfUse may point up to its issuer's recognition; it is followed like
+  // any other link and decides only for a verifier whose route uses it.
   for (let index = 0; index < artifacts.length; index++) {
     const artifact = artifacts[index]!;
     const at = depth.get(artifact.artifactId)!;
@@ -122,6 +124,7 @@ export async function verifyChain(
       : predicate('contradicted', [`Artifact resolved as ${artifact.artifactId} identifies itself as ${String(id)}.`], ['/id']));
   }
 
+  const historical = Date.parse(request.activityTime) < Date.parse(request.evaluationTime);
   const statusFor = async (artifactId: string, document: Record<string, unknown>, policy: StatusPolicy): Promise<StatusOutcome> => {
     // A status list is one level deeper than the credential that names it.
     const listDepth = depth.get(artifactId)! + 1;
@@ -138,7 +141,10 @@ export async function verifyChain(
       const listResult = lists.get(listUri)!;
       if (listResult.digestSRI !== undefined && listResult.protection.state === 'established') {
         list = read(listUri);
-        listState = semanticAnd([listResult.protection.state, listResult.validity.state]);
+        // Asked about an earlier time, the list must have been in force then (checked by
+        // evaluateStatus at that time); asked about now, it must be valid now.
+        listState = historical ? listResult.protection.state
+          : semanticAnd([listResult.protection.state, listResult.validity.state]);
       } else if (listResult.digestSRI !== undefined) {
         // Resolved but not protected: its contents are never read.
         list = {};

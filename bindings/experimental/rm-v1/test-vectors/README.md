@@ -4,21 +4,30 @@
 [`packages/core-ts/scripts/generate-rm-v1-artifacts.ts`](../../../../packages/core-ts/scripts/generate-rm-v1-artifacts.ts)
 (`--check` detects stale output; never edit the files by hand):
 
-- `controllers/{nab,producer,lab}.json`: fictional controller documents, each with one
+- `controllers/{nab,producer,lab,global-aci}.json`: fictional controller documents, each with one
   Ed25519 Multikey referenced from `assertionMethod`.
-- `credentials/A.json` (NAB accredits the producer, M1/M2, 50–500 mg/kg),
+- `credentials/A.json` (NAB accredits the producer for the element contents of the brass,
+  As, Cu, Zn and Pb, M1/M2, 0.1 mg/kg to 997 g/kg, written as 997000 mg/kg; shaped after
+  a flexible-scope annex row),
   `A2.json` (NAB accredits the producer to certify directly, M1; the second route,
   not referenced by D178),
-  `H.json` (NAB recognizes the laboratory for homogeneity studies),
+  `H.json` (NAB accredits the laboratory for homogeneity studies),
   `O.json` (producer's operational scope, M1 only, bound to A),
   `S.json` (laboratory homogeneity study of the batch, bound to H) and
   `D178.json` (certificate, As = 178 mg/kg, U = 5, k = 2, bound to O, citing S),
   plus `D197.json` and `D520.json`, hypothetical reissues with identical inputs except
   the value (fresh valid signatures) for the 197/520 witness cases.
+- `credentials/R.json`: a fictional Global ACI stand-in's recognition of the NAB, a W3C
+  Recognized Entities credential (Working Draft of 4 November 2026) with one subject,
+  recognizing the NAB to `accredit` for Reference material production (ISO 17034:2016)
+  and Testing (ISO/IEC 17025:2017) from 2024 to 2028. A, A2 and H point up to it through
+  `termsOfUse` and pin it in `relatedResource`; only a verifier that anchors Global ACI
+  (profile `rm-verifier-global-aci-1`) relies on it.
 - `status/{nab,producer,lab}.json`: one signed W3C Bitstring Status List per issuer
   (revocation, all bits clear); every credential above names its list and index.
   `status/nab-suspension.json` is the NAB's suspension list; A and A2 carry both a
   revocation and a suspension entry, read by the `accreditation-suspension` restriction.
+  `status/global-aci.json` and `status/global-aci-suspension.json` cover `R`.
 - Authorization references in `termsOfUse` are typed (`authorizationCredential`
   `{id, type}`).
 - `catalog.json`: URI, path, media type and SHA-384 SRI over the exact bytes.

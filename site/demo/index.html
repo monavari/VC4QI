@@ -5,124 +5,159 @@
 <link rel="icon" href="data:,">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>VC4QI demonstrator</title>
-<meta name="description" content="Quality Infrastructure credentials verified in your browser by the VC4QI reliance evaluator: a reference material, calibration certificates, a GS mark and a product passport.">
+<meta name="description" content="Quality Infrastructure credentials verified in your browser by the VC4QI reliance evaluator: examples for a reference material, calibration certificates, a GS mark and a product passport. The RM and GS stories are on their own pages.">
 <style>
 :root{
-  --petrol:#00556E; --dark:#002832; --cyan:#00AFF0; --red:#D2001E; --gray:#BEC3C8;
-  --paper:#FFFFFF; --wash:#F1F3F4; --tcyan:#E1F4FC; --tpet:#DCEAEF; --line:#DADEE1; --ink:#14232A; --muted:#56656D;
-  --brass-1:#E9D08F; --brass-2:#B8914B; --brass-3:#7A5B26;
-  --ok:#00556E; --bad:#D2001E; --unk:#8A6D00;
+  --petrol:#00556E; --cyan:#00AFF0; --red:#D2001E;
+  --paper:#FFFFFF; --raise:#FFFFFF; --wash:#F3F5F6; --tcyan:#E3F5FD; --line:#DADEE1;
+  --ink:#14232A; --muted:#56656D; --soft:#8A979E; --accent:#00556E;
+  /* Reliance states: holds, fails, cannot tell, not asked. */
+  --ok:#1B7A47; --ok-wash:#E7F4EC; --bad:#C8102E; --bad-wash:#FCEBEE;
+  --unk:#9A5B00; --unk-wash:#FFF3DC; --off:#8A979E; --off-wash:#F3F5F6; --on-state:#FFFFFF;
+  /* Verdict banners keep white text in both themes. */
+  --v-ok:#1B7A47; --v-bad:#C8102E; --v-unk:#8A5300; --v-busy:#56656D;
+  --s1:.25rem; --s2:.5rem; --s3:.75rem; --s4:1rem; --s5:1.5rem; --s6:2rem; --s7:3rem;
+  --radius:10px;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){ --paper:#0E1A1F; --wash:#15252C; --tcyan:#0F2F3C; --tpet:#12313B; --line:#26363E; --ink:#E6ECEE; --muted:#9AAAB1; --ok:#3FB6D6; --petrol:#0A6A86; --unk:#E0B84A; }
+  :root:not([data-theme="light"]){ --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --tcyan:#0F2F3C; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --accent:#5CC8E8; --petrol:#0A6A86;
+    --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D; --on-state:#0E1A1F; }
 }
-:root[data-theme="dark"]{ --paper:#0E1A1F; --wash:#15252C; --tcyan:#0F2F3C; --tpet:#12313B; --line:#26363E; --ink:#E6ECEE; --muted:#9AAAB1; --ok:#3FB6D6; --petrol:#0A6A86; --unk:#E0B84A; }
+:root[data-theme="dark"]{ --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --tcyan:#0F2F3C; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --accent:#5CC8E8; --petrol:#0A6A86;
+  --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D; --on-state:#0E1A1F; }
 :root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
 *,*::before,*::after{ box-sizing:inherit; }
-html{ scroll-padding-top:env(safe-area-inset-top,0px); -webkit-text-size-adjust:100%; }
-body{ margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 var(--sans); }
-main{ max-width:42rem; margin:0 auto; padding:0 16px 3rem; }
+html{ font-size:16px; scroll-padding-top:env(safe-area-inset-top,0px); -webkit-text-size-adjust:100%; }
+@media (min-width:64rem){ html{ font-size:17px; } }
+@media (min-width:110rem){ html{ font-size:18px; } }
+body{ margin:0; background:var(--paper); color:var(--ink); font:1rem/1.55 var(--sans); }
+main{ max-width:76rem; margin:0 auto; padding:0 16px var(--s7); }
 a{ color:inherit; text-underline-offset:3px; }
 button{ font:inherit; color:inherit; }
 :focus-visible{ outline:3px solid var(--cyan); outline-offset:2px; border-radius:4px; }
+[hidden]{ display:none !important; }
 
 /* top bar */
 .topbar{ position:sticky; top:0; z-index:5; background:var(--paper); border-bottom:1px solid var(--line); }
-.topbar .in{ max-width:44rem; margin:0 auto; padding:.55rem 16px .5rem; display:flex; align-items:center; gap:.9rem; }
-.brand{ font-size:.85rem; text-decoration:none; white-space:nowrap; } .brand strong{ color:var(--red); }
-.tabs{ display:flex; gap:.25rem; margin-left:auto; }
-.tabs a{ text-decoration:none; font-weight:650; font-size:.9rem; padding:.35rem .75rem; border-radius:999px; color:var(--muted); }
+.topbar .in{ max-width:76rem; margin:0 auto; padding:var(--s2) 16px; display:flex; align-items:center; gap:var(--s4); }
+.brand{ font-size:.9rem; text-decoration:none; white-space:nowrap; } .brand strong{ color:var(--red); }
+.tabs{ display:flex; flex-wrap:wrap; justify-content:flex-end; gap:var(--s1); margin-left:auto; }
+.tabs a{ text-decoration:none; font-weight:650; font-size:.9rem; padding:.35rem .8rem; border-radius:999px; color:var(--muted); }
 .tabs a:hover{ background:var(--wash); color:var(--ink); }
 .tabs a[aria-current="page"]{ background:var(--petrol); color:#fff; }
-main{ max-width:44rem; }
 
-h1{ font-size:1.4rem; line-height:1.2; margin:1.2rem 0 .2rem; }
-.intro{ margin:0 0 1rem; color:var(--muted); }
+/* heading block: kicker, title, lead, then the controls */
+.head{ padding-top:var(--s5); }
+.kicker{ margin:0 0 var(--s2); font-size:.78rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); }
+h1{ margin:0 0 var(--s3); font-size:clamp(1.55rem, 1.2rem + .9vw, 2rem); line-height:1.2; font-weight:750; letter-spacing:-.01em; max-width:46rem; }
+.intro{ margin:0; font-size:1.12rem; line-height:1.55; color:var(--muted); max-width:46rem; }
+.controls{ display:grid; gap:var(--s3); margin-top:var(--s5); max-width:46rem; }
+.controls:empty{ display:none; }
 
-/* controls */
-.controls{ display:grid; gap:.5rem; margin:0 0 1rem; }
-.seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
-.seg button{ border:0; background:transparent; padding:.5rem .35rem; font-size:.88rem; cursor:pointer; line-height:1.2; }
-.seg button small{ display:block; font-size:.7rem; color:var(--muted); }
-.seg button[aria-pressed="true"]{ background:var(--wash); font-weight:650; box-shadow: inset 0 -3px 0 var(--cyan); }
+/* example controls */
+.seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+.seg button{ border:0; background:transparent; padding:var(--s2) var(--s2); font-size:.9rem; cursor:pointer; line-height:1.25; }
+.seg button small{ display:block; font-size:.74rem; color:var(--muted); }
+.seg button[aria-pressed="true"]{ background:var(--wash); font-weight:650; box-shadow:inset 0 -3px 0 var(--cyan); }
 .seg button + button{ border-left:1px solid var(--line); }
 @media (max-width:30rem){ .seg.many{ grid-auto-flow:row; grid-template-columns:1fr 1fr; } .seg.many button:nth-child(3){ border-left:0; } .seg.many button:nth-child(n+3){ border-top:1px solid var(--line); } }
-.label{ font-size:.75rem; color:var(--muted); margin:.15rem 0 -.25rem; }
-.toggles{ display:flex; flex-wrap:wrap; gap:.3rem 1.2rem; font-size:.85rem; color:var(--muted); }
-.toggles label{ display:flex; align-items:center; gap:.45rem; cursor:pointer; }
+.label{ font-size:.78rem; font-weight:600; color:var(--muted); margin:var(--s1) 0 calc(-1 * var(--s1)); }
+.toggles{ display:flex; flex-wrap:wrap; gap:var(--s1) var(--s5); font-size:.9rem; color:var(--muted); }
+.toggles label{ display:flex; align-items:center; gap:var(--s2); cursor:pointer; }
 .toggles input{ width:1.05rem; height:1.05rem; accent-color:var(--petrol); }
 
-/* verdict */
-.verdict{ display:flex; gap:.8rem; align-items:center; border-radius:10px; padding:.8rem 1rem; color:#fff; background:var(--petrol); }
-.verdict.reject{ background:var(--red); } .verdict.unknown{ background:#6B5A1E; } .verdict.busy{ background:var(--muted); }
-.verdict .mark{ flex:none; width:2.1rem; height:2.1rem; border-radius:50%; background:#fff; display:grid; place-items:center; font-weight:800; }
-.verdict b{ display:block; font-size:1.05rem; } .verdict small{ display:block; opacity:.92; font-size:.84rem; overflow-wrap:anywhere; }
+/* stage: one column on phones (a chain being built right after the heading); on wide
+   screens the heading, result and credential sit beside the chain */
+.stage{ display:flex; flex-direction:column; gap:var(--s6); }
+.col{ display:contents; }
+.head{ order:-2; }
+@media (min-width:64rem){
+  .stage{ display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr); gap:var(--s7); align-items:start; }
+  .col{ display:flex; flex-direction:column; gap:var(--s5); min-width:0; }
+  .head{ order:0; }
+  #sec-g{ padding-top:var(--s5); }
+}
+section{ margin:0; }
+h2{ margin:0 0 var(--s3); font-size:.78rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.legend{ margin:calc(-1 * var(--s1)) 0 var(--s4); font-size:.85rem; color:var(--muted); }
 
-section{ margin-top:1.8rem; }
-h2{ font-size:1.05rem; margin:0 0 .6rem; }
-.legend{ font-size:.75rem; color:var(--muted); margin:-.3rem 0 .6rem; }
-
-/* six questions */
-.questions{ display:grid; grid-template-columns:repeat(3, 1fr); gap:.45rem; margin-top:.8rem; }
-@media (max-width:30rem){ .questions{ grid-template-columns:repeat(2, 1fr); } }
-.q{ border-radius:9px; background:var(--wash); border-left:5px solid var(--unk); }
-.q.s-established{ border-left-color:var(--ok); } .q.s-contradicted{ border-left-color:var(--bad); }
-.q.s-not_asked, .q.s-not_required{ border-left-color:var(--gray); }
-.q summary{ list-style:none; cursor:pointer; padding:.5rem .65rem; display:flex; justify-content:space-between; gap:.4rem; align-items:baseline; }
+/* verdict and the six questions */
+.result{ display:grid; gap:var(--s3); }
+.verdict{ display:flex; gap:var(--s4); align-items:center; border-radius:var(--radius); padding:var(--s4) var(--s5); color:#fff; background:var(--v-ok); }
+.verdict.reject{ background:var(--v-bad); } .verdict.unknown{ background:var(--v-unk); } .verdict.busy{ background:var(--v-busy); }
+.verdict .mark{ flex:none; width:2.6rem; height:2.6rem; border-radius:50%; background:#fff; display:grid; place-items:center; font-size:1.25rem; font-weight:800; color:var(--v-ok); }
+.verdict.reject .mark{ color:var(--v-bad); } .verdict.unknown .mark{ color:var(--v-unk); } .verdict.busy .mark{ color:var(--v-busy); }
+.verdict b{ display:block; font-size:1.3rem; line-height:1.25; }
+.verdict small{ display:block; margin-top:var(--s1); font-size:.95rem; line-height:1.4; opacity:.95; overflow-wrap:anywhere; }
+.questions{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--s2); }
+@media (max-width:30rem){ .questions{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+.q{ border-radius:8px; background:var(--off-wash); border-left:5px solid var(--off); }
+.q.s-established{ background:var(--ok-wash); border-left-color:var(--ok); }
+.q.s-contradicted{ background:var(--bad-wash); border-left-color:var(--bad); }
+.q.s-not_established{ background:var(--unk-wash); border-left-color:var(--unk); }
+.q summary{ list-style:none; cursor:pointer; padding:var(--s2) var(--s3); display:flex; flex-direction:column; gap:.1rem; }
 .q summary::-webkit-details-marker{ display:none; }
-.q summary b{ font-size:.9rem; }
+.q summary b{ font-size:.95rem; font-weight:650; }
 .q[open]{ grid-column:1 / -1; }
-.state{ font-size:.74rem; font-weight:700; white-space:nowrap; }
+.state{ font-size:.82rem; font-weight:700; white-space:nowrap; }
 .st-established{ color:var(--ok); } .st-contradicted{ color:var(--bad); } .st-not_established{ color:var(--unk); }
 .st-not_asked, .st-not_required{ color:var(--muted); }
-.why{ margin:0 .65rem .4rem; font-size:.84rem; }
-.trace{ margin:0 .65rem .6rem; padding:0; list-style:none; border-top:1px solid var(--line); }
-.trace li{ font-size:.76rem; padding:.3rem 0; display:grid; grid-template-columns:5.6rem 1fr; gap:.5rem; border-bottom:1px dashed var(--line); overflow-wrap:anywhere; }
+.why{ margin:0 var(--s3) var(--s2); font-size:.9rem; }
+.trace{ margin:0 var(--s3) var(--s3); padding:0; list-style:none; border-top:1px solid var(--line); }
+.trace li{ font-size:.8rem; padding:var(--s1) 0; display:grid; grid-template-columns:6.5rem 1fr; gap:var(--s2); border-bottom:1px dashed var(--line); overflow-wrap:anywhere; }
 .trace li:last-child{ border-bottom:0; }
-.trace code{ font:.7rem var(--mono); color:var(--muted); display:block; overflow-wrap:anywhere; }
+.trace code{ font:.72rem var(--mono); color:var(--muted); display:block; overflow-wrap:anywhere; }
 
-/* graph */
-.graph{ position:relative; display:grid; gap:1.6rem; }
+/* credential chain */
+.graph{ position:relative; display:grid; gap:var(--s5); }
 .graph svg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
-.layer{ display:flex; gap:.5rem; justify-content:center; position:relative; z-index:1; }
-.node{ flex:1 1 0; max-width:12rem; min-width:0; text-align:left; border:0; border-radius:9px; padding:.45rem .55rem; cursor:pointer; }
-.node b{ display:block; font-size:.86rem; } .node small{ display:block; font-size:.7rem; opacity:.85; overflow-wrap:anywhere; }
-.node .badge{ display:inline-block; margin-top:.3rem; font-size:.64rem; font-weight:700; padding:.02rem .4rem; border-radius:999px; background:#fff; color:var(--ok); }
-.node .badge.b-contradicted{ color:var(--bad); } .node .badge.b-not_established{ color:#6B5A1E; }
-.node{ background:var(--dark); color:#fff; }
-.node.target{ background:var(--cyan); }
-.node.missing{ background:var(--wash); color:var(--muted); outline:2px dashed var(--unk); cursor:default; }
-.edge{ fill:none; stroke-width:2; }
-.edge.support{ stroke-dasharray:3 4; }
-.e-established,.e-not_required{ stroke:var(--ok); } .e-contradicted{ stroke:var(--bad); } .e-not_established{ stroke:var(--unk); }
+.layer{ display:flex; gap:var(--s3); justify-content:center; position:relative; z-index:1; }
+.node{ flex:1 1 0; max-width:13rem; min-width:0; text-align:left; background:var(--raise); color:var(--ink); border:2px solid var(--line); border-radius:var(--radius); padding:var(--s2) var(--s3); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+.node:hover{ border-color:var(--muted); }
+.node b{ display:block; font-size:.95rem; font-weight:700; }
+.node small{ display:block; font-size:.76rem; line-height:1.35; color:var(--muted); overflow-wrap:anywhere; }
+.node small:first-of-type{ color:var(--ink); }
+.node.n-established{ border-color:var(--ok); }
+.node.n-contradicted{ border-color:var(--bad); background:var(--bad-wash); }
+.node.n-not_established{ border-color:var(--unk); background:var(--unk-wash); }
+.node.target{ box-shadow:0 0 0 3px var(--paper), 0 0 0 6px var(--cyan); }
+.node.missing{ background:transparent; border:2px dashed var(--unk); color:var(--muted); box-shadow:none; cursor:default; }
+.badge{ display:inline-block; margin-top:var(--s2); font-size:.7rem; font-weight:700; padding:.08rem .5rem; border-radius:999px; color:var(--on-state); background:var(--off); }
+.badge.b-established{ background:var(--ok); } .badge.b-contradicted{ background:var(--bad); } .badge.b-not_established{ background:var(--unk); }
+.edge{ fill:none; stroke-width:2.5; }
+.edge.support{ stroke-dasharray:5 5; }
+.e-established, .e-not_required{ stroke:var(--ok); } .e-unused{ stroke:var(--soft); } .e-contradicted{ stroke:var(--bad); stroke-width:3.5; } .e-not_established{ stroke:var(--unk); stroke-width:3; }
 
-/* credential */
-.vc{ border:2px solid var(--cyan); border-radius:12px; overflow:hidden; }
-.vc header{ background:var(--cyan); color:#fff; padding:.5rem .8rem; display:flex; justify-content:space-between; gap:.5rem; align-items:baseline; }
-.vc header b{ font-size:1rem; } .vc header span{ font-size:.75rem; }
-.vc header .tampered{ background:var(--red); padding:.05rem .45rem; border-radius:999px; font-weight:700; }
-.vc .body{ padding:.6rem .8rem; }
-.kv{ display:grid; grid-template-columns:9rem 1fr; gap:.1rem .6rem; font-size:.84rem; margin:.1rem 0; }
+/* credential card */
+.cards{ display:grid; gap:var(--s4); }
+.vc{ border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:var(--raise); }
+.vc header{ background:var(--tcyan); border-bottom:1px solid var(--line); padding:var(--s3) var(--s4); display:flex; justify-content:space-between; gap:var(--s3); align-items:baseline; }
+.vc header b{ font-size:1.02rem; font-weight:700; } .vc header span{ font:.78rem var(--mono); color:var(--muted); }
+.vc header .tampered{ background:var(--bad); color:#fff; padding:.1rem .5rem; border-radius:999px; font:700 .75rem var(--sans); }
+.vc .body{ padding:var(--s3) var(--s4) var(--s4); }
+.kv{ display:grid; grid-template-columns:10rem 1fr; gap:var(--s1) var(--s3); font-size:.92rem; margin:.15rem 0; }
 .kv span{ color:var(--muted); } .kv b{ font-weight:600; overflow-wrap:anywhere; }
 @media (max-width:30rem){ .kv{ grid-template-columns:7rem 1fr; } }
-table{ width:100%; border-collapse:collapse; font-size:.84rem; margin:.6rem 0 .2rem; }
-th{ text-align:left; font-size:.72rem; color:var(--muted); font-weight:600; border-bottom:1px solid var(--line); padding:.25rem .3rem; }
-td{ padding:.3rem; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; }
+table{ width:100%; border-collapse:collapse; font-size:.9rem; margin:var(--s3) 0 var(--s1); }
+th{ text-align:left; font-size:.72rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--line); padding:var(--s1) var(--s2); }
+td{ padding:var(--s2); border-bottom:1px solid var(--line); vertical-align:top; font-variant-numeric:tabular-nums; }
 td.num{ text-align:right; }
 tr.sel td{ background:var(--tcyan); font-weight:700; }
-.meta{ margin-top:.6rem; padding-top:.5rem; border-top:1px solid var(--line); }
-.meta .kv{ font-size:.76rem; } .meta .kv b{ font:.72rem var(--mono); font-weight:400; }
-.scope{ font-size:.8rem; margin:.2rem 0 0 1rem; padding:0; }
+.meta{ margin-top:var(--s3); padding-top:var(--s2); border-top:1px solid var(--line); }
+.meta .kv{ font-size:.8rem; } .meta .kv b{ font:.78rem var(--mono); font-weight:400; }
+.scope{ font-size:.85rem; margin:var(--s1) 0 0 var(--s4); padding:0; }
 
-details.raw summary{ cursor:pointer; font-weight:600; padding:.4rem 0; font-size:.88rem; }
-pre{ font:.72rem/1.45 var(--mono); background:var(--wash); padding:.8rem; border-radius:8px; overflow-x:auto; max-height:26rem; }
-dialog{ border:0; border-radius:14px 14px 0 0; width:100%; max-width:44rem; margin:auto auto 0; padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom,0px)); background:var(--paper); color:var(--ink); max-height:84vh; }
+details.raw summary{ cursor:pointer; font-weight:600; padding:var(--s2) 0; font-size:.9rem; }
+pre{ font:.74rem/1.45 var(--mono); background:var(--wash); padding:var(--s4); border-radius:8px; overflow-x:auto; max-height:26rem; }
+dialog{ border:0; border-radius:14px 14px 0 0; width:100%; max-width:46rem; margin:auto auto 0; padding:var(--s4) var(--s4) calc(var(--s4) + env(safe-area-inset-bottom,0px)); background:var(--paper); color:var(--ink); max-height:84vh; }
 dialog::backdrop{ background:rgba(0,20,26,.45); }
+dialog h2{ font-size:1.05rem; letter-spacing:0; text-transform:none; color:var(--ink); }
 dialog .close{ float:right; border:1px solid var(--line); background:var(--paper); border-radius:8px; padding:.3rem .7rem; cursor:pointer; }
-footer{ margin-top:2.2rem; border-top:1px solid var(--line); padding-top:.8rem; font-size:.78rem; color:var(--muted); }
-footer p{ margin:.3rem 0; }
+
+footer{ margin-top:var(--s7); border-top:1px solid var(--line); padding-top:var(--s4); font-size:.82rem; color:var(--muted); }
+footer p{ margin:var(--s1) 0; max-width:60rem; }
 </style>
 </head>
 <body>
@@ -131,28 +166,39 @@ footer p{ margin:.3rem 0; }
   <nav class="tabs" id="tabs" aria-label="Examples"></nav>
 </div></header>
 <main>
-  <h1 id="title">VC4QI demonstrator</h1>
-  <p class="intro" id="intro"></p>
 
-  <div class="controls" id="controls"></div>
+  <div class="stage" id="stage">
+    <div class="col">
+      <div class="head">
+        <p class="kicker" id="kicker"></p>
+        <h1 id="title">VC4QI demonstrator</h1>
+        <p class="intro" id="intro"></p>
+        <div class="controls" id="controls"></div>
+      </div>
 
-  <div class="verdict busy" id="verdict" role="status" aria-live="polite">
-    <div class="mark" id="mark">…</div>
-    <div><b id="vTitle">Evaluating</b><small id="vSub">Loading the evaluator…</small></div>
+      <div class="result" id="result">
+        <div class="verdict busy" id="verdict" role="status" aria-live="polite">
+          <div class="mark" id="mark">…</div>
+          <div><b id="vTitle">Evaluating</b><small id="vSub">Loading the evaluator…</small></div>
+        </div>
+        <div class="questions" id="questions"></div>
+      </div>
+
+      <section id="sec-vc" aria-labelledby="h-vc">
+        <h2 id="h-vc">The credential</h2>
+        <div class="cards" id="vc"></div>
+        <details class="raw"><summary>Signed bytes</summary><pre id="raw"></pre></details>
+      </section>
+    </div>
+
+    <div class="col" id="side">
+      <section id="sec-g" aria-labelledby="h-g">
+        <h2 id="h-g">Credential chain</h2>
+        <p class="legend" id="legend"></p>
+        <div class="graph" id="graph"></div>
+      </section>
+    </div>
   </div>
-  <div class="questions" id="questions"></div>
-
-  <section aria-labelledby="h-vc">
-    <h2 id="h-vc">The credential</h2>
-    <div class="vc" id="vc"></div>
-    <details class="raw"><summary>Signed bytes</summary><pre id="raw"></pre></details>
-  </section>
-
-  <section aria-labelledby="h-g">
-    <h2 id="h-g">Credential chain</h2>
-    <p class="legend">Read from the credentials' own references. Solid: authority (<code>termsOfUse</code>). Dotted: study (<code>evidence</code>). Tap a box to open it.</p>
-    <div class="graph" id="graph"></div>
-  </section>
 
   <footer>
     <p>Evaluated in your browser by the repository's own evaluator, as of <span id="evalTime">25 September 2026</span> (status lists expire). Nothing is fetched.</p>
@@ -163,7 +209,7 @@ footer p{ margin:.3rem 0; }
 
 <dialog id="sheet" aria-labelledby="sheetTitle">
   <button class="close" type="button" id="sheetClose">Close</button>
-  <h2 id="sheetTitle"></h2><div class="vc" id="sheetCard"></div>
+  <h2 id="sheetTitle"></h2><div id="sheetCard"></div>
   <details class="raw"><summary>Signed bytes</summary><pre id="sheetBody"></pre></details>
 </dialog>
 
@@ -171,7 +217,8 @@ footer p{ margin:.3rem 0; }
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const short = iri => String(iri ?? '').split('#').pop().split(/[/:]/).pop();
-const LABEL = { established: 'yes', contradicted: 'no', not_established: 'cannot tell', not_asked: 'not asked', not_required: 'not required' };
+const LABEL = { established: '✓ yes', contradicted: '✕ no', not_established: '? cannot tell', not_asked: 'not asked', not_required: 'not required' };
+const LEGEND = 'Read from the credentials’ own references. Solid line: authority (termsOfUse); dashed: supporting study (evidence). Green holds, red fails, amber cannot be told. The ringed box is the credential being checked; click any box to open it.';
 const QUESTIONS = { authentic: 'Authentic', current: 'Current', understood: 'Understood', authorized: 'Authorized', supported: 'Supported', fit: 'Fit for use' };
 const ORDER = ['authentic', 'current', 'understood', 'authorized', 'supported', 'fit'];
 
@@ -184,7 +231,7 @@ try { api = await import('./verifier.js'); }
 catch (error) { fail('This browser could not run the evaluator (' + error.message + ').'); throw error; }
 $('evalTime').textContent = new Date(api.EVALUATION_TIME).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
-const DEFAULT_CHOICE = { rm: 'fit', dcc: 'own' };
+const DEFAULT_CHOICE = { rm: 'fit', dcc: 'own', dpp: 'both' };
 const state = { example: 'rm', caseId: undefined, choice: undefined, tamper: false, withhold: false };
 let seq = 0, current;
 const exampleOf = id => api.EXAMPLES.find(e => e.id === id) ?? api.EXAMPLES[0];
@@ -197,17 +244,23 @@ function readHash() {
   state.choice = DEFAULT_CHOICE[example.id];
   state.tamper = false; state.withhold = false;
 }
-function writeHash() { history.replaceState(null, '', '#' + state.example + '/' + state.caseId); }
+function writeHash() {
+  history.replaceState(null, '', '#' + state.example + '/' + state.caseId);
+}
 
 function renderTabs() {
-  $('tabs').innerHTML = api.EXAMPLES.map(e => "<a href='#" + e.id + "'" + (e.id === state.example ? " aria-current='page'" : '') + '>' + esc(e.tab) + '</a>').join('');
+  $('tabs').innerHTML = "<a href='rm/'>RM story</a><a href='gs/'>GS story</a>" + api.EXAMPLES
+    .map(e => "<a href='#" + e.id + "'" + (e.id === state.example ? " aria-current='page'" : '') + '>' + esc(e.tab) + '</a>').join('');
 }
+
+$('legend').textContent = LEGEND;
 function segment(label, options, value, key, many) {
   return "<p class='label'>" + esc(label) + "</p><div class='seg" + (many ? ' many' : '') + "' role='group' aria-label='" + esc(label) + "' data-key='" + key + "'>"
     + options.map(o => "<button type='button' data-value='" + esc(o.id) + "' aria-pressed='" + (o.id === value) + "'>" + esc(o.label) + '<small>' + esc(o.sublabel) + '</small></button>').join('') + '</div>';
 }
 function renderControls() {
   const ex = exampleOf(state.example), spec = ex.cases.find(c => c.id === state.caseId);
+  $('kicker').textContent = 'Example · ' + ex.tab;
   $('title').textContent = ex.title; $('intro').textContent = ex.intro; $('exampleNote').textContent = ex.note;
   document.title = ex.title + ' · VC4QI demonstrator';
   let h = segment(ex.caseLabel, ex.cases, state.caseId, 'caseId', ex.cases.length > 3);
@@ -244,10 +297,11 @@ function renderVerdict(R) {
   } else {
     v.className = 'verdict unknown'; m = '?'; t = 'Not established';
     const open = ORDER.filter(k => q[k].state === 'not_established');
-    s = open.length ? 'Cannot tell whether it is ' + open.map(k => QUESTIONS[k].toLowerCase()).join(' or ') + '.' : 'Required evidence is missing.';
+    // With a single open question, its first reason is the headline (for example the missing anchor).
+    s = open.length === 1 ? q[open[0]].summary.split(/(?<=\.) /)[0]
+      : open.length ? 'Cannot tell whether it is ' + open.map(k => QUESTIONS[k].toLowerCase()).join(' or ') + '.' : 'Required evidence is missing.';
   }
   $('mark').textContent = m;
-  $('mark').style.color = d === 'accept' ? '#00556E' : (d === 'reject' ? '#D2001E' : '#6B5A1E');
   $('vTitle').textContent = t; $('vSub').textContent = s;
 }
 
@@ -325,14 +379,14 @@ function claimHTML(D, selected) {
   return h;
 }
 function cardHTML(D, selected, tampered) {
-  let h = '<header><b>' + esc(D.name ?? short(D.id) + ' · ' + D.type[1]) + '</b>' + (tampered ? "<span class='tampered'>tampered</span>" : '<span>' + esc(short(D.id)) + '</span>') + '</header>';
+  let h = "<div class='vc'><header><b>" + esc(D.name ?? short(D.id) + ' · ' + D.type[1]) + '</b>' + (tampered ? "<span class='tampered'>tampered</span>" : '<span>' + esc(short(D.id)) + '</span>') + '</header>';
   h += "<div class='body'>" + claimHTML(D, selected) + "<div class='meta'>";
   h += kv('issuer', esc(D.issuer)) + kv('valid', date(D.validFrom) + ' – ' + date(D.validUntil));
   if (D.termsOfUse) h += kv('authority', esc(D.termsOfUse.map(t => short(t.authorizationCredential.id)).join(', ')));
   if (D.evidence) h += kv('evidence', esc(D.evidence.map(e => short(e.id)).join(', ')));
   if (D.credentialStatus) h += kv('status', esc(short(D.credentialStatus.statusListCredential)) + ' #' + esc(D.credentialStatus.statusListIndex));
   if (D.proof) h += kv('proof', esc(D.proof.cryptosuite) + ' · ' + esc(short(D.proof.verificationMethod)));
-  return h + '</div></div>';
+  return h + '</div></div></div>';
 }
 function renderVC(R) {
   $('vc').innerHTML = cardHTML(R.target, R.spec.claims.map(c => c.sourcePointer), R.options.tamper);
@@ -343,13 +397,16 @@ function renderVC(R) {
 
 function renderGraph(R) {
   const g = $('graph'); g.innerHTML = '';
-  const depth = Math.max(...R.graph.nodes.map(n => n.layer));
+  const nodes = R.graph.nodes;
+  const depth = Math.max(...nodes.map(n => n.layer));
   const boxes = new Map();
   for (let l = depth; l >= 0; l--) {
+    const layer = nodes.filter(x => x.layer === l);
+    if (layer.length === 0) continue;
     const row = document.createElement('div'); row.className = 'layer';
-    for (const n of R.graph.nodes.filter(x => x.layer === l)) {
+    for (const n of layer) {
       const b = document.createElement('button'); b.type = 'button';
-      b.className = 'node' + (n.target ? ' target' : '') + (n.present ? '' : ' missing');
+      b.className = 'node' + (n.target ? ' target' : '') + (n.present ? ' n-' + n.state : ' missing');
       const badge = n.present ? "<span class='badge b-" + n.state + "'>" + (n.state === 'established' ? 'verified ✓' : n.state === 'contradicted' ? 'invalid ✕' : 'not checked') + '</span>' : '';
       b.innerHTML = '<b>' + esc(n.name) + '</b><small>' + esc(n.role) + '</small><small>' + esc(n.parties) + '</small>' + badge;
       if (n.present) b.addEventListener('click', () => openSheet(n, R)); else b.disabled = true;
@@ -386,8 +443,8 @@ $('sheet').addEventListener('click', function (e) { if (e.target === this && thi
 
 async function run() {
   const my = ++seq;
-  $('verdict').className = 'verdict busy'; $('mark').textContent = '…'; $('vTitle').textContent = 'Evaluating'; $('vSub').textContent = '';
   delete document.body.dataset.decision;
+  $('verdict').className = 'verdict busy'; $('mark').textContent = '…'; $('vTitle').textContent = 'Evaluating'; $('vSub').textContent = '';
   const R = await api.evaluateScenario({ ...state });
   if (my !== seq) return;
   renderVerdict(R); renderQuestions(R); renderVC(R); renderGraph(R);

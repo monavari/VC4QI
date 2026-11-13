@@ -27,7 +27,8 @@
       "https://vc4qi.example/bindings/rm/1#RmCertificate",
       "https://vc4qi.example/bindings/rm/1#RmStudy",
       "https://vc4qi.example/bindings/rm/1#RmLabAuthority",
-      "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential"
+      "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential",
+      "https://www.w3.org/ns/credentials/recognized-entities#RecognizedEntityCredential"
     ],
     "schemaUris": [
       "https://vc4qi.example/schemas/rm/1/accreditation.json",
@@ -37,9 +38,11 @@
       "https://vc4qi.example/schemas/rm/1/lab-authority.json",
       "https://vc4qi.example/schemas/rm/1/authorization-policy.json",
       "https://vc4qi.example/schemas/rm/1/study-reference.json",
-      "https://vc4qi.example/schemas/rm/1/status-list.json"
+      "https://vc4qi.example/schemas/rm/1/status-list.json",
+      "https://vc4qi.example/schemas/rm/1/recognized-entity.json"
     ],
     "statusListCarrier": "BitstringStatusListCredential with the VCDM 2.0 context only",
+    "recognitionCarrier": "RecognizedEntityCredential with the VCDM 2.0 context and https://vc4qi.example/contexts/recognized-entities/draft-20261104, a stand-in for the unpublished W3C Recognized Entities context (Working Draft of 4 November 2026)",
     "composition": "exact-listed-context-and-schema-combinations-only",
     "pinnedResourceIndex": "bindings/experimental/rm-v1/catalog.json",
     "decimalEncoding": "JSON strings typed xsd:decimal for every quantity, bound and uncertainty",
@@ -75,6 +78,7 @@
     "digestAlgorithm": "sha384",
     "digestEncoding": "SRI",
     "digestInput": "exact-original-secured-bytes",
+    "recognitionReferences": "only a RecognizedEntityCredential that a grant references from its own termsOfUse (authorizationCredential of that type, pinned by digest); recognitions supplied by the holder but not referenced, issuer.recognizedIn and identifier-based discovery are unsupported",
     "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse authorizationCredential references on the credential chain; an authenticated grant found by other means establishes nothing (not_established)"
   },
   "recognizedTypes": {
@@ -110,6 +114,16 @@
     "missingOrEmptyRestrictedDimension": "not_established",
     "recordCombination": "one-complete-record-per-claim-no-splicing",
     "uncertainty": {"requiredCoverageFactor": "2", "nonnegative": true, "accreditationCeiling": "none"},
+    "broader": [
+      {"narrower": "https://vc4qi.example/bindings/rm/1#CuZn39Pb3", "broader": "https://vc4qi.example/bindings/rm/1#CopperAlloys"},
+      {"narrower": "https://vc4qi.example/bindings/rm/1#CopperAlloys", "broader": "https://vc4qi.example/bindings/rm/1#NonFerrousMetalsAndAlloys"},
+      {"narrower": "https://vc4qi.example/bindings/rm/1#Disc", "broader": "https://vc4qi.example/bindings/rm/1#SolidForms"},
+      {"narrower": "https://vc4qi.example/bindings/rm/1#As", "broader": "https://vc4qi.example/bindings/rm/1#ElementContents"},
+      {"narrower": "https://vc4qi.example/bindings/rm/1#Cu", "broader": "https://vc4qi.example/bindings/rm/1#ElementContents"},
+      {"narrower": "https://vc4qi.example/bindings/rm/1#Zn", "broader": "https://vc4qi.example/bindings/rm/1#ElementContents"},
+      {"narrower": "https://vc4qi.example/bindings/rm/1#Pb", "broader": "https://vc4qi.example/bindings/rm/1#ElementContents"}
+    ],
+    "conceptHierarchy": "skos:broader assertions in broader, applied transitively: a scope record's matrix, form or property covers every narrower concept (an accreditation for non-ferrous metals and alloys and element contents contains arsenic in CuZn39Pb3 discs); methods and quantity kinds are exact; labels are never compared; malformed entries are ignored and never widen a scope",
     "methodRevisions": [
       {"method": "https://vc4qi.example/bindings/rm/1#M2", "revises": "https://vc4qi.example/bindings/rm/1#M1"}
     ],
@@ -121,9 +135,10 @@
   "routesAndRestrictions": {
     "certificateRoute": ["O-authorizes-D", "A-authorizes-O-maintenance", "O-contained-by-A"],
     "installedCertificateRoutes": {
-      "operational-scope": ["O-authorizes-D", "A-authorizes-O-maintenance", "O-contained-by-A", "A-issuer-is-accreditation-anchor"],
-      "direct-accreditation": ["A-authorizes-D", "A-issuer-is-accreditation-anchor"]
+      "operational-scope": ["O-authorizes-D", "A-authorizes-O-maintenance", "O-contained-by-A", "A-issuer-is-accreditation-anchor-or-recognized-for-main-scope"],
+      "direct-accreditation": ["A-authorizes-D", "A-issuer-is-accreditation-anchor-or-recognized-for-main-scope"]
     },
+    "recognition": "a grant issuer that is not a configured anchor for the purpose is accepted only through a usable, unsuspended recognition the grant references, whose issuer is an anchor for the recognizer purpose and whose subject is the grant issuer with the required action for the purpose's main scope (activity and normative document, exact), recognized by its issuer and in force at the activity time; a recognition of another body or another main scope contradicts; a missing recognition, entry or time is not_established; recognition never establishes QI scope",
     "studyRoute": ["H-authorizes-S"],
     "requiredSupport": ["S", "H"],
     "globalRestrictions": ["applicable-suspension", "request-time-policy"],
@@ -145,8 +160,8 @@
     "statusMechanism": "W3C Bitstring Status List v1.0: multibase base64url GZIP encodedList, bounded decompression",
     "statusAuthority": "status-list-issuer-equals-credential-issuer",
     "validity": ["validFrom", "validUntil"],
-    "freshness": "verifier-profile maxAgeSeconds from the status list validFrom; no default",
-    "historicalReliance": "unsupported-without-authenticated-historical-evidence",
+    "freshness": "verifier-profile maxAgeSeconds from the status list validFrom, judged at the activity time asked about; no default",
+    "historicalReliance": "status at an earlier activity time only from a status list of the same issuer in force and fresh at that time (kept, dated lists); a later list cannot establish it; no archive discovery",
     "resolver": {"network": false, "unknownUri": "refuse", "budgets": ["maxResources", "maxDepth", "maxBytes"]},
     "installedEvaluatorsOnly": true,
     "issuerProvidedExecutableCode": false

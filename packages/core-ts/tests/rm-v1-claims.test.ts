@@ -6,8 +6,10 @@ import { describe, expect, it } from 'vitest';
 import { createRelianceRequest, loadRelianceProfile } from '../src/reliance/index.js';
 import { evaluateRmSlice } from '../src/reliance/rm-v1-slice.js';
 import type { JsonObject } from '../src/types.js';
+import { readFileSync } from 'node:fs';
+import { encodeStatusList, MIN_STATUS_BITS } from '../src/reliance/status-list.js';
 import {
-  catalogWith, json, manifest, profile, profileJson, reissue, request, serialize, URI,
+  catalogWith, json, manifest, profile, profileJson, reissue, request, resign, serialize, statusListWith, URI,
 } from './rm-v1-helpers.js';
 
 type Result = Awaited<ReturnType<typeof evaluateRmSlice>>['result'];
@@ -176,7 +178,8 @@ describe('I4 complete records, identifiers and units (S09-S17, S22-S24)', () => 
 
   it('S13: a projected lower bound below the parent is rejected although the upper bound fits', async () => {
     const O = json(URI.O);
-    (subject(O).scope as JsonObject[])[0]!.range = { from: '40', to: '500', unit: 'mg/kg' };
+    // A's record starts at 0.1 mg/kg.
+    (subject(O).scope as JsonObject[])[0]!.range = { from: '0.05', to: '500', unit: 'mg/kg' };
     const result = await run(await reissue({ [URI.O]: O }));
     expect(trace(result, 'route:operational-scope:bounded-projection')).toMatchObject({ state: 'contradicted' });
   });
@@ -272,6 +275,47 @@ describe('I4 time: historical questions and scope in force at the activity (P13,
     expect(historical.decision).toBe('not_established');
     // The current question over the same bytes is still answered.
     expect((await run()).decision).toBe('accept');
+  });
+
+  // Status at the activity time from the lists then in force: the issuers' January 2026
+  // lists, signed, dated and kept (test-vectors/signed/status-archive/2026-01).
+  const ARCHIVE = new URL('../../../bindings/experimental/rm-v1/test-vectors/signed/status-archive/2026-01/catalog.json', import.meta.url);
+  const january = (): Record<string, string> => {
+    const { resources } = JSON.parse(readFileSync(ARCHIVE, 'utf8')) as { resources: { uri: string; path: string }[] };
+    return Object.fromEntries(resources.map(r => [r.uri, readFileSync(new URL(`../../../${r.path}`, import.meta.url), 'utf8')]));
+  };
+  const ACTIVITY = '2026-01-20T00:00:00Z';
+  const statusOf = (result: Result, uri: string) =>
+    result.trace.find(t => t.nodeUse.startsWith(`${uri} |`) && t.predicate === 'credential-status');
+
+  it('P13: the lists kept from January answer status on the activity day, 20 January', async () => {
+    const result = await run(january(), request({ activityTime: ACTIVITY }));
+    for (const uri of [URI.D, URI.O, URI.A, URI.S, URI.H]) expect(statusOf(result, uri), uri).toMatchObject({ state: 'established' });
+    expect(result.decision).toBe('accept');
+  });
+
+  it('P13: A suspended in September is rejected today, cannot be told for January from today\'s lists, and holds with January\'s', async () => {
+    const suspended = { [URI.NAB_SUSPENSION]: await statusListWith(URI.NAB_SUSPENSION, [0]) };
+    expect((await run(suspended)).decision).toBe('reject');
+    expect((await run(suspended, request({ activityTime: ACTIVITY }))).decision).toBe('not_established');
+    expect((await run({ ...suspended, ...january() }, request({ activityTime: ACTIVITY }))).decision).toBe('accept');
+  });
+
+  it('P13: a January list with the bit set shows the accreditation suspended at the time', async () => {
+    const lists = january();
+    const kept = JSON.parse(lists[URI.NAB_SUSPENSION]!) as JsonObject;
+    const bits = new Uint8Array(MIN_STATUS_BITS / 8);
+    bits[0] = 0x80;
+    (kept.credentialSubject as JsonObject).encodedList = encodeStatusList(bits);
+    const result = await run({ ...lists, [URI.NAB_SUSPENSION]: await resign(kept) }, request({ activityTime: ACTIVITY }));
+    expect(trace(result, 'restriction:accreditation-suspension')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('reject');
+  });
+
+  it('P13: a kept list establishes nothing outside its own validity window', async () => {
+    const result = await run(january(), request({ activityTime: '2026-03-15T00:00:00Z' }));
+    expect(statusOf(result, URI.D)?.reason).toMatch(/in force until 2026-03-01T00:00:00Z cannot establish status/);
+    expect(result.decision).toBe('not_established');
   });
 
   it('P14: a scope issued after the certification activity cannot authorize it, though it covers it today', async () => {

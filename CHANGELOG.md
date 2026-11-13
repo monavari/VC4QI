@@ -1,5 +1,120 @@
 # Changelog
 
+## Unreleased
+
+- **One recognition credential per accreditation body (RM, experimental).** A fictional
+  Global ACI stand-in issues R, a W3C Recognized Entities credential (Working Draft of
+  4 November 2026) with one subject, the NAB, recognized to accredit for RM production
+  (ISO 17034) and testing (ISO/IEC 17025), with its own revocation and suspension
+  entries. A, A2 and H point up to R through `termsOfUse` (`authorizationCredential` of
+  type `RecognizedEntityCredential`), pinned by digest; their schemas accept it, the RM
+  context defines the type, and the chain below them is re-signed. A verifier whose
+  profile anchors the recognizer (`rm-verifier-global-aci-1`; `bindingRules.recognition`
+  names the recognizer purpose, action and main scopes, and no recognition) accepts the
+  NAB through R; one that anchors the NAB never relies on R, not even when R is
+  unavailable, because a decisive credential's digest pin on a reference off the witness
+  paths no longer decides. A recognition of another body contradicts; one that nothing
+  references, or that the body issued itself, establishes nothing. Ledger E01–E03 and
+  E16–E20 pass in TypeScript and Python. Recognition never widens QI scope: D520 is
+  recognized and still rejected. Status lists compare issuer identifiers, so an issuer
+  object with an `id` is accepted. This replaces the profile-named signatory list
+  `MRA-2026` of the same unreleased branch.
+- **Valid when it was issued? (RM, status at the activity time).** A request asks about
+  its activity time; status at that time is established only by a list of the same
+  issuer in force and fresh then. A list signed later still cannot say what held earlier
+  (P13: not established); a list the issuer signed and kept from that time answers it.
+  The generator writes the issuers' January 2026 lists to their own archive catalog
+  (`test-vectors/signed/status-archive/2026-01`). Freshness is judged at the time asked
+  about; for current questions nothing changes. W3C Recognized Entities (draft of
+  4 November 2026) evaluates validity windows at a past date but not status at that date.
+- **The actor board holds still.** Stepping through the RM and GS stories no longer moves
+  the board: the header keeps room for a two-line title and the acting parties,
+  credentials not yet issued and columns not yet reached hold their place invisibly,
+  cards keep a line for tags with the state icon outside the text, the verifier's
+  column no longer stretches the credential rows, column headers keep their
+  descriptions, re-signed status lists are filled rather than relabelled, the
+  recognition band moves under the board, and the scrollbar's room is kept. Measured in
+  Firefox at 1920×1080 and 1280×720: no credential moves between steps. A credential
+  left out keeps its content on its card, marked "not shown". The suspension tag on A
+  reads "suspended".
+- **RM story, eleven steps.** Opens with D178 drawn with what each link points to (up,
+  down, sideways, beside) next to eight design rules; builds the chain in three steps
+  (R; then A and H; then O, S and D); one "Try to break it" step with every manipulation
+  live, including clicking a citation line to leave that credential out; one decision
+  step where the verifier's rule and its limit (180, 200 or 250 mg/kg) can be changed;
+  the verifier abroad; and "Was it valid when it was issued?" (today, at issuance with
+  today's lists, at issuance with the lists kept from January). Steps carry one or two
+  sentences, guided steps hide locked controls whose value they did not change, actor
+  descriptions show while the chain is built, and the board fits 1920×1080. The
+  presentation placeholder is removed from the RM story.
+- **Accreditations name sets (RM).** A now reads like its annex row: non-ferrous metals
+  and alloys, element contents, solid forms, 0.1 mg/kg – 997 g/kg, methods M1 and M2;
+  H covers homogeneity studies of element contents in non-ferrous metals and alloys. The
+  manifest's `scopeAndMapping.broader` holds the binding's governed hierarchy
+  (`skos:broader`: CuZn39Pb3 under copper alloys under non-ferrous metals and alloys,
+  discs under solid forms, As, Cu, Zn and Pb under element contents), applied
+  transitively to matrix, form and property in containment, claim coverage and study
+  scope, in TypeScript and Python. It never runs downward, malformed entries are
+  ignored, and labels are still never compared. The chain is re-signed and the parity
+  vector regenerated (record identifiers in reasons).
+- The laboratory anchor purpose `recognize-rm-laboratories` is renamed
+  `accredit-rm-laboratories`, since "recognize" now means Recognized Entities
+  recognition; the RM parity vector changes only in that string.
+- RM story: it opens with one credential read by where it points (D178 itself: up,
+  down, sideways, state, shape and seal, and where each word comes from), adds Global ACI
+  as a column and R as the first credential built (marked as a proposal), and closes
+  the decision part with a proposal page comparing a list of recognized bodies with one
+  credential per recognition. Credential H is the laboratory's accreditation, not a
+  "recognition". The verifier's root is one of three (this accreditation body, the
+  Global ACI stand-in, another body); two steps show D520 recognized and still out of
+  scope, and Global ACI suspending R, which stops the verifier abroad but not one that
+  trusts the accreditation body. Suspending R sits in Global ACI's column; links to R are
+  grey, and R is tagged, when the verifier accepted without relying on it. The board
+  takes any number of actor columns. The GS story says a verifier "trusts" its roots.
+- The DPP tab gains the same verifier choice ("Accreditation body only"), using a
+  demonstrator-only profile derived from `gs-verifier-dpp-1` without the scheme owner's
+  anchor. When a single question cannot be told, the verdict line now gives its first
+  reason.
+- The examples page (`site/demo/`) is redesigned for presenting: on wide screens the heading, verdict
+  and credential sit beside the chain; one colour per state (green holds, red fails,
+  amber cannot be told) runs through the verdict, the six questions, the chain's boxes
+  and lines; and headings, text and spacing follow one scale. Phones keep one column.
+- A second demonstrator page, the **RM story** (`site/demo/rm/`), puts the
+  reference-material chain on an actor board: one column each for the accreditation
+  body, the laboratory, the RM producer, the customer lab (holder) and the verifier, with
+  every credential in its issuer's column and the citations drawn across them. Actors
+  join the board as the chain reaches them, starting with the accreditation body alone.
+  Sixteen steps build the chain, verify it, manipulate it (an edited value, a withheld study, a
+  value outside the accredited range, a suspended accreditation), let three verifiers
+  decide (guarded and simple acceptance of 197 ± 5, and one that does not trust the
+  accreditation body, where a placeholder marks international recognition as not
+  evaluated), and show a labelled presentation placeholder; the last step makes
+  every action live. Suspending, revoking and certifying a typed value sign new
+  documents in the browser (`apps/demonstrator/live-sign.ts`) with the same proof code
+  and public fixture keys as the generator; the bundle test checks that they verify like
+  the generated fixtures. The design rules are in `apps/demonstrator/DESIGN.md`.
+- A **GS story** (`site/demo/gs/`) puts the GS chain on the same actor board: the
+  accreditation body, the scheme owner, the GS body, the manufacturer and the verifier.
+  Fifteen steps build the chain up to a product passport, verify it, manipulate it (an
+  edited serial, a borrowed mark credential, a withheld type examination, a certificate
+  withdrawn live by the GS body), let two verifiers decide (market surveillance, and a
+  buyer abroad who does not trust the scheme owner), show a presentation placeholder and
+  make every action live, including revoking the accreditation or the scheme permission.
+  Both boards now share `site/demo/board.js` and `board.css`. In the credential graph a
+  deeper link takes the verification of the credential it points to, so a borrowed link
+  is the only red line. The examples page keeps its RM, DCC, GS and DPP tabs, links to
+  both stories and opens on the RM example.
+- The signed RM v1 accreditation `A` is now broad, shaped after a flexible-scope annex
+  row of an RM producer accreditation ("non-ferrous metals and alloys, element
+  contents"): As, Cu, Zn and Pb in the brass, methods M1 and M2, 0.1 mg/kg to 997 g/kg
+  (written as 997000 mg/kg; its record is now `A#scope-elements`). The producer's
+  operational scope `O` is unchanged (As, M1, 50–500 mg/kg) and is now visibly its own,
+  narrower list. Every decision of the worked example is unchanged: 520 mg/kg is still
+  outside the scope that the certificate draws on. Fixtures and the parity vector are
+  regenerated; S13 and two projection tests (TypeScript and Python) move their bounds to
+  A's new range. Matrices are still compared exactly, so the record names the brass, not
+  a material class.
+
 ## 0.4.0 — 2026-11-05
 
 - **Breaking: the v0.3 graph verifier and its material are removed.** The library's only

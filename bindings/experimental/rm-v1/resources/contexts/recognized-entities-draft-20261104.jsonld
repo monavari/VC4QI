@@ -1,0 +1,32 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+    "re": "https://www.w3.org/ns/credentials/recognized-entities#",
+    "rm": "https://vc4qi.example/bindings/rm/1#",
+
+    "RecognizedEntityCredential": "re:RecognizedEntityCredential",
+    "RecognizedIssuer": "re:RecognizedIssuer",
+    "RecognizedEntity": "re:RecognizedEntity",
+    "ExternalEntityList": "re:ExternalEntityList",
+    "RecognizedAction": {
+      "@id": "re:RecognizedAction",
+      "@context": {
+        "@protected": true,
+        "validFrom": {"@id": "https://www.w3.org/2018/credentials#validFrom", "@type": "http://www.w3.org/2001/XMLSchema#dateTime"},
+        "validUntil": {"@id": "https://www.w3.org/2018/credentials#validUntil", "@type": "http://www.w3.org/2001/XMLSchema#dateTime"}
+      }
+    },
+
+    "recognizedTo": {"@id": "re:recognizedTo", "@container": "@set"},
+    "recognizedIn": "re:recognizedIn",
+    "registration": {"@id": "re:registration", "@type": "@id"},
+    "action": "re:action",
+    "recognizedBy": {"@id": "re:recognizedBy", "@type": "@id"},
+    "outputValidation": {"@id": "re:outputValidation", "@type": "@id"},
+
+    "mainScope": "rm:mainScope",
+    "activity": "rm:arrangementActivity",
+    "standard": "rm:normativeDocument"
+  }
+}

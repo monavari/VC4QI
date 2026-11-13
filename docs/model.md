@@ -140,7 +140,9 @@ restriction (such as an accreditation suspension) applies outside the OR.
 
 A **bounded operational scope** (a projection) also needs permission to maintain the
 scope and containment within its parent. Independent grants are not automatically
-bounded by an accreditation.
+bounded by an accreditation. This is how a flexible accreditation scope works in
+practice: the accreditation names a broad field, and the producer or laboratory keeps
+its own, narrower list within it.
 
 ## 6. Scope, quantities and conformity
 
@@ -151,7 +153,16 @@ erases an earlier failure. A missing governed method cannot bypass a method
 restriction.
 
 Compare governed identifiers or accepted equivalences, never display labels: As and
-Ash, or CuZn39Pb3 and CuZn40Pb2, are distinct. Validate quantity kind, unit, finite
+Ash, or CuZn39Pb3 and CuZn40Pb2, are distinct. An accreditation names sets, as its
+annex does: in RM, A says non-ferrous metals and alloys, element contents, solid forms,
+and H homogeneity studies of element contents in non-ferrous metals and alloys. A set
+covers exactly the concepts the binding's governed hierarchy places under it
+(`scopeAndMapping.broader` in the manifest, `skos:broader` applied transitively:
+CuZn39Pb3 under copper alloys under non-ferrous metals and alloys, discs under solid
+forms, As, Cu, Zn and Pb under element contents). The hierarchy applies to matrix,
+form and property in containment, claim coverage and study scope, never runs
+downward, and without it a set contains nothing but itself; methods and quantity kinds
+stay exact. Validate quantity kind, unit, finite
 ordered bounds and uncertainty before comparing, and use exact decimal arithmetic in
 both languages with no hidden tolerance. Unsupported conversions yield
 `not_established`; proven violations are `contradicted`.
@@ -167,9 +178,11 @@ The reference-material scope has no accreditation uncertainty ceiling. Asymmetri
 uncertainty is not silently averaged, and method succession (M1 to M2) needs an explicit
 profile rule, never an issuer's own mapping.
 
-**Worked example.** Fictional producer accreditation A covers [50, 500] mg/kg with
-methods M1 and M2. The producer's operational scope O covers the same range with M1
-only. Certificate D (CuZn39Pb3 brass, arsenic, M1, U = 5 mg/kg, k = 2) needs a
+**Worked example.** Fictional producer accreditation A covers the element contents of
+the brass (As, Cu, Zn, Pb) from 0.1 mg/kg to 997 g/kg with methods M1 and M2, shaped
+after a flexible-scope annex row ("non-ferrous metals and alloys, element contents"). The
+producer's operational scope O, its own list within that scope, covers arsenic from 50 to
+500 mg/kg with M1 only. Certificate D (CuZn39Pb3 brass, arsenic, M1, U = 5 mg/kg, k = 2) needs a
 same-batch study S by a laboratory with its own authority H. The verifier asks for
 `x + U <= 200 mg/kg`:
 
@@ -177,7 +190,7 @@ same-batch study S by a laboratory with its own authority H. The verifier asks f
 | --- | --- | --- | --- |
 | 178 | 50 ≤ 178 ≤ 500 | 183 ≤ 200 | accept |
 | 197 | in scope | 202 > 200 | reject for conformity (authorization established) |
-| 520 | 520 > 500 | not run | reject for scope |
+| 520 | 520 > 500 (O) | not run | reject for scope |
 
 195 + 5 = 200 passes the inclusive rule, and 500 is in scope. M2 cannot bypass O just
 because A admits it. These cases run on signed fixtures; see [use cases](use-cases.md).
@@ -192,9 +205,32 @@ identifiers prove a digital match, not that a physical sample was not swapped.
 An authority-issued answer (not implemented) can establish one specific predicate. Its
 content must be bound to the exact claim, grantee, activity, scope version, profile and
 time, and the signer's authority must be established independently. A point answer
-cannot prove that a whole scope is contained. The optional Recognized Entities adapter
-pins the 6 September 2026 Working Draft; recognition does not replace QI scope,
-restrictions, support or conformity.
+cannot prove that a whole scope is contained.
+
+Recognition (RM, experimental) answers who stands behind a grant's issuer, nothing
+more. Each recognition is its own credential: R, issued by an arrangement anchor (a
+fictional Global ACI stand-in) about one accreditation body, in the shape of a W3C
+Recognized Entities credential (Working Draft of 4 November 2026) with a single subject
+and its own revocation and suspension entries. The grants point up to it like every
+other link: A and H carry a `termsOfUse` policy whose `authorizationCredential` has type
+`RecognizedEntityCredential`, pinned by digest in `relatedResource`. A verifier whose
+profile anchors the accreditation body stops there, and R never decides for it. A
+verifier whose profile instead anchors the recognizer for the recognizer purpose
+(`bindingRules.recognition`: recognizer purpose, required action and the main scope per
+grant purpose) follows the link: R establishes the grant's issuer only if it is usable
+and not suspended, its issuer is an anchor for the recognizer purpose, its subject is
+the grant's issuer with stated actions, and one action is the required action for the
+grant's main scope (activity and normative document, compared exactly), recognized by
+its issuer and in force at the activity time. A recognition of another body, or for
+another main scope, contradicts; a missing recognition, entry or time is not
+established. R then joins the witness path. The profile names no recognition, and a
+recognition that nothing in the chain references confers nothing. Recognition does not
+replace QI scope, containment, restrictions, support or conformity: D520 is recognized
+and still out of scope. Suspending one body's recognition is one status bit; nothing is
+re-issued. The per-recognition shape and the `termsOfUse` link are this binding's
+proposal; the draft's own up-pointer is `issuer.recognizedIn`, which is not used, and
+the draft's context is not yet published, so the binding pins a stand-in context whose
+terms expand to the draft vocabulary.
 
 ## 8. Security, time and disclosure
 
@@ -203,8 +239,16 @@ restrictions, support or conformity.
 - Resolution is bounded (origin, redirects, media type, size, decompression, time).
   Static resources are pinned by digest; status observations keep their time.
 - Evaluation, activity, issuance, validity, proof and status times are distinct.
-  `validFrom` is not issuance time. The baseline answers current reliance; historical
-  questions need historical evidence and are otherwise refused.
+  `validFrom` is not issuance time. A request asks about its activity time, which is
+  the evaluation time for current reliance. Grants must be in force at that time, and
+  status at that time is established only by a status list of the same issuer that was
+  in force then and fresh then: a list signed later cannot say what held earlier, so a
+  question about the past with only current lists is not established, and a list the
+  issuer signed and kept from that time answers it. Status lists are dated credentials;
+  keeping them is what makes "was it valid when it was issued?" answerable. Finding a
+  kept list is the resolver's job (the RM fixtures keep January 2026 lists in their own
+  archive catalog); an issuer-written activity time can still be backdated without a
+  trusted timestamp.
 - Evidence may be supplied as a flat bundle or retrieved within budgets; extra
   credentials confer nothing. Selective disclosure must keep every fact the request
   needs: a valid disclosure proof that hides a required fact cannot establish reliance.
@@ -227,5 +271,5 @@ resolution, not traversal alone.
 
 [VCDM 2.0](https://www.w3.org/TR/2025/REC-vc-data-model-2.0-20250515/) (15 May 2025)
 provides the carriers; this project's bindings supply the QI interpretation. The
-[Recognized Entities snapshot](https://www.w3.org/TR/2026/WD-vc-recognized-entities-1.0-20260906/)
-is experimental.
+[Recognized Entities Working Draft](https://www.w3.org/TR/2026/WD-vc-recognized-entities-1.0-20261104/)
+(4 November 2026) is experimental.

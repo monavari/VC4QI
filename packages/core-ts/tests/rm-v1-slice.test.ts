@@ -32,6 +32,9 @@ const URI = {
   PRODUCER: 'https://producer.vc4qi.example/controller',
   PRODUCER_STATUS: 'https://producer.vc4qi.example/status/1',
   LAB: 'https://lab.vc4qi.example/controller',
+  R: 'https://global-aci.vc4qi.example/credentials/R',
+  GACI_STATUS: 'https://global-aci.vc4qi.example/status/1',
+  GACI_SUSPENSION: 'https://global-aci.vc4qi.example/status/suspension/1',
 };
 const NOW = '2026-09-25T12:00:00Z';
 const budget = { maxResources: 256, maxBytes: 5_000_000 };
@@ -148,8 +151,10 @@ describe('RM v1 signed vertical slice (I1)', () => {
     expect(byPredicate('claim-mapping:as-mass-fraction')).toMatchObject({ gate: 4, state: 'established' });
     expect(byPredicate('claim-coverage:as-mass-fraction:operational-scope')).toMatchObject({ gate: 5, state: 'established' });
     expect(byPredicate('conformity:as-mass-fraction-max-200-mg-per-kg')).toMatchObject({ gate: 6, execution: 'executed', state: 'established' });
+    // A and H point up to R, so the chain resolves it for every verifier; it decides
+    // only for a verifier whose route uses it (rm-v1-recognition.test.ts).
     expect(result.resources.filter(r => r.kind === 'artifact').map(r => r.uri).sort())
-      .toEqual([URI.A, URI.D, URI.H, URI.O, URI.S].sort());
+      .toEqual([URI.A, URI.D, URI.H, URI.O, URI.R, URI.S].sort());
     expect(result.resources.every(r => r.digestSRI.startsWith('sha384-'))).toBe(true);
   });
 
@@ -176,12 +181,13 @@ describe('RM v1 signed vertical slice (I1)', () => {
 
     it('every credential in the chain is not revoked under a fresh, authorized list', async () => {
       const { result } = await evaluateRmSlice(request(), catalogWith(), manifest, profile);
-      for (const uri of [URI.D, URI.A, URI.O, URI.S, URI.H]) {
+      for (const uri of [URI.D, URI.A, URI.O, URI.S, URI.H, URI.R]) {
         expect(statusOf(result, uri), uri).toMatchObject({ gate: 3, state: 'established' });
       }
       expect(result.resources.filter(r => r.kind === 'status').map(r => r.uri).sort()).toEqual([
+        URI.GACI_STATUS, URI.GACI_SUSPENSION,
         'https://lab.vc4qi.example/status/1', 'https://nab.vc4qi.example/status/1',
-        'https://nab.vc4qi.example/status/suspension/1', URI.PRODUCER_STATUS]);
+        'https://nab.vc4qi.example/status/suspension/1', URI.PRODUCER_STATUS].sort());
       expect(result.decision).toBe('accept');
     });
 
@@ -202,7 +208,10 @@ describe('RM v1 signed vertical slice (I1)', () => {
     });
 
     it('P09: a stale or unavailable list is not established, never contradicted', async () => {
-      const stale = await evaluateRmSlice(request({ evaluationTime: '2026-11-15T00:00:00Z' }), catalogWith(), manifest, profile);
+      // Asked about now (activity time = evaluation time): the September list is too old.
+      // Asked about an earlier time, freshness is judged at that time (rm-v1-claims P13).
+      const later = '2026-11-15T00:00:00Z';
+      const stale = await evaluateRmSlice(request({ evaluationTime: later, activityTime: later }), catalogWith(), manifest, profile);
       expect(statusOf(stale.result, URI.D)?.reason).toMatch(/freshness/);
       expect(stale.result.decision).toBe('not_established');
       const missing = await evaluateRmSlice(request(), catalogWith({ [URI.PRODUCER_STATUS]: null }), manifest, profile);

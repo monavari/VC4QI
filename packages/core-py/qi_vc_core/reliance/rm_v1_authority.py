@@ -4,6 +4,8 @@
 authorized = AND(global restrictions) AND OR(complete routes); route = AND(bases).
 Authority is derived only from the chain's own termsOfUse references: unreferenced
 credentials confer nothing (V07), discovered grants are unsupported (V08).
+The top grant's issuer must be a configured anchor, or be recognized by one through
+a recognition credential the grant points up to (recognized_entities.py, E01-E03).
 """
 
 from __future__ import annotations
@@ -14,7 +16,8 @@ from datetime import datetime
 from typing import Any, Literal
 
 from .profile import RelianceProfile
-from .rm_scope import contained_in
+from .recognized_entities import grant_issuer_standing
+from .rm_scope import EXACT_CONCEPTS, Concepts, contained_in
 from .types import SemanticState, semantic_and, semantic_or
 
 RM = "https://vc4qi.example/bindings/rm/1#"
@@ -281,6 +284,7 @@ def _operational_scope_route(
     lookup: NodeLookup,
     profile: RelianceProfile,
     stack: tuple[str, ...],
+    concepts: Concepts = EXACT_CONCEPTS,
 ) -> RouteResult:
     assert target.document is not None
     d = target.document
@@ -341,6 +345,7 @@ def _operational_scope_route(
     projection = contained_in(
         [r for r in _list(_subject(o).get("scope")) if isinstance(r, dict)],
         [r for r in _list(_subject(a).get("scope")) if isinstance(r, dict)],
+        concepts,
     )
     bases.append(
         BasisResult(
@@ -350,7 +355,17 @@ def _operational_scope_route(
             ("/credentialSubject/scope",),
         )
     )
-    bases.append(_anchor("trust-anchor", a, "accredit-rm-producers", profile))
+    standing, recognition = grant_issuer_standing(
+        "trust-anchor",
+        a,
+        "accredit-rm-producers",
+        profile,
+        lookup,
+        _subject(d).get("activityTime"),
+    )
+    bases.append(standing)
+    if recognition is not None:
+        chain.append(recognition)
     bases.append(_in_force_at_activity(d, [("O", o), ("A", a)]))
     return _route("operational-scope", bases, chain, o_node.uri)
 
@@ -360,6 +375,7 @@ def _direct_accreditation_route(
     lookup: NodeLookup,
     profile: RelianceProfile,
     stack: tuple[str, ...],
+    concepts: Concepts = EXACT_CONCEPTS,
 ) -> RouteResult:
     assert target.document is not None
     d = target.document
@@ -383,14 +399,26 @@ def _direct_accreditation_route(
             "A does not permit issuing RM certificates.",
         )
     )
-    bases.append(_anchor("trust-anchor", a, "accredit-rm-producers", profile))
+    standing, recognition = grant_issuer_standing(
+        "trust-anchor",
+        a,
+        "accredit-rm-producers",
+        profile,
+        lookup,
+        _subject(d).get("activityTime"),
+    )
+    bases.append(standing)
+    if recognition is not None:
+        chain.append(recognition)
     bases.append(_in_force_at_activity(d, [("A", a)]))
     return _route("direct-accreditation", bases, chain, a_node.uri)
 
 
 CERTIFICATE_ROUTES: dict[
     str,
-    Callable[[NodeFacts, NodeLookup, RelianceProfile, tuple[str, ...]], RouteResult],
+    Callable[
+        [NodeFacts, NodeLookup, RelianceProfile, tuple[str, ...], Concepts], RouteResult
+    ],
 ] = {
     "operational-scope": _operational_scope_route,
     "direct-accreditation": _direct_accreditation_route,
@@ -423,14 +451,20 @@ def _accreditation_suspension(
                 continue
             doc = node.document
             queue.append(doc)
-            anchored = any(
-                a.id == doc.get("issuer") and "accredit-rm-producers" in a.purposes
-                for a in profile.trust_anchors
-            )
+            # Anchor-issued: by a configured accreditation anchor, or by an
+            # accreditation body recognized through the recognition A points up to.
             if (
                 _type_of(doc) == "RmAccreditation"
-                and anchored
                 and _subject(doc).get("id") == actor
+                and grant_issuer_standing(
+                    "anchor",
+                    doc,
+                    "accredit-rm-producers",
+                    profile,
+                    lookup,
+                    _subject(target.document).get("activityTime"),
+                )[0].state
+                == "established"
             ):
                 applicable.append(node)
     if not applicable:
@@ -524,7 +558,10 @@ def claim_authority(
 
 
 def certificate_authority(
-    target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
+    target: NodeFacts,
+    lookup: NodeLookup,
+    profile: RelianceProfile,
+    concepts: Concepts = EXACT_CONCEPTS,
 ) -> AuthorityResult:
     if target.usable != "established" or target.document is None:
         return AuthorityResult(
@@ -550,7 +587,7 @@ def certificate_authority(
                 [target.uri],
             )
             if evaluate is None
-            else evaluate(target, lookup, profile, (target.uri,))
+            else evaluate(target, lookup, profile, (target.uri,), concepts)
         )
     restrictions = tuple(
         _unknown(
@@ -568,6 +605,7 @@ def study_authority(
     lookup: NodeLookup,
     profile: RelianceProfile,
     stack: tuple[str, ...],
+    concepts: Concepts = EXACT_CONCEPTS,
 ) -> RouteResult:
     assert study.document is not None
     s_doc = study.document
@@ -596,8 +634,11 @@ def study_authority(
     s = _subject(s_doc)
     covered = any(
         isinstance(record, dict)
-        and record.get("matrixIri") == s.get("matrixIri")
-        and s.get("propertyIri") in _list(record.get("allowedPropertyIris"))
+        and concepts.within(s.get("matrixIri"), record.get("matrixIri"))
+        and any(
+            concepts.within(s.get("propertyIri"), p)
+            for p in _list(record.get("allowedPropertyIris"))
+        )
         and s.get("studyTypeIri") in _list(record.get("studyTypeIris"))
         for record in _list(_subject(h).get("scope"))
     )
@@ -611,7 +652,17 @@ def study_authority(
             source,
         )
     )
-    bases.append(_anchor("laboratory-anchor", h, "recognize-rm-laboratories", profile))
+    standing, recognition = grant_issuer_standing(
+        "laboratory-anchor",
+        h,
+        "accredit-rm-laboratories",
+        profile,
+        lookup,
+        s.get("activityTime"),
+    )
+    bases.append(standing)
+    if recognition is not None:
+        chain.append(recognition)
     return _route("laboratory-authority", bases, chain)
 
 
@@ -627,7 +678,10 @@ def _time(value: Any) -> datetime | None:
 
 
 def certificate_support(
-    target: NodeFacts, lookup: NodeLookup, profile: RelianceProfile
+    target: NodeFacts,
+    lookup: NodeLookup,
+    profile: RelianceProfile,
+    concepts: Concepts = EXACT_CONCEPTS,
 ) -> SupportResult:
     """Required study: same batch, property and matrix; earlier; own authority."""
     if target.usable != "established" or target.document is None:
@@ -747,7 +801,7 @@ def certificate_support(
                 when,
             )
         )
-    authority = study_authority(node, lookup, profile, (target.uri, uri))
+    authority = study_authority(node, lookup, profile, (target.uri, uri), concepts)
     bases.extend(authority.bases)
     state = semantic_and(tuple(b.state for b in bases))
     reason = {

@@ -139,7 +139,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-as)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -223,7 +223,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,
@@ -380,7 +380,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-as)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -464,7 +464,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,
@@ -615,7 +615,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-as)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -699,7 +699,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,
@@ -848,7 +848,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-as)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -932,7 +932,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,
@@ -1082,7 +1082,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-as)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -1166,7 +1166,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,
@@ -1323,7 +1323,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-as)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -1407,7 +1407,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,
@@ -1628,7 +1628,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-as)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -1726,7 +1726,7 @@
             "predicate": "support:laboratory-anchor",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/controller is a configured anchor for recognize-rm-laboratories."
+            "reason": "https://nab.vc4qi.example/controller is a configured anchor for accredit-rm-laboratories."
           },
           {
             "gate": 6,

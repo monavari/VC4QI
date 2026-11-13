@@ -19,6 +19,9 @@ const CHECK = process.argv.includes('--check');
 
 const VC_V2 = 'https://www.w3.org/ns/credentials/v2';
 const RM_CONTEXT = 'https://vc4qi.example/contexts/rm/1';
+// Stand-in for the unpublished W3C Recognized Entities context (Working Draft of
+// 4 November 2026); hand-authored in resources/contexts.
+const RE_CONTEXT = 'https://vc4qi.example/contexts/recognized-entities/draft-20261104';
 const SCHEMA_BASE = 'https://vc4qi.example/schemas/rm/1/';
 
 const iri = { type: 'string', format: 'uri' };
@@ -62,7 +65,7 @@ const authorizationPolicy = closed({
   // resolved credential must have that type.
   authorizationCredential: closed({
     id: iri,
-    type: { enum: ['RmAccreditation', 'RmOperationalScope', 'RmLabAuthority'] },
+    type: { enum: ['RmAccreditation', 'RmOperationalScope', 'RmLabAuthority', 'RecognizedEntityCredential'] },
   }),
 });
 const studyReference = closed({
@@ -101,7 +104,7 @@ const result = closed({
 });
 
 /** Common VCDM 2.0 envelope for one RM artifact type. */
-function credentialSchema(file, rmType, title, subject, extra = {}, requiredExtra = []) {
+function credentialSchema(file, rmType, title, subject, extra = {}, requiredExtra = [], dependentRequired = undefined) {
   const id = `${SCHEMA_BASE}${file}`;
   const properties = {
     '@context': { const: [VC_V2, RM_CONTEXT] },
@@ -128,6 +131,7 @@ function credentialSchema(file, rmType, title, subject, extra = {}, requiredExtr
       '@context', 'id', 'type', 'issuer', 'validFrom', 'validUntil',
       'credentialSchema', 'credentialSubject', 'credentialStatus', ...requiredExtra,
     ]),
+    ...(dependentRequired ? { dependentRequired } : {}),
   };
 }
 
@@ -137,11 +141,20 @@ const grantSubject = (records, activities) => closed({
   scope: nonemptySet(records),
 });
 const ACT = 'https://vc4qi.example/bindings/rm/1#';
+// A grant may point up to the recognition of its issuer (termsOfUse → a Recognized
+// Entities credential), pinned by digest. Optional: a verifier that anchors the
+// accreditation body directly never follows it.
+const upToRecognition = {
+  termsOfUse: { type: 'array', minItems: 1, maxItems: 4, items: authorizationPolicy },
+  relatedResource,
+};
+const pinnedIfReferenced = { termsOfUse: ['relatedResource'] };
 
 const schemas = {
   'accreditation.json': credentialSchema(
     'accreditation.json', 'RmAccreditation', 'RM producer accreditation (A)',
     grantSubject(scopeRecord, [`${ACT}issueRmCertificate`, `${ACT}maintainRmScope`]),
+    upToRecognition, [], pinnedIfReferenced,
   ),
   'operational-scope.json': credentialSchema(
     'operational-scope.json', 'RmOperationalScope', 'RM operational scope (O)',
@@ -188,6 +201,7 @@ const schemas = {
   'lab-authority.json': credentialSchema(
     'lab-authority.json', 'RmLabAuthority', 'Study laboratory authority (H)',
     grantSubject(labScopeRecord, [`${ACT}issueRmStudy`]),
+    upToRecognition, [], pinnedIfReferenced,
   ),
   'status-list.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -210,6 +224,49 @@ const schemas = {
       }),
       proof,
     }, ['@context', 'id', 'type', 'issuer', 'validFrom', 'validUntil', 'credentialSchema', 'credentialSubject']),
+  },
+  // One recognition of one accreditation body, as a W3C Recognized Entities credential
+  // (Working Draft of 4 November 2026) with a single subject: each recognition carries
+  // its own credential and status, rather than a list re-issued as members change.
+  // recognizedTo is optional here so that a recognition without actions is
+  // structurally valid; the evaluator does not accept it.
+  'recognized-entity.json': {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    $id: `${SCHEMA_BASE}recognized-entity.json`,
+    title: 'Recognition of one accreditation body (W3C Recognized Entities credential)',
+    description: 'Experimental VC4QI RM binding v1 fixture schema for a Recognized Entities credential. Not an external standard.',
+    ...closed({
+      '@context': { const: [VC_V2, RE_CONTEXT] },
+      id: iri,
+      type: { const: ['VerifiableCredential', 'RecognizedEntityCredential'] },
+      issuer: closed({ id: iri, type: { const: 'RecognizedIssuer' }, name: { type: 'string', minLength: 1 } }, ['id', 'type']),
+      validFrom: dateTime,
+      validUntil: dateTime,
+      credentialSchema: closed({ id: { const: `${SCHEMA_BASE}recognized-entity.json` }, type: { const: 'JsonSchema' } }),
+      credentialSubject: closed({
+        id: iri,
+        type: { const: 'RecognizedEntity' },
+        name: { type: 'string', minLength: 1 },
+        recognizedTo: {
+          type: 'array',
+          items: closed({
+            type: { const: 'RecognizedAction' },
+            action: { type: 'string', minLength: 1 },
+            recognizedBy: iri,
+            mainScope: closed({
+              activity: { type: 'string', minLength: 1 },
+              standard: closed({ id: iri, name: { type: 'string', minLength: 1 } }),
+            }),
+            validFrom: dateTime,
+            validUntil: dateTime,
+          }, ['type', 'action']),
+        },
+      }, ['id', 'type']),
+      credentialStatus,
+      name: { type: 'string', minLength: 1 },
+      description: { type: 'string', minLength: 1 },
+      proof,
+    }, ['@context', 'id', 'type', 'issuer', 'validFrom', 'validUntil', 'credentialSchema', 'credentialSubject', 'credentialStatus']),
   },
   'authorization-policy.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -253,6 +310,15 @@ const entries = [
     mediaType: 'application/ld+json',
     origin: 'VC4QI experimental RM binding (repository-owned fictional fixture)',
     version: '1',
+  },
+  {
+    uri: RE_CONTEXT,
+    path: 'bindings/experimental/rm-v1/resources/contexts/recognized-entities-draft-20261104.jsonld',
+    mediaType: 'application/ld+json',
+    origin: 'VC4QI stand-in for the unpublished W3C Recognized Entities v1.0 context: terms expand to the '
+      + 'draft vocabulary of w3c/vc-recognized-entities@3961cf6 (Working Draft of 4 November 2026); '
+      + 'mainScope, activity and standard are RM binding extension terms',
+    version: 'draft-20261104',
   },
   ...Object.keys(schemas).map(file => ({
     uri: `${SCHEMA_BASE}${file}`,
