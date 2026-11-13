@@ -46,7 +46,7 @@
     {"fact": "grantee", "nativePath": "/credentialSubject/id", "expandedIri": "@id"},
     {"fact": "permittedActivity", "nativePath": "/credentialSubject/permittedActivity", "expandedIri": "https://vc4qi.example/bindings/cal/1#permittedActivity"},
     {"fact": "scopeRecords", "nativePath": "/credentialSubject/scope", "expandedIri": "https://vc4qi.example/bindings/cal/1#scope"},
-    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/bindings/cal/1#authorizationCredential"},
+    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/ns/chain#authorizationCredential"},
     {"fact": "activityTime", "nativePath": "/credentialSubject/activityTime", "expandedIri": "https://vc4qi.example/bindings/cal/1#activityTime"},
     {"fact": "measurementGroup", "nativePath": "/credentialSubject/measurementGroups/*", "expandedIri": "https://vc4qi.example/bindings/cal/1#measurementGroups"}
   ],
@@ -70,7 +70,7 @@
     "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse authorizationCredential references on the credential chain"
   },
   "recognizedTypes": {
-    "authorizationPolicy": "https://vc4qi.example/bindings/cal/1#CalAuthorizationPolicy",
+    "authorizationPolicy": "https://vc4qi.example/ns/chain#IssuedUnderPolicy",
     "authorizationPolicyEstablishes": ["authorizing-reference-candidate"],
     "nonEstablishingByItself": ["authority", "scope", "conformity"]
   },

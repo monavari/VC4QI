@@ -32,7 +32,7 @@ them for one domain; see [bindings](bindings.md).
 | --- | --- |
 | `@context` | Versioned JSON-LD meaning, processed safely, with no redefinition of protected terms |
 | `type`, `credentialSchema` | Declared types and validation; the verifier controls dispatch |
-| `termsOfUse` | A recognized authorization policy that names the authorizing credential |
+| `termsOfUse` | `IssuedUnderPolicy` naming the grant issued under (`authorizationCredential`), or `RecognitionPolicy` naming a recognition (`recognitionCredential`); one shared vocabulary (`https://vc4qi.example/ns/chain#`) in every binding |
 | `evidence` | Recognized supporting information (support, never authority) |
 | `relatedResource` | Integrity of referenced resources (SHA-384 SRI over exact bytes) |
 | `credentialStatus` | The selected status mechanism, with an authorized signer and freshness |

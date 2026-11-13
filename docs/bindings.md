@@ -87,7 +87,11 @@ accreditation A, operational scope O, certificate D, study S and laboratory auth
 | Activity time | `/credentialSubject/activityTime` |
 | Selected claim | `/credentialSubject/materialPropertiesList/i/results/j` |
 
-The context uses the prefix `rm:` because VCDM 2.0 already protects `exp`. Units are
+The context uses the prefix `rm:` because VCDM 2.0 already protects `exp`. The link
+terms (`IssuedUnderPolicy`, `authorizationCredential`, `RecognitionPolicy`,
+`recognitionCredential`) are not RM terms: every binding maps them to the shared
+namespace `https://vc4qi.example/ns/chain#`, so a grant link means the same in RM,
+calibration and GS, and the protected contexts can be combined. Units are
 exactly `mg/kg` and `kg/kg` (1 mg/kg = 10⁻⁶ kg/kg), bounds are inclusive, and U must be
 symmetric with k = 2. The only baseline route for D runs through O, which must lie
 within A; A admitting M2 does not bypass O's M1 restriction.

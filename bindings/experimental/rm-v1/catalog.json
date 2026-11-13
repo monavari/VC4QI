@@ -15,7 +15,7 @@
       "mediaType": "application/ld+json",
       "origin": "VC4QI experimental RM binding (repository-owned fictional fixture)",
       "version": "1",
-      "digestSRI": "sha384-7Tvmx54G+gi7f7jExPY/xQNN2VJYDCwsAvHZ1t4Aos5aQb5PUR2Glq1T025b6R+N"
+      "digestSRI": "sha384-REBfRqylWX1HD2iFs3geU4NLcU7X1XnYiBGGpUbgcgOu0Z91JsF59CVR9Zx78q3m"
     },
     {
       "uri": "https://vc4qi.example/contexts/recognized-entities/draft-20261112",
