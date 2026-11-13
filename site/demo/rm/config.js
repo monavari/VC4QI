@@ -287,13 +287,12 @@ export const rmConfig = api => (CODES = api.RM_CODES ?? {}, {
     ['recognizedTo, registration', 'In a recognition: the action the body is recognized to perform (accredit), and its entry in the recognizer’s register with the main scopes.'],
     ['Global ACI', 'Here a fictional stand-in for the global accreditation cooperation that recognizes accreditation bodies after peer evaluation.'],
   ],
-  // The vertical layout: one lane per level of authority, top to bottom.
+  // The vertical layout: one lane per actor, from where trust comes from to where it is used.
   lanes: [
     { id: 'recognize', label: 'Recognizes', actors: ['gaci'], cells: [{ code: 'R', col: 'mid' }] },
     { id: 'accredit', label: 'Accredits', actors: ['ab'], cells: [{ code: 'A', col: 'c1' }, { code: 'H', col: 'c2' }] },
-    { id: 'scope', label: 'Declares its scope', actors: ['rmp'], cells: [{ code: 'O', col: 'c1' }] },
     { id: 'study', label: 'Studies the batch', actors: ['lab'], cells: [{ code: 'S', col: 'c2' }] },
-    { id: 'certify', label: 'Certifies', actors: ['rmp'], cells: [{ code: 'D', col: 'mid' }] },
+    { id: 'produce', label: 'Declares its scope, certifies', actors: ['rmp'], cells: [{ code: 'O', col: 'c1' }, { code: 'D', col: 'c2' }] },
     { id: 'hold', label: 'Holds and shows', actors: ['holder'], extra: 'holder' },
   ],
   actions: {
