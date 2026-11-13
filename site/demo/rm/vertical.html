@@ -15,33 +15,36 @@
     <a href="./" data-keep-hash>RM board</a><a href="vertical.html" aria-current="page">RM vertical</a><a href="../gs/">GS story</a><a href="../#rm">Examples</a>
   </nav>
 </div></header>
-<main>
+<main class="vpage">
   <nav class="storynav" id="storynav" aria-label="Story"></nav>
-  <div class="stephead">
-    <p class="kicker" id="kicker"></p>
-    <h1 id="title">Reference material, top to bottom</h1>
-    <p class="acts" id="acts"></p>
-    <p class="lead" id="lead"></p>
-  </div>
-
-  <section class="placeholder" id="presentation" aria-labelledby="h-present" hidden>
-    <span class="tag" id="h-present">Not evaluated · placeholder</span>
-    <p>Nothing in this step is evaluated. The table sketches what the customer lab could reveal, and keep back, when it presents the certificate to the verifier.</p>
-    <table id="presentTable"></table>
-  </section>
-
-  <section class="panel" id="panel" aria-live="polite" hidden></section>
-  <p class="legend" id="legend"><b>Reading the lines:</b> each line is a field of the credential it starts from.<i></i><b>acts under</b> <code>termsOfUse</code>, the authority it names, pinned by digest<i class="dot"></i><b>backed by</b> <code>evidence</code>, supports a claim and grants nothing<i class="dash"></i>handed over. Green holds, red fails, amber cannot be told, grey is not evaluated. Click a credential or a line to learn more.</p>
-  <div class="board" id="board" aria-live="polite"></div>
-  <div class="band" id="band" hidden>
-    <span class="tag">Evaluated · proposal</span>
-    <b>Recognized through R</b>
-    <span>A and H point up to Global ACI's recognition of this body (W3C Recognized Entities, draft). It says who may accredit for what; each claim is still decided by the producer's own scope.</span>
+  <div class="vcols">
+    <aside class="vleft">
+      <div class="stephead">
+        <p class="kicker" id="kicker"></p>
+        <h1 id="title">Reference material, top to bottom</h1>
+        <p class="acts" id="acts"></p>
+        <p class="lead" id="lead"></p>
+      </div>
+      <section class="vcheck" id="vcheck" aria-live="polite" hidden></section>
+      <p class="legend" id="legend"><b>Lines</b> are links inside the credential they start from:<i></i>acts under <code>IssuedUnderPolicy</code><i class="rec"></i>recognized in <code>RecognitionPolicy</code>, no authority<i class="dot"></i>backed by <code>evidence</code><i class="dash"></i>handed over. Green holds, red fails, amber cannot be told. Click a credential or a line.</p>
+    </aside>
+    <div class="vmain">
+      <section class="placeholder" id="presentation" aria-labelledby="h-present" hidden>
+        <span class="tag" id="h-present">Not evaluated · placeholder</span>
+        <table id="presentTable"></table>
+      </section>
+      <section class="panel" id="panel" aria-live="polite" hidden></section>
+      <div class="board" id="board" aria-live="polite"></div>
+      <div class="band" id="band" hidden>
+        <span class="tag">Evaluated · proposal</span>
+        <b>Recognized in R</b>
+        <span>This verifier trusts Global ACI, and R tells it to accept the body. Recognition grants no authority; each claim is still decided by the producer’s own scope.</span>
+      </div>
+    </div>
   </div>
 
   <footer>
-    <p>Evaluated in your browser by the repository's RM evaluator, as of <span id="evalTime">25 September 2026</span> (status lists expire). Nothing is fetched.</p>
-    <p>Certified values and material from the M375a DRMD transcription; D197 and D520 are hypothetical reissues. The accreditation body, laboratory, producer, customer, scopes, methods and keys are fictional. Documents marked "signed in this browser" are signed with the same public, insecure fixture keys as the generated test credentials.</p>
+    <p>Evaluated in your browser on signed test credentials, as of <span id="evalTime">25 September 2026</span>; nothing is fetched. The 178 value is from the M375a certificate; D197, D520, the bodies, scopes and keys are fictional.</p>
     <p><a href="../../">Project</a> · <a href="../../docs/use-cases.html">How it works</a> · <a href="https://github.com/monavari/VC4QI">Code</a> · Mehran Monavari</p>
   </footer>
 </main>
@@ -59,7 +62,8 @@ import { rmConfig } from './config.js';
 let api;
 try { api = await import('../verifier.js'); }
 catch (error) { fail('This browser could not run the evaluator (' + error.message + ').'); throw error; }
-await mountBoard(api, { ...rmConfig(api), layout: 'vertical' }).catch(e => fail('The evaluator could not run: ' + e.message));
+// Every control stays in place (faded until live), so the lanes keep their height.
+await mountBoard(api, { ...rmConfig(api), layout: 'vertical', hideLocked: false }).catch(e => fail('The evaluator could not run: ' + e.message));
 </script>
 </body>
 </html>

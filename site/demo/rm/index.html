@@ -31,17 +31,16 @@
   </section>
 
   <section class="panel" id="panel" aria-live="polite" hidden></section>
-  <p class="legend" id="legend"><b>Reading the lines:</b> each line is a field of the credential it starts from.<i></i><b>acts under</b> <code>termsOfUse</code>, the authority it names, pinned by digest<i class="dot"></i><b>backed by</b> <code>evidence</code>, supports a claim and grants nothing<i class="dash"></i>handed over. Green holds, red fails, amber cannot be told, grey is not evaluated. Click a credential or a line to learn more.</p>
+  <p class="legend" id="legend"><b>Lines</b> are links inside the credential they start from:<i></i>acts under <code>IssuedUnderPolicy</code><i class="rec"></i>recognized in <code>RecognitionPolicy</code>, no authority<i class="dot"></i>backed by <code>evidence</code><i class="dash"></i>handed over. Green holds, red fails, amber cannot be told. Click a credential or a line.</p>
   <div class="board" id="board" aria-live="polite"></div>
   <div class="band" id="band" hidden>
     <span class="tag">Evaluated · proposal</span>
-    <b>Recognized through R</b>
-    <span>A and H point up to Global ACI's recognition of this body (W3C Recognized Entities, draft). It says who may accredit for what; each claim is still decided by the producer's own scope.</span>
+    <b>Recognized in R</b>
+    <span>This verifier trusts Global ACI, and R tells it to accept the body. Recognition grants no authority; each claim is still decided by the producer’s own scope.</span>
   </div>
 
   <footer>
-    <p>Evaluated in your browser by the repository's RM evaluator, as of <span id="evalTime">25 September 2026</span> (status lists expire). Nothing is fetched.</p>
-    <p>Certified values and material from the M375a DRMD transcription; D197 and D520 are hypothetical reissues. The accreditation body, laboratory, producer, customer, scopes, methods and keys are fictional. Documents marked "signed in this browser" are signed with the same public, insecure fixture keys as the generated test credentials.</p>
+    <p>Evaluated in your browser on signed test credentials, as of <span id="evalTime">25 September 2026</span>; nothing is fetched. The 178 value is from the M375a certificate; D197, D520, the bodies, scopes and keys are fictional.</p>
     <p><a href="../../">Project</a> · <a href="../../docs/use-cases.html">How it works</a> · <a href="https://github.com/monavari/VC4QI">Code</a> · Mehran Monavari</p>
   </footer>
 </main>

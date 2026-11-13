@@ -128,12 +128,16 @@ hold it, and the credentials it cites.
 
 | Line | Means | Points to |
 | --- | --- | --- |
-| solid | *acts under* (`termsOfUse`) | the cited credential, towards the root |
+| solid | *acts under* (`termsOfUse`, `IssuedUnderPolicy`: a grant) | the cited credential, towards the root |
+| dash-dot | *is recognized in* (`termsOfUse`, `RecognitionPolicy`: no authority) | the issuer's recognition |
 | dotted | *is backed by* (`evidence`) | the study |
 | dashed grey | handed over | the holder |
 
-The key above the board says this in plain words first, the field second. In a build
-step each new line carries its field's name (`termsOfUse`, `evidence`) at its middle, in a
+Every upward link is a term of use, and its type says what it means: a grant
+(`IssuedUnderPolicy`) is drawn solid, a recognition (`RecognitionPolicy`) dash-dot,
+because a recognition grants no authority and must never look like one. The key says
+this in plain words first, the type second. In a build step each new line carries its
+policy type (`IssuedUnderPolicy`, `RecognitionPolicy`) or `evidence` at its middle, in a
 layer above the cards. A line leaves and enters on the sides facing each other; lines that
 meet on one side of a card share it, spread in the order of where they come from. The
 head is drawn along the line's own last stretch and the line stops at its base, so the
@@ -147,9 +151,12 @@ is the accreditation body). Handover lines are always grey.
 
 ### What a card shows
 
-The code, the plain label, and under it the credential's own type in mono (the last entry
-of `type`, for example `RmAccreditation`), then what it says, its tags and who signed it
-about whom.
+The paper's letter as a small code and a full name that leads (“Producer accreditation”,
+“Producer’s operational scope”), and under it the credential's own type in mono (the last
+entry of `type`, for example `RmAccreditation`), then what it says, its tags and who
+signed it about whom. Explanations name a credential by full name and letter
+(“Producer’s operational scope O”). Column heads carry the actor's name and published
+lists only; the descriptions are gone, as are other texts the board does not need.
 
 ### Explaining a credential or a link
 
@@ -165,15 +172,21 @@ vocabulary in one line each.
 
 ### The vertical layout
 
-`rm/vertical.html` draws the same story top to bottom: one lane per level of authority
-(recognizes, accredits, acts under its accreditation, certifies, holds and shows), the
-credentials in two columns so that each sits under what it acts under, and beside the
-lanes an explainer that stays in view: in a build step what the step adds and the links
-it creates, in an evaluated step the verifier's policy check (verdict, the six questions
-opening to their checks, and the verifier's settings), or the credential or link
-selected. Actions sit with their actor in the lane head. Lanes not yet reached and
-credentials not yet issued hold their place invisibly, as on the board. A link in the top
-bar switches layouts and keeps the step and its state.
+`rm/vertical.html` draws the same story in three columns. On the left: the step (kicker,
+title, acting parties, text), then the verifier's policy check in evaluated steps
+(verdict, the six questions, the verifier's settings) and the key. In the middle: the
+chain top to bottom in one place, one lane per level of authority (recognizes, accredits,
+acts under its accreditation, certifies, holds and shows), compact cards (letter, name,
+type, tags), each credential under what it acts under, and every actor's controls in its
+lane head, always shown and faded until live, so a lane never changes height. On the
+right: the selected credential, read for its content (a certificate's results table, a
+grant's activities and scope records, a study's outcome, a recognition's action and main
+scopes), what it points to and what points to it, its envelope, the checks run on it and
+its signed bytes; or the selected link. Without a selection it shows the step's newest
+credential while building and the certificate once the verifier decides. Below about
+110rem the right column gives way to a floating sheet. Lanes not yet reached and
+credentials not yet issued hold their place invisibly. A link in the top bar switches
+layouts and keeps the step and its state.
 
 ### Pages instead of the board
 

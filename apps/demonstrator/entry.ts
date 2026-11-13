@@ -195,12 +195,13 @@ export interface GraphNode {
   readonly layer: number; readonly present: boolean; readonly state: SemanticState; readonly target: boolean;
 }
 /** `unused`: a link to a credential the verifier verified but did not rely on, such as R for a verifier whose root is the accreditation body. */
-export interface GraphEdge { readonly from: string; readonly to: string; readonly kind: 'authority' | 'support'; readonly state: SemanticState | 'not_required' | 'unused' }
+/** `authority`: termsOfUse IssuedUnderPolicy (or a binding's own authorization policy); `recognition`: termsOfUse RecognitionPolicy (the issuer's recognition, no authority); `support`: evidence. */
+export interface GraphEdge { readonly from: string; readonly to: string; readonly kind: 'authority' | 'recognition' | 'support'; readonly state: SemanticState | 'not_required' | 'unused' }
 export interface Graph { readonly nodes: readonly GraphNode[]; readonly edges: readonly GraphEdge[] }
 
 /**
  * The graph is read from the credentials themselves: from the target, every
- * termsOfUse authorizationCredential (authority) and evidence entry (support) is
+ * termsOfUse authorizationCredential (authority), recognitionCredential (recognition) and evidence entry (support) is
  * followed. Layers are the longest reference path from the target. Node states are the
  * evaluator's per-artifact verification. The target's own authority links take the
  * answer to "authorized", its evidence links the answer to "supported", and deeper links
@@ -215,6 +216,8 @@ function buildGraph(target: string, texts: Record<string, string>, result: Relia
   const refs = (d: Record<string, unknown> | undefined) => [
     ...((d?.termsOfUse ?? []) as { authorizationCredential?: { id?: string } }[])
       .map(t => t.authorizationCredential?.id).filter((x): x is string => typeof x === 'string').map(to => ({ to, kind: 'authority' as const })),
+    ...((d?.termsOfUse ?? []) as { recognitionCredential?: { id?: string } }[])
+      .map(t => t.recognitionCredential?.id).filter((x): x is string => typeof x === 'string').map(to => ({ to, kind: 'recognition' as const })),
     ...((d?.evidence ?? []) as { id?: string }[]).map(e => e.id).filter((x): x is string => typeof x === 'string')
       .map(to => ({ to, kind: 'support' as const })),
   ];
@@ -536,10 +539,10 @@ export const RM_ACTORS: readonly BoardActor[] = [
 ];
 /** D is the certificate shown: D178, D197, D520 or the one signed live. */
 export const RM_ASSETS: readonly BoardAsset[] = [
-  { code: 'R', label: 'Recognition', tag: 'proposal', kind: 'grant', actor: 'gaci', row: 1, about: 'ab', heldBy: 'ab' },
-  { code: 'A', label: 'Accreditation', kind: 'grant', actor: 'ab', row: 1, about: 'rmp', heldBy: 'rmp' },
+  { code: 'R', label: 'Recognition of the body', tag: 'proposal', kind: 'grant', actor: 'gaci', row: 1, about: 'ab', heldBy: 'ab' },
+  { code: 'A', label: 'Producer accreditation', kind: 'grant', actor: 'ab', row: 1, about: 'rmp', heldBy: 'rmp' },
   { code: 'H', label: 'Laboratory accreditation', kind: 'grant', actor: 'ab', row: 2, about: 'lab', heldBy: 'lab' },
-  { code: 'O', label: 'Operational scope', kind: 'grant', actor: 'rmp', row: 1, about: 'rmp', heldBy: 'rmp' },
+  { code: 'O', label: 'Producer’s operational scope', kind: 'grant', actor: 'rmp', row: 1, about: 'rmp', heldBy: 'rmp' },
   { code: 'S', label: 'Homogeneity study', kind: 'evidence', actor: 'lab', row: 2, about: 'object', aboutLabel: 'disc lot 1', heldBy: 'rmp' },
   { code: 'D', label: 'RM certificate', kind: 'claim', actor: 'rmp', row: 2, about: 'object', aboutLabel: 'disc lot 1', heldBy: 'holder' },
 ];
@@ -576,13 +579,13 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
 
   { id: 'recognize', part: 'build', acts: ['gaci', 'ab'], joins: ['gaci', 'ab'], issues: ['R'],
     title: 'Global ACI recognizes the accreditation body',
-    text: 'After peer evaluation, Global ACI signs R: this body may accredit RM production (ISO 17034) and testing (ISO/IEC 17025). R names nothing above it; one credential per recognition is our proposal.' },
+    text: 'After peer evaluation, Global ACI recognizes the body for RM production (ISO 17034) and testing (ISO/IEC 17025). Recognition grants no authority: the body’s authority is its national appointment.' },
   { id: 'accredit', part: 'build', acts: ['ab'], joins: ['lab', 'rmp'], issues: ['A', 'H'],
     title: 'The accreditation body accredits the producer and the laboratory',
-    text: 'The body accredits the producer (A) and the laboratory (H). Each names R in termsOfUse, the authority it acts under, pinned by digest, and must stay within it.' },
+    text: 'The body accredits the producer (A) and the laboratory (H). Each names R as a RecognitionPolicy: issued while recognized, not under R’s authority.' },
   { id: 'act', part: 'build', acts: ['rmp', 'lab', 'holder'], joins: ['holder'], issues: ['O', 'S', 'D'],
     title: 'The producer and the laboratory act',
-    text: 'The producer declares its scope O under A, the lab studies the lot (S) under H, and certificate D178 names O as its authority and S as its evidence.' },
+    text: 'The producer issues its scope O under A, the lab its study S under H, and certificate D178 under O, with S as evidence.' },
 
   { id: 'verify', part: 'verify', acts: ['holder', 'verifier'], joins: ['verifier'], expect: 'accept',
     title: 'Checked upward',
@@ -598,7 +601,7 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
     text: 'D197: 197 ± 5 mg/kg, authorized. Guarded acceptance counts the uncertainty: 202 is above 200. Change the rule or the limit.' },
   { id: 'abroad', part: 'decide', acts: ['verifier', 'gaci', 'rmp'], state: { trust: 'global-aci' }, unlock: ['trust', 'suspendGaci', 'certificate'], expect: 'accept',
     title: 'A verifier abroad trusts only Global ACI',
-    text: 'It climbs one link further: A and H point up to R. Suspend R, or certify 520: recognized is not the same as in scope.' },
+    text: 'It trusts Global ACI: R tells it to accept the body. Suspend R, or certify 520: recognized is not the same as in scope.' },
 
   { id: 'when', part: 'when', acts: ['ab', 'verifier'], state: { suspendA: true, asOf: 'issuance', archive: true },
     unlock: ['asOf', 'archive', 'suspend'], expect: 'accept',
@@ -606,11 +609,11 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
     text: 'A was suspended in September; D178 was certified on 20 January. Asked about today it fails. Asked about January, the lists kept from January answer: A held.' },
 
   { id: 'proposal', part: 'proposal', acts: ['gaci', 'ab'], panel: 'proposal',
-    title: 'Proposal: from recognized body to accreditation',
-    text: 'One recognition credential per body, which its accreditations point up to, and dated status lists for the question at issuance.' },
+    title: 'Proposal: one recognition per body',
+    text: 'One recognition credential per body, named by its grants, and dated status lists for the question at issuance.' },
   { id: 'reconcile', part: 'proposal', acts: ['gaci', 'ab', 'rmp'], panel: 'reconcile',
-    title: 'Recognized Entities and terms of use: find, then bind',
-    text: 'recognizedIn says where an issuer is recognized; a term of use says which grant this credential was issued under. Our proposal: IssuedUnderPolicy.' },
+    title: 'Recognized Entities and terms of use',
+    text: 'Every upward link is a term of use, typed by what it means: IssuedUnderPolicy for a grant, RecognitionPolicy for a recognition. issuer.recognizedIn mirrors the recognition.' },
 
   { id: 'play', part: 'play', acts: ['gaci', 'ab', 'lab', 'rmp', 'holder', 'verifier'],
     unlock: ['suspendGaci', 'suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'ask', 'rule', 'limit', 'asOf', 'archive'],

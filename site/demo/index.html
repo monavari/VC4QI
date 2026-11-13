@@ -128,6 +128,7 @@ h2{ margin:0 0 var(--s3); font-size:.78rem; font-weight:700; letter-spacing:.08e
 .badge.b-established{ background:var(--ok); } .badge.b-contradicted{ background:var(--bad); } .badge.b-not_established{ background:var(--unk); }
 .edge{ fill:none; stroke-width:2.5; }
 .edge.support{ stroke-dasharray:5 5; }
+.edge.recognition{ stroke-dasharray:12 4 2 4; }
 .e-established, .e-not_required{ stroke:var(--ok); } .e-unused{ stroke:var(--soft); } .e-contradicted{ stroke:var(--bad); stroke-width:3.5; } .e-not_established{ stroke:var(--unk); stroke-width:3; }
 
 /* credential card */
@@ -218,7 +219,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const short = iri => String(iri ?? '').split('#').pop().split(/[/:]/).pop();
 const LABEL = { established: '✓ yes', contradicted: '✕ no', not_established: '? cannot tell', not_asked: 'not asked', not_required: 'not required' };
-const LEGEND = 'Read from the credentials’ own references. Solid line: authority (termsOfUse); dashed: supporting study (evidence). Green holds, red fails, amber cannot be told. The ringed box is the credential being checked; click any box to open it.';
+const LEGEND = 'Read from the credentials’ own references. Solid line: issued under a grant (termsOfUse, IssuedUnderPolicy); dash-dot: the issuer’s recognition, no authority (termsOfUse, RecognitionPolicy); dashed: supporting study (evidence). Green holds, red fails, amber cannot be told. The ringed box is the credential being checked; click any box to open it.';
 const QUESTIONS = { authentic: 'Authentic', current: 'Current', understood: 'Understood', authorized: 'Authorized', supported: 'Supported', fit: 'Fit for use' };
 const ORDER = ['authentic', 'current', 'understood', 'authorized', 'supported', 'fit'];
 
@@ -382,7 +383,11 @@ function cardHTML(D, selected, tampered) {
   let h = "<div class='vc'><header><b>" + esc(D.name ?? short(D.id) + ' · ' + D.type[1]) + '</b>' + (tampered ? "<span class='tampered'>tampered</span>" : '<span>' + esc(short(D.id)) + '</span>') + '</header>';
   h += "<div class='body'>" + claimHTML(D, selected) + "<div class='meta'>";
   h += kv('issuer', esc(D.issuer)) + kv('valid', date(D.validFrom) + ' – ' + date(D.validUntil));
-  if (D.termsOfUse) h += kv('authority', esc(D.termsOfUse.map(t => short(t.authorizationCredential.id)).join(', ')));
+  // Each term of use is a grant (authorizationCredential) or a recognition (recognitionCredential).
+  const grants = (D.termsOfUse ?? []).filter(t => t.authorizationCredential).map(t => short(t.authorizationCredential.id));
+  const recognitions = (D.termsOfUse ?? []).filter(t => t.recognitionCredential).map(t => short(t.recognitionCredential.id));
+  if (grants.length) h += kv('issued under', esc(grants.join(', ')));
+  if (recognitions.length) h += kv('recognized in', esc(recognitions.join(', ')) + ' (no authority)');
   if (D.evidence) h += kv('evidence', esc(D.evidence.map(e => short(e.id)).join(', ')));
   if (D.credentialStatus) h += kv('status', esc(short(D.credentialStatus.statusListCredential)) + ' #' + esc(D.credentialStatus.statusListIndex));
   if (D.proof) h += kv('proof', esc(D.proof.cryptosuite) + ' · ' + esc(short(D.proof.verificationMethod)));

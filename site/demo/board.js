@@ -2,10 +2,11 @@
 // The actor board shared by the RM and GS stories (site/demo/rm, site/demo/gs), in two
 // layouts. `board` (the default): one column per actor, credentials in their issuer's
 // column, citations drawn across the columns, every action in the column of the actor who
-// can take it. `vertical`: the chain top to bottom in authority lanes on the left, and on
-// the right an explainer: what a step adds, the verifier's policy check, or the credential
-// or link selected. The bundle (verifier.js) supplies the story, actors, assets and the
-// evaluator; the page supplies a small configuration. Design rules: apps/demonstrator/DESIGN.md.
+// can take it. `vertical`: three columns: the step and the verifier's policy check on the
+// left (#vcheck), the chain top to bottom in authority lanes in the middle, and the
+// selected credential or link on the right (a floating sheet where the screen is narrow).
+// The bundle (verifier.js) supplies the story, actors, assets and the evaluator; the page
+// supplies a small configuration. Design rules: apps/demonstrator/DESIGN.md.
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 export const short = iri => String(iri ?? '').split('#').pop().split(/[/:]/).pop();
@@ -17,17 +18,29 @@ const first = s => String(s).split(/(?<=\.) /)[0];
 /** A credential's own type: the last entry of `type` (after VerifiableCredential). */
 const typeOf = d => [d?.type].flat().filter(Boolean).at(-1) ?? '';
 
-/** The two kinds of link, in plain words, and what a verifier checks on each. */
+/** The kinds of link, in plain words, and what a verifier checks on each. Every upward link
+ * is a termsOfUse entry; its type says whether it is a grant or a recognition. */
 const LINK = {
   authority: {
     verb: 'acts under', field: 'termsOfUse', path: 'termsOfUse[].authorizationCredential',
-    lede: (f, t) => f + ' names ' + t + ' as the authority it acts under. ' + t + ' grants; ' + f + ' uses that grant, and may not go beyond it.',
+    lede: (f, t) => f + ' names ' + t + ' as the grant it was issued under. ' + t + ' grants; ' + f + ' uses that grant, and may not go beyond it.',
     checks: (f, t) => [
       t + ' is signed by its issuer, and its bytes match the digest ' + f + ' pins for it in relatedResource.',
       t + ' is about the issuer of ' + f + ': the parent names the child\'s issuer as its subject.',
       t + ' permits what ' + f + ' does, and what ' + f + ' covers lies within ' + t + '.',
       t + ' was in force, neither suspended nor revoked, at the time asked about.',
       'The climb goes on from ' + t + ' until it reaches a root the verifier chose to trust.',
+    ],
+  },
+  recognition: {
+    verb: 'is recognized in', field: 'termsOfUse', path: 'termsOfUse[].recognitionCredential · RecognitionPolicy',
+    lede: (f, t) => f + ' names ' + t + ': its issuer issued it while recognized there. A recognition grants no authority; it tells a verifier that trusts the recognizer to accept this issuer.',
+    checks: (f, t) => [
+      t + ' is signed by its issuer, and its bytes match the digest ' + f + ' pins for it in relatedResource.',
+      t + ' is about the issuer of ' + f + ', and recognizes it for the action and main scope that ' + f + ' needs.',
+      t + ' was in force, neither suspended nor revoked, at the time asked about.',
+      'It counts only for a verifier that trusts the issuer of ' + t + '; a verifier that trusts the body directly never needs it.',
+      'Where the issuer object carries recognizedIn, it must name ' + t + ' too.',
     ],
   },
   support: {
@@ -47,9 +60,9 @@ const GLOSSARY = [
   ['issuer', 'Who signs the credential.'],
   ['credentialSubject', 'Whom or what the credential is about: a body, a laboratory, a batch of material.'],
   ['type', 'What kind of credential it is, for example RmAccreditation; the type fixes the schema and the rules that apply.'],
-  ['termsOfUse', 'Here: the authority a credential acts under. It names the parent credential (authorizationCredential). Drawn solid: "acts under".'],
+  ['termsOfUse', 'The terms under which a credential was issued. Here every upward link is one, and its type says what it means. Drawn as lines.'],
   ['relatedResource', 'The digests of the credentials it points to. A verifier refuses a parent whose bytes do not match.'],
-  ['evidence', 'Supporting documents, such as a study. Evidence supports a claim and grants nothing. Drawn dotted: "backed by".'],
+  ['evidence', 'Supporting documents, such as a study. Evidence supports a claim and grants nothing. Drawn dotted: “is backed by”.'],
   ['credentialStatus', 'A bit in the issuer\'s status list. Set, it means revoked or suspended.'],
   ['validFrom, validUntil', 'When the credential holds. Authority and status must hold when the activity happened.'],
   ['proof', 'The issuer\'s signature over the exact bytes (eddsa-rdfc-2022, Ed25519).'],
@@ -70,6 +83,7 @@ export function fail(message) {
  *   hosts: { host: 'the party' }       names for plain-word reasons,
  *   facts(code, doc) -> lines          what a card shows,
  *   types: { type: 'what it is' }      one sentence per credential type, for the explainers,
+ *   content(code, doc, ctx) -> html    what a credential says, laid out for reading (the explainer),
  *   glossary: [[term, meaning]]        terms added to the generic ones,
  *   actions: { actorId: [spec] }       spec: { type: 'toggle'|'seg'|'form', key, label, control, options, when(st), fields, submit },
  *   settings: [spec], note             the verifier's settings and a line under them,
@@ -150,13 +164,18 @@ export async function mountBoard(api, cfg) {
   // A credential left out still shows what it says (from the generated chain).
   const textOf = (R, uri) => R.texts[uri] ?? defaultResult?.texts[uri];
   const docOf = (R, uri) => { const t = textOf(R, uri); try { return t ? JSON.parse(t) : null; } catch { return null; } };
-  /** What a credential points to: its termsOfUse authorities, then its evidence. */
+  /** What a credential points to: its termsOfUse grants and recognitions, then its evidence. */
   const linksOf = d => [
-    ...(d?.termsOfUse ?? []).map(t => t.authorizationCredential?.id).filter(Boolean).map(to => ({ to, kind: 'authority' })),
-    ...(d?.evidence ?? []).map(e => e.id).filter(Boolean).map(to => ({ to, kind: 'support' })),
+    ...(d?.termsOfUse ?? []).filter(t => t.authorizationCredential?.id).map(t => ({ to: t.authorizationCredential.id, kind: 'authority', policy: t.type })),
+    ...(d?.termsOfUse ?? []).filter(t => t.recognitionCredential?.id).map(t => ({ to: t.recognitionCredential.id, kind: 'recognition', policy: t.type })),
+    ...(d?.evidence ?? []).map(e => e.id).filter(Boolean).map(to => ({ to, kind: 'support', policy: 'evidence' })),
   ];
+  /** A credential by its full name and the paper's code: “Producer accreditation A”. */
+  const nameOf = (R, uri) => { const a = assetOf(R, uri); return a ? a.label + ' ' + short(uri) : short(uri); };
   const cites = d => linksOf(d).map(l => short(l.to) + (l.kind === 'support' ? ' (evidence)' : ''));
-  const linkWords = (from, l) => '<b>' + esc(short(from)) + '</b> ' + LINK[l.kind].verb + ' <b>' + esc(short(l.to)) + "</b> <code>" + LINK[l.kind].field + '</code>';
+  // The link's own name: its policy type (IssuedUnderPolicy, RecognitionPolicy, a binding's
+  // policy) or evidence.
+  const linkWords = (from, l) => '<b>' + esc(short(from)) + '</b> ' + LINK[l.kind].verb + ' <b>' + esc(short(l.to)) + "</b> <code>" + esc(l.policy ?? LINK[l.kind].field) + '</code>';
   const noneAbove = code => code + ' names no authority above it: only a verifier that trusts its issuer relies on it.';
   const stateMark = s => s === 'unused' ? "<span class='state st-not_required'>not relied on</span>"
     : "<span class='state st-" + s + "'>" + (LABEL[s] ?? s) + '</span>';
@@ -231,7 +250,8 @@ export async function mountBoard(api, cfg) {
     const about = a.about === 'object' ? '<b>' + esc(a.aboutLabel) + '</b>' : "<span class='who-inline'>" + esc(actor(a.about).mono) + '</span>';
     const foot = "<span class='foot'>signed by <span class='who-inline'>" + esc(actor(a.actor).mono) + '</span> · about ' + about
       + (d && cites(d).length ? "<span class='cites'>· cites " + esc(cites(d).join(', ')) + '</span>' : '') + '</span>';
-    const selected = selection?.kind === 'card' && selection.code === a.code;
+    const sel = vertical ? selection ?? defaultSelection(mode) : selection;
+    const selected = sel?.kind === 'card' && sel.code === a.code;
     return "<button type='button' class='card " + a.kind + (state ? ' s-' + state : '') + (missing ? ' missing' : '') + (fresh ? ' fresh' : '')
       + (fresh && a.kind === 'claim' ? ' handover' : '') + (selected ? ' selected' : '') + (pending ? " pending' aria-hidden='true' tabindex='-1" : '')
       + "' data-code='" + esc(a.code) + "' data-uri='" + esc(uri) + "'>"
@@ -318,11 +338,9 @@ export async function mountBoard(api, cfg) {
   }
 
   const note = st => (typeof cfg.note === 'function' ? cfg.note(st) : cfg.note) ?? '';
-  // `onlyChanged`: the vertical lanes show a published list only once it is re-signed.
-  function pubsHTML(a, st, mode, onlyChanged = false) {
+  function pubsHTML(a, st, mode) {
     return a.publishes.map(p => {
       const changed = mode === 'evaluate' && p.uri && cfg.changedList(p.uri, st);
-      if (onlyChanged && !changed) return '';
       // A re-signed list is filled, not relabelled: the same width, so the header keeps its height.
       return "<span class='pub" + (changed ? ' changed' : '') + "'" + (changed ? " title='Re-signed in this browser'" : '') + '>' + esc(p.label)
         + (changed ? "<span class='vh'>, re-signed in this browser</span>" : '') + '</span>';
@@ -345,7 +363,7 @@ export async function mountBoard(api, cfg) {
     return "<section class='col" + (absent ? ' absent' : '') + (acting ? ' acting' : '') + (dim ? ' dim' : '') + "' data-actor='" + a.id + "'"
       + (absent ? " aria-hidden='true' inert" : " aria-label='" + esc(a.name) + "'") + '>'
       + "<div class='colhead'><div class='name'><span class='mono-badge'>" + esc(a.mono) + '</span><h2>' + esc(a.name) + '</h2></div>'
-      + "<p class='does'>" + esc(a.does) + "</p><div class='pubs'>" + pubsHTML(a, st, mode) + "</div><div class='roles'></div></div>"
+      + "<div class='pubs'>" + pubsHTML(a, st, mode) + "</div><div class='roles'></div></div>"
       + rows.map(row => "<div class='slot r" + row + "'>" + slot(row) + '</div>').join('')
       + "<div class='actions'>" + (cfg.actions[a.id] ?? []).map(spec => control(spec, st)).join('') + '</div></section>';
   }
@@ -361,41 +379,39 @@ export async function mountBoard(api, cfg) {
     const issued = issuedSoFar();
     const cell = c => "<div class='cell " + c.col + "'>" + cardHTML(ASSETS.find(x => x.code === c.code), R, mode, absent || (mode === 'build' && !issued.has(c.code))) + '</div>';
     const extra = lane.extra && cfg.extras[lane.extra] ? "<div class='cell mid'>" + cfg.extras[lane.extra].html(ctx) + '</div>' : '';
-    const who = lane.actors.map(id => "<div class='name'><span class='mono-badge'>" + esc(actor(id).mono) + '</span><h2>' + esc(actor(id).name) + '</h2></div>'
-      + "<div class='pubs'>" + pubsHTML(actor(id), st, mode, true) + '</div>').join('');
+    // No published-list pills here: a re-signed list shows as the pressed action and the
+    // card's tag, so a lane head never changes height.
+    const who = lane.actors.map(id => "<div class='name'><span class='mono-badge'>" + esc(actor(id).mono) + '</span><h2>' + esc(actor(id).name) + '</h2></div>').join('');
     const acts = (lane.actions ?? lane.actors).flatMap(id => cfg.actions[id] ?? []).map(spec => control(spec, st)).join('');
     return "<section class='lane" + (absent ? ' absent' : '') + (acting ? ' acting' : '') + (dim ? ' dim' : '') + "' data-lane='" + esc(lane.id) + "'"
       + (absent ? " aria-hidden='true' inert" : " aria-label='" + esc(lane.label) + "'") + '>'
       + "<div class='lanehead'><p class='verb'>" + esc(lane.label) + '</p>' + who + "<div class='actions'>" + acts + '</div></div>'
       + "<div class='cells'>" + (lane.cells ?? []).map(cell).join('') + extra + '</div></section>';
   }
-  /** A build step's new credential, briefly: its type, what it is and what it points to. */
-  function explainHTML(code, R) {
-    const a = ASSETS.find(x => x.code === code), uri = R.uris[code], d = docOf(R, uri), ls = linksOf(d);
-    return "<article class='explain'><header class='dhead'><button type='button' class='code' data-card='" + esc(code) + "'>" + esc(short(uri)) + '</button><b>' + esc(a.label)
-      + "</b><code class='type'>" + esc(typeOf(d)) + '</code></header>'
-      + (cfg.types?.[typeOf(d)] ? "<p class='lede'>" + esc(cfg.types[typeOf(d)]) + '</p>' : '')
-      + "<ul class='linklist'>" + (ls.length ? ls.map(l => '<li>' + linkButton(uri, l) + '</li>').join('') : '<li>' + esc(noneAbove(short(uri))) + '</li>') + '</ul></article>';
-  }
   const linkButton = (from, l, R, mode) => {
     const e = R && R.graph.edges.find(x => x.from === from && x.to === l.to);
     return "<button type='button' class='linkbtn' data-link='" + esc(from + '|' + l.to + '|' + l.kind) + "'>" + linkWords(from, l) + '</button>'
       + (mode === 'evaluate' && e ? ' ' + stateMark(e.state) : '');
   };
-  /** The right-hand explainer: a selection, the new credentials of a build step, or the policy check. */
+  /** What the right-hand column shows unless something is selected: the step's newest
+   * credential while building, the credential checked once the verifier decides. */
+  const defaultSelection = mode => {
+    const issued = STORY[step].issues ?? [];
+    return { kind: 'card', code: mode === 'build' && issued.length ? issued.at(-1) : 'D' };
+  };
+  /** The right-hand column: the credential or link selected, with the step's new credentials as shortcuts. */
   function sideHTML(R, mode) {
+    const sel = selection ?? defaultSelection(mode);
+    const issued = mode === 'build' ? STORY[step].issues ?? [] : [];
+    const chips = issued.length > 1 ? "<p class='newchips'>New in this step: " + issued.map(code => "<button type='button' class='code' data-card='" + esc(code) + "'>"
+      + esc(short(R.uris[code])) + '</button>').join(' ') + '</p>' : '';
+    return chips + (sel.kind === 'card' ? detailHTML(sel.code, R, mode) : linkHTML(sel, R, mode));
+  }
+  /** The left-hand policy check (vertical): the verdict, the six questions and the verifier's settings. */
+  function checkHTML(R, mode) {
     const st = stateOf(STORY[step]);
-    if (selection) {
-      return "<button type='button' class='back' data-back>← " + (mode === 'build' ? 'This step' : 'The policy check') + '</button>'
-        + (selection.kind === 'card' ? detailHTML(selection.code, R, mode) : linkHTML(selection, R, mode));
-    }
-    if (mode === 'build') {
-      return "<h2 class='sidehead'>New in this step</h2>" + (STORY[step].issues ?? []).map(code => explainHTML(code, R)).join('')
-        + "<p class='hint'>Click a credential, a line or a link for the details.</p>";
-    }
-    return "<h2 class='sidehead'><span class='mono-badge sm'>V</span>The verifier's policy check</h2>" + verdictHTML(R, mode, true)
-      + "<div class='settings'>" + cfg.settings.map(spec => control(spec, st)).join('') + (note(st) ? "<p class='limit'>" + note(st) + '</p>' : '') + '</div>'
-      + "<p class='hint'>Open a question for the checks behind it. Click a credential or a line to see what was checked on it.</p>";
+    return "<h2 class='sidehead'><span class='mono-badge sm'>V</span>Verifier</h2>" + verdictHTML(R, mode)
+      + "<div class='settings'>" + cfg.settings.map(spec => control(spec, st)).join('') + (note(st) ? "<p class='limit'>" + note(st) + '</p>' : '') + '</div>';
   }
 
   // ---------------------------------------------------------------- explaining a credential or a link
@@ -419,12 +435,13 @@ export async function mountBoard(api, cfg) {
       + (mode === 'evaluate' ? stateMark(missing ? 'not_established' : node?.state ?? 'not_established') : '') + '</header>';
     if (cfg.types?.[type]) h += "<p class='lede'>" + esc(cfg.types[type]) + '</p>';
     if (missing) h += "<p class='lede'>The holder left it out: the verifier never saw it.</p>";
-    h += "<dl class='map'>" + mapping(a, uri, R).map(([k, v]) => '<dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd>').join('') + '</dl>';
+    if (d && cfg.content) h += '<h3>What it says</h3>' + cfg.content(code, d, ctxOf(R, mode));
     const up = linksOf(d);
     h += '<h3>Points to</h3>' + (up.length ? "<ul class='linklist'>" + up.map(l => '<li>' + linkButton(uri, l, R, mode) + '</li>').join('') + '</ul>'
       : "<p class='none'>" + esc(noneAbove(short(uri))) + '</p>');
     const down = ASSETS.map(x => R.uris[x.code]).filter(u => u && u !== uri).flatMap(u => linksOf(docOf(R, u)).filter(l => l.to === uri).map(l => [u, l]));
     if (down.length) h += '<h3>Pointed to by</h3>' + "<ul class='linklist'>" + down.map(([u, l]) => '<li>' + linkButton(u, l, R, mode) + '</li>').join('') + '</ul>';
+    h += '<h3>Envelope</h3>' + "<dl class='map'>" + mapping(a, uri, R).map(([k, v]) => '<dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd>').join('') + '</dl>';
     if (mode === 'evaluate') {
       const groups = checksFor(uri, R);
       h += '<h3>What the verifier checked</h3>' + (groups.length ? groups.map(g => "<p class='qhead'><b>" + QUESTIONS[g.q.id] + '</b> ' + stateMark(g.q.state) + '</p>' + traceHTML(g.rows)).join('')
@@ -437,11 +454,13 @@ export async function mountBoard(api, cfg) {
     const fa = assetOf(R, sel.from), ta = assetOf(R, sel.to), fd = docOf(R, sel.from), td = docOf(R, sel.to);
     const e = R.graph.edges.find(x => x.from === sel.from && x.to === sel.to);
     const pin = (fd?.relatedResource ?? []).find(r => r.id === sel.to);
-    const entry = sel.linkKind === 'authority' ? (fd?.termsOfUse ?? []).find(x => x.authorizationCredential?.id === sel.to) : (fd?.evidence ?? []).find(x => x.id === sel.to);
+    const entry = sel.linkKind === 'authority' ? (fd?.termsOfUse ?? []).find(x => x.authorizationCredential?.id === sel.to)
+      : sel.linkKind === 'recognition' ? (fd?.termsOfUse ?? []).find(x => x.recognitionCredential?.id === sel.to)
+      : (fd?.evidence ?? []).find(x => x.id === sel.to);
     const card = (code, x) => "<button type='button' class='code' data-card='" + esc(code) + "'>" + esc(x) + '</button>';
     let h = "<article class='detail'><header class='dhead'>" + card(fa?.code, f) + "<span class='verb'>" + L.verb + '</span>' + card(ta?.code, t)
       + (mode === 'evaluate' && e ? stateMark(e.state) : '') + '</header>'
-      + "<p class='lede'>" + esc(L.lede(f, t)) + '</p>'
+      + "<p class='lede'>" + esc(L.lede(nameOf(R, sel.from), nameOf(R, sel.to))) + '</p>'
       + "<dl class='map'><dt>In</dt><dd>" + esc(f + ' · ' + (fa?.label ?? '') + ' (' + typeOf(fd) + ')') + '</dd>'
       + '<dt>Field</dt><dd><code>' + L.path + '</code></dd>'
       + '<dt>Points to</dt><dd>' + esc(t + ' · ' + (ta?.label ?? '') + ' (' + typeOf(td) + ')') + '</dd>'
@@ -449,7 +468,7 @@ export async function mountBoard(api, cfg) {
       + (mode === 'evaluate' ? '<dt>Here</dt><dd>' + esc(edgeWords(e, t)) + '</dd>' : '') + '</dl>'
       + "<details class='raw' open><summary>The link in " + esc(f) + "'s signed bytes</summary><pre>"
       + esc(JSON.stringify({ [L.field]: [entry], ...(pin ? { relatedResource: [pin] } : {}) }, null, 2)) + '</pre></details>'
-      + '<h3>What a verifier checks on this link</h3><ul class="checks">' + L.checks(f, t).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
+      + '<h3>What a verifier checks on this link</h3><ul class="checks">' + L.checks(nameOf(R, sel.from), nameOf(R, sel.to)).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
     if (mode === 'evaluate') {
       const rows = checksFor(sel.to, R).flatMap(g => g.rows).filter(x => x.gate >= 1);
       h += '<h3>Checks run here that read ' + esc(t) + '</h3>' + (rows.length ? traceHTML(rows) : "<p class='none'>None: the verifier did not need " + esc(t) + '.</p>');
@@ -461,7 +480,8 @@ export async function mountBoard(api, cfg) {
   /** Explain a credential or a link: beside the lanes (vertical), or in the sheet (board). */
   function show(sel) {
     if (!last) return;
-    if (vertical) { selection = sel; renderSide(); return; }
+    const side = $('board').querySelector('.side');
+    if (vertical && side && getComputedStyle(side).display !== 'none') { selection = sel; renderSide(); return; }
     openSheet(titleOf(sel), sel.kind === 'card' ? detailHTML(sel.code, last.R, last.mode) : linkHTML(sel, last.R, last.mode));
   }
   function openSheet(title, html) {
@@ -476,9 +496,9 @@ export async function mountBoard(api, cfg) {
     if (!side || !last) return;
     side.innerHTML = sideHTML(last.R, last.mode);
     side.scrollTop = 0;
-    wireControls(side); wireDetail(side);
-    $('board').querySelectorAll('.flow .card').forEach(c => c.classList.toggle('selected', selection?.kind === 'card' && selection.code === c.dataset.code));
-    redraw?.();
+    wireDetail(side);
+    const sel = selection ?? defaultSelection(last.mode);
+    $('board').querySelectorAll('.flow .card').forEach(c => c.classList.toggle('selected', sel.kind === 'card' && sel.code === c.dataset.code));
   }
 
   // ---------------------------------------------------------------- lines
@@ -569,7 +589,8 @@ export async function mountBoard(api, cfg) {
       const line = lineSVG(curve, e.kind + ' e-' + state, colour(state));
       if (fresh.has(e.from)) {
         const [x, y] = splitAt(curve, 0.5).at;
-        labels.push("<text class='edge-label' x='" + x.toFixed(1) + "' y='" + y.toFixed(1) + "'>" + LINK[e.kind].field + '</text>');
+        const policy = linksOf(docOf(R, e.from)).find(l => l.to === e.to && l.kind === e.kind)?.policy ?? LINK[e.kind].field;
+        labels.push("<text class='edge-label' x='" + x.toFixed(1) + "' y='" + y.toFixed(1) + "'>" + esc(policy) + '</text>');
       }
       const code = codeOf(e.to), leaving = leave && code && code !== 'D';
       const left = leaving && stateOf(STORY[step])[cfg.leaveOut.key] === code;
@@ -629,7 +650,6 @@ export async function mountBoard(api, cfg) {
       show({ kind: 'link', from, to, linkKind });
     }));
     root.querySelectorAll('[data-card]').forEach(b => b.addEventListener('click', () => { if (b.dataset.card) show({ kind: 'card', code: b.dataset.card }); }));
-    root.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => { selection = null; renderSide(); }));
   }
   $('sheetClose').addEventListener('click', () => { const s = $('sheet'); if (s.close) s.close(); else s.removeAttribute('open'); });
   $('sheet').addEventListener('click', function (e) { if (e.target === this && this.close) this.close(); });
@@ -658,6 +678,8 @@ export async function mountBoard(api, cfg) {
     if (panel) panel.hidden = mode !== 'panel';
     board.hidden = mode === 'panel';
     if ($('legend')) $('legend').hidden = mode === 'panel';
+    const vcheck = vertical ? $('vcheck') : null;
+    if (vcheck) vcheck.hidden = mode === 'panel' || mode === 'build';
     if (mode === 'panel') {
       const R = defaultResult ??= await cfg.evaluate({});
       if (my !== seq) return;
@@ -665,7 +687,7 @@ export async function mountBoard(api, cfg) {
       redraw = undefined;
       return;
     }
-    const busy = board.querySelector(vertical ? '.side .verdict' : '.col[data-actor="verifier"] .slot.r1');
+    const busy = vertical ? vcheck?.querySelector('.verdict') : board.querySelector('.col[data-actor="verifier"] .slot.r1');
     const busyHTML = "<div class='verdict busy'><div class='mark'>…</div><div><b>Evaluating</b><small>Signing and checking in your browser.</small></div></div>";
     if (busy && mode === 'evaluate') { if (vertical) busy.outerHTML = busyHTML; else busy.innerHTML = busyHTML; }
     // Build and presentation steps evaluate nothing; they read the generated credentials.
@@ -677,7 +699,10 @@ export async function mountBoard(api, cfg) {
       ? "<div class='flow'><svg class='lines' aria-hidden='true'></svg><svg class='labels' aria-hidden='true'></svg>" + cfg.lanes.map(l => laneHTML(l, R, mode)).join('') + "</div><aside class='side' aria-live='polite'>" + sideHTML(R, mode) + '</aside>'
       : "<svg class='lines' aria-hidden='true'></svg><svg class='labels' aria-hidden='true'></svg>" + ACTORS.map(a => colHTML(a, R, mode)).join('');
     wireCards(R, mode); wireControls(board);
-    if (vertical) wireDetail(board.querySelector('.side'));
+    if (vertical) {
+      wireDetail(board.querySelector('.side'));
+      if (vcheck) { vcheck.innerHTML = mode === 'evaluate' ? checkHTML(R, mode) : ''; wireControls(vcheck); }
+    }
     redraw = () => drawLines(R, mode);
     requestAnimationFrame(redraw);
   }
