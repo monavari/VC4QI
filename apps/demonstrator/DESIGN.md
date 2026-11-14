@@ -130,8 +130,9 @@ verifier's column narrows and a name may drop below its monogram; it never trunc
 A card shows its code badge, its kind in words, one key fact and a footer "signed by … ·
 about …". What the binding proposes rather than reuses carries a "proposal" tag beside
 its kind (R). Its state is its border colour and a corner icon. A credential sits in its
-issuer's column; selecting it labels the columns that sign it, that it is about, that
-hold it, and the credentials it cites.
+issuer's column; hovering or focusing it labels the columns (lanes, in the vertical
+layout) that sign it, that it is about and that hold it, on their top edge so nothing
+grows.
 
 ### Relations: line style
 
@@ -192,7 +193,8 @@ Cards look as on the opening graph: code, name, type, who signs it about whom (t
 in its group colour), tags, in smaller type, all of one width, either side of a wide
 middle gap, a lone card in the middle. Every line carries its name (the termsOfUse type or
 `evidence`) in the space it crosses; lines that meet at one card are named near where they
-start. Lanes hold no controls, so a lane never changes height. Clicking a credential or a
+start. Hovering a card tags the lanes that sign it, that it is about and that hold it,
+as on the board. Lanes hold no controls, so a lane never changes height. Clicking a credential or a
 line opens it in a floating sheet (what it says, its links, envelope, checks and signed
 bytes, folded but for what it says), and the card stays ringed while the sheet is open.
 Lanes not yet reached and credentials not yet issued hold their place invisibly. A link
