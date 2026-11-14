@@ -324,11 +324,16 @@ def grant_issuer_standing(
     lookup: NodeLookup,
     at: Any,
 ) -> tuple[BasisResult, str | None]:
-    """Configured anchor for `purpose`, or recognized through a recognition the grant
-    itself points up to.
+    """Configured anchor for `purpose`; else appointed by a configured state anchor
+    through the appointment the grant was issued under (appointment.py), when the
+    profile accepts appointments; else recognized through a recognition the grant points
+    up to, when the profile accepts recognitions.
 
-    Returns the basis and the deciding recognition, so routes can name it as a witness.
+    Returns the basis and the deciding appointment or recognition, so routes can name
+    it as a witness.
     """
+    from .appointment import appointment_standing
+
     issuer = issuer_id(grant.get("issuer"))
     configured = next((a for a in profile.trust_anchors if a.id == issuer), None)
     if configured is not None and purpose in configured.purposes:
@@ -346,9 +351,49 @@ def grant_issuer_standing(
         if configured is None
         else f"{_js(issuer)} is an anchor, but not for {purpose}."
     )
+    appointed = appointment_standing(basis_id, grant, profile, lookup, at, direct)
+    if appointed is not None and appointed[0].state == "established":
+        return appointed
+    recognized = _recognition_standing(
+        basis_id, grant, purpose, profile, lookup, at, issuer, direct
+    )
+    if appointed is None:
+        if recognized is None:
+            return _basis(basis_id, "not_established", direct, ("/issuer",)), None
+        return recognized
+    if recognized is None:
+        return appointed
+    if recognized[0].state == "established":
+        return recognized
+    sources = list(appointed[0].sources)
+    for source in recognized[0].sources:
+        if source not in sources:
+            sources.append(source)
+    return (
+        _basis(
+            basis_id,
+            semantic_or((appointed[0].state, recognized[0].state)),
+            f"{appointed[0].reason} {recognized[0].reason[len(direct) + 1 :]}",
+            tuple(sources),
+        ),
+        None,
+    )
+
+
+def _recognition_standing(
+    basis_id: str,
+    grant: Doc,
+    purpose: str,
+    profile: RelianceProfile,
+    lookup: NodeLookup,
+    at: Any,
+    issuer: str | None,
+    direct: str,
+) -> tuple[BasisResult, str | None] | None:
+    """Standing through recognition; None when the profile accepts no recognition."""
     rules = recognition_rules(profile)
     if rules is None:
-        return _basis(basis_id, "not_established", direct, ("/issuer",)), None
+        return None
     if rules == "invalid":
         return (
             _basis(

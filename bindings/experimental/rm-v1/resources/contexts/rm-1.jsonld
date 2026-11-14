@@ -15,6 +15,8 @@
     "RecognitionPolicy": "chain:RecognitionPolicy",
     "RmStudyReference": "rm:RmStudyReference",
     "RecognizedEntityCredential": "https://www.w3.org/ns/credentials/recognized-entities#RecognizedEntityCredential",
+    "VerifiableAuthorisationForTrustChain": "https://www.w3.org/ns/credentials/issuer-dependent#VerifiableAuthorisationForTrustChain",
+    "TrustFrameworkPolicy": "https://www.w3.org/ns/credentials/issuer-dependent#TrustFrameworkPolicy",
 
     "permittedActivity": {"@id": "rm:permittedActivity", "@type": "@id", "@container": "@set"},
     "scope": {"@id": "rm:scope", "@container": "@set"},
@@ -32,6 +34,14 @@
     "recognitionCredential": "chain:recognitionCredential",
     "recognizedIn": "https://www.w3.org/ns/credentials/recognized-entities#recognizedIn",
     "activityTime": {"@id": "rm:activityTime", "@type": "xsd:dateTime"},
+
+    "trustFramework": "https://www.w3.org/ns/credentials/issuer-dependent#trustFramework",
+    "policyId": "https://www.w3.org/ns/credentials/issuer-dependent#policyId",
+    "legalBasis": "https://www.w3.org/ns/credentials/issuer-dependent#legalBasis",
+    "permissionFor": "https://www.w3.org/ns/credentials/issuer-dependent#permissionFor",
+    "schemaId": "https://www.w3.org/ns/credentials/issuer-dependent#schemaId",
+    "types": "https://www.w3.org/ns/credentials/issuer-dependent#types",
+    "jurisdiction": "https://www.w3.org/ns/credentials/issuer-dependent#jurisdiction",
 
     "materials": {"@id": "rm:materials", "@container": "@list"},
     "materialPropertiesList": {"@id": "rm:materialPropertiesList", "@container": "@list"},

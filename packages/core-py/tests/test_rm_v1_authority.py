@@ -37,6 +37,7 @@ KEY = {
     URI["PRODUCER"]: "producer",
     URI["LAB"]: "lab",
     URI["GACI"]: "global-aci",
+    URI["STATE"]: "state",
 }
 PROFILE_JSON = json.loads((RM_V1_DIRECTORY / "profiles/rm-verifier-1.json").read_text())
 
@@ -53,7 +54,16 @@ def reissue(
 ) -> dict[str, str | None]:
     """Re-sign changed credentials and every credential pinning them by digest."""
     overrides: dict[str, str | None] = {}
-    for uri in (URI["R"], URI["A"], URI["A2"], URI["H"], URI["O"], URI["S"], URI["D"]):
+    for uri in (
+        URI["APP"],
+        URI["R"],
+        URI["A"],
+        URI["A2"],
+        URI["H"],
+        URI["O"],
+        URI["S"],
+        URI["D"],
+    ):
         document = changed.get(uri) or doc(uri)
         dirty = uri in changed
         if uri == URI["D"] and edit_d is not None:

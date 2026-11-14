@@ -105,7 +105,7 @@ describe('I3 authority routes on the signed RM chain', () => {
 
   it('V04: an unrecognized policy type cannot be issued under the binding and establishes nothing', async () => {
     const D = json(URI.D);
-    (D.termsOfUse as JsonObject[])[0]!.type = 'TrustFrameworkPolicy';
+    (D.termsOfUse as JsonObject[])[0]!.type = 'RmUnknownPolicy';
     await expect(resign(D)).rejects.toThrow(); // safe mode refuses the undefined term
     const result = await run({ [URI.D]: serialize(D) });
     expect(result.trace.find(t => t.nodeUse.startsWith(`${URI.D} |`) && t.predicate === 'schema'))

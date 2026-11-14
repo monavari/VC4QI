@@ -32,7 +32,7 @@ them for one domain; see [bindings](bindings.md).
 | --- | --- |
 | `@context` | Versioned JSON-LD meaning, processed safely, with no redefinition of protected terms |
 | `type`, `credentialSchema` | Declared types and validation; the verifier controls dispatch |
-| `termsOfUse` | `IssuedUnderPolicy` naming the grant issued under (`authorizationCredential`), or `RecognitionPolicy` naming a recognition (`recognitionCredential`); one shared vocabulary (`https://vc4qi.example/ns/chain#`) in every binding |
+| `termsOfUse` | `IssuedUnderPolicy` naming the grant issued under (`authorizationCredential`), or `RecognitionPolicy` naming a recognition (`recognitionCredential`); one shared vocabulary (`https://vc4qi.example/ns/chain#`) in every binding. At the top of a chain, an appointment's `TrustFrameworkPolicy` names the legal basis instead of a credential |
 | `evidence` | Recognized supporting information (support, never authority) |
 | `relatedResource` | Integrity of referenced resources (SHA-384 SRI over exact bytes) |
 | `credentialStatus` | The selected status mechanism, with an authorized signer and freshness |
@@ -234,6 +234,22 @@ confers nothing. Recognition does not replace QI scope, containment, restriction
 support or conformity: D520 is recognized and still out of scope. Suspending one body's
 recognition is one status bit; nothing is re-issued. The per-recognition shape and the
 `RecognitionPolicy` link are this binding's resolution, not traversal alone.
+
+Appointment (RM, experimental) is where the accreditation body's authority comes from:
+in the EU each member state appoints a single national accreditation body (Regulation
+(EC) No 765/2008, Art. 4(1)). APP, issued by a fictional state about the NAB, has the
+shape of EBSI's root trust-chain credential, `VerifiableAuthorisationForTrustChain`:
+`credentialSubject.permissionFor` names, per credential type the body may issue, its
+schema and jurisdiction, and its own `termsOfUse` is a `TrustFrameworkPolicy` naming the
+legal basis, not a parent credential. A and H name APP as the grant they were issued
+under (`IssuedUnderPolicy`, pinned by digest), beside their `RecognitionPolicy`. A
+verifier whose profile anchors the state for the appointer purpose
+(`bindingRules.appointment`: appointer purpose and jurisdiction) follows that link: APP
+establishes the grant's issuer only if it is usable and not suspended, issued by such an
+anchor, about the grant's issuer, permits the grant's type under the grant's own schema
+in the required jurisdiction, and was in force at the activity time. Standing is tried in
+order: the issuer is itself an anchor, then appointment, then recognition; any one is
+enough. Where EBSI points to a registry entry by URL, this binding pins the exact bytes.
 
 ## Standards
 

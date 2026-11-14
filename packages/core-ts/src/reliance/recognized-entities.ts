@@ -28,6 +28,7 @@
 // is broken); a missing recognition, entry or time is not established. Recognition
 // carries no QI scope: the grant's own scope records, containment and the claim's
 // coverage are still decided by the routes.
+import { appointmentStanding } from './appointment.js';
 import { semanticOr } from './index.js';
 import type { RelianceProfile } from './profile.js';
 import type { BasisResult, NodeLookup } from './rm-v1-authority.js';
@@ -165,14 +166,16 @@ function fromRecognition(
 
 /**
  * Whether the issuer of `grant` stands behind it for `purpose`: a configured anchor
- * for that purpose (the profile's direct trust), or else recognized through a
- * recognition the grant itself points up to. `at` is the activity time the grant
- * authorizes. Returns the deciding recognition so that routes can name it on their
- * witness path.
+ * for that purpose (the profile's direct trust); else appointed by a configured state
+ * anchor through the appointment the grant was issued under (appointment.ts), when the
+ * profile accepts appointments; else recognized through a recognition the grant points
+ * up to, when the profile accepts recognitions. `at` is the activity time the grant
+ * authorizes. Returns the deciding appointment or recognition (`via`) so that routes can
+ * name it on their witness path.
  */
 export function grantIssuerStanding(
   id: string, grant: Doc, purpose: string, profile: RelianceProfile, lookup: NodeLookup, at: unknown,
-): { basis: BasisResult; recognition?: string } {
+): { basis: BasisResult; via?: string } {
   const issuer = issuerId(grant.issuer);
   const configured = profile.trustAnchors.find(a => a.id === issuer);
   if (configured?.purposes.includes(purpose)) {
@@ -181,8 +184,24 @@ export function grantIssuerStanding(
   const direct = configured === undefined
     ? `${String(issuer)} is not a configured trust anchor.`
     : `${String(issuer)} is an anchor, but not for ${purpose}.`;
+  const appointed = appointmentStanding(id, grant, profile, lookup, at, direct);
+  if (appointed?.basis.state === 'established') return appointed;
+  const recognized = recognitionStanding(id, grant, purpose, profile, lookup, at, issuer, direct);
+  if (appointed === undefined) return recognized ?? { basis: basis(id, 'not_established', direct, ['/issuer']) };
+  if (recognized === undefined) return appointed;
+  if (recognized.basis.state === 'established') return recognized;
+  return { basis: basis(id, semanticOr([appointed.basis.state, recognized.basis.state]),
+    `${appointed.basis.reason} ${recognized.basis.reason.slice(direct.length + 1)}`,
+    [...new Set([...appointed.basis.sources, ...recognized.basis.sources])]) };
+}
+
+/** Standing through recognition; undefined when the profile accepts no recognition at all. */
+function recognitionStanding(
+  id: string, grant: Doc, purpose: string, profile: RelianceProfile, lookup: NodeLookup, at: unknown,
+  issuer: string | undefined, direct: string,
+): { basis: BasisResult; via?: string } | undefined {
   const rules = recognitionRules(profile);
-  if (rules === undefined) return { basis: basis(id, 'not_established', direct, ['/issuer']) };
+  if (rules === undefined) return undefined;
   if (rules === 'invalid') {
     return { basis: basis(id, 'not_established', `${direct} The profile's recognition rules are malformed.`, ['/issuer']) };
   }
@@ -203,7 +222,7 @@ export function grantIssuerStanding(
   }
   const answers = references.map(uri => ({ uri, result: fromRecognition(id, uri, issuer, wanted, rules, at, lookup, profile) }));
   const winner = answers.find(a => a.result.state === 'established');
-  if (winner) return { basis: winner.result, recognition: winner.uri };
+  if (winner) return { basis: winner.result, via: winner.uri };
   return {
     basis: basis(id, semanticOr(answers.map(a => a.result.state)), `${direct} ${answers.map(a => a.result.reason).join(' ')}`,
       ['/issuer', '/termsOfUse', ...answers.map(a => a.uri)]),

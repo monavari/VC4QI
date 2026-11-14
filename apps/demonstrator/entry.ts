@@ -174,7 +174,7 @@ export const EXAMPLES: readonly ExampleSpec[] = [
 const PARTY: Record<string, string> = {
   nab: 'Accreditation body', producer: 'RM producer', lab: 'Laboratory', ministry: 'Ministry', nmi: 'NMI',
   testlab: 'Test laboratory', zls: 'ZLS role', 'gs-body': 'GS body', maker: 'Manufacturer',
-  'testlab-gs': 'Test laboratory', clone: 'Other company', 'global-aci': 'Global ACI (stand-in)',
+  'testlab-gs': 'Test laboratory', clone: 'Other company', 'global-aci': 'Global ACI (stand-in)', state: 'State',
 };
 const party = (value: unknown) => {
   // VCDM 2.0 issuer: a string, or an object with an id.
@@ -184,7 +184,7 @@ const party = (value: unknown) => {
 };
 /** Who signs: an authority (grants or recognizes) or an actor (works under a grant), by host. */
 const GROUP: Record<string, 'authority' | 'actor'> = {
-  nab: 'authority', 'global-aci': 'authority', zls: 'authority', ministry: 'authority',
+  nab: 'authority', 'global-aci': 'authority', zls: 'authority', ministry: 'authority', state: 'authority',
   producer: 'actor', lab: 'actor', nmi: 'actor', testlab: 'actor', 'testlab-gs': 'actor', 'gs-body': 'actor', maker: 'actor', clone: 'actor',
 };
 const groupOf = (value: unknown) => {
@@ -194,6 +194,7 @@ const groupOf = (value: unknown) => {
 const ROLE: Record<string, string> = {
   RmAccreditation: 'Producer accreditation', RmLabAuthority: 'Laboratory accreditation', RmOperationalScope: 'Operational scope',
   RmStudy: 'Homogeneity study', RmCertificate: 'RM certificate (DRMD)', RecognizedEntityCredential: 'Recognition of the body',
+  VerifiableAuthorisationForTrustChain: 'Appointment of the body',
   CalAccreditation: 'Accreditation', CalOperationalScope: 'Operational scope', CalLegalMandate: 'Statutory mandate',
   CalCertificate: 'Calibration certificate', CalTestReport: 'Test report',
   GsAccreditation: 'Accreditation', GsSchemeAuthorization: 'Scheme authorization', GsCertificate: 'GS certificate',
@@ -226,11 +227,15 @@ function buildGraph(target: string, texts: Record<string, string>, result: Relia
   authorized: SemanticState, supported: SemanticState | 'not_required'): Graph {
   const docs = new Map<string, Record<string, unknown>>();
   for (const [uri, text] of Object.entries(texts)) { try { docs.set(uri, JSON.parse(text) as Record<string, unknown>); } catch { /* not JSON */ } }
+  // termsOfUse is one object or an array (VCDM 2.0); APP's single TrustFrameworkPolicy names law, not a credential.
+  const terms = (d: Record<string, unknown> | undefined) =>
+    (Array.isArray(d?.termsOfUse) ? d.termsOfUse : d?.termsOfUse ? [d.termsOfUse] : []) as
+      { type?: string; authorizationCredential?: { id?: string }; recognitionCredential?: { id?: string } }[];
   const refs = (d: Record<string, unknown> | undefined) => [
-    ...((d?.termsOfUse ?? []) as { type?: string; authorizationCredential?: { id?: string } }[])
-      .filter(t => typeof t.authorizationCredential?.id === 'string').map(t => ({ to: t.authorizationCredential!.id!, kind: 'authority' as const, policy: String(t.type ?? 'termsOfUse') })),
-    ...((d?.termsOfUse ?? []) as { type?: string; recognitionCredential?: { id?: string } }[])
-      .filter(t => typeof t.recognitionCredential?.id === 'string').map(t => ({ to: t.recognitionCredential!.id!, kind: 'recognition' as const, policy: String(t.type ?? 'termsOfUse') })),
+    ...terms(d).filter(t => typeof t.authorizationCredential?.id === 'string')
+      .map(t => ({ to: t.authorizationCredential!.id!, kind: 'authority' as const, policy: String(t.type ?? 'termsOfUse') })),
+    ...terms(d).filter(t => typeof t.recognitionCredential?.id === 'string')
+      .map(t => ({ to: t.recognitionCredential!.id!, kind: 'recognition' as const, policy: String(t.type ?? 'termsOfUse') })),
     ...((d?.evidence ?? []) as { id?: string }[]).map(e => e.id).filter((x): x is string => typeof x === 'string')
       .map(to => ({ to, kind: 'support' as const, policy: 'evidence' })),
   ];
@@ -540,10 +545,14 @@ const RM_URI = {
   LAB_STATUS: 'https://lab.vc4qi.example/status/1', PRODUCER_STATUS: 'https://producer.vc4qi.example/status/1',
   GACI: 'https://global-aci.vc4qi.example/controller', GACI_SUSPENSION: 'https://global-aci.vc4qi.example/status/suspension/1',
   GACI_STATUS: 'https://global-aci.vc4qi.example/status/1', R: 'https://global-aci.vc4qi.example/credentials/R',
+  STATE: 'https://state.vc4qi.example/controller', STATE_STATUS: 'https://state.vc4qi.example/status/1',
+  STATE_SUSPENSION: 'https://state.vc4qi.example/status/suspension/1', APP: 'https://state.vc4qi.example/credentials/APP',
 } as const;
 export const RM_ACTORS: readonly BoardActor[] = [
   { id: 'gaci', mono: 'GACI', group: 'authority', name: 'Global ACI', does: 'Recognizes accreditation bodies after peer evaluation. Can suspend one recognition. A fictional stand-in.',
     publishes: [{ label: 'Key', uri: RM_URI.GACI }, { label: 'Revocation list', uri: RM_URI.GACI_STATUS }, { label: 'Suspension list', uri: RM_URI.GACI_SUSPENSION }] },
+  { id: 'state', mono: 'GOV', group: 'authority', name: 'State', does: 'Appoints the national accreditation body by law (Regulation (EC) No 765/2008). Can suspend or withdraw the appointment. Fictional.',
+    publishes: [{ label: 'Key', uri: RM_URI.STATE }, { label: 'Revocation list', uri: RM_URI.STATE_STATUS }, { label: 'Suspension list', uri: RM_URI.STATE_SUSPENSION }] },
   { id: 'ab', mono: 'AB', group: 'authority', name: 'Accreditation body', does: 'Accredits the producer and the laboratory. Can suspend.',
     publishes: [{ label: 'Key', uri: RM_URI.NAB }, { label: 'Revocation list', uri: RM_URI.NAB_STATUS }, { label: 'Suspension list', uri: RM_URI.SUSPENSION }] },
   { id: 'lab', mono: 'LAB', group: 'actor', name: 'Laboratory', does: 'Studies the batch under its accreditation. Can revoke its study.',
@@ -561,11 +570,12 @@ export const RM_ACTORS: readonly BoardActor[] = [
  * are display only.
  */
 export const RM_CODES: Readonly<Record<string, string>> = {
-  R: 'REC1', A: 'PA1', A2: 'PA2', H: 'LA1', O: 'OS1', S: 'HS1', D178: 'RM178', D197: 'RM197', D520: 'RM520', 'D-live': 'RM-own',
+  APP: 'APP1', R: 'REC1', A: 'PA1', A2: 'PA2', H: 'LA1', O: 'OS1', S: 'HS1', D178: 'RM178', D197: 'RM197', D520: 'RM520', 'D-live': 'RM-own',
 };
 /** D is the certificate shown: RM178, RM197, RM520 or the one signed live. */
 export const RM_ASSETS: readonly BoardAsset[] = [
-  { code: 'R', label: 'Recognition of the body', tag: 'proposal', kind: 'grant', actor: 'gaci', row: 1, about: 'ab', heldBy: 'ab' },
+  { code: 'APP', label: 'Appointment of the body', tag: 'EBSI shape', kind: 'grant', actor: 'state', row: 1, about: 'ab', heldBy: 'ab' },
+  { code: 'R', label: 'Recognition of the body', tag: 'proposal', kind: 'grant', actor: 'gaci', row: 2, about: 'ab', heldBy: 'ab' },
   { code: 'A', label: 'Producer accreditation', kind: 'grant', actor: 'ab', row: 1, about: 'rmp', heldBy: 'rmp' },
   { code: 'H', label: 'Laboratory accreditation', kind: 'grant', actor: 'ab', row: 2, about: 'lab', heldBy: 'lab' },
   { code: 'O', label: 'Producer’s operational scope', kind: 'grant', actor: 'rmp', row: 1, about: 'rmp', heldBy: 'rmp' },
@@ -579,9 +589,9 @@ export interface RmBoardState {
   readonly value: string; readonly uncertainty: string; readonly method: 'M1' | 'M2';
   readonly suspendA: boolean; readonly revokeS: boolean;
   /** The holder edits a value after signing; or leaves one credential of the chain out ('' for none). */
-  readonly tamper: boolean; readonly withhold: '' | 'R' | 'A' | 'H' | 'O' | 'S';
-  /** The verifier's root: this accreditation body, the Global ACI stand-in (abroad), or another body (abroad). */
-  readonly trust: 'ab' | 'global-aci' | 'other'; readonly suspendGaci: boolean;
+  readonly tamper: boolean; readonly withhold: '' | 'APP' | 'R' | 'A' | 'H' | 'O' | 'S';
+  /** The verifier's root: this accreditation body, the state that appointed it, the Global ACI stand-in (abroad), or another body (abroad). */
+  readonly trust: 'ab' | 'state' | 'global-aci' | 'other'; readonly suspendGaci: boolean; readonly suspendApp: boolean;
   /** The verifier's question, its rule and its upper limit for As in mg/kg. */
   readonly ask: 'authorized' | 'fit'; readonly rule: 'guarded' | 'simple'; readonly limit: '180' | '200' | '250';
   /** Asked about today, or about D's activity on 20 January 2026; and which status lists answer that. */
@@ -589,7 +599,7 @@ export interface RmBoardState {
 }
 export const RM_DEFAULT: RmBoardState = {
   certificate: '178', value: '178', uncertainty: '5', method: 'M1', suspendA: false, revokeS: false,
-  tamper: false, withhold: '', trust: 'ab', suspendGaci: false, ask: 'fit', rule: 'guarded', limit: '200',
+  tamper: false, withhold: '', trust: 'ab', suspendGaci: false, suspendApp: false, ask: 'fit', rule: 'guarded', limit: '200',
   asOf: 'now', archive: false,
 };
 /** D178's activity time: the day the material was certified. */
@@ -599,15 +609,18 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
     title: 'One credential, its links and the rules',
     text: 'Every card is a W3C verifiable credential. Its links are standard fields; the type of each term of use says what the link means.' },
 
-  { id: 'recognize', part: 'build', acts: ['gaci', 'ab'], joins: ['gaci', 'ab'], issues: ['R'],
+  { id: 'appoint', part: 'build', acts: ['state', 'ab'], joins: ['state', 'ab'], issues: ['APP'],
+    title: 'The state appoints the accreditation body',
+    text: 'By law: one national accreditation body per state (Regulation (EC) No 765/2008, Art. 4(1)). APP1 has the shape EBSI uses for the root of a trust chain.' },
+  { id: 'recognize', part: 'build', acts: ['gaci', 'ab'], joins: ['gaci'], issues: ['R'],
     title: 'Global ACI recognizes the accreditation body',
     text: 'After peer evaluation, for RM production (ISO 17034) and testing (ISO/IEC 17025). Recognition grants no authority.' },
   { id: 'accredit-producer', part: 'build', acts: ['ab', 'rmp'], joins: ['rmp'], issues: ['A'],
     title: 'The accreditation body accredits the producer',
-    text: 'PA1 names what the producer may certify. It names REC1 as a RecognitionPolicy: issued while recognized.' },
+    text: 'PA1 names what the producer may certify. It is issued under APP1 (IssuedUnderPolicy) and names REC1 (RecognitionPolicy).' },
   { id: 'accredit-lab', part: 'build', acts: ['ab', 'lab'], joins: ['lab'], issues: ['H'],
     title: 'The accreditation body accredits the laboratory',
-    text: 'LA1 names which studies the laboratory may carry out. It too names REC1 as a RecognitionPolicy.' },
+    text: 'LA1 names which studies the laboratory may carry out. It too is issued under APP1 and names REC1.' },
   { id: 'scope', part: 'build', acts: ['rmp'], issues: ['O'],
     title: 'The producer declares its operational scope',
     text: 'OS1 is issued under PA1 (IssuedUnderPolicy) and must lie within it: As in CuZn39Pb3 discs, method M1.' },
@@ -633,6 +646,9 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
   { id: 'abroad', part: 'decide', acts: ['verifier', 'gaci', 'rmp'], state: { trust: 'global-aci' }, unlock: ['trust', 'suspendGaci', 'certificate'], expect: 'accept',
     title: 'A verifier abroad trusts only Global ACI',
     text: 'REC1 tells it to accept the body. Suspend REC1, or certify 520: recognized is not in scope.' },
+  { id: 'state', part: 'decide', acts: ['verifier', 'state'], state: { trust: 'state' }, unlock: ['trust', 'suspendApp', 'certificate'], expect: 'accept',
+    title: 'A verifier that trusts the state',
+    text: 'It climbs one link further: PA1 and LA1 to APP1. Suspend APP1 and it rejects; a verifier that trusts the body does not notice.' },
 
   { id: 'when', part: 'when', acts: ['ab', 'verifier'], state: { suspendA: true, asOf: 'issuance', archive: true },
     unlock: ['asOf', 'archive', 'suspend'], expect: 'accept',
@@ -646,8 +662,8 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
     title: 'Recognized Entities and terms of use',
     text: 'One rule for every upward link; its type says grant (IssuedUnderPolicy) or recognition (RecognitionPolicy).' },
 
-  { id: 'play', part: 'play', acts: ['gaci', 'ab', 'lab', 'rmp', 'holder', 'verifier'],
-    unlock: ['suspendGaci', 'suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'ask', 'rule', 'limit', 'asOf', 'archive'],
+  { id: 'play', part: 'play', acts: ['state', 'gaci', 'ab', 'lab', 'rmp', 'holder', 'verifier'],
+    unlock: ['suspendApp', 'suspendGaci', 'suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'ask', 'rule', 'limit', 'asOf', 'archive'],
     title: 'Your turn',
     text: 'Every action is live: leave out, edit, certify, suspend, revoke, and change what the verifier trusts, asks and when.' },
 ];
@@ -656,6 +672,8 @@ const RM_PROFILE = 'rm-verifier-1';
 const RM_OTHER_ANCHOR = 'rm-verifier-other-anchor (demonstrator)';
 /** The verifier abroad whose only root is the Global ACI stand-in (a binding profile). */
 const RM_GLOBAL_ACI = 'rm-verifier-global-aci-1';
+/** The verifier whose only root is the state that appointed the body (a binding profile). */
+const RM_STATE = 'rm-verifier-state-1';
 {
   // A verifier abroad: rm-verifier-1 with another accreditation body as its only anchor.
   const base = resources.rm.profiles[RM_PROFILE] as { trustAnchors: { id: string; purposes: string[] }[] };
@@ -706,6 +724,7 @@ export async function evaluateRmBoard(over: Partial<RmBoardState> = {}): Promise
   if (state.certificate === 'custom') texts[target] = await liveCertificate(state);
   if (state.suspendA) texts[RM_URI.SUSPENSION] = await resignedList('rm', RM_URI.SUSPENSION, 'nab', RM_URI.NAB);
   if (state.revokeS) texts[RM_URI.LAB_STATUS] = await resignedList('rm', RM_URI.LAB_STATUS, 'lab', RM_URI.LAB);
+  if (state.suspendApp) texts[RM_URI.STATE_SUSPENSION] = await resignedList('rm', RM_URI.STATE_SUSPENSION, 'state', RM_URI.STATE);
   if (state.suspendGaci) {
     texts[RM_URI.GACI_SUSPENSION] = await resignedList('rm', RM_URI.GACI_SUSPENSION, 'global-aci', RM_URI.GACI);
   }
@@ -720,8 +739,9 @@ export async function evaluateRmBoard(over: Partial<RmBoardState> = {}): Promise
     const shown = (JSON.parse(text) as any).credentialSubject.materialPropertiesList[0].results[0].data.quantity.value as string;
     texts[target] = edited(text, `"value": "${shown}"`, `"value": "${shown === '150' ? '151' : '150'}"`);
   }
-  const uris = { R: RM_URI.R, A: RM_URI.A, H: RM_URI.H, O: RM_URI.O, S: RM_URI.S, D: target };
-  const root = state.trust === 'ab' ? RM_PROFILE : state.trust === 'global-aci' ? RM_GLOBAL_ACI : RM_OTHER_ANCHOR;
+  const uris = { APP: RM_URI.APP, R: RM_URI.R, A: RM_URI.A, H: RM_URI.H, O: RM_URI.O, S: RM_URI.S, D: target };
+  const root = state.trust === 'ab' ? RM_PROFILE : state.trust === 'state' ? RM_STATE
+    : state.trust === 'global-aci' ? RM_GLOBAL_ACI : RM_OTHER_ANCHOR;
   const r = await evaluate({
     binding: 'rm', profileName: state.ask === 'fit' ? rmProfileWithLimit(root, state.limit) : root,
     requestId: 'urn:vc4qi:demonstrator:rm-board', target,

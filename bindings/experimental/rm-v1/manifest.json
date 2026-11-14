@@ -28,7 +28,8 @@
       "https://vc4qi.example/bindings/rm/1#RmStudy",
       "https://vc4qi.example/bindings/rm/1#RmLabAuthority",
       "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential",
-      "https://www.w3.org/ns/credentials/recognized-entities#RecognizedEntityCredential"
+      "https://www.w3.org/ns/credentials/recognized-entities#RecognizedEntityCredential",
+      "https://www.w3.org/ns/credentials/issuer-dependent#VerifiableAuthorisationForTrustChain"
     ],
     "schemaUris": [
       "https://vc4qi.example/schemas/rm/1/accreditation.json",
@@ -40,10 +41,12 @@
       "https://vc4qi.example/schemas/rm/1/recognition-policy.json",
       "https://vc4qi.example/schemas/rm/1/study-reference.json",
       "https://vc4qi.example/schemas/rm/1/status-list.json",
-      "https://vc4qi.example/schemas/rm/1/recognized-entity.json"
+      "https://vc4qi.example/schemas/rm/1/recognized-entity.json",
+      "https://vc4qi.example/schemas/rm/1/appointment.json"
     ],
     "statusListCarrier": "BitstringStatusListCredential with the VCDM 2.0 context only",
     "recognitionCarrier": "RecognizedEntityCredential with the VCDM 2.0 context and https://vc4qi.example/contexts/recognized-entities/draft-20261112, a stand-in for the unpublished W3C Recognized Entities context (Working Draft of 12 November 2026); the main scopes are carried in registration (mainScope is an RM binding extension term)",
+    "appointmentCarrier": "VerifiableAuthorisationForTrustChain with the VCDM 2.0 and RM v1 contexts, in the shape of EBSI's root trust-chain credential (@cef-ebsi/vcdm2.0-trust-model-schema 2.0.0; VCDM 2.0 Example 28): credentialSubject.permissionFor (schemaId, types, jurisdiction) and a termsOfUse TrustFrameworkPolicy (trustFramework, policyId, legalBasis). The RM v1 context defines these terms with the issuer-dependent IRIs EBSI's examples expand to; EBSI's reservedAttributeId and registry status are replaced by a Bitstring Status List",
     "composition": "exact-listed-context-and-schema-combinations-only",
     "pinnedResourceIndex": "bindings/experimental/rm-v1/catalog.json",
     "decimalEncoding": "JSON strings typed xsd:decimal for every quantity, bound and uncertainty",
@@ -55,6 +58,7 @@
     {"fact": "permittedActivity", "nativePath": "/credentialSubject/permittedActivity", "expandedIri": "https://vc4qi.example/bindings/rm/1#permittedActivity"},
     {"fact": "scopeRecords", "nativePath": "/credentialSubject/scope", "expandedIri": "https://vc4qi.example/bindings/rm/1#scope"},
     {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/ns/chain#authorizationCredential"},
+    {"fact": "appointmentPermission", "nativePath": "/credentialSubject/permissionFor", "expandedIri": "https://www.w3.org/ns/credentials/issuer-dependent#permissionFor"},
     {"fact": "recognitionReference", "nativePath": "/termsOfUse/*/recognitionCredential/id", "expandedIri": "https://vc4qi.example/ns/chain#recognitionCredential"},
     {"fact": "requiredStudy", "nativePath": "/evidence/*/id", "expandedIri": "https://www.w3.org/2018/credentials#evidence"},
     {"fact": "validFrom", "nativePath": "/validFrom", "expandedIri": "https://www.w3.org/2018/credentials#validFrom"},
@@ -81,6 +85,7 @@
     "digestEncoding": "SRI",
     "digestInput": "exact-original-secured-bytes",
     "recognitionReferences": "only a RecognizedEntityCredential that a grant references from its own termsOfUse (a RecognitionPolicy recognitionCredential, pinned by digest); issuer.recognizedIn may mirror it and must then name the same credential; recognitions supplied by the holder but not referenced, discovery through issuer.recognizedIn alone and identifier-based discovery are unsupported",
+    "appointmentReferences": "only a VerifiableAuthorisationForTrustChain that a grant references from its own termsOfUse (an IssuedUnderPolicy authorizationCredential of that type, pinned by digest), followed only by a verifier whose profile anchors the appointer for bindingRules.appointment.appointerPurpose; EBSI's registry lookup (parentAccreditation and rootAuthorisation URLs into the Trusted Issuers Registry) is unsupported",
     "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse IssuedUnderPolicy authorizationCredential references on the credential chain; an authenticated grant found by other means establishes nothing (not_established); a RecognitionPolicy reference never establishes authority"
   },
   "recognizedTypes": {

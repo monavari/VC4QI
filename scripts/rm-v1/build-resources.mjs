@@ -23,6 +23,11 @@ const RM_CONTEXT = 'https://vc4qi.example/contexts/rm/1';
 // 12 November 2026); hand-authored in resources/contexts.
 const RE_CONTEXT = 'https://vc4qi.example/contexts/recognized-entities/draft-20261112';
 const RECOGNITION_TYPE = 'RecognizedEntityCredential';
+// A state's appointment of its accreditation body, in the shape of EBSI's root trust
+// chain credential (VerifiableAuthorisationForTrustChain, the type VCDM 2.0 Example 28
+// also uses). The terms expand to the same issuer-dependent IRIs as EBSI's examples.
+const APPOINTMENT_TYPE = 'VerifiableAuthorisationForTrustChain';
+const EBSI_JURISDICTION = { type: 'string', format: 'uri' };
 const SCHEMA_BASE = 'https://vc4qi.example/schemas/rm/1/';
 
 const iri = { type: 'string', format: 'uri' };
@@ -69,8 +74,15 @@ const issuedUnderPolicy = closed({
   type: { const: 'IssuedUnderPolicy' },
   authorizationCredential: closed({
     id: iri,
-    type: { enum: ['RmAccreditation', 'RmOperationalScope', 'RmLabAuthority'] },
+    type: { enum: ['RmAccreditation', 'RmOperationalScope', 'RmLabAuthority', APPOINTMENT_TYPE] },
   }),
+});
+// The grant below an appointment: a credential issued by the accreditation body
+// exercising the authority a state appointed it with (Regulation (EC) No 765/2008,
+// Art. 4(1)). Only the accreditation body's grants (A, A2, H) name it.
+const issuedUnderAppointment = closed({
+  type: { const: 'IssuedUnderPolicy' },
+  authorizationCredential: closed({ id: iri, type: { const: APPOINTMENT_TYPE } }),
 });
 // RecognitionPolicy: this credential was issued while its issuer is recognized in the
 // credential it names (a W3C Recognized Entities credential). It confers no authority:
@@ -160,8 +172,11 @@ const ACT = 'https://vc4qi.example/bindings/rm/1#';
 // An accreditation body's grant may name the body's recognition (termsOfUse →
 // RecognitionPolicy → a Recognized Entities credential), pinned by digest. Optional: a
 // verifier that anchors the accreditation body directly never follows it.
+// It may also name the state's appointment it was issued under (IssuedUnderPolicy →
+// VerifiableAuthorisationForTrustChain), pinned the same way; a verifier that anchors the
+// state follows it, one that anchors the body does not.
 const upToRecognition = {
-  termsOfUse: { type: 'array', minItems: 1, maxItems: 4, items: recognitionPolicy },
+  termsOfUse: { type: 'array', minItems: 1, maxItems: 4, items: { oneOf: [issuedUnderAppointment, recognitionPolicy] } },
   relatedResource,
 };
 const issuedUnder = { type: 'array', minItems: 1, maxItems: 4, items: issuedUnderPolicy };
@@ -293,6 +308,46 @@ const schemas = {
       description: { type: 'string', minLength: 1 },
       proof,
     }, ['@context', 'id', 'type', 'issuer', 'validFrom', 'validUntil', 'credentialSchema', 'credentialSubject', 'credentialStatus']),
+  },
+  // A state's appointment of one accreditation body, shaped after EBSI's
+  // VerifiableAuthorisationForTrustChain (vcdm2.0-trust-model-schema 2.0.0): the subject's
+  // permissionFor names, per credential type the body may issue, its schema and the
+  // jurisdiction; the appointment's own termsOfUse is a TrustFrameworkPolicy naming the
+  // legal basis, not a parent credential (it is the top of the chain). EBSI's
+  // reservedAttributeId and registry status (EbsiAccreditationEntry) are left out: status
+  // is a Bitstring Status List, as for every other credential here.
+  'appointment.json': {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    $id: `${SCHEMA_BASE}appointment.json`,
+    title: 'Appointment of an accreditation body by a state (EBSI VerifiableAuthorisationForTrustChain shape)',
+    description: 'Experimental VC4QI RM binding v1 fixture schema. Not an external standard.',
+    ...closed({
+      '@context': { const: [VC_V2, RM_CONTEXT] },
+      id: iri,
+      type: { const: ['VerifiableCredential', APPOINTMENT_TYPE] },
+      issuer: iri,
+      validFrom: dateTime,
+      validUntil: dateTime,
+      credentialSchema: closed({ id: { const: `${SCHEMA_BASE}appointment.json` }, type: { const: 'JsonSchema' } }),
+      name: { type: 'string', minLength: 1 },
+      description: { type: 'string', minLength: 1 },
+      credentialSubject: closed({
+        id: iri,
+        permissionFor: nonemptySet(closed({
+          schemaId: iri,
+          types: { type: 'array', minItems: 1, items: { type: 'string', minLength: 1 } },
+          jurisdiction: { oneOf: [EBSI_JURISDICTION, { type: 'array', minItems: 1, items: EBSI_JURISDICTION }] },
+        })),
+      }),
+      termsOfUse: closed({
+        type: { const: 'TrustFrameworkPolicy' },
+        trustFramework: { type: 'string', minLength: 1 },
+        policyId: iri,
+        legalBasis: { type: 'string', minLength: 1 },
+      }, ['type', 'trustFramework', 'policyId']),
+      credentialStatus,
+      proof,
+    }, ['@context', 'id', 'type', 'issuer', 'validFrom', 'validUntil', 'credentialSchema', 'credentialSubject', 'termsOfUse', 'credentialStatus']),
   },
   'issued-under-policy.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
