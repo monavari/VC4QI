@@ -101,14 +101,14 @@ One column per actor, in a fixed order from where trust comes from to where it i
 An actor's column appears when the chain first reaches it, in its fixed place, so a story
 starts with one actor and the board fills as it goes; "Your turn" shows every actor.
 A band that concerns one moment of the story appears only in that moment: in the RM
-story, the evaluated note that a verifier abroad reaches the accreditation body through
+story, the evaluated note that a verifier abroad reaches the NAB through
 R, Global ACI's recognition of it (a fictional stand-in, W3C Recognized Entities draft).
-For the RM story: Global ACI (GACI), State (GOV), Accreditation body (AB), Laboratory
+For the RM story: Global ACI (GACI), State (GOV), National accreditation body (NAB), Laboratory
 (LAB), RM producer (RMP), Customer lab (CUST), Verifier (VER). The state sits next to the
-accreditation body, so the grant lines from PA1 and LA1 to APP1 are short; REC1 sits in
+NAB, so the grant lines from PA1 and LA1 to APP1 are short; REC1 sits in
 the lower row of Global ACI's column, so the recognition lines cross no card. Monograms are pills, so three or
 four letters fit. With more than four actor columns the
-verifier's column narrows and a name may drop below its monogram; it never truncates. For the GS story: Accreditation body (AB), Scheme owner (SO), GS body
+verifier's column narrows and a name may drop below its monogram; it never truncates. For the GS story: National accreditation body (NAB), Scheme owner (SO), GS body
 (GSB), Manufacturer (MFR), Verifier (VER).
 
 - The header carries the monogram, the name, one line on what the actor does, and what it
@@ -205,20 +205,53 @@ bytes, folded but for what it says), and the card stays ringed while the sheet i
 Lanes not yet reached and credentials not yet issued hold their place invisibly. A link
 in the top bar switches layouts and keeps the step and its state.
 
+### The RM story's order
+
+The argument: a few simple rules, applied the same way at every step, map the quality
+infrastructure to credentials, reinventing as little as possible; and the verifier, not
+the issuer, decides. So the story runs: one credential and its links; the chain, built
+by five issuer rules; the verifier's profile and its six checks; scenarios in five
+groups; the proposal; the whole chain; a free sandbox. The workshop is about the top of
+the chain, so the group about roots (NAB, state, Global ACI) comes first: with little
+time, stop after the first two groups.
+
+- **Build steps** carry, under the title, what in the quality infrastructure they map to
+  which credential (`Maps National appointment … → VerifiableAuthorisationForTrustChain,
+  GOV → NAB`) and the numbered issuer rules they apply, so the same rules visibly repeat.
+- **The verifier** gets two pages before it decides: its profile (whom it trusts, which
+  paths count, what it asks, its rule, about when, how fresh status must be; each with
+  why it is the verifier's and where it sits in the profile) and the six checks (each a
+  plain question, its gates, an example of failing and the group that tests it).
+- **Scenario groups** are named by the verifier's question: whom do I trust, was it valid
+  at that time, is the chain complete and within scope, is it genuine, is it good enough
+  for me. Each scenario is a button: who acts (monogram), when, one line on what happens,
+  and how often it happens in practice (everyday, occasional, rare). Scenarios are
+  plausible: a state does not withdraw a NAB's appointment, so it has no action; Global
+  ACI suspending a recognition is rare; an expired certificate is uncommon for a brass
+  disc and common for organic materials. One click applies a scenario, a second click or
+  Reset returns to the clean chain, and the verdict marks each check whose answer
+  changed. The time group shows a timeline (the study, RM178, the suspension, today,
+  RM178's expiry, March 2028) with the date asked about marked, and says which status
+  lists answer it.
+- **Your turn** comes last. Every action says when it happens and how often.
+
 ### Pages instead of the board
 
 A step may draw a page instead of the board, at full width in both layouts. The RM story
-opens with the whole chain on one wide graph read from the signed credentials, the two
-roots on top (APP1, whose term of use names the law, and REC1, which grants nothing): each
-credential with its code, name, type, kind (grant, result, recognition) and who signs it
-about whom; each link with its field, its type and target and the digest that pins it
-(`termsOfUse · IssuedUnderPolicy · authorizationCredential → OS1 · relatedResource
-sha384-…`); the numbers of the design rules on the links they govern, and the eight rules
-under the graph (hovering one lights its numbers). What W3C VCDM 2.0 says each field is
-for, and why a term of use points up, fold below. The story ends with the recognition
-proposal and its reconciliation with W3C Recognized Entities: one rule for every upward
-link, `IssuedUnderPolicy` for a grant, `RecognitionPolicy` for a recognition, mirrored by
-`issuer.recognizedIn`. A page
+opens with one credential, RM178, drawn as a card with its links around it: the term of
+use up (who let me issue this), the subject down, evidence and status beside; each part
+tagged **W3C** (a standard or draft used as written), **EBSI** (reused) or **ours** (new
+in this binding). Beside it, every link the chain uses, read from the signed credentials:
+the field and type, what it names (and that credential's type), who signs that about
+whom, and which credentials name it, from the law at the top to the study beside
+RM178. The five issuer rules follow, then folds: what W3C VCDM 2.0 says each field is
+for, and why a term of use points up. After the proposal and its reconciliation with W3C
+Recognized Entities (one rule for every upward link, `IssuedUnderPolicy` for a grant,
+`RecognitionPolicy` for a recognition, mirrored by `issuer.recognizedIn`), the whole chain
+is drawn on one wide graph, the two roots on top: each credential with its code, name,
+type, kind and who signs it about whom; each link with its field, its type and target and
+the digest that pins it; the numbers of the issuer rules on the links they follow, the
+rules under the graph (hovering one lights its numbers). A page
 reads the generated credentials and evaluates nothing, says so in a tag above it, and
 uses no state colour: direction is arrow shape (↑ up to authority, ↓ down to the
 subject, → sideways to evidence), state is a drawn switch, the seal a solid diamond.
@@ -255,8 +288,8 @@ Plain words lead and the terms follow in mono, each with where it comes from.
   A citation line can be clicked to leave its credential out (the holder's choice); the
   same choice is a segmented control in the holder's column for keyboards.
 - So that a step fits the screen, a guided step shows its live controls, plus any whose
-  value it changed (faded, marked "available in *Your turn*"), and the verifier's root.
-  The last step shows and unlocks every action.
+  value it or its scenario changed (faded, marked "available in *Your turn*"), and the
+  verifier's root. The last step shows and unlocks every action.
 - What each actor does stays in its column header on every step, so the rows never move;
   the verifier's description is dropped once it decides, which moves no credential.
 - How the board keeps its place on wide screens: room for a two-line title and for the
@@ -266,8 +299,8 @@ Plain words lead and the terms follow in mono, each with where it comes from.
   re-signed list is marked by filling its label, not by more text; a band sits under
   the board; the scrollbar's room is always kept.
 - Step text is one or two sentences under the title.
-- Every change re-evaluates immediately. The URL hash holds the whole state, so a link
-  reproduces a slide. Arrow keys and Page Up/Down move between steps.
+- Every change re-evaluates immediately. The URL hash holds the whole state (in a
+  scenario group, the scenario: `#time/expired`), so a link reproduces a slide. Arrow keys and Page Up/Down move between steps.
 
 ## Deviations in the current pages
 

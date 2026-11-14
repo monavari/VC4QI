@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>GS story · VC4QI demonstrator</title>
-<meta name="description" content="A GS certification chain on an actor board: an accreditation body, a scheme owner, a GS body, a manufacturer and a verifier. Build the chain up to a product passport, verify it, manipulate it, and see how the verifier's own profile decides. Evaluated in the browser on signed test credentials.">
+<meta name="description" content="A GS certification chain on an actor board: a national accreditation body, a scheme owner, a GS body, a manufacturer and a verifier. Build the chain up to a product passport, verify it, manipulate it, and see how the verifier's own profile decides. Evaluated in the browser on signed test credentials.">
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="../board.css">
 </head>
@@ -77,10 +77,10 @@ catch (error) { fail('This browser could not run the evaluator (' + error.messag
 await mountBoard(api, {
   name: 'GS story', story: api.GS_STORY, actors: api.GS_ACTORS, assets: api.GS_ASSETS, defaults: api.GS_DEFAULT,
   parts: api.BOARD_PARTS, evaluate: state => api.evaluateGsBoard(state), rows: 3,
-  hosts: { nab: 'the accreditation body', zls: 'the scheme owner', 'gs-body': 'the GS body', maker: 'the manufacturer' },
+  hosts: { nab: 'the NAB', zls: 'the scheme owner', 'gs-body': 'the GS body', maker: 'the manufacturer' },
   facts,
   types: {
-    GsAccreditation: 'An accreditation: the accreditation body states that the GS body may test and certify, for which product categories.',
+    GsAccreditation: 'An accreditation: the NAB states that the GS body may test and certify, for which product categories.',
     GsSchemeAuthorization: 'A scheme permission: the scheme owner, in the role ZLS has for the GS mark, permits the GS body to award the mark, for named categories only.',
     GsTestReport: "A type-examination report: the test result for the model. Evidence: it supports the certificate and grants nothing.",
     GsInspectionReport: "A factory-inspection report: the production site was inspected. Evidence: it supports the certificate and grants nothing.",
@@ -101,7 +101,7 @@ await mountBoard(api, {
   },
   settings: [
     { type: 'seg', key: 'trust', label: 'Trusts', control: 'trust', options: [
-      { id: 'both', label: 'Both authorities', sub: 'AB and SO' }, { id: 'accreditation-only', label: 'Accreditation only', sub: 'abroad' }] },
+      { id: 'both', label: 'Both authorities', sub: 'NAB and SO' }, { id: 'accreditation-only', label: 'Accreditation only', sub: 'abroad' }] },
   ],
   note: 'Its question: may it rely on the <b>GS mark</b> in the passport\'s compliance information?',
   tags: (code, st) => [

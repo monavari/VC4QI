@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- **The RM demonstrator, reordered around its argument.** It opens with one credential
+  (RM178) and its links, each part tagged W3C, EBSI or ours, beside every link type the
+  chain uses with who signs what it names about whom. Build steps name what they map and
+  the five issuer rules they apply. Two pages introduce the verifier's profile and its six
+  checks before it decides. Scenarios follow in five groups named by the verifier's
+  question, the top of the chain first (whom do I trust, was it valid then, complete and
+  in scope, genuine, good enough); each says who acts, when and how often it happens, and
+  the verdict marks the checks it changed. New: a question asked in March 2028, after
+  RM178 expired, with every issuer's status lists re-signed for then. The whole-chain
+  graph moves to the end; "Your turn" stays as the sandbox, each action labelled with its
+  date and likelihood. The state's suspend action is gone (a state does not withdraw a
+  NAB's appointment). The accreditation body is called the national accreditation body
+  (NAB) in both stories. The graph now combines every verification of a credential, so a
+  failed use (an expired certificate) shows on its card. REC1 is valid until 2029, so it
+  outlasts RM178; RM fixtures regenerated.
 - **A state's appointment of the accreditation body (RM, experimental).** A fictional
   state issues APP, its appointment of the NAB (Regulation (EC) No 765/2008, Art. 4(1)),
   in the shape of EBSI's root trust-chain credential: type
