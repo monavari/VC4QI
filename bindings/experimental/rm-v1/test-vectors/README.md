@@ -25,6 +25,13 @@
   `issuer.recognizedIn` and pin it in `relatedResource`; it grants no authority, and
   only a verifier that anchors Global ACI (profile `rm-verifier-global-aci-1`) relies on
   it. O, S and D carry `IssuedUnderPolicy` links to their grants.
+- `credentials/APP.json`: a fictional state's appointment of the NAB (Regulation (EC)
+  No 765/2008, Art. 4(1)) in the shape of EBSI's `VerifiableAuthorisationForTrustChain`:
+  `permissionFor` lets the NAB issue `RmAccreditation` and `RmLabAuthority` under their
+  schemas in `atu/DEU`; its `termsOfUse` is a `TrustFrameworkPolicy` naming the legal
+  basis. A, A2 and H name it in a `termsOfUse` `IssuedUnderPolicy` and pin it; only a
+  verifier that anchors the state (profile `rm-verifier-state-1`) relies on it.
+  `status/state.json` and `status/state-suspension.json` cover it.
 - `status/{nab,producer,lab}.json`: one signed W3C Bitstring Status List per issuer
   (revocation, all bits clear); every credential above names its list and index.
   `status/nab-suspension.json` is the NAB's suspension list; A and A2 carry both a

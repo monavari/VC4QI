@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+- **A state's appointment of the accreditation body (RM, experimental).** A fictional
+  state issues APP, its appointment of the NAB (Regulation (EC) No 765/2008, Art. 4(1)),
+  in the shape of EBSI's root trust-chain credential: type
+  `VerifiableAuthorisationForTrustChain`, `credentialSubject.permissionFor` (`schemaId`,
+  `types`, `jurisdiction`) and a `termsOfUse` `TrustFrameworkPolicy` naming the legal
+  basis (`@cef-ebsi/vcdm2.0-trust-model-schema` 2.0.0; VCDM 2.0 Example 28). The RM
+  context defines these terms with the issuer-dependent IRIs EBSI's examples expand to;
+  status is a Bitstring Status List instead of EBSI's registry entry. A, A2 and H name APP
+  in a `termsOfUse` `IssuedUnderPolicy`, pinned by digest, beside their recognition. A
+  verifier whose profile anchors the state (`rm-verifier-state-1`;
+  `bindingRules.appointment` names the appointer purpose and the jurisdiction) accepts
+  the NAB when APP is usable and not suspended, is about the grant's issuer, permits the
+  grant's type under its schema in that jurisdiction, and was in force at the activity
+  time. Verifiers that anchor the NAB or Global ACI never rely on it. Ledger E21–E28 pass
+  in TypeScript and Python. The demonstrator adds the state as an actor and a lane beside
+  Global ACI, an appointment step, a step for a verifier that trusts the state, and a
+  suspend action.
 - **One link vocabulary for every binding.** `IssuedUnderPolicy`,
   `authorizationCredential`, `RecognitionPolicy` and `recognitionCredential` now expand
   to one shared namespace, `https://vc4qi.example/ns/chain#`, in the RM, calibration and

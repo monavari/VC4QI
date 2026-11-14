@@ -18,6 +18,9 @@ function facts(code, d) {
   // The main scopes the body is registered for (activity and standard), from the recognizer's register.
   if (code === 'R') return (s.registration ?? []).map(e => String(e.mainScope?.activity).replace('Reference material production', 'RM production')
     + ' · ' + String(e.mainScope?.standard?.name ?? short(e.mainScope?.standard?.id)).replace(/:\d{4}$/, ''));
+  // The appointment: what the body may issue, where, and on what legal basis.
+  if (code === 'APP') return ['May issue ' + (s.permissionFor ?? []).map(p => [p.types].flat().at(-1)).join(', '),
+    short([(s.permissionFor ?? [])[0]?.jurisdiction].flat()[0] ?? '') + ' · ' + String([d.termsOfUse].flat()[0]?.legalBasis ?? '').replace(', Article ', ' Art. ')];
   if (code === 'A') return [cap(words(r.matrixIri)), cap((r.allowedPropertyIris ?? []).map(words).join(', ')) + ', ' + range(r.range), 'Methods ' + list(r.allowedMethodIris)];
   if (code === 'H') return [list(r.studyTypeIris) + ' studies of ' + (r.allowedPropertyIris ?? []).map(words).join(', '), cap(words(r.matrixIri))];
   if (code === 'O') return [list(r.allowedPropertyIris) + ' in ' + matrix(r) + ' · ' + range(r.range), 'Method ' + list(r.allowedMethodIris) + ' only'];
@@ -28,7 +31,7 @@ function facts(code, d) {
 
 // ---------------------------------------------------------------- what a credential says
 const ACTIVITY = { issueRmCertificate: 'issue RM certificates', maintainRmScope: 'maintain its own operational scope', issueRmStudy: 'issue RM studies' };
-const PARTY = { nab: 'the accreditation body', lab: 'the laboratory', producer: 'the RM producer', 'global-aci': 'Global ACI (fictional)' };
+const PARTY = { nab: 'the accreditation body', lab: 'the laboratory', producer: 'the RM producer', 'global-aci': 'Global ACI (fictional)', state: 'the state (fictional)' };
 const party = iri => { const m = /^https:\/\/([a-z-]+)\.vc4qi\.example\/controller$/.exec(String(iri)); return m ? PARTY[m[1]] ?? m[1] : short(iri); };
 const day = t => String(t ?? '').slice(0, 10);
 /** What a credential says, laid out for reading (the explainer's "What it says"). */
@@ -56,6 +59,14 @@ function content(code, d, { esc }) {
       ['Main scopes', (s.registration ?? []).map(e => esc(e.mainScope?.activity) + ' · ' + esc(e.mainScope?.standard?.name)).join('<br>')],
       ['Valid', esc(day(d.validFrom) + ' – ' + day(d.validUntil))]])
       + "<p class='none'>A recognition: it grants no authority.</p></div>";
+  }
+  if (type === 'VerifiableAuthorisationForTrustChain') {
+    const tou = [d.termsOfUse].flat()[0] ?? {};
+    return "<div class='says'>" + kv([['Appoints', esc(party(s.id))],
+      ['May issue', (s.permissionFor ?? []).map(p => esc([p.types].flat().at(-1)) + ' · ' + esc(short([p.jurisdiction].flat()[0] ?? ''))).join('<br>')],
+      ['Legal basis', esc(tou.legalBasis ?? '')], ['Framework', esc(tou.trustFramework ?? '')],
+      ['Valid', esc(day(d.validFrom) + ' – ' + day(d.validUntil))]])
+      + "<p class='none'>The top of the chain: its term of use names the law, not another credential. The shape is EBSI's.</p></div>";
   }
   // A grant: to whom, what it permits, and its scope records.
   const record = r => '<li>' + [
@@ -93,7 +104,7 @@ const RULES = [
  */
 function credential({ R, esc }) {
   const doc = code => JSON.parse(R.texts[R.uris[code]]);
-  const D = doc('D'), A = doc('A'), H = doc('H'), O = doc('O'), S = doc('S'), REC = doc('R');
+  const D = doc('D'), A = doc('A'), H = doc('H'), O = doc('O'), S = doc('S'), REC = doc('R'), APP = doc('APP');
   const pin = (d, to) => ((d.relatedResource ?? []).find(r => r.id === to)?.digestSRI ?? '').slice(0, 11) + '…';
   const res = D.credentialSubject.materialPropertiesList[0].results[0], q = res.data.quantity;
   const status = [D.credentialStatus].flat()[0];
@@ -112,37 +123,40 @@ function credential({ R, esc }) {
   };
   const line = (d, cls) => "<path d='" + d + "' class='ln " + cls + "' marker-end='url(#cf-arr)'/>";
   const label = (x, y, lines, anchor = 'start') => lines.map((l, i) => T(x, y + i * 17, l, i === 0 ? 'lf' : 'lm', anchor)).join('');
-  const svg = "<svg viewBox='0 0 1600 650' role='img' aria-labelledby='cf-t'><title id='cf-t'>The reference-material chain: each credential, its type, and each link with its field and digest</title>"
+  const legal = String([APP.termsOfUse].flat()[0]?.legalBasis ?? '').replace('Regulation (EC) No ', 'Reg. ').replace(', Article ', ' Art. ');
+  const svg = "<svg viewBox='0 0 1600 720' role='img' aria-labelledby='cf-t'><title id='cf-t'>The reference-material chain: each credential, its type, and each link with its field and digest</title>"
     + "<defs><marker id='cf-arr' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0 0 L10 5 L0 10 z' class='ah'/></marker></defs>"
-    // links first, under the nodes
-    + line('M270 170 C270 100 520 58 644 58', 'rec') + line('M1330 170 C1330 100 1080 58 956 58', 'rec')
-    + line('M270 340 L270 276', '') + line('M1330 340 L1330 276', '')
-    + line('M690 500 C690 440 520 420 428 420', '') + line('M910 500 C910 440 1080 420 1172 420', 'dot')
-    + line('M620 570 L410 570', '') + line('M980 570 L1190 570', '')
+    // links first, under the nodes: PA1 and LA1 up to the appointment (grant) and the recognition (no authority)
+    + line('M240 240 C240 180 380 190 380 134', '') + line('M1300 240 C1300 170 420 200 420 134', '')
+    + line('M300 240 C300 170 1180 200 1180 134', 'rec') + line('M1360 240 C1360 180 1220 190 1220 134', 'rec')
+    + line('M270 410 L270 346', '') + line('M1330 410 L1330 346', '')
+    + line('M690 570 C690 510 520 490 428 490', '') + line('M910 570 C910 510 1080 490 1172 490', 'dot')
+    + line('M620 640 L410 640', '') + line('M980 640 L1190 640', '')
     // link labels: field · type → target · pin
-    + label(444, 128, ['termsOfUse · RecognitionPolicy', 'recognitionCredential → REC1', 'pinned ' + pin(A, R.uris.R) + ' + recognizedIn'])
-    + label(1156, 128, ['termsOfUse · RecognitionPolicy', 'recognitionCredential → REC1', 'pinned ' + pin(H, R.uris.R) + ' + recognizedIn'], 'end')
-    + label(290, 300, ['termsOfUse · IssuedUnderPolicy → PA1', 'pinned ' + pin(O, R.uris.A) + ' · OS1 within PA1'])
-    + label(1310, 300, ['termsOfUse · IssuedUnderPolicy → LA1', 'pinned ' + pin(S, R.uris.H)], 'end')
-    + label(450, 362, ['termsOfUse · IssuedUnderPolicy', 'authorizationCredential → OS1', 'relatedResource ' + pin(D, R.uris.O)])
-    + label(1150, 362, ['evidence · RmStudyReference', 'id → HS1 · grants nothing', 'relatedResource ' + pin(D, R.uris.S)], 'end')
-    + T(515, 558, 'credentialStatus', 'lf', 'middle') + T(515, 592, status.statusPurpose + ', bit ' + status.statusListIndex, 'lm', 'middle')
-    + T(1085, 558, 'credentialSubject', 'lf', 'middle') + T(1085, 592, 'what it is about', 'lm', 'middle')
-    + T(984, 34, 'the verifier climbs to a root it chose', 'lm')
+    + label(24, 156, ['termsOfUse · IssuedUnderPolicy', 'PA1, LA1 → APP1', 'pinned ' + pin(A, R.uris.APP)])
+    + label(1576, 156, ['termsOfUse · RecognitionPolicy', 'PA1, LA1 → REC1 + recognizedIn', 'pinned ' + pin(A, R.uris.R)], 'end')
+    + label(290, 370, ['termsOfUse · IssuedUnderPolicy → PA1', 'pinned ' + pin(O, R.uris.A) + ' · OS1 within PA1'])
+    + label(1310, 370, ['termsOfUse · IssuedUnderPolicy → LA1', 'pinned ' + pin(S, R.uris.H)], 'end')
+    + label(450, 432, ['termsOfUse · IssuedUnderPolicy', 'authorizationCredential → OS1', 'relatedResource ' + pin(D, R.uris.O)])
+    + label(1150, 432, ['evidence · RmStudyReference', 'id → HS1 · grants nothing', 'relatedResource ' + pin(D, R.uris.S)], 'end')
+    + T(515, 628, 'credentialStatus', 'lf', 'middle') + T(515, 662, status.statusPurpose + ', bit ' + status.statusListIndex, 'lm', 'middle')
+    + T(1085, 628, 'credentialSubject', 'lf', 'middle') + T(1085, 662, 'what it is about', 'lm', 'middle')
+    + T(800, 60, 'the verifier climbs to a root it chose', 'lm', 'middle')
     // nodes
-    + node(650, 10, 300, 96, 'REC1', REC, 'Recognition of the body', 'recognition', 'authority', 'GACI → AB')
-    + node(120, 170, 300, 100, 'PA1', A, 'Producer accreditation', 'grant', 'authority', 'AB → RMP')
-    + node(1180, 170, 300, 100, 'LA1', H, 'Laboratory accreditation', 'grant', 'authority', 'AB → LAB')
-    + node(120, 340, 300, 100, 'OS1', O, 'Operational scope', 'grant', 'actor', 'RMP → RMP')
-    + node(1180, 340, 300, 100, 'HS1', S, 'Homogeneity study', 'result', 'actor', 'LAB → disc lot 1')
-    + node(620, 500, 360, 140, codeOf(D.id), D, 'RM certificate', 'result', 'actor', 'RMP → disc lot 1',
+    + node(250, 10, 300, 118, 'APP1', APP, 'Appointment of the body', 'grant', 'authority', 'GOV → AB', ['termsOfUse → law: ' + legal])
+    + node(1050, 10, 300, 118, 'REC1', REC, 'Recognition of the body', 'recognition', 'authority', 'GACI → AB', ['grants no authority'])
+    + node(120, 240, 300, 100, 'PA1', A, 'Producer accreditation', 'grant', 'authority', 'AB → RMP')
+    + node(1180, 240, 300, 100, 'LA1', H, 'Laboratory accreditation', 'grant', 'authority', 'AB → LAB')
+    + node(120, 410, 300, 100, 'OS1', O, 'Operational scope', 'grant', 'actor', 'RMP → RMP')
+    + node(1180, 410, 300, 100, 'HS1', S, 'Homogeneity study', 'result', 'actor', 'LAB → disc lot 1')
+    + node(620, 570, 360, 140, codeOf(D.id), D, 'RM certificate', 'result', 'actor', 'RMP → disc lot 1',
       [short(res.propertyIri) + ' = ' + q.value + ' ± ' + q.uncertainty.expandedUncertainty + ' ' + q.unit.ucumCode + ' · ' + short(res.methodIri) + ' · k = ' + q.uncertainty.coverageFactor,
         '◆ ' + D.proof.cryptosuite + ' · valid ' + String(D.validFrom).slice(0, 10) + ' – ' + String(D.validUntil).slice(0, 10)])
-    + "<g class='node'><rect x='196' y='542' width='208' height='56' rx='8' class='nb plain'/>" + T(300, 566, 'Status list', 'b', 'middle') + T(300, 586, "producer's, dated", 's', 'middle') + '</g>'
-    + "<g class='node'><rect x='1196' y='542' width='208' height='56' rx='8' class='nb plain'/>" + T(1300, 566, 'Disc lot 1', 'b', 'middle') + T(1300, 586, 'CuZn39Pb3, the material', 's', 'middle') + '</g>'
+    + "<g class='node'><rect x='196' y='612' width='208' height='56' rx='8' class='nb plain'/>" + T(300, 636, 'Status list', 'b', 'middle') + T(300, 656, "producer's, dated", 's', 'middle') + '</g>'
+    + "<g class='node'><rect x='1196' y='612' width='208' height='56' rx='8' class='nb plain'/>" + T(1300, 636, 'Disc lot 1', 'b', 'middle') + T(1300, 656, 'CuZn39Pb3, the material', 's', 'middle') + '</g>'
     // the rules each link carries
-    + mk(428, 123, 2) + mk(1172, 123, 2) + mk(248, 296, 2) + mk(248, 322, 6) + mk(1352, 296, 2) + mk(1352, 322, 3)
-    + mk(434, 358, 3) + mk(1166, 358, 4) + mk(472, 606, 1) + mk(558, 606, 7) + mk(968, 30, 5) + mk(960, 518, 8)
+    + mk(236, 214, 2) + mk(1364, 214, 2) + mk(248, 366, 2) + mk(248, 392, 6) + mk(1352, 366, 2) + mk(1352, 392, 3)
+    + mk(434, 428, 3) + mk(1166, 428, 4) + mk(472, 676, 1) + mk(558, 676, 7) + mk(640, 56, 5) + mk(960, 588, 8)
     + '</svg>';
   const rules = "<ol class='rulechips'>" + RULES.map(([h, t], i) => "<li class='rulechip' data-r='" + (i + 1) + "' tabindex='0' title='" + esc(t) + "'><span class='n'>" + (i + 1) + '</span><b>' + esc(h) + '</b> ' + esc(t) + '</li>').join('') + '</ol>';
   const parts = anatomyParts({ R, esc });
@@ -207,7 +221,7 @@ function anatomyParts({ R, esc }) {
     + '<div><h4>The chain is left to the verifier</h4><p>' + q('The data model detailed in this specification does not imply a transitive trust model') + ' (§5.1). '
     + q('Authorization is not an appropriate use for this specification without an accompanying authorization framework.') + ' (§5.9)</p><p>Here that framework is the verifier’s profile: the policy type it accepts, its roots, and what each link must satisfy.</p></div>'
     + '<div><h4>Others use the same place</h4><ul>'
-    + '<li><b>EBSI</b>: ' + c('AccreditationPolicy') + ' with ' + c('parentAccreditation') + ' and ' + c('rootAuthorisation') + '; ' + c('IssuanceCertificate') + ' binds the issuer’s accreditation into each credential</li>'
+    + '<li><b>EBSI</b>: ' + c('AccreditationPolicy') + ' with ' + c('parentAccreditation') + ' and ' + c('rootAuthorisation') + '; ' + c('IssuanceCertificate') + ' binds the issuer’s accreditation into each credential; the root, ' + c('VerifiableAuthorisationForTrustChain') + ', names its legal basis in a ' + c('TrustFrameworkPolicy') + '. APP1 borrows that root shape.</li>'
     + '<li><b>cheqd</b>: ' + c('AttestationPolicy') + ' with ' + c('parentAccreditation') + ' and ' + c('rootAuthorization') + '</li>'
     + '<li><b>W3C Recognized Entities</b> takes another route, ' + c('issuer.recognizedIn') + '; the last proposal page reconciles the two</li>'
     + '<li><b>UNTP</b>: an ' + c('authorisation') + ' inside the conformity attestation</li></ul>'
@@ -226,13 +240,13 @@ function reconcile({ R, esc }) {
     + row('Says', 'Issued exercising that grant', 'Issued while the issuer is recognized there', 'The issuer appears in that list')
     + row('Where', c('termsOfUse') + ', field ' + c('authorizationCredential'), c('termsOfUse') + ', field ' + c('recognitionCredential'), 'The issuer object')
     + row('Confers authority', 'Yes, within the grant', 'No', 'No')
-    + row('Used here by', 'Every chain: OS1 under PA1, RM178 under OS1, HS1 under LA1', 'PA1 and LA1 name REC1; only a verifier that trusts Global ACI relies on it', 'Mirrors the RecognitionPolicy; must name the same credential')
+    + row('Used here by', 'Every chain: PA1 and LA1 under APP1, OS1 under PA1, RM178 under OS1, HS1 under LA1', 'PA1 and LA1 name REC1; only a verifier that trusts Global ACI relies on it', 'Mirrors the RecognitionPolicy; must name the same credential')
     + row('Pinned', 'By digest in ' + c('relatedResource'), 'By digest in ' + c('relatedResource'), 'Not in the draft: fetched or stapled when checked')
     + row('Checked', 'Permission, scope within the grant, in force at the activity time', 'Action and main scope, not suspended, in force at the activity time', 'Subject is the issuer, the action, validators, validity at the evaluation time')
     + '</tbody></table>';
   const signed = JSON.stringify({ issuer: A.issuer, termsOfUse: A.termsOfUse, relatedResource: A.relatedResource }, null, 2);
   const why = "<section><h3>Why recognition is not authority</h3><ul>"
-    + '<li>An accreditation body’s authority is its national appointment; in the EU each member state appoints a single national accreditation body (Regulation (EC) No 765/2008).</li>'
+    + '<li>An accreditation body’s authority is its national appointment; in the EU each member state appoints a single national accreditation body (Regulation (EC) No 765/2008). Here that is APP1, and PA1 is issued under it.</li>'
     + '<li>Peer evaluation and signatory status make its accreditations accepted abroad as equivalent; they do not make the body competent or authorized.</li>'
     + '<li>So PA1 is not issued under REC1: it is issued while the body is recognized in REC1. VCDM §5.5 has a purpose for each: ' + q('the identity of the entity under whose authority the issuer issued this particular verifiable credential') + ' for a grant; '
     + q('the procedures or policies that were used in issuing the verifiable credential') + ' for a recognition.</li>'
@@ -265,6 +279,7 @@ function reconcile({ R, esc }) {
 
 /** One sentence per credential type, for the explainers. */
 const TYPES = {
+  VerifiableAuthorisationForTrustChain: 'An appointment: the state appoints its national accreditation body (Regulation (EC) No 765/2008, Art. 4(1)) and names what it may issue, and where. The shape is EBSI’s root trust-chain credential, also VCDM 2.0 Example 28; its own term of use names the legal basis. The body’s authority comes from here, not from Global ACI.',
   RecognizedEntityCredential: 'A recognition (W3C Recognized Entities, draft): after peer evaluation, Global ACI recognizes this accreditation body for main scopes (activity and standard). It grants no authority: the body’s authority is its national appointment. One credential per recognized body is our proposal.',
   RmAccreditation: 'An accreditation: the body states what the producer may certify, like a row of its annex: materials, properties, ranges and methods.',
   RmLabAuthority: 'A laboratory accreditation: the body states which studies the laboratory may carry out, on which materials and properties.',
@@ -277,10 +292,11 @@ const TYPES = {
 export const rmConfig = api => (CODES = api.RM_CODES ?? {}, {
   name: 'RM story', codes: CODES, story: api.RM_STORY, actors: api.RM_ACTORS, assets: api.RM_ASSETS, defaults: api.RM_DEFAULT,
   parts: api.RM_PARTS, evaluate: state => api.evaluateRmBoard(state), rows: 2,
-  hosts: { nab: 'the accreditation body', lab: 'the laboratory', producer: 'the RM producer', 'other-ab': 'another accreditation body', 'global-aci': 'Global ACI (fictional)' },
+  hosts: { state: 'the state', nab: 'the accreditation body', lab: 'the laboratory', producer: 'the RM producer', 'other-ab': 'another accreditation body', 'global-aci': 'Global ACI (fictional)' },
   facts, types: TYPES, content,
   glossary: [
-    ['REC1, PA1, LA1, OS1, HS1, RM178', 'The codes on the cards. The paper and the signed credentials call them R, A, H, O, S and D178.'],
+    ['APP1, REC1, PA1, LA1, OS1, HS1, RM178', 'The codes on the cards. The signed credentials call them APP, R, A, H, O, S and D178, as the paper does.'],
+    ['VerifiableAuthorisationForTrustChain', 'EBSI’s credential for the root of a trust chain, also VCDM 2.0 Example 28. Here the state’s appointment of the accreditation body; its term of use, a TrustFrameworkPolicy, names the legal basis.'],
     ['IssuedUnderPolicy', 'A term of use: this credential was issued exercising the grant it names (authorizationCredential). Drawn solid: “is issued under”.'],
     ['RecognitionPolicy', 'A term of use: this credential was issued while its issuer is recognized in the credential it names (recognitionCredential). It grants no authority. Drawn dash-dot: “recognized in”.'],
     ['issuer.recognizedIn', 'W3C Recognized Entities: the list in which the issuer is recognized. Here it mirrors the RecognitionPolicy and must name the same credential.'],
@@ -289,13 +305,16 @@ export const rmConfig = api => (CODES = api.RM_CODES ?? {}, {
   ],
   // The vertical layout: one lane per actor, from where trust comes from to where it is used.
   lanes: [
-    { id: 'recognize', label: 'Recognizes', actors: ['gaci'], cells: [{ code: 'R', col: 'mid' }] },
+    // Two roots side by side: the appointment (authority) and the recognition (none).
+    { id: 'appoint', label: 'Appoints', actors: ['state'], cells: [{ code: 'APP', col: 'mid' }], pair: 'roots' },
+    { id: 'recognize', label: 'Recognizes', actors: ['gaci'], cells: [{ code: 'R', col: 'mid' }], pair: 'roots' },
     { id: 'accredit', label: 'Accredits', actors: ['ab'], cells: [{ code: 'A', col: 'c1' }, { code: 'H', col: 'c2' }] },
     { id: 'study', label: 'Studies the batch', actors: ['lab'], cells: [{ code: 'S', col: 'c2' }] },
     { id: 'produce', label: 'Declares its scope, certifies', actors: ['rmp'], cells: [{ code: 'O', col: 'c1' }, { code: 'D', col: 'c2' }] },
     { id: 'hold', label: 'Holds and shows', actors: ['holder'], extra: 'holder' },
   ],
   actions: {
+    state: [{ type: 'toggle', key: 'suspendApp', label: 'Suspend APP1', control: 'suspendApp' }],
     gaci: [{ type: 'toggle', key: 'suspendGaci', label: 'Suspend REC1', control: 'suspendGaci' }],
     ab: [{ type: 'toggle', key: 'suspendA', label: 'Suspend PA1', control: 'suspend' }],
     lab: [{ type: 'toggle', key: 'revokeS', label: 'Revoke HS1', control: 'revoke' }],
@@ -307,10 +326,10 @@ export const rmConfig = api => (CODES = api.RM_CODES ?? {}, {
     ],
     holder: [{ type: 'toggle', key: 'tamper', label: 'Edit a value', control: 'tamper' },
       { type: 'seg', key: 'withhold', label: 'Leaves out', control: 'withhold',
-        options: [{ id: '', label: '–' }, ...['O', 'A', 'S', 'H', 'R'].map(code => ({ id: code, label: CODES[code] ?? code }))] }],
+        options: [{ id: '', label: '–' }, ...['O', 'A', 'S', 'H', 'R', 'APP'].map(code => ({ id: code, label: CODES[code] ?? code }))] }],
   },
   settings: [
-    { type: 'seg', key: 'trust', label: 'Trusts', control: 'trust', always: true, options: [{ id: 'ab', label: 'This accreditation body', sub: 'AB' }, { id: 'global-aci', label: 'Global ACI', sub: 'abroad' }, { id: 'other', label: 'Another body', sub: 'abroad' }] },
+    { type: 'seg', key: 'trust', label: 'Trusts', control: 'trust', always: true, options: [{ id: 'ab', label: 'This accreditation body', sub: 'AB' }, { id: 'state', label: 'The state', sub: 'GOV' }, { id: 'global-aci', label: 'Global ACI', sub: 'abroad' }, { id: 'other', label: 'Another body', sub: 'abroad' }] },
     { type: 'seg', key: 'ask', label: 'Asks', control: 'ask', options: [{ id: 'authorized', label: 'Authorized?' }, { id: 'fit', label: 'Fit for use?' }] },
     { type: 'seg', key: 'rule', label: 'Decision rule', control: 'rule', when: st => st.ask === 'fit',
       options: [{ id: 'guarded', label: 'Guarded', sub: 'As + U ≤ limit' }, { id: 'simple', label: 'Simple', sub: 'As ≤ limit' }] },
@@ -323,6 +342,8 @@ export const rmConfig = api => (CODES = api.RM_CODES ?? {}, {
   ],
   note: st => st.ask === 'fit' ? 'Its requirement: <b>As at most ' + st.limit + ' mg/kg</b>, from its own profile.' : '',
   tags: (code, st) => [
+    ...(code === 'APP' && st.suspendApp ? [{ text: 'suspended', bad: true }] : []),
+    ...(code === 'APP' && st.trust !== 'state' ? [{ text: 'beyond the root' }] : []),
     ...(code === 'R' && st.suspendGaci ? [{ text: 'suspended', bad: true }] : []),
     ...(code === 'R' && st.trust !== 'global-aci' ? [{ text: 'beyond the root' }] : []),
     ...(code === 'A' && st.suspendA ? [{ text: 'suspended', bad: true }] : []),
@@ -331,12 +352,13 @@ export const rmConfig = api => (CODES = api.RM_CODES ?? {}, {
   ],
   withheld: st => st.withhold || undefined,
   changedList: (uri, st) => uri === 'https://nab.vc4qi.example/status/suspension/1' && st.suspendA || uri === 'https://lab.vc4qi.example/status/1' && st.revokeS
-    || uri === 'https://global-aci.vc4qi.example/status/suspension/1' && st.suspendGaci,
+    || uri === 'https://global-aci.vc4qi.example/status/suspension/1' && st.suspendGaci
+    || uri === 'https://state.vc4qi.example/status/suspension/1' && st.suspendApp,
   extras: { holder: { row: 2, html: ({ st, R, mode, reached, esc }) => !reached('certify')
     ? "<div class='card empty'><span class='kind'>Nothing yet</span><span class='fact'>The disc and its certificate arrive when the producer ships them.</span></div>"
     : "<div class='wallet' id='wallet'><span class='object'>Disc lot 1 · CuZn39Pb3</span><p class='refs'>Holds <b class='mono'>" + esc(codeOf(R.certificate)) + '</b>'
       + (st.tamper && mode === 'evaluate' ? ', edited' : '') + ' and shows '
-      + ['O', 'A', 'S', 'H', 'R'].map(code => st.withhold === code && mode === 'evaluate' ? '<s>' + CODES[code] + ' (left out)</s>' : CODES[code]).join(', ') + '.</p></div>' } },
+      + ['O', 'A', 'S', 'H', 'R', 'APP'].map(code => st.withhold === code && mode === 'evaluate' ? '<s>' + CODES[code] + ' (left out)</s>' : CODES[code]).join(', ') + '.</p></div>' } },
   handovers: ({ mode, reached }) => [
     ...(reached('certify') ? [['code:D', '#wallet']] : []),
     ...(mode !== 'build' ? [['#wallet', 'verdict']] : []),
@@ -347,5 +369,5 @@ export const rmConfig = api => (CODES = api.RM_CODES ?? {}, {
   leaveOut: { key: 'withhold', control: 'withhold' },
   hideLocked: true,
   // The holder's column holds only the wallet: narrower, so the credentials get the room.
-  columns: 'repeat(4, minmax(0, 1fr)) minmax(0, .75fr) minmax(0, 1.25fr)',
+  columns: 'repeat(5, minmax(0, 1fr)) minmax(0, .75fr) minmax(0, 1.25fr)',
 });

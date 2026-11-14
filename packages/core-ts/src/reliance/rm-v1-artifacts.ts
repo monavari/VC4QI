@@ -37,6 +37,7 @@ export const RM_V1_ARTIFACT_SCHEMAS: Readonly<Record<string, string>> = Object.f
   RmLabAuthority: `${RM_V1_SCHEMA_BASE}lab-authority.json`,
   BitstringStatusListCredential: `${RM_V1_SCHEMA_BASE}status-list.json`,
   RecognizedEntityCredential: `${RM_V1_SCHEMA_BASE}recognized-entity.json`,
+  VerifiableAuthorisationForTrustChain: `${RM_V1_SCHEMA_BASE}appointment.json`,
 });
 
 /**

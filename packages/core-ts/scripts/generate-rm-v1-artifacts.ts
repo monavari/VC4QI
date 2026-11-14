@@ -9,7 +9,9 @@
 //   plus D197 and D520, hypothetical reissues with the same inputs and x = 197 / 520,
 //   and R, a fictional Global ACI stand-in's recognition of the NAB for RM production and
 //   testing (a W3C Recognized Entities credential, Working Draft of 4 November 2026, with
-//   one subject), which A, A2 and H point up to.
+//   one subject), which A, A2 and H point up to, and APP, a fictional state's appointment of
+//   the NAB (Regulation (EC) No 765/2008, Art. 4(1)) in the shape of EBSI's
+//   VerifiableAuthorisationForTrustChain, which A, A2 and H were issued under.
 //
 //   A and H name sets (non-ferrous metals and alloys, element contents, solid forms), as
 //   an accreditation annex does; O, S and D name members.
@@ -50,6 +52,10 @@ const LAB = 'https://lab.vc4qi.example/controller';
 const GACI = 'https://global-aci.vc4qi.example/controller';
 // One recognition per recognized body: Global ACI's recognition of the NAB.
 const RECOGNITION = 'https://global-aci.vc4qi.example/credentials/R';
+// A fictional state that appoints the NAB as its national accreditation body.
+const STATE = 'https://state.vc4qi.example/controller';
+const APPOINTMENT = 'https://state.vc4qi.example/credentials/APP';
+const APPOINTMENT_TYPE = 'VerifiableAuthorisationForTrustChain';
 const BATCH = 'urn:vc4qi-example:batch:cuzn39pb3-disc-lot-1';
 
 // Revocation status: one Bitstring Status List per issuer, all bits clear. The NAB
@@ -60,10 +66,13 @@ const STATUS_LIST = {
   producer: 'https://producer.vc4qi.example/status/1',
   lab: 'https://lab.vc4qi.example/status/1',
   gaci: 'https://global-aci.vc4qi.example/status/1',
+  state: 'https://state.vc4qi.example/status/1',
 } as const;
 const SUSPENSION_LIST = 'https://nab.vc4qi.example/status/suspension/1';
 // The arrangement anchor can suspend its recognition of one body without touching others.
 const GACI_SUSPENSION_LIST = 'https://global-aci.vc4qi.example/status/suspension/1';
+// The state can suspend or withdraw its appointment.
+const STATE_SUSPENSION_LIST = 'https://state.vc4qi.example/status/suspension/1';
 type Entry = [list: string, index: number, purpose: 'revocation' | 'suspension'];
 const STATUS_ENTRY: Record<string, Entry[]> = {
   'https://nab.vc4qi.example/credentials/A': [[STATUS_LIST.nab, 0, 'revocation'], [SUSPENSION_LIST, 0, 'suspension']],
@@ -75,6 +84,7 @@ const STATUS_ENTRY: Record<string, Entry[]> = {
   'https://producer.vc4qi.example/credentials/D520': [[STATUS_LIST.producer, 3, 'revocation']],
   'https://lab.vc4qi.example/credentials/S': [[STATUS_LIST.lab, 0, 'revocation']],
   [RECOGNITION]: [[STATUS_LIST.gaci, 0, 'revocation'], [GACI_SUSPENSION_LIST, 0, 'suspension']],
+  [APPOINTMENT]: [[STATUS_LIST.state, 0, 'revocation'], [STATE_SUSPENSION_LIST, 0, 'suspension']],
 };
 
 interface Party { name: string; controller: string; seed: Uint8Array; publicKey: Uint8Array }
@@ -158,10 +168,15 @@ const policy = (id: string, type: string) => [{ type: 'IssuedUnderPolicy', autho
 // digest. Recognition confers no authority: the NAB's authority is its national
 // appointment, which a verifier that anchors the NAB trusts directly. The issuer object
 // mirrors it as issuer.recognizedIn, for W3C Recognized Entities discovery.
-const underRecognition = (rText: string) => ({
+// IssuedUnderPolicy to the appointment: the NAB issues its grants exercising the authority
+// the state appointed it with. Both links are pinned by digest.
+const underAppointmentAndRecognition = (appText: string, rText: string) => ({
   issuer: { id: NAB, recognizedIn: { id: RECOGNITION, type: 'RecognizedEntityCredential' } },
-  termsOfUse: [{ type: 'RecognitionPolicy', recognitionCredential: { id: RECOGNITION, type: 'RecognizedEntityCredential' } }],
-  relatedResource: integrity([RECOGNITION, rText]),
+  termsOfUse: [
+    { type: 'IssuedUnderPolicy', authorizationCredential: { id: APPOINTMENT, type: APPOINTMENT_TYPE } },
+    { type: 'RecognitionPolicy', recognitionCredential: { id: RECOGNITION, type: 'RecognizedEntityCredential' } },
+  ],
+  relatedResource: integrity([APPOINTMENT, appText], [RECOGNITION, rText]),
 });
 const integrity = (...refs: [string, string][]) =>
   refs.map(([id, text]) => ({ id, digestSRI: sha384SRI(new TextEncoder().encode(text)) }));
@@ -181,9 +196,10 @@ async function main() {
   const producer = await party('producer', PRODUCER);
   const lab = await party('lab', LAB);
   const gaci = await party('global-aci', GACI);
+  const state = await party('state', STATE);
   const FIXTURE = 'VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)';
 
-  for (const p of [nab, producer, lab, gaci]) {
+  for (const p of [nab, producer, lab, gaci, state]) {
     record(p.controller, `controllers/${p.name}.json`, 'application/json',
       serialize(controllerDocument(p)), FIXTURE);
   }
@@ -197,6 +213,8 @@ async function main() {
     [nab, SUSPENSION_LIST, 'nab-suspension', 'suspension'],
     [gaci, STATUS_LIST.gaci, 'global-aci', 'revocation'],
     [gaci, GACI_SUSPENSION_LIST, 'global-aci-suspension', 'suspension'],
+    [state, STATUS_LIST.state, 'state', 'revocation'],
+    [state, STATE_SUSPENSION_LIST, 'state-suspension', 'suspension'],
   ];
   const statusList = (p: Party, listId: string, purpose: string, validFrom: string, validUntil: string) => sign({
     '@context': [VC_V2_CONTEXT],
@@ -270,6 +288,32 @@ async function main() {
     },
   }, gaci, '2024-01-01T00:00:00Z')), FIXTURE);
 
+  // APP: the state's appointment of the NAB, in the shape of EBSI's root trust-chain
+  // credential (VerifiableAuthorisationForTrustChain; @cef-ebsi/vcdm2.0-trust-model-schema
+  // 2.0.0, and VCDM 2.0 Example 28). permissionFor names what the NAB may issue: per
+  // credential type, its schema and the jurisdiction (an EU authority-table URI, as EBSI
+  // uses). Its own termsOfUse is a TrustFrameworkPolicy naming the legal basis: the top of
+  // the chain points to law, not to another credential. The appointment, not Global ACI's
+  // recognition, is where the NAB's authority comes from.
+  const JURISDICTION = 'https://publications.europa.eu/resource/authority/atu/DEU';
+  const permission = (file: string, type: string) =>
+    ({ schemaId: `${RM_V1_SCHEMA_BASE}${file}`, types: ['VerifiableCredential', type], jurisdiction: JURISDICTION });
+  const appText = record(APPOINTMENT, 'credentials/APP.json', 'application/vc', serialize(await sign({
+    ...envelope(APPOINTMENT, APPOINTMENT_TYPE, 'appointment.json', STATE, '2020-01-01T00:00:00Z', '2035-01-01T00:00:00Z'),
+    name: 'Appointment of the national accreditation body (fictional fixture)',
+    description: 'Fictional fixture in the shape of an EBSI VerifiableAuthorisationForTrustChain. Not issued by any state.',
+    credentialSubject: {
+      id: NAB,
+      permissionFor: [permission('accreditation.json', 'RmAccreditation'), permission('lab-authority.json', 'RmLabAuthority')],
+    },
+    termsOfUse: {
+      type: 'TrustFrameworkPolicy',
+      trustFramework: 'National accreditation (fictional fixture)',
+      policyId: 'https://state.vc4qi.example/policies/accreditation-body-appointment',
+      legalBasis: 'Regulation (EC) No 765/2008, Article 4(1)',
+    },
+  }, state, '2020-01-01T00:00:00Z')), FIXTURE);
+
   const A_ID = 'https://nab.vc4qi.example/credentials/A';
   const aText = record(A_ID, 'credentials/A.json', 'application/vc', serialize(await sign({
     ...envelope(A_ID, 'RmAccreditation', 'accreditation.json', NAB,
@@ -285,7 +329,7 @@ async function main() {
       scope: [scopeRecord(`${A_ID}#scope-non-ferrous`, ['M1', 'M2'], ['ElementContents'], { from: '0.1', to: '997000' },
         'NonFerrousMetalsAndAlloys', 'SolidForms')],
     },
-    ...underRecognition(rText),
+    ...underAppointmentAndRecognition(appText, rText),
   }, nab, '2025-01-01T00:00:00Z')), FIXTURE);
 
   // A2: a second accreditation granting the producer RM certification directly
@@ -299,7 +343,7 @@ async function main() {
       permittedActivity: [rm('issueRmCertificate')],
       scope: [scopeRecord(`${A2_ID}#scope-as`, ['M1'])],
     },
-    ...underRecognition(rText),
+    ...underAppointmentAndRecognition(appText, rText),
   }, nab, '2025-01-01T00:00:00Z')), FIXTURE);
 
   const H_ID = 'https://nab.vc4qi.example/credentials/H';
@@ -317,7 +361,7 @@ async function main() {
         studyTypeIris: [rm('Homogeneity')],
       }],
     },
-    ...underRecognition(rText),
+    ...underAppointmentAndRecognition(appText, rText),
   }, nab, '2025-01-01T00:00:00Z')), FIXTURE);
 
   const O_ID = 'https://producer.vc4qi.example/credentials/O';

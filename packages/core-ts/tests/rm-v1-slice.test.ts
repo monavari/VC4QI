@@ -151,10 +151,11 @@ describe('RM v1 signed vertical slice (I1)', () => {
     expect(byPredicate('claim-mapping:as-mass-fraction')).toMatchObject({ gate: 4, state: 'established' });
     expect(byPredicate('claim-coverage:as-mass-fraction:operational-scope')).toMatchObject({ gate: 5, state: 'established' });
     expect(byPredicate('conformity:as-mass-fraction-max-200-mg-per-kg')).toMatchObject({ gate: 6, execution: 'executed', state: 'established' });
-    // A and H point up to R, so the chain resolves it for every verifier; it decides
-    // only for a verifier whose route uses it (rm-v1-recognition.test.ts).
+    // A and H point up to R and to the state's appointment APP, so the chain resolves
+    // both for every verifier; each decides only for a verifier whose route uses it
+    // (rm-v1-recognition.test.ts, rm-v1-appointment.test.ts).
     expect(result.resources.filter(r => r.kind === 'artifact').map(r => r.uri).sort())
-      .toEqual([URI.A, URI.D, URI.H, URI.O, URI.R, URI.S].sort());
+      .toEqual([URI.A, URI.D, URI.H, URI.O, URI.R, URI.S, 'https://state.vc4qi.example/credentials/APP'].sort());
     expect(result.resources.every(r => r.digestSRI.startsWith('sha384-'))).toBe(true);
   });
 
@@ -187,7 +188,8 @@ describe('RM v1 signed vertical slice (I1)', () => {
       expect(result.resources.filter(r => r.kind === 'status').map(r => r.uri).sort()).toEqual([
         URI.GACI_STATUS, URI.GACI_SUSPENSION,
         'https://lab.vc4qi.example/status/1', 'https://nab.vc4qi.example/status/1',
-        'https://nab.vc4qi.example/status/suspension/1', URI.PRODUCER_STATUS].sort());
+        'https://nab.vc4qi.example/status/suspension/1', URI.PRODUCER_STATUS,
+        'https://state.vc4qi.example/status/1', 'https://state.vc4qi.example/status/suspension/1'].sort());
       expect(result.decision).toBe('accept');
     });
 

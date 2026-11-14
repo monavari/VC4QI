@@ -172,9 +172,11 @@ export async function mountBoard(api, cfg) {
   const textOf = (R, uri) => R.texts[uri] ?? defaultResult?.texts[uri];
   const docOf = (R, uri) => { const t = textOf(R, uri); try { return t ? JSON.parse(t) : null; } catch { return null; } };
   /** What a credential points to: its termsOfUse grants and recognitions, then its evidence. */
+  // termsOfUse is one object or an array (VCDM 2.0): an appointment's single
+  // TrustFrameworkPolicy names law, not a credential.
   const linksOf = d => [
-    ...(d?.termsOfUse ?? []).filter(t => t.authorizationCredential?.id).map(t => ({ to: t.authorizationCredential.id, kind: 'authority', policy: t.type })),
-    ...(d?.termsOfUse ?? []).filter(t => t.recognitionCredential?.id).map(t => ({ to: t.recognitionCredential.id, kind: 'recognition', policy: t.type })),
+    ...[d?.termsOfUse ?? []].flat().filter(t => t?.authorizationCredential?.id).map(t => ({ to: t.authorizationCredential.id, kind: 'authority', policy: t.type })),
+    ...[d?.termsOfUse ?? []].flat().filter(t => t?.recognitionCredential?.id).map(t => ({ to: t.recognitionCredential.id, kind: 'recognition', policy: t.type })),
     ...(d?.evidence ?? []).map(e => e.id).filter(Boolean).map(to => ({ to, kind: 'support', policy: 'evidence' })),
   ];
   /** A credential by its full name and the paper's code: “Producer accreditation A”. */
@@ -399,6 +401,19 @@ export async function mountBoard(api, cfg) {
       + "<div class='lanehead'><p class='verb'>" + esc(lane.label) + '</p>' + who + '</div>'
       + "<div class='cells'>" + (lane.cells ?? []).map(cell).join('') + extra + '</div></section>';
   }
+  /** Lanes top to bottom; consecutive lanes with the same `pair` share one row, side by side. */
+  function lanesHTML(R, mode) {
+    const out = [];
+    for (let i = 0; i < cfg.lanes.length; i++) {
+      const lane = cfg.lanes[i];
+      if (!lane.pair) { out.push(laneHTML(lane, R, mode)); continue; }
+      const row = [];
+      while (i < cfg.lanes.length && cfg.lanes[i].pair === lane.pair) row.push(laneHTML(cfg.lanes[i++], R, mode));
+      i--;
+      out.push("<div class='lanerow' data-pair='" + esc(lane.pair) + "'>" + row.join('') + '</div>');
+    }
+    return out.join('');
+  }
   const linkButton = (from, l, R, mode) => {
     const e = R && R.graph.edges.find(x => x.from === from && x.to === l.to);
     return "<button type='button' class='linkbtn' data-link='" + esc(from + '|' + l.to + '|' + l.kind) + "'>" + linkWords(from, l) + '</button>'
@@ -579,13 +594,29 @@ export async function mountBoard(api, cfg) {
     // In the vertical layout every line is named, in the open space between the lanes; lines
     // that meet at one card are named near where they start, so the names do not collide.
     const into = plan.reduce((m, p) => m.set(p.e.to, (m.get(p.e.to) ?? 0) + 1), new Map());
+    // A name goes where it overlaps neither a card nor a name already placed: first the
+    // preferred point, then points further along the line (two lines that cross are named
+    // apart). Mono at .74rem: about .6em per character.
+    const em = parseFloat(getComputedStyle(host).fontSize) || 16;
+    const cards = [...host.querySelectorAll('.card:not(.pending)')].map(rel);
+    const placed = [];
+    const overlaps = (r, q) => r.left < q.right && q.left < r.right && r.top < q.bottom && q.top < r.bottom;
+    const spot = (curve, text, preferred) => {
+      const w = text.length * .74 * em * .6 + 8, h = .74 * em + 6;
+      for (const t of [preferred, .5, .4, .6, .25, .75, .2, .8, .35, .65]) {
+        const [x, y] = splitAt(curve, t).at;
+        const r = { left: x - w / 2, right: x + w / 2, top: y - h / 2, bottom: y + h / 2 };
+        if (!cards.some(c => overlaps(r, c)) && !placed.some(q => overlaps(r, q))) { placed.push(r); return [x, y]; }
+      }
+      return splitAt(curve, preferred).at;
+    };
     for (const { e, a, b, sides, fOut, fIn } of plan) {
       const state = mode === 'evaluate' && e.state !== 'unused' ? e.state : 'plain';
       const curve = routeLine(a, b, sides, fOut, fIn);
       const line = lineSVG(curve, e.kind + ' e-' + state, colour(state));
       if (fresh.has(e.from) || vertical) {
-        const [x, y] = splitAt(curve, vertical && into.get(e.to) > 1 ? 0.3 : 0.5).at;
         const policy = linksOf(docOf(R, e.from)).find(l => l.to === e.to && l.kind === e.kind)?.policy ?? LINK[e.kind].field;
+        const [x, y] = spot(curve, policy, vertical && into.get(e.to) > 1 ? 0.3 : 0.5);
         labels.push("<text class='edge-label' x='" + x.toFixed(1) + "' y='" + y.toFixed(1) + "'>" + esc(policy) + '</text>');
       }
       const code = codeOf(e.to), leaving = leave && code && code !== 'D';
@@ -695,7 +726,7 @@ export async function mountBoard(api, cfg) {
     if (my !== seq) return;
     last = { R, mode };
     board.innerHTML = vertical
-      ? "<div class='flow'><svg class='lines' aria-hidden='true'></svg><svg class='labels' aria-hidden='true'></svg>" + cfg.lanes.map(l => laneHTML(l, R, mode)).join('') + '</div>'
+      ? "<div class='flow'><svg class='lines' aria-hidden='true'></svg><svg class='labels' aria-hidden='true'></svg>" + lanesHTML(R, mode) + '</div>'
       : "<svg class='lines' aria-hidden='true'></svg><svg class='labels' aria-hidden='true'></svg>" + ACTORS.map(a => colHTML(a, R, mode)).join('');
     wireCards(R, mode); wireControls(board);
     if (vertical) {

@@ -25,6 +25,9 @@ export const twoRouteProfile = loadRelianceProfile(
 export const globalAciProfileJson = (): JsonObject =>
   JSON.parse(readFileSync(new URL('profiles/rm-verifier-global-aci-1.json', rmDir), 'utf8')) as JsonObject;
 export const globalAciProfile = loadRelianceProfile(globalAciProfileJson());
+export const stateProfileJson = (): JsonObject =>
+  JSON.parse(readFileSync(new URL('profiles/rm-verifier-state-1.json', rmDir), 'utf8')) as JsonObject;
+export const stateProfile = loadRelianceProfile(stateProfileJson());
 const pinned = readPinnedResources(new URL('catalog.json', rmDir).pathname);
 export const signed = readPinnedResources(new URL('test-vectors/signed/catalog.json', rmDir).pathname);
 
@@ -44,9 +47,13 @@ export const URI = {
   R: 'https://global-aci.vc4qi.example/credentials/R',
   GACI_STATUS: 'https://global-aci.vc4qi.example/status/1',
   GACI_SUSPENSION: 'https://global-aci.vc4qi.example/status/suspension/1',
+  STATE: 'https://state.vc4qi.example/controller',
+  APP: 'https://state.vc4qi.example/credentials/APP',
+  STATE_STATUS: 'https://state.vc4qi.example/status/1',
+  STATE_SUSPENSION: 'https://state.vc4qi.example/status/suspension/1',
 } as const;
 const KEY_OF: Record<string, string> = {
-  [URI.NAB]: 'nab', [URI.PRODUCER]: 'producer', [URI.LAB]: 'lab', [URI.GACI]: 'global-aci',
+  [URI.NAB]: 'nab', [URI.PRODUCER]: 'producer', [URI.LAB]: 'lab', [URI.GACI]: 'global-aci', [URI.STATE]: 'state',
 };
 /** VCDM issuer identifier: a string, or an object's id. */
 const issuerOf = (document: JsonObject) => {
@@ -101,7 +108,7 @@ export async function statusListWith(uri: string, setBits: number[]): Promise<st
 }
 
 /**
- * Re-issue the chain after changing credentials: walk R, A, A2, H, O, S, D in
+ * Re-issue the chain after changing credentials: walk APP, R, A, A2, H, O, S, D in
  * dependency order, re-sign each changed credential, and re-sign every credential
  * whose relatedResource digest pins a changed one. `editD` changes D itself.
  */
@@ -109,7 +116,7 @@ export async function reissue(
   changed: Record<string, JsonObject>, editD?: (d: JsonObject) => void,
 ): Promise<Record<string, string | null>> {
   const overrides: Record<string, string | null> = {};
-  for (const uri of [URI.R, URI.A, URI.A2, URI.H, URI.O, URI.S, URI.D]) {
+  for (const uri of [URI.APP, URI.R, URI.A, URI.A2, URI.H, URI.O, URI.S, URI.D]) {
     const document = changed[uri] ?? json(uri);
     let dirty = uri in changed;
     if (uri === URI.D && editD) { editD(document); dirty = true; }

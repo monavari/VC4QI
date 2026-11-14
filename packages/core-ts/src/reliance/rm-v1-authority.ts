@@ -10,8 +10,9 @@
 // (termsOfUse → IssuedUnderPolicy → authorizationCredential). An authentic credential that nothing in
 // the chain references confers nothing (V07); a grant discovered by other means is
 // unsupported in this binding (V08). Provenance never establishes permission (V06).
-// The issuer of the top grant must be a configured anchor, or be recognized by one
-// through a recognition credential the grant points up to (recognized-entities.ts, E01-E03).
+// The issuer of the top grant must be a configured anchor, be appointed by one through the
+// appointment the grant was issued under (appointment.ts), or be recognized by one through
+// a recognition credential the grant points up to (recognized-entities.ts, E01-E03).
 import { semanticAnd, semanticOr } from './index.js';
 import type { RelianceProfile } from './profile.js';
 import { grantIssuerStanding, issuerId } from './recognized-entities.js';
@@ -193,7 +194,7 @@ function operationalScopeRoute(
   bases.push({ id: 'bounded-projection', state: projection.state, reason: projection.reason, sources: ['/credentialSubject/scope'] });
   const standing = grantIssuerStanding('trust-anchor', A, 'accredit-rm-producers', profile, lookup, subjectOf(D).activityTime);
   bases.push(standing.basis);
-  if (standing.recognition) chain.push(standing.recognition);
+  if (standing.via) chain.push(standing.via);
   bases.push(inForceAtActivity(D, [['O', O], ['A', A]]));
   return route('operational-scope', bases, chain, ref.node.uri);
 }
@@ -216,7 +217,7 @@ function directAccreditationRoute(
     : no('activity-permission', 'A does not permit issuing RM certificates.', ['/credentialSubject/permittedActivity']));
   const standing = grantIssuerStanding('trust-anchor', A, 'accredit-rm-producers', profile, lookup, subjectOf(D).activityTime);
   bases.push(standing.basis);
-  if (standing.recognition) chain.push(standing.recognition);
+  if (standing.via) chain.push(standing.via);
   bases.push(inForceAtActivity(D, [['A', A]]));
   return route('direct-accreditation', bases, chain, ref.node.uri);
 }
@@ -377,7 +378,7 @@ export function studyAuthority(
     : no('study-scope', 'H does not cover this matrix, property and study type.', ['/credentialSubject/scope']));
   const standing = grantIssuerStanding('laboratory-anchor', H, 'accredit-rm-laboratories', profile, lookup, s.activityTime);
   bases.push(standing.basis);
-  if (standing.recognition) chain.push(standing.recognition);
+  if (standing.via) chain.push(standing.via);
   return route('laboratory-authority', bases, chain);
 }
 

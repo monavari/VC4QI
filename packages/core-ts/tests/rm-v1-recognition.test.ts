@@ -204,7 +204,8 @@ describe('E16-E20: what a recognition cannot do', () => {
     A.termsOfUse = [{ type: 'IssuedUnderPolicy', authorizationCredential: { id: URI.R, type: 'RmAccreditation' } }];
     delete (A.issuer as JsonObject).recognizedIn;
     const result = await run(await reissue({ [URI.A]: A }));
-    // A's schema admits only a RecognitionPolicy in its termsOfUse: the grant fails at
+    // A's schema admits only a RecognitionPolicy, or an IssuedUnderPolicy naming the
+    // state's appointment, in its termsOfUse: the grant fails at
     // gate 0 and the route never reaches a recognition.
     expect(result.trace.some(t => t.predicate === 'schema' && t.nodeUse.startsWith(`${URI.A} |`) && t.state !== 'established')).toBe(true);
     expect(anchorBasis(result)?.state ?? 'not_established').not.toBe('established');

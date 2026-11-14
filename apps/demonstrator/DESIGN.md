@@ -16,7 +16,7 @@ fixtures, or is marked as not evaluated.
 2. **One meaning per visual channel.** State colours (green, red, amber) show state,
    position shows the actor, shape shows the kind of asset, line style shows the
    relation. Two further colours, never used for state, say who signs: violet an
-   authority (Global ACI, the accreditation body, the scheme owner), blue an actor that
+   authority (the state, Global ACI, the accreditation body, the scheme owner), blue an actor that
    works under a grant (producer, laboratory, GS body, manufacturer). Holder and verifier
    have none.
 3. **Never colour alone.** Every state also has an icon and a word.
@@ -103,8 +103,10 @@ starts with one actor and the board fills as it goes; "Your turn" shows every ac
 A band that concerns one moment of the story appears only in that moment: in the RM
 story, the evaluated note that a verifier abroad reaches the accreditation body through
 R, Global ACI's recognition of it (a fictional stand-in, W3C Recognized Entities draft).
-For the RM story: Global ACI (GACI), Accreditation body (AB), Laboratory (LAB), RM
-producer (RMP), Customer lab (CUST), Verifier (VER). Monograms are pills, so three or
+For the RM story: Global ACI (GACI), State (GOV), Accreditation body (AB), Laboratory
+(LAB), RM producer (RMP), Customer lab (CUST), Verifier (VER). The state sits next to the
+accreditation body, so the grant lines from PA1 and LA1 to APP1 are short; REC1 sits in
+the lower row of Global ACI's column, so the recognition lines cross no card. Monograms are pills, so three or
 four letters fit. With more than four actor columns the
 verifier's column narrows and a name may drop below its monogram; it never truncates. For the GS story: Accreditation body (AB), Scheme owner (SO), GS body
 (GSB), Manufacturer (MFR), Verifier (VER).
@@ -161,7 +163,7 @@ is the accreditation body). Handover lines are always grey.
 
 ### What a card shows
 
-A code of three or four letters and a number (REC1, PA1, LA1, OS1, HS1, RM178; the paper's
+A code of three or four letters and a number (APP1, REC1, PA1, LA1, OS1, HS1, RM178; the paper's
 R, A, H, O, S, D178, which the signed identifiers keep) and a full name that leads
 (“Producer accreditation”), under it the credential's own type in mono (the last entry
 of `type`, for example `RmAccreditation`) and, in the lanes, the signer's monogram, then
@@ -187,13 +189,16 @@ vocabulary in one line each.
 own: the step (title and sentence), then in evaluated steps the verifier's policy check
 (verdict, the six questions, its live settings) and what the other parties can do in this
 step, each under its monogram; the key at the bottom. The chain takes the rest of the
-width, top to bottom, one lane per actor (recognizes, accredits, studies the batch,
-declares its scope and certifies, holds and shows), with open space between the lanes.
+width, top to bottom, one lane per actor (appoints and recognizes, accredits, studies the
+batch, declares its scope and certifies, holds and shows), with open space between the
+lanes. The two roots share the top row, side by side: the state with APP1 (authority) on
+the left, Global ACI with REC1 (no authority) on the right; on narrow screens they stack.
 Cards look as on the opening graph: code, name, type, who signs it about whom (the signer
 in its group colour), tags, in smaller type, all of one width, either side of a wide
 middle gap, a lone card in the middle. Every line carries its name (the termsOfUse type or
 `evidence`) in the space it crosses; lines that meet at one card are named near where they
-start. Hovering a card tags the lanes that sign it, that it is about and that hold it,
+start, and a name moves along its line until it overlaps neither a card nor another name
+(two lines that cross are named apart). Hovering a card tags the lanes that sign it, that it is about and that hold it,
 as on the board. Lanes hold no controls, so a lane never changes height. Clicking a credential or a
 line opens it in a floating sheet (what it says, its links, envelope, checks and signed
 bytes, folded but for what it says), and the card stays ringed while the sheet is open.
@@ -203,7 +208,8 @@ in the top bar switches layouts and keeps the step and its state.
 ### Pages instead of the board
 
 A step may draw a page instead of the board, at full width in both layouts. The RM story
-opens with the whole chain on one wide graph read from the signed credentials: each
+opens with the whole chain on one wide graph read from the signed credentials, the two
+roots on top (APP1, whose term of use names the law, and REC1, which grants nothing): each
 credential with its code, name, type, kind (grant, result, recognition) and who signs it
 about whom; each link with its field, its type and target and the digest that pins it
 (`termsOfUse · IssuedUnderPolicy · authorizationCredential → OS1 · relatedResource

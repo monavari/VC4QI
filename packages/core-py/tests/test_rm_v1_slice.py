@@ -67,6 +67,10 @@ URI = {
     "GACI": "https://global-aci.vc4qi.example/controller",
     "GACI_STATUS": "https://global-aci.vc4qi.example/status/1",
     "GACI_SUSPENSION": "https://global-aci.vc4qi.example/status/suspension/1",
+    "STATE": "https://state.vc4qi.example/controller",
+    "APP": "https://state.vc4qi.example/credentials/APP",
+    "STATE_STATUS": "https://state.vc4qi.example/status/1",
+    "STATE_SUSPENSION": "https://state.vc4qi.example/status/suspension/1",
 }
 NOW = "2026-09-25T12:00:00Z"
 BUDGET = CatalogBudget(max_resources=256, max_bytes=5_000_000)
@@ -443,10 +447,11 @@ def test_gate_numbered_trace_and_resources() -> None:
     assert by["route:operational-scope:bounded-projection"].state == "established"
     assert by["support:same-batch"].state == "established"
     assert by["conformity:as-mass-fraction-max-200-mg-per-kg"].gate == 6
-    # A and H point up to R, so the chain resolves it for every verifier; it decides
-    # only for a verifier whose route uses it (test_rm_v1_recognition.py).
+    # A and H point up to R and to the state's appointment APP, so the chain resolves
+    # both for every verifier; each decides only for a verifier whose route uses it
+    # (test_rm_v1_recognition.py, test_rm_v1_appointment.py).
     assert sorted(r.uri for r in result.resources if r.kind == "artifact") == sorted(
-        URI[k] for k in ("A", "D", "H", "O", "R", "S")
+        URI[k] for k in ("A", "D", "H", "O", "R", "S", "APP")
     )
 
 
@@ -488,6 +493,8 @@ def test_status_established_for_the_whole_chain() -> None:
             "https://nab.vc4qi.example/status/1",
             "https://nab.vc4qi.example/status/suspension/1",
             URI["PRODUCER_STATUS"],
+            URI["STATE_STATUS"],
+            URI["STATE_SUSPENSION"],
         ]
     )
 

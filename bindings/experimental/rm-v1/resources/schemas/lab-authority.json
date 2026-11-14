@@ -167,34 +167,68 @@
       "minItems": 1,
       "maxItems": 4,
       "items": {
-        "type": "object",
-        "required": [
-          "type",
-          "recognitionCredential"
-        ],
-        "properties": {
-          "type": {
-            "const": "RecognitionPolicy"
-          },
-          "recognitionCredential": {
+        "oneOf": [
+          {
             "type": "object",
             "required": [
-              "id",
-              "type"
+              "type",
+              "authorizationCredential"
             ],
             "properties": {
-              "id": {
-                "type": "string",
-                "format": "uri"
-              },
               "type": {
-                "const": "RecognizedEntityCredential"
+                "const": "IssuedUnderPolicy"
+              },
+              "authorizationCredential": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "type"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "type": {
+                    "const": "VerifiableAuthorisationForTrustChain"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "type",
+              "recognitionCredential"
+            ],
+            "properties": {
+              "type": {
+                "const": "RecognitionPolicy"
+              },
+              "recognitionCredential": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "type"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "type": {
+                    "const": "RecognizedEntityCredential"
+                  }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
           }
-        },
-        "additionalProperties": false
+        ]
       }
     },
     "relatedResource": {

@@ -141,6 +141,15 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
       .toEqual(['https://global-aci.vc4qi.example/status/suspension/1']);
     // R is on the chain the graph reads: A and H point up to it.
     expect((await api.evaluateRmBoard()).graph.edges.filter(e => e.to.endsWith('/credentials/R')).map(e => e.from.split('/').pop()).sort()).toEqual(['A', 'H']);
+    // The state that appointed the body: A and H were issued under APP; suspending APP stops
+    // a verifier that trusts the state, not one that trusts the body or Global ACI.
+    expect(answers(await api.evaluateRmBoard({ trust: 'state' }))).toEqual(answers(await api.evaluateRmBoard()));
+    expect((await api.evaluateRmBoard()).graph.edges.filter(e => e.to.endsWith('/credentials/APP'))
+      .map(e => `${e.from.split('/').pop()}:${e.policy}`).sort()).toEqual(['A:IssuedUnderPolicy', 'H:IssuedUnderPolicy']);
+    expect((await api.evaluateRmBoard({ trust: 'state', suspendApp: true })).result.decision).toBe('reject');
+    expect((await api.evaluateRmBoard({ suspendApp: true })).result.decision).toBe('accept');
+    expect((await api.evaluateRmBoard({ trust: 'global-aci', suspendApp: true })).result.decision).toBe('accept');
+    expect((await api.evaluateRmBoard({ trust: 'state', withhold: 'APP' })).result.decision).toBe('not_established');
     // Any credential of the chain left out: cannot tell, never accepted.
     for (const code of ['O', 'A', 'S', 'H']) {
       expect([code, (await api.evaluateRmBoard({ withhold: code })).result.decision]).toEqual([code, 'not_established']);

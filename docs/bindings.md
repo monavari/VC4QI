@@ -83,6 +83,8 @@ accreditation A, operational scope O, certificate D, study S and laboratory auth
 | Scope records | `/credentialSubject/scope[]` with `matrixIri`, `formIri`, `allowedPropertyIris`, `allowedMethodIris`, `range` |
 | Authorizing reference | `/termsOfUse[]` of type `IssuedUnderPolicy` (`authorizationCredential`) |
 | Recognition reference (A, H) | `/termsOfUse[]` of type `RecognitionPolicy` (`recognitionCredential`), mirrored in `/issuer/recognizedIn`; never authority |
+| Appointment reference (A, H) | `/termsOfUse[]` of type `IssuedUnderPolicy` whose `authorizationCredential` has type `VerifiableAuthorisationForTrustChain` |
+| Appointment permission (APP) | `/credentialSubject/permissionFor[]` with `schemaId`, `types`, `jurisdiction` (EBSI shape); legal basis in `/termsOfUse/legalBasis` |
 | Required study | `/evidence[]` of type `RmStudyReference` |
 | Activity time | `/credentialSubject/activityTime` |
 | Selected claim | `/credentialSubject/materialPropertiesList/i/results/j` |
@@ -91,7 +93,11 @@ The context uses the prefix `rm:` because VCDM 2.0 already protects `exp`. The l
 terms (`IssuedUnderPolicy`, `authorizationCredential`, `RecognitionPolicy`,
 `recognitionCredential`) are not RM terms: every binding maps them to the shared
 namespace `https://vc4qi.example/ns/chain#`, so a grant link means the same in RM,
-calibration and GS, and the protected contexts can be combined. Units are
+calibration and GS, and the protected contexts can be combined. The appointment terms
+(`VerifiableAuthorisationForTrustChain`, `TrustFrameworkPolicy`, `trustFramework`,
+`policyId`, `legalBasis`, `permissionFor`, `schemaId`, `types`, `jurisdiction`) expand to
+the issuer-dependent IRIs that EBSI's examples and VCDM 2.0 Example 28 expand to, so the
+appointment's triples equal EBSI's; EBSI publishes no vocabulary of its own. Units are
 exactly `mg/kg` and `kg/kg` (1 mg/kg = 10⁻⁶ kg/kg), bounds are inclusive, and U must be
 symmetric with k = 2. The only baseline route for D runs through O, which must lie
 within A; A admitting M2 does not bypass O's M1 restriction.

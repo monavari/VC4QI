@@ -94,6 +94,7 @@ RM_V1_ARTIFACT_SCHEMAS: dict[str, str] = {
     "RmLabAuthority": f"{RM_V1_SCHEMA_BASE}lab-authority.json",
     "BitstringStatusListCredential": f"{RM_V1_SCHEMA_BASE}status-list.json",
     "RecognizedEntityCredential": f"{RM_V1_SCHEMA_BASE}recognized-entity.json",
+    "VerifiableAuthorisationForTrustChain": f"{RM_V1_SCHEMA_BASE}appointment.json",
 }
 
 
