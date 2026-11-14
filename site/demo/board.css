@@ -486,6 +486,8 @@ article.explain{ border:1px solid var(--line); border-radius:var(--radius); padd
 .lane[data-lane="hold"]{ background:var(--wallet); }
 .lane.acting{ border-color:var(--petrol); box-shadow:0 0 0 2px var(--petrol); }
 .lane.absent{ display:none; }
+/* Hovering a credential tags the lanes it touches, as on the board: on the top edge, so no lane grows. */
+.lane > .roles{ left:var(--s4); right:var(--s4); }
 .lane.dim > .lanehead .actions{ opacity:.42; }
 body[data-mode="build"] .lane.dim .cells{ opacity:.42; }
 .lanehead{ display:grid; gap:.3rem; align-content:start; }

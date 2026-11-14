@@ -373,7 +373,7 @@ export async function mountBoard(api, cfg) {
     return "<section class='col" + (absent ? ' absent' : '') + (acting ? ' acting' : '') + (dim ? ' dim' : '') + "' data-actor='" + a.id + "'"
       + (absent ? " aria-hidden='true' inert" : " aria-label='" + esc(a.name) + "'") + '>'
       + "<div class='colhead'><div class='name'>" + badge(a.id) + '<h2>' + esc(a.name) + '</h2></div>'
-      + "<div class='pubs'>" + pubsHTML(a, st, mode) + "</div><div class='roles'></div></div>"
+      + "<div class='pubs'>" + pubsHTML(a, st, mode) + "</div><div class='roles' data-actor='" + a.id + "'></div></div>"
       + rows.map(row => "<div class='slot r" + row + "'>" + slot(row) + '</div>').join('')
       + "<div class='actions'>" + (cfg.actions[a.id] ?? []).map(spec => control(spec, st)).join('') + '</div></section>';
   }
@@ -395,6 +395,7 @@ export async function mountBoard(api, cfg) {
     const who = lane.actors.map(id => "<div class='name'>" + badge(id) + '<h2>' + esc(actor(id).name) + '</h2></div>').join('');
     return "<section class='lane" + (absent ? ' absent' : '') + (acting ? ' acting' : '') + (dim ? ' dim' : '') + "' data-lane='" + esc(lane.id) + "'"
       + (absent ? " aria-hidden='true' inert" : " aria-label='" + esc(lane.label) + "'") + '>'
+      + lane.actors.map(id => "<div class='roles' data-actor='" + esc(id) + "'></div>").join('')
       + "<div class='lanehead'><p class='verb'>" + esc(lane.label) + '</p>' + who + '</div>'
       + "<div class='cells'>" + (lane.cells ?? []).map(cell).join('') + extra + '</div></section>';
   }
@@ -615,16 +616,15 @@ export async function mountBoard(api, cfg) {
     const tags = {};
     const add = (id, t) => (tags[id] ??= []).push(t);
     add(a.actor, 'signs'); add(aboutCol(a, R, mode), 'is about'); add(a.heldBy, 'holds');
-    document.querySelectorAll('.col').forEach(c => { const r = c.querySelector('.roles'); if (r) r.innerHTML = (tags[c.dataset.actor] ?? []).map(t => "<span class='role'>" + t + '</span>').join(''); });
+    // A column on the board, a lane in the vertical layout: each carries one tag row per actor.
+    document.querySelectorAll('.roles[data-actor]').forEach(r => { r.innerHTML = (tags[r.dataset.actor] ?? []).map(t => "<span class='role'>" + t + '</span>').join(''); });
   }
   const clearRoles = () => document.querySelectorAll('.roles').forEach(r => { r.innerHTML = ''; });
   function wireCards(R, mode) {
     $('board').querySelectorAll('.card[data-code]:not(.pending)').forEach(el => {
       const a = ASSETS.find(x => x.code === el.dataset.code);
-      if (!vertical) {
-        el.addEventListener('mouseenter', () => labelRoles(a, R, mode)); el.addEventListener('focus', () => labelRoles(a, R, mode));
-        el.addEventListener('mouseleave', clearRoles); el.addEventListener('blur', clearRoles);
-      }
+      el.addEventListener('mouseenter', () => labelRoles(a, R, mode)); el.addEventListener('focus', () => labelRoles(a, R, mode));
+      el.addEventListener('mouseleave', clearRoles); el.addEventListener('blur', clearRoles);
       el.addEventListener('click', () => show({ kind: 'card', code: a.code }));
     });
   }
