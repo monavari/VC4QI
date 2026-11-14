@@ -271,7 +271,7 @@ async function main() {
     type: ['VerifiableCredential', 'RecognizedEntityCredential'],
     issuer: { id: GACI, type: 'RecognizedIssuer', name: 'Global ACI (fictional stand-in)' },
     validFrom: '2024-01-01T00:00:00Z',
-    validUntil: '2028-01-01T00:00:00Z',
+    validUntil: '2029-01-01T00:00:00Z',
     credentialSchema: { id: `${RM_V1_SCHEMA_BASE}recognized-entity.json`, type: 'JsonSchema' },
     name: 'Recognition of the national accreditation body (fictional fixture)',
     description: 'Fictional fixture in the shape of a W3C Recognized Entities credential. Not issued or endorsed by '

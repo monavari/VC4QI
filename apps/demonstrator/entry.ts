@@ -193,8 +193,8 @@ const groupOf = (value: unknown) => {
 };
 const ROLE: Record<string, string> = {
   RmAccreditation: 'Producer accreditation', RmLabAuthority: 'Laboratory accreditation', RmOperationalScope: 'Operational scope',
-  RmStudy: 'Homogeneity study', RmCertificate: 'RM certificate (DRMD)', RecognizedEntityCredential: 'Recognition of the body',
-  VerifiableAuthorisationForTrustChain: 'Appointment of the body',
+  RmStudy: 'Homogeneity study', RmCertificate: 'RM certificate (DRMD)', RecognizedEntityCredential: 'Recognition of the NAB',
+  VerifiableAuthorisationForTrustChain: 'Appointment of the NAB',
   CalAccreditation: 'Accreditation', CalOperationalScope: 'Operational scope', CalLegalMandate: 'Statutory mandate',
   CalCertificate: 'Calibration certificate', CalTestReport: 'Test report',
   GsAccreditation: 'Accreditation', GsSchemeAuthorization: 'Scheme authorization', GsCertificate: 'GS certificate',
@@ -239,7 +239,13 @@ function buildGraph(target: string, texts: Record<string, string>, result: Relia
     ...((d?.evidence ?? []) as { id?: string }[]).map(e => e.id).filter((x): x is string => typeof x === 'string')
       .map(to => ({ to, kind: 'support' as const, policy: 'evidence' })),
   ];
-  const verification = new Map(result.artifactVerification.map(a => [a.artifactId, a.state]));
+  // An artifact is verified once per use (as the target, as a parent, as evidence); its
+  // node shows all of them together, so a failed use is never hidden by a later one.
+  const verification = new Map<string, SemanticState>();
+  for (const a of result.artifactVerification) {
+    const seen = verification.get(a.artifactId);
+    verification.set(a.artifactId, seen === undefined ? a.state : semanticAnd([seen, a.state]));
+  }
   const witnesses = result.decision === 'accept'
     ? new Set([...result.authorization.flatMap(a => a.routeWitnessIds), ...result.support.flatMap(s => s.witnessIds)]) : undefined;
   const layer = new Map<string, number>([[target, 0]]);
@@ -323,6 +329,8 @@ interface Evaluation {
   readonly notAsked: string;
   /** The time the question is about; the evaluation time when omitted. */
   readonly activityTime?: string;
+  /** When the verifier asks; EVALUATION_TIME when omitted. */
+  readonly evaluationTime?: string;
 }
 interface Evaluated {
   readonly profile: string;
@@ -361,8 +369,8 @@ async function evaluate(e: Evaluation): Promise<Evaluated> {
     binding: { id: bound.manifest.id, version: bound.manifest.version },
     profile: { id: profile.id, version: profile.version },
     trustConfigId: 'https://vc4qi.example/trust/fixture-anchors',
-    evaluationTime: EVALUATION_TIME,
-    activityTime: e.activityTime ?? EVALUATION_TIME,
+    evaluationTime: e.evaluationTime ?? EVALUATION_TIME,
+    activityTime: e.activityTime ?? e.evaluationTime ?? EVALUATION_TIME,
     suppliedEvidence: e.supplied.filter(uri => uri !== e.withheld),
     resolverLimits: { maxResources: 64, maxDepth: 4, maxBytes: 5_000_000 },
     ...(e.conformity ? { conformity: { ...e.conformity } } : {}),
@@ -472,7 +480,8 @@ export interface BoardAsset {
   /** A short tag beside the kind, e.g. "proposal" for what the binding proposes rather than reuses. */
   readonly tag?: string;
 }
-export type BoardPart = 'anatomy' | 'build' | 'verify' | 'manipulate' | 'decide' | 'when' | 'proposal' | 'present' | 'play';
+export type BoardPart = 'anatomy' | 'build' | 'verify' | 'manipulate' | 'decide' | 'when' | 'proposal' | 'present' | 'play'
+  | 'verifier' | 'trust' | 'time' | 'chain' | 'genuine' | 'fit' | 'whole';
 export const BOARD_PARTS: readonly { readonly id: BoardPart; readonly label: string }[] = [
   { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' }, { id: 'manipulate', label: 'Manipulate' },
   { id: 'decide', label: 'The verifier decides' }, { id: 'present', label: 'Present' }, { id: 'play', label: 'Your turn' },
@@ -482,8 +491,18 @@ export const BOARD_PARTS: readonly { readonly id: BoardPart; readonly label: str
  * steps show the credentials issued so far and evaluate nothing; the others evaluate
  * their state, and `expect` is the decision the tests require. `unlock` is the one
  * action the step makes live; the last step makes all live. The presentation step is a
- * placeholder: nothing in it is evaluated.
+ * placeholder: nothing in it is evaluated. A scenario step offers `scenarios`: one click
+ * applies one, and each carries the decision the tests require.
  */
+export interface BoardScenario<S> {
+  readonly id: string; readonly label: string;
+  /** The actor who acts (a column), when, and one line on what happens. */
+  readonly who: string; readonly when?: string; readonly note?: string;
+  /** How often this happens in practice. */
+  readonly likely: 'everyday' | 'occasional' | 'rare';
+  readonly state: Partial<S>;
+  readonly expect: RelianceResult['decision'];
+}
 export interface BoardStep<S> {
   readonly id: string; readonly part: BoardPart; readonly title: string; readonly text: string;
   /** The acting columns: the one who acts first, then the one it acts towards. */
@@ -497,6 +516,11 @@ export interface BoardStep<S> {
   readonly presentation?: readonly { readonly credential: string; readonly reveal: string; readonly hide: string }[];
   /** A page drawn instead of the board (the page's `panels[panel]`); nothing in it is evaluated. */
   readonly panel?: string;
+  /** In a build step: the issuer rules it applies (numbers into the page's rules), and
+   * what in the quality infrastructure it maps to which credential. */
+  readonly rules?: readonly number[]; readonly maps?: string;
+  /** Scenarios to apply with one click, and whether the step shows a timeline. */
+  readonly scenarios?: readonly BoardScenario<S>[]; readonly timeline?: boolean;
 }
 export interface BoardResult<S> extends Evaluated {
   readonly state: S;
@@ -521,6 +545,13 @@ const catalogOf = (binding: BindingKey) => loaded[binding].files.map(file => ({ 
 /** `list` re-signed by its issuer `name` (`controller`) with bit 0 set. */
 const resignedList = (binding: BindingKey, list: string, name: string, controller: string) => liveOnce(`${binding}:list:${list}`, () =>
   signAs(reissueStatusList(textOf(binding, list), [0], RESIGNED), name, controller, RESIGNED, catalogOf(binding), textOf(binding, controller)));
+/** March 2028: RM178 expired on 1 February. Every issuer has published fresh status lists by then. */
+export const RM_LATER = '2028-03-15T12:00:00Z';
+const LATER_LISTS = { from: '2028-03-01T00:00:00Z', until: '2029-03-01T00:00:00Z' };
+/** `list` as its issuer publishes it in March 2028, with `bits` set. */
+const laterList = (binding: BindingKey, list: string, name: string, controller: string, bits: readonly number[]) =>
+  liveOnce(`${binding}:later:${list}:${bits.join(',')}`, () => signAs(reissueStatusList(textOf(binding, list), bits, LATER_LISTS.from, LATER_LISTS.until),
+    name, controller, LATER_LISTS.from, catalogOf(binding), textOf(binding, controller)));
 /** Change `from` to `to` in a document's bytes without re-signing. */
 const edited = (text: string, from: string, to: string) => text.replace(from, to);
 
@@ -530,11 +561,16 @@ export type RmActor = BoardActor;
 export type RmAsset = BoardAsset;
 export type RmStep = BoardStep<RmBoardState>;
 export type RmBoardResult = BoardResult<RmBoardState>;
-/** The RM story: one credential and the design rules, the chain, and the question at issuance. */
+/**
+ * The RM story: one credential and its links; the chain, built by five issuer rules; the
+ * verifier's profile and its six checks; scenarios in five groups, the top of the chain
+ * first; the proposal; the whole chain; and a free sandbox.
+ */
 export const RM_PARTS: readonly { readonly id: BoardPart; readonly label: string }[] = [
-  { id: 'anatomy', label: 'The credential' }, { id: 'build', label: 'Build the chain' }, { id: 'verify', label: 'Verify' },
-  { id: 'manipulate', label: 'Try to break it' }, { id: 'decide', label: 'Who decides' }, { id: 'when', label: 'At issuance' },
-  { id: 'proposal', label: 'Proposal' }, { id: 'play', label: 'Your turn' },
+  { id: 'anatomy', label: 'The credential' }, { id: 'build', label: 'Build' }, { id: 'verifier', label: 'The verifier' },
+  { id: 'trust', label: 'Whom I trust' }, { id: 'time', label: 'When' }, { id: 'chain', label: 'Complete' },
+  { id: 'genuine', label: 'Genuine' }, { id: 'fit', label: 'Fit' },
+  { id: 'proposal', label: 'Proposal' }, { id: 'whole', label: 'Whole chain' }, { id: 'play', label: 'Your turn' },
 ];
 const RM_URI = {
   NAB: 'https://nab.vc4qi.example/controller', PRODUCER: 'https://producer.vc4qi.example/controller', LAB: 'https://lab.vc4qi.example/controller',
@@ -549,11 +585,11 @@ const RM_URI = {
   STATE_SUSPENSION: 'https://state.vc4qi.example/status/suspension/1', APP: 'https://state.vc4qi.example/credentials/APP',
 } as const;
 export const RM_ACTORS: readonly BoardActor[] = [
-  { id: 'gaci', mono: 'GACI', group: 'authority', name: 'Global ACI', does: 'Recognizes accreditation bodies after peer evaluation. Can suspend one recognition. A fictional stand-in.',
+  { id: 'gaci', mono: 'GACI', group: 'authority', name: 'Global ACI', does: 'Recognizes national accreditation bodies after peer evaluation. Can suspend a recognition (rare). A fictional stand-in.',
     publishes: [{ label: 'Key', uri: RM_URI.GACI }, { label: 'Revocation list', uri: RM_URI.GACI_STATUS }, { label: 'Suspension list', uri: RM_URI.GACI_SUSPENSION }] },
-  { id: 'state', mono: 'GOV', group: 'authority', name: 'State', does: 'Appoints the national accreditation body by law (Regulation (EC) No 765/2008). Can suspend or withdraw the appointment. Fictional.',
+  { id: 'state', mono: 'GOV', group: 'authority', name: 'State', does: 'Appoints the national accreditation body by law (Regulation (EC) No 765/2008). A root a verifier may choose; in practice it does not withdraw the appointment. Fictional.',
     publishes: [{ label: 'Key', uri: RM_URI.STATE }, { label: 'Revocation list', uri: RM_URI.STATE_STATUS }, { label: 'Suspension list', uri: RM_URI.STATE_SUSPENSION }] },
-  { id: 'ab', mono: 'AB', group: 'authority', name: 'Accreditation body', does: 'Accredits the producer and the laboratory. Can suspend.',
+  { id: 'ab', mono: 'NAB', group: 'authority', name: 'National accreditation body', does: 'Accredits the producer and the laboratory. Can suspend an accreditation.',
     publishes: [{ label: 'Key', uri: RM_URI.NAB }, { label: 'Revocation list', uri: RM_URI.NAB_STATUS }, { label: 'Suspension list', uri: RM_URI.SUSPENSION }] },
   { id: 'lab', mono: 'LAB', group: 'actor', name: 'Laboratory', does: 'Studies the batch under its accreditation. Can revoke its study.',
     publishes: [{ label: 'Key', uri: RM_URI.LAB }, { label: 'Revocation list', uri: RM_URI.LAB_STATUS }] },
@@ -574,8 +610,8 @@ export const RM_CODES: Readonly<Record<string, string>> = {
 };
 /** D is the certificate shown: RM178, RM197, RM520 or the one signed live. */
 export const RM_ASSETS: readonly BoardAsset[] = [
-  { code: 'APP', label: 'Appointment of the body', tag: 'EBSI shape', kind: 'grant', actor: 'state', row: 1, about: 'ab', heldBy: 'ab' },
-  { code: 'R', label: 'Recognition of the body', tag: 'proposal', kind: 'grant', actor: 'gaci', row: 2, about: 'ab', heldBy: 'ab' },
+  { code: 'APP', label: 'Appointment of the NAB', tag: 'EBSI shape', kind: 'grant', actor: 'state', row: 1, about: 'ab', heldBy: 'ab' },
+  { code: 'R', label: 'Recognition of the NAB', tag: 'proposal', kind: 'grant', actor: 'gaci', row: 2, about: 'ab', heldBy: 'ab' },
   { code: 'A', label: 'Producer accreditation', kind: 'grant', actor: 'ab', row: 1, about: 'rmp', heldBy: 'rmp' },
   { code: 'H', label: 'Laboratory accreditation', kind: 'grant', actor: 'ab', row: 2, about: 'lab', heldBy: 'lab' },
   { code: 'O', label: 'Producer’s operational scope', kind: 'grant', actor: 'rmp', row: 1, about: 'rmp', heldBy: 'rmp' },
@@ -591,69 +627,117 @@ export interface RmBoardState {
   /** The holder edits a value after signing; or leaves one credential of the chain out ('' for none). */
   readonly tamper: boolean; readonly withhold: '' | 'APP' | 'R' | 'A' | 'H' | 'O' | 'S';
   /** The verifier's root: this accreditation body, the state that appointed it, the Global ACI stand-in (abroad), or another body (abroad). */
-  readonly trust: 'ab' | 'state' | 'global-aci' | 'other'; readonly suspendGaci: boolean; readonly suspendApp: boolean;
+  readonly trust: 'ab' | 'state' | 'global-aci' | 'other'; readonly suspendGaci: boolean;
   /** The verifier's question, its rule and its upper limit for As in mg/kg. */
   readonly ask: 'authorized' | 'fit'; readonly rule: 'guarded' | 'simple'; readonly limit: '180' | '200' | '250';
-  /** Asked about today, or about D's activity on 20 January 2026; and which status lists answer that. */
-  readonly asOf: 'now' | 'issuance'; readonly archive: boolean;
+  /** Asked about today, about D's activity on 20 January 2026, or in March 2028 (after RM178
+   * expired); and, for January, which status lists answer that. */
+  readonly asOf: 'now' | 'issuance' | 'later'; readonly archive: boolean;
 }
 export const RM_DEFAULT: RmBoardState = {
   certificate: '178', value: '178', uncertainty: '5', method: 'M1', suspendA: false, revokeS: false,
-  tamper: false, withhold: '', trust: 'ab', suspendGaci: false, suspendApp: false, ask: 'fit', rule: 'guarded', limit: '200',
+  tamper: false, withhold: '', trust: 'ab', suspendGaci: false, ask: 'fit', rule: 'guarded', limit: '200',
   asOf: 'now', archive: false,
 };
 /** D178's activity time: the day the material was certified. */
 export const RM_ACTIVITY = '2026-01-20T00:00:00Z';
 export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
-  { id: 'credential', part: 'anatomy', acts: [], panel: 'credential',
-    title: 'One credential, its links and the rules',
-    text: 'Every card is a W3C verifiable credential. Its links are standard fields; the type of each term of use says what the link means.' },
+  { id: 'credential', part: 'anatomy', acts: [], panel: 'taxonomy',
+    title: 'One credential and its links',
+    text: 'Every card in this story is a W3C verifiable credential. A term of use points up to whoever let the issuer issue it; its type says what the link means, and almost every field is a standard one.' },
 
-  { id: 'appoint', part: 'build', acts: ['state', 'ab'], joins: ['state', 'ab'], issues: ['APP'],
-    title: 'The state appoints the accreditation body',
-    text: 'By law: one national accreditation body per state (Regulation (EC) No 765/2008, Art. 4(1)). APP1 has the shape EBSI uses for the root of a trust chain.' },
-  { id: 'recognize', part: 'build', acts: ['gaci', 'ab'], joins: ['gaci'], issues: ['R'],
-    title: 'Global ACI recognizes the accreditation body',
-    text: 'After peer evaluation, for RM production (ISO 17034) and testing (ISO/IEC 17025). Recognition grants no authority.' },
-  { id: 'accredit-producer', part: 'build', acts: ['ab', 'rmp'], joins: ['rmp'], issues: ['A'],
-    title: 'The accreditation body accredits the producer',
-    text: 'PA1 names what the producer may certify. It is issued under APP1 (IssuedUnderPolicy) and names REC1 (RecognitionPolicy).' },
-  { id: 'accredit-lab', part: 'build', acts: ['ab', 'lab'], joins: ['lab'], issues: ['H'],
-    title: 'The accreditation body accredits the laboratory',
-    text: 'LA1 names which studies the laboratory may carry out. It too is issued under APP1 and names REC1.' },
-  { id: 'scope', part: 'build', acts: ['rmp'], issues: ['O'],
+  { id: 'appoint', part: 'build', acts: ['state', 'ab'], joins: ['state', 'ab'], issues: ['APP'], rules: [1],
+    maps: 'National appointment (Regulation (EC) No 765/2008, Art. 4) → VerifiableAuthorisationForTrustChain, GOV → NAB',
+    title: 'The state appoints the national accreditation body',
+    text: 'By law, one NAB per state. APP1 has the shape EBSI uses for the root of a trust chain: its term of use names the law, not another credential.' },
+  { id: 'recognize', part: 'build', acts: ['gaci', 'ab'], joins: ['gaci'], issues: ['R'], rules: [1],
+    maps: 'Signatory status after peer evaluation → RecognizedEntityCredential, GACI → NAB',
+    title: 'Global ACI recognizes the NAB',
+    text: 'After peer evaluation, for RM production (ISO 17034) and testing (ISO/IEC 17025). Recognition makes its accreditations accepted abroad; it grants no authority.' },
+  { id: 'accredit-producer', part: 'build', acts: ['ab', 'rmp'], joins: ['rmp'], issues: ['A'], rules: [2, 3],
+    maps: 'Accreditation to ISO 17034, with its annex → RmAccreditation, NAB → RMP',
+    title: 'The NAB accredits the producer',
+    text: 'PA1 names what the producer may certify. It points up to APP1 (IssuedUnderPolicy) and REC1 (RecognitionPolicy), pinned by digest; both are about the NAB, PA1’s issuer.' },
+  { id: 'accredit-lab', part: 'build', acts: ['ab', 'lab'], joins: ['lab'], issues: ['H'], rules: [2, 3],
+    maps: 'Accreditation to ISO/IEC 17025 → RmLabAuthority, NAB → LAB',
+    title: 'The NAB accredits the laboratory',
+    text: 'LA1 names which studies the laboratory may carry out. It points up the same way as PA1.' },
+  { id: 'scope', part: 'build', acts: ['rmp'], issues: ['O'], rules: [2],
+    maps: 'The producer’s own scope within its accreditation → RmOperationalScope, RMP → RMP',
     title: 'The producer declares its operational scope',
-    text: 'OS1 is issued under PA1 (IssuedUnderPolicy) and must lie within it: As in CuZn39Pb3 discs, method M1.' },
-  { id: 'study', part: 'build', acts: ['lab'], issues: ['S'],
+    text: 'OS1 is issued under PA1 and must lie within it: As in CuZn39Pb3 discs, method M1.' },
+  { id: 'study', part: 'build', acts: ['lab'], issues: ['S'], rules: [2],
+    maps: 'Homogeneity study report → RmStudy, LAB → disc lot 1',
     title: 'The laboratory studies the batch',
     text: 'HS1, 10 January 2026: disc lot 1 is homogeneous for As. Issued under LA1.' },
-  { id: 'certify', part: 'build', acts: ['rmp', 'holder'], joins: ['holder'], issues: ['D'],
+  { id: 'certify', part: 'build', acts: ['rmp', 'holder'], joins: ['holder'], issues: ['D'], rules: [2, 4, 5],
+    maps: 'RM certificate (ISO 17034, shaped after the DRMD) → RmCertificate, RMP → disc lot 1',
     title: 'The producer certifies and ships',
-    text: 'RM178, 20 January 2026: As = 178 ± 5 mg/kg, issued under OS1, with HS1 as evidence.' },
+    text: 'RM178, 20 January 2026: As = 178 ± 5 mg/kg. Issued under OS1, with HS1 beside it as evidence and a bit in the producer’s status list.' },
 
-  { id: 'verify', part: 'verify', acts: ['holder', 'verifier'], joins: ['verifier'], expect: 'accept',
-    title: 'Checked upward',
-    text: 'The verifier trusts the accreditation body and climbs every link from RM178 to it. Its own rule: As + U ≤ 200 mg/kg.' },
+  { id: 'profile', part: 'verifier', acts: ['verifier'], panel: 'profile',
+    title: 'The verifier decides, with its own profile',
+    text: 'Issuers state facts. The verifier’s profile says whom it trusts, what it asks, by which rule and about when: what those facts are enough for.' },
+  { id: 'checks', part: 'verifier', acts: ['verifier'], panel: 'checks',
+    title: 'Six checks, on every credential relied on',
+    text: 'Each check is one plain question and one or two of the seven gates. Each answer is yes, no or cannot tell.' },
+  { id: 'verify', part: 'verifier', acts: ['holder', 'verifier'], joins: ['verifier'], expect: 'accept',
+    title: 'RM178 passes all six',
+    text: 'The verifier trusts the NAB and climbs every link from RM178 to it. Its rule: As + U ≤ 200 mg/kg.' },
 
-  { id: 'break', part: 'manipulate', acts: ['holder', 'rmp', 'ab', 'lab'], expect: 'accept',
-    unlock: ['withhold', 'tamper', 'certificate', 'suspend', 'revoke'],
-    title: 'Try to break it',
-    text: 'Click a line to leave that credential out, edit a value, certify 520 or your own value, suspend PA1 or revoke HS1.' },
-
-  { id: 'decide', part: 'decide', acts: ['verifier', 'rmp'], state: { certificate: '197' }, unlock: ['rule', 'limit', 'ask', 'certificate'], expect: 'reject',
-    title: 'The verifier decides, not the issuer',
-    text: 'RM197 is authorized, but guarded acceptance counts the uncertainty: 197 + 5 = 202 > 200.' },
-  { id: 'abroad', part: 'decide', acts: ['verifier', 'gaci', 'rmp'], state: { trust: 'global-aci' }, unlock: ['trust', 'suspendGaci', 'certificate'], expect: 'accept',
-    title: 'A verifier abroad trusts only Global ACI',
-    text: 'REC1 tells it to accept the body. Suspend REC1, or certify 520: recognized is not in scope.' },
-  { id: 'state', part: 'decide', acts: ['verifier', 'state'], state: { trust: 'state' }, unlock: ['trust', 'suspendApp', 'certificate'], expect: 'accept',
-    title: 'A verifier that trusts the state',
-    text: 'It climbs one link further: PA1 and LA1 to APP1. Suspend APP1 and it rejects; a verifier that trusts the body does not notice.' },
-
-  { id: 'when', part: 'when', acts: ['ab', 'verifier'], state: { suspendA: true, asOf: 'issuance', archive: true },
-    unlock: ['asOf', 'archive', 'suspend'], expect: 'accept',
-    title: 'Was it valid when it was issued?',
-    text: 'PA1 was suspended in September; RM178 dates from 20 January. Only the status lists kept from January can answer.' },
+  { id: 'trust', part: 'trust', acts: ['verifier', 'state', 'gaci', 'ab'],
+    title: 'Whom do I trust?',
+    text: 'The same RM178, checked by verifiers with different roots. Each root has its own path up the chain; then a change at the top.',
+    scenarios: [
+      { id: 'nab', who: 'verifier', label: 'A verifier that trusts the NAB', note: 'A customer lab in the same country', likely: 'everyday', state: {}, expect: 'accept' },
+      { id: 'state', who: 'verifier', label: 'A verifier that trusts the state', note: 'A market-surveillance authority: it climbs on to APP1', likely: 'everyday', state: { trust: 'state' }, expect: 'accept' },
+      { id: 'abroad', who: 'verifier', label: 'A verifier abroad that trusts Global ACI', note: 'REC1 tells it to accept the NAB', likely: 'everyday', state: { trust: 'global-aci' }, expect: 'accept' },
+      { id: 'other', who: 'verifier', label: 'A verifier that trusts another NAB', note: 'No path reaches its root', likely: 'everyday', state: { trust: 'other' }, expect: 'not_established' },
+      { id: 'recognition-suspended', who: 'gaci', label: 'Global ACI suspends its recognition of the NAB', when: '20 Sep 2026', note: 'Checked by the verifier abroad', likely: 'rare',
+        state: { trust: 'global-aci', suspendGaci: true }, expect: 'reject' },
+    ] },
+  { id: 'time', part: 'time', acts: ['verifier', 'ab', 'holder'], timeline: true,
+    title: 'Was it valid at that time?',
+    text: 'Expiry is written in the credential; suspension must be asked of its issuer, for a date. Each issuer keeps its own dated status lists.',
+    scenarios: [
+      { id: 'suspended-today', who: 'ab', label: 'The NAB suspends PA1 after a surveillance assessment', when: '20 Sep 2026', note: 'Asked today', likely: 'occasional',
+        state: { suspendA: true }, expect: 'reject' },
+      { id: 'suspended-january', who: 'ab', label: 'The same suspension, asked about 20 January', when: '20 Sep 2026', note: 'With the NAB’s list from January: RM178 was issued while PA1 held', likely: 'occasional',
+        state: { suspendA: true, asOf: 'issuance', archive: true }, expect: 'accept' },
+      { id: 'no-old-list', who: 'ab', label: 'The same question, with only today’s list', when: '20 Sep 2026', note: 'A list signed in September cannot say what held in January', likely: 'occasional',
+        state: { suspendA: true, asOf: 'issuance' }, expect: 'not_established' },
+      { id: 'expired', who: 'holder', label: 'The customer uses the disc in March 2028', when: '15 Mar 2028', note: 'RM178 expired on 1 Feb 2028. Uncommon for a brass disc, common for organic materials', likely: 'rare',
+        state: { asOf: 'later' }, expect: 'reject' },
+    ] },
+  { id: 'chain', part: 'chain', acts: ['verifier', 'holder', 'rmp', 'lab'],
+    title: 'Is the chain complete and within scope?',
+    text: 'Every link must be shown, pinned and within the grant above it; required evidence must hold.',
+    scenarios: [
+      { id: 'scope-missing', who: 'holder', label: 'The customer lab forgets to send OS1', note: 'The verifier cannot see the producer’s scope', likely: 'everyday',
+        state: { withhold: 'O' }, expect: 'not_established' },
+      { id: 'outside-scope', who: 'rmp', label: 'The producer certifies a lot at 520 mg/kg', note: 'Outside the range in OS1', likely: 'occasional',
+        state: { certificate: '520' }, expect: 'reject' },
+      { id: 'study-withdrawn', who: 'lab', label: 'The laboratory withdraws HS1 to replace it', when: '20 Sep 2026', note: 'An error found in the study; RM178 must be reissued', likely: 'occasional',
+        state: { revokeS: true }, expect: 'reject' },
+    ] },
+  { id: 'genuine', part: 'genuine', acts: ['verifier', 'holder'],
+    title: 'Is it genuine?',
+    text: 'The signature covers the exact bytes. Any edit after signing breaks it.',
+    scenarios: [
+      { id: 'edited', who: 'holder', label: 'Someone changes 178 to 150 in the customer’s copy', note: 'Before an audit', likely: 'rare',
+        state: { tamper: true }, expect: 'reject' },
+    ] },
+  { id: 'fit', part: 'fit', acts: ['verifier', 'rmp'],
+    title: 'Is it good enough for me?',
+    text: 'The certificate states a value and its uncertainty. The verifier’s own question, rule and limit decide whether it is fit for its use.',
+    scenarios: [
+      { id: 'guarded', who: 'verifier', label: 'RM197 against a limit of 200, guarded rule', note: '197 + 5 = 202 > 200', likely: 'everyday',
+        state: { certificate: '197' }, expect: 'reject' },
+      { id: 'simple', who: 'verifier', label: 'RM197, simple rule', note: '197 ≤ 200: the same facts, another rule', likely: 'everyday',
+        state: { certificate: '197', rule: 'simple' }, expect: 'accept' },
+      { id: 'authorized-only', who: 'verifier', label: 'RM197, asking only whether it is authorized', note: 'No limit is applied', likely: 'everyday',
+        state: { certificate: '197', ask: 'authorized' }, expect: 'accept' },
+    ] },
 
   { id: 'proposal', part: 'proposal', acts: ['gaci', 'ab'], panel: 'proposal',
     title: 'Proposal: one recognition per body',
@@ -661,11 +745,14 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
   { id: 'reconcile', part: 'proposal', acts: ['gaci', 'ab', 'rmp'], panel: 'reconcile',
     title: 'Recognized Entities and terms of use',
     text: 'One rule for every upward link; its type says grant (IssuedUnderPolicy) or recognition (RecognitionPolicy).' },
+  { id: 'whole', part: 'whole', acts: [], panel: 'whole',
+    title: 'The whole chain',
+    text: 'Every credential, its type and every link with its field and digest, on one page. Numbers mark the issuer rules each link follows.' },
 
   { id: 'play', part: 'play', acts: ['state', 'gaci', 'ab', 'lab', 'rmp', 'holder', 'verifier'],
-    unlock: ['suspendApp', 'suspendGaci', 'suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'ask', 'rule', 'limit', 'asOf', 'archive'],
+    unlock: ['suspendGaci', 'suspend', 'revoke', 'certificate', 'tamper', 'withhold', 'trust', 'ask', 'rule', 'limit', 'asOf', 'archive'],
     title: 'Your turn',
-    text: 'Every action is live: leave out, edit, certify, suspend, revoke, and change what the verifier trusts, asks and when.' },
+    text: 'Every action is live, labelled with who takes it, when and how likely it is. Change what the verifier trusts, asks and about when.' },
 ];
 
 const RM_PROFILE = 'rm-verifier-1';
@@ -724,13 +811,24 @@ export async function evaluateRmBoard(over: Partial<RmBoardState> = {}): Promise
   if (state.certificate === 'custom') texts[target] = await liveCertificate(state);
   if (state.suspendA) texts[RM_URI.SUSPENSION] = await resignedList('rm', RM_URI.SUSPENSION, 'nab', RM_URI.NAB);
   if (state.revokeS) texts[RM_URI.LAB_STATUS] = await resignedList('rm', RM_URI.LAB_STATUS, 'lab', RM_URI.LAB);
-  if (state.suspendApp) texts[RM_URI.STATE_SUSPENSION] = await resignedList('rm', RM_URI.STATE_SUSPENSION, 'state', RM_URI.STATE);
   if (state.suspendGaci) {
     texts[RM_URI.GACI_SUSPENSION] = await resignedList('rm', RM_URI.GACI_SUSPENSION, 'global-aci', RM_URI.GACI);
   }
   // Asked about January with the lists kept from January: those answer status then,
   // in place of today's (including any re-signed here).
   if (state.asOf === 'issuance' && state.archive) for (const list of resources.rm.archive ?? []) texts[list.uri] = list.text;
+  // Asked in March 2028: every issuer's list as published then, with what was revoked or
+  // suspended in September still set.
+  if (state.asOf === 'later') {
+    const lists: [string, string, string, boolean][] = [
+      [RM_URI.NAB_STATUS, 'nab', RM_URI.NAB, false], [RM_URI.SUSPENSION, 'nab', RM_URI.NAB, state.suspendA],
+      [RM_URI.LAB_STATUS, 'lab', RM_URI.LAB, state.revokeS], [RM_URI.PRODUCER_STATUS, 'producer', RM_URI.PRODUCER, false],
+      [RM_URI.GACI_STATUS, 'global-aci', RM_URI.GACI, false], [RM_URI.GACI_SUSPENSION, 'global-aci', RM_URI.GACI, state.suspendGaci],
+      [RM_URI.STATE_STATUS, 'state', RM_URI.STATE, false], [RM_URI.STATE_SUSPENSION, 'state', RM_URI.STATE, false],
+    ];
+    const signed = await Promise.all(lists.map(([list, name, controller, set]) => laterList('rm', list, name, controller, set ? [0] : [])));
+    lists.forEach(([list], i) => { texts[list] = signed[i]!; });
+  }
   const kept = new Set((state.asOf === 'issuance' && state.archive ? resources.rm.archive ?? [] : []).map(list => list.uri));
   const signedLive = Object.keys(texts).filter(uri => !kept.has(uri));
   if (state.tamper) {
@@ -747,7 +845,8 @@ export async function evaluateRmBoard(over: Partial<RmBoardState> = {}): Promise
     requestId: 'urn:vc4qi:demonstrator:rm-board', target,
     claims: [{ id: 'as', sourcePointer: '/credentialSubject/materialPropertiesList/0/results/0' }], supplied: [], texts,
     withheld: state.withhold ? uris[state.withhold] : undefined,
-    activityTime: state.asOf === 'issuance' ? RM_ACTIVITY : EVALUATION_TIME,
+    activityTime: state.asOf === 'issuance' ? RM_ACTIVITY : state.asOf === 'later' ? RM_LATER : EVALUATION_TIME,
+    ...(state.asOf === 'later' ? { evaluationTime: RM_LATER } : {}),
     ...(state.ask === 'fit' ? { conformity: { requirementId: 'as-mass-fraction-max-200-mg-per-kg',
       decisionRuleId: state.rule === 'simple' ? 'simple-acceptance' : 'guarded-acceptance-expanded-u' } } : {}),
     notAsked: 'The verifier asked only whether the value is authorized; no limit was applied.',
@@ -766,7 +865,7 @@ const GS_BOARD_URI = {
   TR: GS_URI.TR1, FI: 'https://gs-body.vc4qi.example/credentials/FI-1', C: GS_URI.C1,
 } as const;
 export const GS_ACTORS: readonly BoardActor[] = [
-  { id: 'ab', mono: 'AB', group: 'authority', name: 'Accreditation body', does: 'Accredits the GS body for testing and certifying. Can revoke.',
+  { id: 'ab', mono: 'NAB', group: 'authority', name: 'National accreditation body', does: 'Accredits the GS body for testing and certifying. Can revoke.',
     publishes: [{ label: 'Key', uri: GS_BOARD_URI.NAB }, { label: 'Revocation list', uri: GS_BOARD_URI.NAB_STATUS }] },
   { id: 'so', mono: 'SO', group: 'authority', name: 'Scheme owner', does: 'Permits a body to award the GS mark, in the role ZLS has. Can revoke.',
     publishes: [{ label: 'Key', uri: GS_BOARD_URI.ZLS }, { label: 'Revocation list', uri: GS_BOARD_URI.ZLS_STATUS }] },
@@ -804,10 +903,10 @@ const GS_PASSPORT: Record<GsBoardState['unit'], string> = {
 };
 export const GS_STORY: readonly BoardStep<GsBoardState>[] = [
   { id: 'join', part: 'build', acts: ['ab'], joins: ['ab'],
-    title: 'The accreditation body is the first party',
+    title: 'The NAB is the first party',
     text: 'Before anything is signed it publishes a key, so that anyone can check what it signs, and a status list, so that it can later revoke what it issued.' },
   { id: 'accredit', part: 'build', acts: ['ab', 'gsb'], joins: ['gsb'], issues: ['GS-A'],
-    title: 'The accreditation body accredits the GS body',
+    title: 'The NAB accredits the GS body',
     text: 'Accreditation GS-A attests competence: testing and certifying toys and household appliances against named standards. Competence is not yet permission to award the GS mark.' },
   { id: 'authorize', part: 'build', acts: ['so', 'gsb'], joins: ['so'], issues: ['GS-S'],
     title: 'The scheme owner permits the GS body to award the mark',
@@ -824,7 +923,7 @@ export const GS_STORY: readonly BoardStep<GsBoardState>[] = [
 
   { id: 'verify', part: 'verify', acts: ['mfr', 'verifier'], joins: ['verifier'], expect: 'accept',
     title: 'Market surveillance checks the passport',
-    text: 'It knows none of the parties in advance and trusts two roots: the accreditation body and the scheme owner. It follows every reference from the passport up to them before it relies on the GS mark.' },
+    text: 'It knows none of the parties in advance and trusts two roots: the NAB and the scheme owner. It follows every reference from the passport up to them before it relies on the GS mark.' },
 
   { id: 'tamper', part: 'manipulate', acts: ['mfr', 'verifier'], state: { tamper: true }, unlock: ['tamper'], expect: 'reject',
     title: 'Someone edits the passport',
@@ -841,10 +940,10 @@ export const GS_STORY: readonly BoardStep<GsBoardState>[] = [
 
   { id: 'surveillance', part: 'decide', acts: ['verifier'], expect: 'accept',
     title: 'Verifier 1: market surveillance',
-    text: 'Its profile trusts the accreditation body and the scheme owner, so both halves of the authority, competence and permission, reach a root it trusts.' },
+    text: 'Its profile trusts the NAB and the scheme owner, so both halves of the authority, competence and permission, reach a root it trusts.' },
   { id: 'abroad', part: 'decide', acts: ['verifier'], state: { trust: 'accreditation-only' }, unlock: ['trust'], expect: 'not_established',
     title: 'Verifier 2: a buyer abroad',
-    text: 'The same passport and the same bytes. This verifier trusts the accreditation body but not the scheme owner, so it cannot tell whether the mark was permitted. The verifier\'s policy decides, not the issuer\'s.' },
+    text: 'The same passport and the same bytes. This verifier trusts the NAB but not the scheme owner, so it cannot tell whether the mark was permitted. The verifier\'s policy decides, not the issuer\'s.' },
 
   { id: 'present', part: 'present', acts: ['mfr', 'verifier'],
     title: 'Show what the question needs, and no more',

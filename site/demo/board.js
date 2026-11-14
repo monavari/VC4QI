@@ -102,7 +102,12 @@ export function fail(message) {
  *   columns: css                        grid columns on wide screens (actors, then the verifier),
  *   leaveOut: { key, control }         clicking a citation line leaves its credential out
  *                                       (state[key] = the credential's code; again restores it),
+ *   rules: [[title, text]]             the issuer rules a build step's `rules` number,
+ *   timeline(st) -> html               the dates a step with `timeline` shows over its scenarios,
  * }
+ * A step with `scenarios` shows them as buttons over the board: one click applies one
+ * (its state replaces the overrides), and the verdict marks each check whose answer
+ * differs from the clean chain's.
  */
 export async function mountBoard(api, cfg) {
   const STORY = cfg.story, ACTORS = cfg.actors, ASSETS = cfg.assets;
@@ -111,7 +116,7 @@ export async function mountBoard(api, cfg) {
   const index = id => STORY.findIndex(s => s.id === id);
   // `selection`: the credential ({ kind: 'card', code }) or link ({ kind: 'link', from, to,
   // linkKind }) whose sheet is open; `last`: the evaluation on screen.
-  let step = 0, overrides = {}, seq = 0, redraw, defaultResult, selection = null, last;
+  let step = 0, overrides = {}, seq = 0, redraw, defaultResult, selection = null, last, scenario = null;
   $('evalTime').textContent = new Date(api.EVALUATION_TIME).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
   // Plain words first: a party's identifier becomes its name, a credential its code.
@@ -139,7 +144,9 @@ export async function mountBoard(api, cfg) {
   function readHash() {
     const [id, query] = location.hash.replace(/^#/, '').split('/');
     step = Math.max(0, index(id));
-    overrides = {};
+    overrides = {}; scenario = null;
+    const sc = (STORY[step].scenarios ?? []).find(x => x.id === query);
+    if (sc) { scenario = sc.id; overrides = { ...sc.state }; }
     if (STORY[step].part === 'play' && query) {
       for (const [k, v] of new URLSearchParams(query)) if (KEYS.includes(k)) overrides[k] = v === 'true' ? true : v === 'false' ? false : v;
     }
@@ -147,7 +154,7 @@ export async function mountBoard(api, cfg) {
   }
   function writeHash() {
     const s = STORY[step];
-    const query = s.part === 'play' ? new URLSearchParams(Object.entries(overrides).map(([k, v]) => [k, String(v)])).toString() : '';
+    const query = s.part === 'play' ? new URLSearchParams(Object.entries(overrides).map(([k, v]) => [k, String(v)])).toString() : scenario ?? '';
     history.replaceState(null, '', '#' + s.id + (query ? '/' + query : ''));
     keepHash();
   }
@@ -155,7 +162,12 @@ export async function mountBoard(api, cfg) {
     if (i < 0 || i >= STORY.length || i === step) return;
     // "Your turn" starts from the step before it; every other step starts from its own state.
     overrides = STORY[i].part === 'play' ? { ...(STORY[step].state ?? {}), ...overrides } : {};
-    step = i; selection = null; writeHash(); render();
+    step = i; selection = null; scenario = null; writeHash(); render();
+  }
+  function apply(id) {
+    const sc = (STORY[step].scenarios ?? []).find(x => x.id === id);
+    scenario = sc ? sc.id : null; overrides = sc ? { ...sc.state } : {};
+    writeHash(); render();
   }
   function set(key, value) { overrides = { ...overrides, [key]: value }; writeHash(); render(); }
   document.addEventListener('keydown', e => {
@@ -226,6 +238,14 @@ export async function mountBoard(api, cfg) {
     $('title').textContent = s.title;
     const [lead, ...more] = String(s.text).split(/(?<=\.) /);
     $('lead').innerHTML = esc(lead) + (more.length ? " <details class='more'><summary>More</summary><p>" + esc(more.join(' ')) + '</p></details>' : '');
+    // A build step names what it maps and the issuer rules it applies, on one line.
+    let maps = $('maps');
+    if (!maps) { document.querySelector('.stephead')?.insertAdjacentHTML('beforeend', "<p class='maps' id='maps'></p>"); maps = $('maps'); }
+    if (maps) {
+      maps.hidden = !s.maps && !(s.rules ?? []).length;
+      maps.innerHTML = (s.maps ? "<span class='qi'><b>Maps</b> " + esc(s.maps) + '</span>' : '')
+        + (s.rules ?? []).map(n => { const r = cfg.rules?.[n - 1]; return r ? "<span class='rule' title='" + esc(r[1]) + "'><span class='n'>" + n + '</span>' + esc(r[0]) + '</span>' : ''; }).join('');
+    }
     document.title = s.title + ' · ' + cfg.name + ' · VC4QI';
     $('presentation').hidden = !s.presentation;
     if (s.presentation) {
@@ -233,6 +253,29 @@ export async function mountBoard(api, cfg) {
         + s.presentation.map(r => '<tr><td>' + esc(r.credential) + '</td><td>' + esc(r.reveal) + '</td><td>' + esc(r.hide) + '</td></tr>').join('') + '</tbody>';
     }
   }
+  // ---------------------------------------------------------------- scenarios
+
+  const LIKELY = { everyday: 'everyday', occasional: 'occasional', rare: 'rare' };
+  /** The scenarios of a step, one button each, then a reset; a timeline over them when asked. */
+  function renderScenarios() {
+    const s = STORY[step];
+    let host = $('scenarios');
+    if (!host) { document.querySelector('.stephead')?.insertAdjacentHTML('afterend', "<section class='scenarios' id='scenarios' aria-label='Scenarios'></section>"); host = $('scenarios'); }
+    if (!host) return;
+    host.hidden = !s.scenarios;
+    if (!s.scenarios) { host.innerHTML = ''; return; }
+    const st = stateOf(s);
+    host.innerHTML = (s.timeline && cfg.timeline ? cfg.timeline(st) : '')
+      + "<div class='scnbar'><span>Pick a scenario: the verdict marks each check whose answer changed.</span>"
+      + "<button type='button' class='reset' data-scn=''" + (Object.keys(overrides).length ? '' : ' disabled') + '>Reset to the clean chain</button></div>'
+      + "<div class='scnlist'>" + s.scenarios.map((x, i) => "<button type='button' class='scn' data-scn='" + esc(x.id) + "' aria-pressed='" + (scenario === x.id) + "'"
+        + (x.note ? " title='" + esc(x.note) + "'" : '') + '>'
+        + "<span class='scn-n'>" + (i + 1) + '</span>' + badge(x.who, true)
+        + "<span class='scn-body'><b>" + esc(x.label) + "</b><small><span class='likely l-" + x.likely + "'>" + LIKELY[x.likely] + '</span> '
+        + esc([x.when, x.note].filter(Boolean).join(' · ')) + '</small></span></button>').join('') + '</div>';
+    host.querySelectorAll('[data-scn]').forEach(b => b.addEventListener('click', () => apply(b.dataset.scn === scenario ? '' : b.dataset.scn)));
+  }
+
   // ---------------------------------------------------------------- the board
 
   const issuedSoFar = () => new Set(STORY.slice(0, step + 1).flatMap(s => s.issues ?? []));
@@ -285,7 +328,7 @@ export async function mountBoard(api, cfg) {
   function toggle(spec, value) {
     const on = live(spec.control);
     return "<button type='button' class='act' data-key='" + spec.key + "' data-value='" + !value + "' aria-pressed='" + value + "'"
-      + (on ? '' : " disabled title='Available in Your turn'") + '>' + esc(spec.label) + '</button>';
+      + (on ? '' : " disabled title='Available in Your turn'") + '>' + esc(spec.label) + (spec.sub ? '<small>' + esc(spec.sub) + '</small>' : '') + '</button>';
   }
   function form(spec, st) {
     if (!live(spec.control)) return '';
@@ -343,10 +386,14 @@ export async function mountBoard(api, cfg) {
     const d = R.result.decision, [failed, why] = reason(R);
     const [cls, mark, title] = d === 'accept' ? ['', '✓', 'Accepted'] : d === 'reject' ? ['reject', '✕', 'Rejected: not ' + (QUESTIONS[failed] ?? '').toLowerCase()] : ['unknown', '?', 'Not established'];
     const q = Object.fromEntries(R.questions.map(x => [x.id, x]));
+    // Where a scenario or the sandbox changed the chain, mark each answer that differs from the clean one's.
+    const s = STORY[step], base = (s.scenarios || s.part === 'play') && defaultResult && R !== defaultResult
+      ? Object.fromEntries(defaultResult.questions.map(x => [x.id, x.state])) : null;
+    const changed = x => base && base[x.id] !== x.state;
     const ok = q.fit.state === 'established' ? 'Authorized and fit for use under its rule.' : 'Authentic, current, authorized and supported.';
     return "<div class='verdict " + cls + "' role='status'><div class='mark'>" + mark + '</div><div><b>' + esc(title) + '</b><small>' + esc(d === 'accept' ? ok : plain(why)) + '</small></div></div>'
-      + "<div class='questions'>" + R.questions.map(x => "<details class='q s-" + x.state + "'><summary><b>" + QUESTIONS[x.id] + "</b><span class='state st-" + x.state + "'>"
-        + LABEL[x.state] + "</span></summary><p class='why'>" + esc(plain(x.summary)) + '</p>' + (trace && x.details.length ? traceHTML(x.details) : '') + '</details>').join('') + '</div>';
+      + "<div class='questions'>" + R.questions.map(x => "<details class='q s-" + x.state + (changed(x) ? ' changed' : '') + "'><summary><b>" + QUESTIONS[x.id] + "</b><span class='state st-" + x.state + "'>"
+        + LABEL[x.state] + '</span>' + (changed(x) ? "<span class='chg'>changed</span>" : '') + "</summary><p class='why'>" + esc(plain(x.summary)) + '</p>' + (trace && x.details.length ? traceHTML(x.details) : '') + '</details>').join('') + '</div>';
   }
 
   const note = st => (typeof cfg.note === 'function' ? cfg.note(st) : cfg.note) ?? '';
@@ -689,7 +736,7 @@ export async function mountBoard(api, cfg) {
   async function render() {
     const my = ++seq, s = STORY[step], board = $('board');
     const mode = s.panel ? 'panel' : s.part === 'build' ? 'build' : s.part === 'present' ? 'present' : 'evaluate';
-    renderNav();
+    renderNav(); renderScenarios();
     document.body.dataset.mode = mode;
     document.body.dataset.layout = vertical ? 'vertical' : 'board';
     $('band').hidden = !(mode === 'evaluate' && cfg.band(stateOf(s)));

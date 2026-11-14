@@ -9,14 +9,15 @@ import { describe, expect, it } from 'vitest';
 const bundle = new URL('../../../site/demo/verifier.js', import.meta.url).href;
 type Result = {
   result: { decision: string };
-  questions: { id: string; state: string }[];
-  graph: { nodes: { uri: string; name: string; layer: number; present: boolean }[]; edges: { from: string; to: string; kind: string }[] };
+  questions: { id: string; state: string; summary: string }[];
+  graph: { nodes: { uri: string; name: string; layer: number; present: boolean }[]; edges: { from: string; to: string; kind: string; policy?: string }[] };
   texts: Record<string, string>;
 };
 type Api = {
   EXAMPLES: { id: string; cases: { id: string }[] }[];
   evaluateScenario: (o: Record<string, unknown>) => Promise<Result>;
-  RM_STORY: { id: string; part: string; issues?: string[]; state?: Record<string, unknown>; expect?: string }[];
+  RM_STORY: { id: string; part: string; issues?: string[]; state?: Record<string, unknown>; expect?: string; panel?: string;
+    scenarios?: { id: string; state: Record<string, unknown>; expect: string }[] }[];
   RM_ASSETS: { code: string }[];
   evaluateRmBoard: (o?: Record<string, unknown>) => Promise<Board>;
   GS_STORY: { id: string; part: string; issues?: string[]; state?: Record<string, unknown>; expect?: string }[];
@@ -112,10 +113,14 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     for (const s of api.RM_STORY.filter(x => x.expect !== undefined)) {
       expect([s.id, (await api.evaluateRmBoard(s.state)).result.decision]).toEqual([s.id, s.expect]);
     }
-    // Only the pages (the credential and the design rules, the proposals), the build
-    // steps and "Your turn" have no expected decision.
-    expect([...new Set(api.RM_STORY.filter(s => s.expect === undefined).map(s => s.part))])
-      .toEqual(['anatomy', 'build', 'proposal', 'play']);
+    // Every scenario reaches its decision.
+    for (const s of api.RM_STORY) {
+      for (const c of s.scenarios ?? []) {
+        expect([s.id, c.id, (await api.evaluateRmBoard(c.state)).result.decision]).toEqual([s.id, c.id, c.expect]);
+      }
+    }
+    // A step without an expected decision is a page, a build step, a group of scenarios or "Your turn".
+    expect(api.RM_STORY.filter(s => s.expect === undefined && !s.panel && !s.scenarios && s.part !== 'build' && s.part !== 'play').map(s => s.id)).toEqual([]);
   });
 
   it('RM board: documents signed in the browser verify like the generated fixtures', async () => {
@@ -146,9 +151,6 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     expect(answers(await api.evaluateRmBoard({ trust: 'state' }))).toEqual(answers(await api.evaluateRmBoard()));
     expect((await api.evaluateRmBoard()).graph.edges.filter(e => e.to.endsWith('/credentials/APP'))
       .map(e => `${e.from.split('/').pop()}:${e.policy}`).sort()).toEqual(['A:IssuedUnderPolicy', 'H:IssuedUnderPolicy']);
-    expect((await api.evaluateRmBoard({ trust: 'state', suspendApp: true })).result.decision).toBe('reject');
-    expect((await api.evaluateRmBoard({ suspendApp: true })).result.decision).toBe('accept');
-    expect((await api.evaluateRmBoard({ trust: 'global-aci', suspendApp: true })).result.decision).toBe('accept');
     expect((await api.evaluateRmBoard({ trust: 'state', withhold: 'APP' })).result.decision).toBe('not_established');
     // Any credential of the chain left out: cannot tell, never accepted.
     for (const code of ['O', 'A', 'S', 'H']) {
@@ -166,6 +168,12 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     expect((await api.evaluateRmBoard({ suspendA: true, asOf: 'issuance' })).result.decision).toBe('not_established');
     expect((await api.evaluateRmBoard({ suspendA: true, asOf: 'issuance', archive: true })).result.decision).toBe('accept');
     expect((await api.evaluateRmBoard({ suspendA: true, asOf: 'issuance', archive: true })).signedLive).toEqual([]);
+    // March 2028: RM178 has expired. Every issuer has published fresh lists, so the
+    // expiry is what fails; the later checks never read an expired certificate.
+    const later = await api.evaluateRmBoard({ asOf: 'later' });
+    expect([later.result.decision, later.signedLive.length]).toEqual(['reject', 8]);
+    expect([answers(later).authentic, answers(later).current]).toEqual(['established', 'contradicted']);
+    expect(later.questions.find(q => q.id === 'current')!.summary).toMatch(/Expired before 2028-03-15/);
     // Editing a live-signed certificate breaks its signature like any other.
     expect(answers(await api.evaluateRmBoard({ certificate: 'custom', value: '178', uncertainty: '5', tamper: true })).authentic).toBe('contradicted');
   });
