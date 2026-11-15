@@ -138,7 +138,7 @@ def load_reliance_profile(value: Any) -> RelianceProfile:
         return (
             isinstance(r, dict)
             and all(
-                _nonempty(r.get(k)) for k in ("id", "propertyIri", "quantityKindIri")
+                _nonempty(r.get(k)) for k in ("id", "propertyIri", "quantityTypeQUDT")
             )
             and isinstance(limit, dict)
             and isinstance(limit.get("value"), str)
@@ -159,7 +159,7 @@ def load_reliance_profile(value: Any) -> RelianceProfile:
     ):
         raise TypeError(
             "Reliance profile conformity needs requirements (id, propertyIri, "
-            "quantityKindIri, upperLimit) and decisionRules (id, acceptWhen)."
+            "quantityTypeQUDT, upperLimit) and decisionRules (id, acceptWhen)."
         )
     binding_rules = value.get("bindingRules", {})
     if not isinstance(binding_rules, dict):
@@ -190,7 +190,7 @@ def load_reliance_profile(value: Any) -> RelianceProfile:
             ConformityRequirement(
                 r["id"],
                 r["propertyIri"],
-                r["quantityKindIri"],
+                r["quantityTypeQUDT"],
                 r["upperLimit"]["value"],
                 r["upperLimit"]["unit"],
             )

@@ -2,6 +2,90 @@
 
 ## Unreleased
 
+- **Every value is a PTB D-SI 2.2.1 real (all bindings).** Certified RM values,
+  calibration results and the passport's rated power are written as D-SI's `si:real`,
+  in JSON with D-SI's element names: `label`, `quantityTypeQUDT` (a QUDT quantity kind:
+  `MassFraction`, `Pressure`, `Power`), `value`, `unit` (a D-SI identifier such as
+  `\milli\gram\kilogram\tothe{-1}`, the DRMD's spelling, or `\kilo\pascal`) and
+  `measurementUncertaintyUnivariate.expandedMU` (`valueExpandedMU`, `coverageFactor`,
+  `coverageProbability`, `distribution`). This replaces the UCUM codes, the local
+  `quantityKind` IRIs, `expandedUncertainty` and `ratedPowerW`. Scope records and
+  profiles name the quantity kind as `quantityTypeQUDT` and their units as D-SI
+  identifiers. The manifests pin D-SI 2.2.1 by URL and SHA-384, map each unit to its
+  factor and display symbol, and record which elements are interpreted; RM also accepts
+  `\percent`. Values stay exact decimals, the subset of D-SI's `si:decimalType` without
+  sign, exponent or `NaN`; a D-SI standard or coverage-interval uncertainty, another unit
+  spelling or a missing quantity kind is not established. In calibration every result of
+  a group names one quantity kind, which is the group's. Contexts, schemas, manifests,
+  profiles, generators, both evaluators, their tests and the demonstrator follow, all
+  three bindings' fixtures are re-signed, and [bindings](docs/bindings.md) gains a table
+  of where every term comes from. Every example verdict is unchanged.
+- **A link is one entry, with its digest on it (all bindings).** Every upward link is a
+  `termsOfUse` entry whose `id` is the credential it names, whose `type` says what it
+  means (`IssuedUnderPolicy`, `RecognitionPolicy`) and whose `digestSRI` pins that
+  credential's exact bytes; evidence entries carry their digest the same way (VCDM 2.0
+  §5.3: any object with an `id` MAY carry integrity information; EBSI's
+  `IssuanceCertificate` names the issuer's accreditation by `id` too). The nested
+  `authorizationCredential` and `recognitionCredential` objects and the separate
+  `relatedResource` list are gone. A route now selects its grant by the type of the
+  credential an entry names, not by a declared type; a named credential that cannot be
+  read leaves it not established. Contexts, schemas, manifests, generators, both
+  evaluators and their tests follow, and all three bindings' fixtures are re-signed.
+  Every example verdict is unchanged.
+- **RM credentials named in ISO terms, with self-explanatory codes.** `RmAccreditation` is
+  `RmpAccreditation` (ISO 17034), `RmLabAuthority` is `LabAccreditation` (ISO/IEC 17025),
+  `RmOperationalScope` is `FlexibleScopeList` (the producer's list of activities under a
+  flexible scope, ISO/IEC 17011 and EA-2/15), `RmStudy` is `HomogeneityStudy`. Each
+  credential's id ends in a code that says what it is and of whom: APP-NAB, REC-NAB,
+  ACC-RMP, ACC-RMP-2, ACC-LAB, LIST-RMP, HOM-LOT1, RM178/197/520. Every credential carries a
+  `name` and a `description`, and the demo reads codes and card names from the
+  credentials. ACC-LAB gains a suspension entry, like ACC-RMP.
+- **The RM demonstrator, reordered around its argument.** It opens with one credential
+  (RM178) and its links, each part tagged W3C, EBSI or ours, beside every link type the
+  chain uses with who signs what it names about whom. Build steps name what they map and
+  the five issuer rules they apply. Two pages introduce the verifier's profile and its six
+  checks before it decides. Scenarios follow in five groups named by the verifier's
+  question, the top of the chain first (whom do I trust, was it valid then, complete and
+  in scope, genuine, good enough); each says who acts, when and how often it happens, and
+  the verdict marks the checks it changed. New: a question asked in March 2028, after
+  RM178 expired, with every issuer's status lists re-signed for then. The whole-chain
+  graph moves to the end; "Your turn" stays as the sandbox, each action labelled with its
+  date and likelihood. The state's suspend action is gone (a state does not withdraw a
+  NAB's appointment). The accreditation body is called the national accreditation body
+  (NAB) in both stories. The graph now combines every verification of a credential, so a
+  failed use (an expired certificate) shows on its card. REC1 is valid until 2029, so it
+  outlasts RM178; RM fixtures regenerated. The vertical layout is now the RM story's
+  default page (`demo/rm/`); the actor board stays at `rm/board.html`, unlisted, and
+  `rm/vertical.html` forwards. Lines are thicker, an evaluated one most, so green reads
+  apart from grey. Every link is named by its field, then its entry's type
+  (`termsOfUse · IssuedUnderPolicy`, `evidence · RmStudyReference`). A test checks that
+  each card's signer and subject agree with its signed credential.
+- **A state's appointment of the accreditation body (RM, experimental).** A fictional
+  state issues APP, its appointment of the NAB (Regulation (EC) No 765/2008, Art. 4(1)),
+  in the shape of EBSI's root trust-chain credential: type
+  `VerifiableAuthorisationForTrustChain`, `credentialSubject.permissionFor` (`schemaId`,
+  `types`, `jurisdiction`) and a `termsOfUse` `TrustFrameworkPolicy` naming the legal
+  basis (`@cef-ebsi/vcdm2.0-trust-model-schema` 2.0.0; VCDM 2.0 Example 28). The RM
+  context defines these terms with the issuer-dependent IRIs EBSI's examples expand to;
+  status is a Bitstring Status List instead of EBSI's registry entry. A, A2 and H name APP
+  in a `termsOfUse` `IssuedUnderPolicy`, pinned by digest, beside their recognition. A
+  verifier whose profile anchors the state (`rm-verifier-state-1`;
+  `bindingRules.appointment` names the appointer purpose and the jurisdiction) accepts
+  the NAB when APP is usable and not suspended, is about the grant's issuer, permits the
+  grant's type under its schema in that jurisdiction, and was in force at the activity
+  time. Verifiers that anchor the NAB or Global ACI never rely on it. Ledger E21–E28 pass
+  in TypeScript and Python. The demonstrator adds the state as an actor and a lane beside
+  Global ACI, an appointment step, a step for a verifier that trusts the state, and a
+  suspend action.
+- **One link vocabulary for every binding.** `IssuedUnderPolicy`,
+  `authorizationCredential`, `RecognitionPolicy` and `recognitionCredential` now expand
+  to one shared namespace, `https://vc4qi.example/ns/chain#`, in the RM, calibration and
+  GS contexts alike. The calibration binding's `CalAuthorizationPolicy` and the GS
+  binding's `GsAuthorizationPolicy` are replaced by `IssuedUnderPolicy`; manifests,
+  schemas, generators and both evaluators (TypeScript and Python) follow, and all three
+  bindings' fixtures are re-signed. If the link types are to be proposed as a standard,
+  they cannot differ per domain; with identical definitions the protected contexts can
+  also be combined in one document. Verdicts are unchanged.
 - **One recognition credential per accreditation body (RM, experimental).** A fictional
   Global ACI stand-in issues R, a W3C Recognized Entities credential (Working Draft of
   4 November 2026) with one subject, the NAB, recognized to accredit for RM production
@@ -27,6 +111,61 @@
   (`test-vectors/signed/status-archive/2026-01`). Freshness is judged at the time asked
   about; for current questions nothing changes. W3C Recognized Entities (draft of
   4 November 2026) evaluates validity windows at a past date but not status at that date.
+- **Recognition is not authority (RM).** An accreditation body's authority is its
+  national appointment; a recognition by an arrangement anchor tells a verifier that
+  trusts the anchor to accept the body, and grants nothing. Every upward link stays a
+  `termsOfUse` entry, followed and pinned by digest the same way, and its type now says
+  what it means: `IssuedUnderPolicy` (`authorizationCredential`, formerly
+  `RmAuthorizationPolicy`) for a grant, `RecognitionPolicy` (`recognitionCredential`)
+  for a recognition (VCDM 2.0 §5.5: "the procedures or policies that were used in
+  issuing"). A and H name R in a `RecognitionPolicy` and mirror it as
+  `issuer.recognizedIn` (W3C Recognized Entities), which must name the same credential;
+  a mismatch contradicts, and `recognizedIn` alone establishes nothing. R names the
+  action in `recognizedTo` and carries the main scopes in `registration` (the ILAC and
+  IAF main scope, an RM binding extension term; `mainScope` was never Recognized
+  Entities vocabulary). The stand-in context follows the Working Draft of 12 November
+  2026 (`draft-20261112`); earlier text naming a "Working Draft of 4 November 2026" was
+  wrong. Schemas (`issued-under-policy.json`, `recognition-policy.json`), fixtures,
+  evaluator (TypeScript and Python) and tests are updated; new tests cover a mismatched
+  mirror, `recognizedIn` without a policy, and a recognition named as a grant (rejected
+  at the schema).
+- **The vertical RM layout, rebuilt.** Three columns: the step and the verifier's policy
+  check on the left; the chain top to bottom in one place in the middle, with compact
+  cards and every control always in its lane; the selected credential on the right,
+  laid out for reading (a floating sheet on narrower screens). Recognition links are
+  drawn dash-dot and labelled with their policy type; credentials lead with a full name
+  and keep the paper's letter as a code; column descriptions and other unneeded text
+  are removed. Measured in Firefox at 1920×1080 and 1280×720: no credential moves
+  between steps in any layout, no console errors, and every example case gives its
+  expected verdict.
+- **The RM story opens with the credential's parts, and reconciles Recognized Entities
+  with terms of use.** A first page lists each property of D178 (type, issuer,
+  credentialSubject, validity, status, termsOfUse, evidence, relatedResource, proof)
+  with what W3C VCDM 2.0 says it is for, its value in D178 and how the board draws it,
+  and says explicitly why a term of use points up to an authority: VCDM §5.5 lists "the
+  identity of the entity under whose authority the issuer issued this particular
+  verifiable credential" among what terms of use tell a verifier, §5.1 and §5.9 leave the
+  chain to an authorization framework (here, the verifier's profile), and EBSI and cheqd
+  use the same place. A page after the proposal reconciles the W3C Recognized Entities
+  Working Draft of 12 November 2026: `issuer.recognizedIn` finds where an issuer is
+  recognized, and a proposed `IssuedUnderPolicy` term of use binds a credential to the
+  grant it was issued under, pinned by digest, every entry required. A draft definition
+  and the open questions are on the page; the evaluator does not implement it yet.
+- **The demonstrator explains its links (RM, GS).** Every card shows its credential
+  type (`RmAccreditation`, `RecognizedEntityCredential`, …). The key sits above the board
+  and reads the lines in plain words: *acts under* (`termsOfUse`) and *is backed by*
+  (`evidence`). In build steps each new line carries its field's name. Clicking a
+  credential explains it: what its type is, who signed it about whom, what it points to
+  and what points to it, and every check that touched it. Clicking a line explains the
+  link: the field, the pinning digest, the link as signed, what a verifier checks on it,
+  and the checks run here. A *Terms* button lists the vocabulary. Lines leave and enter
+  on facing sides, share a side without overlapping, and their heads point along the
+  visible end of the line. The RM build steps say which field each link is.
+- **RM story, top to bottom.** `demo/rm/vertical.html` draws the RM story in lanes of
+  authority, with an explainer beside them: what a step adds, the verifier's policy check
+  with the checks behind each question, or the credential or link selected. Both RM
+  layouts share one configuration (`site/demo/rm/config.js`) and switch while keeping the
+  step.
 - **The actor board holds still.** Stepping through the RM and GS stories no longer moves
   the board: the header keeps room for a two-line title and the acting parties,
   credentials not yet issued and columns not yet reached hold their place invisibly,

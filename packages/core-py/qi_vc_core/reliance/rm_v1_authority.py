@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Any, Literal
 
 from .profile import RelianceProfile
-from .recognized_entities import grant_issuer_standing
+from .recognized_entities import grant_issuer_standing, issuer_id
 from .rm_scope import EXACT_CONCEPTS, Concepts, contained_in
 from .types import SemanticState, semantic_and, semantic_or
 
@@ -34,6 +34,8 @@ class NodeFacts:
     usable: SemanticState
     reason: str
     document: Doc | None = None
+    # The credential's own type, read when its bytes parsed; known even when not usable.
+    type: str | None = None
     # The issuer's suspension status (state, reason), read only by global restrictions.
     suspension: tuple[SemanticState, str] | None = None
 
@@ -106,21 +108,23 @@ def _permits(doc: Doc, activity: str) -> bool:
     return activity in _list(_subject(doc).get("permittedActivity"))
 
 
-def _policy_references(
-    doc: Doc, policy_type: str = "RmAuthorizationPolicy"
-) -> list[tuple[str, Any]]:
-    """(id, declared type) of credentials referenced by recognized policies."""
-    references: list[tuple[str, Any]] = []
-    for policy in _list(doc.get("termsOfUse")):
-        if (
-            isinstance(policy, dict)
-            and policy.get("type") == policy_type
-            and isinstance(policy.get("authorizationCredential"), dict)
-            and isinstance(policy["authorizationCredential"].get("id"), str)
-        ):
-            ref = policy["authorizationCredential"]
-            references.append((ref["id"], ref.get("type")))
-    return references
+def _policy_references(doc: Doc, policy_type: str = "IssuedUnderPolicy") -> list[str]:
+    """Credentials named by policy_type entries in termsOfUse: the entry's id."""
+    return [
+        policy["id"]
+        for policy in _list(doc.get("termsOfUse"))
+        if isinstance(policy, dict)
+        and policy.get("type") == policy_type
+        and isinstance(policy.get("id"), str)
+    ]
+
+
+def _named_type(uri: str, lookup: NodeLookup) -> str | None:
+    """The type of a named credential: from its document, or as parsed when unusable."""
+    node = lookup(uri)
+    if node is None:
+        return None
+    return _type_of(node.document) if node.document is not None else node.type
 
 
 def _authorizing_reference(
@@ -129,13 +133,20 @@ def _authorizing_reference(
     wanted: str,
     lookup: NodeLookup,
     stack: tuple[str, ...],
-    policy_type: str = "RmAuthorizationPolicy",
+    policy_type: str = "IssuedUnderPolicy",
 ) -> tuple[BasisResult, NodeFacts | None]:
-    """Select the reference by its declared type; the credential must match it."""
-    candidates = [
-        uri for uri, kind in _policy_references(doc, policy_type) if kind == wanted
-    ]
+    """Select the named credential by the type it resolves to."""
+    named = _policy_references(doc, policy_type)
+    candidates = [uri for uri in named if _named_type(uri, lookup) == wanted]
     if not candidates:
+        unread = next((u for u in named if _named_type(u, lookup) is None), None)
+        if unread is not None:
+            return _unknown(
+                basis_id,
+                f"No {wanted} could be read among the credentials named: {unread} "
+                "is unavailable.",
+                ("/termsOfUse", unread),
+            ), None
         return _unknown(
             basis_id,
             f"No recognized authorization policy references a {wanted}.",
@@ -170,13 +181,6 @@ def _authorizing_reference(
             f"Referenced {wanted} {uri} is not usable: {node.reason}",
             sources,
         ), None
-    if _type_of(node.document) != wanted:
-        return _no(
-            basis_id,
-            f"Reference declares {wanted}, but {uri} is a "
-            f"{_type_of(node.document)}.",
-            sources,
-        ), None
     return _ok(basis_id, f"References {wanted} {uri}.", sources), node
 
 
@@ -201,7 +205,7 @@ def _grantee(basis_id: str, grant: Doc, actor: Any, what: str) -> BasisResult:
 def _anchor(
     basis_id: str, doc: Doc, purpose: str, profile: RelianceProfile
 ) -> BasisResult:
-    issuer = doc.get("issuer")
+    issuer = issuer_id(doc.get("issuer"))
     configured = next((a for a in profile.trust_anchors if a.id == issuer), None)
     if configured is None:
         return _unknown(
@@ -291,7 +295,7 @@ def _operational_scope_route(
     bases: list[BasisResult] = []
     chain = [target.uri]
     basis, o_node = _authorizing_reference(
-        "authorizing-reference", d, "RmOperationalScope", lookup, stack
+        "authorizing-reference", d, "FlexibleScopeList", lookup, stack
     )
     bases.append(basis)
     if o_node is None or o_node.document is None:
@@ -299,11 +303,13 @@ def _operational_scope_route(
     o = o_node.document
     chain.append(o_node.uri)
     bases.append(
-        _grantee("principal-binding", o, d.get("issuer"), "Operational scope O")
+        _grantee(
+            "principal-binding", o, issuer_id(d.get("issuer")), "Operational scope O"
+        )
     )
     bases.append(
         _ok("self-maintained-scope", "O is issued by its own grantee.", ("/issuer",))
-        if o.get("issuer") == _subject(o).get("id")
+        if issuer_id(o.get("issuer")) == _subject(o).get("id")
         else _no(
             "self-maintained-scope", "O is not issued by its own grantee.", ("/issuer",)
         )
@@ -318,7 +324,7 @@ def _operational_scope_route(
         )
     )
     basis, a_node = _authorizing_reference(
-        "maintenance-grant", o, "RmAccreditation", lookup, (*stack, o_node.uri)
+        "maintenance-grant", o, "RmpAccreditation", lookup, (*stack, o_node.uri)
     )
     bases.append(basis)
     if a_node is None or a_node.document is None:
@@ -326,7 +332,9 @@ def _operational_scope_route(
     a = a_node.document
     chain.append(a_node.uri)
     bases.append(
-        _grantee("accreditation-grantee", a, o.get("issuer"), "Accreditation A")
+        _grantee(
+            "accreditation-grantee", a, issuer_id(o.get("issuer")), "Accreditation A"
+        )
     )
     source = ("/credentialSubject/permittedActivity",)
     bases.append(
@@ -382,14 +390,16 @@ def _direct_accreditation_route(
     bases: list[BasisResult] = []
     chain = [target.uri]
     basis, a_node = _authorizing_reference(
-        "authorizing-reference", d, "RmAccreditation", lookup, stack
+        "authorizing-reference", d, "RmpAccreditation", lookup, stack
     )
     bases.append(basis)
     if a_node is None or a_node.document is None:
         return _route("direct-accreditation", bases, chain)
     a = a_node.document
     chain.append(a_node.uri)
-    bases.append(_grantee("principal-binding", a, d.get("issuer"), "Accreditation A"))
+    bases.append(
+        _grantee("principal-binding", a, issuer_id(d.get("issuer")), "Accreditation A")
+    )
     bases.append(
         _activity(
             "activity-permission",
@@ -430,19 +440,19 @@ def _accreditation_suspension(
 ) -> BasisResult:
     """Global restriction: a suspended accreditation of the actor applies to all routes.
 
-    Applies to every usable RmAccreditation issued by an accreditation anchor to the
+    Applies to every usable RmpAccreditation issued by an accreditation anchor to the
     target's issuer and reached through the target's authorization references on any
     route. Missing suspension status is not established; unusable credentials grant
     nothing and are not turned into restrictions (C07).
     """
     basis_id = "restriction:accreditation-suspension"
     assert target.document is not None
-    actor = target.document.get("issuer")
+    actor = issuer_id(target.document.get("issuer"))
     seen = {target.uri}
     queue: list[Doc] = [target.document]
     applicable: list[NodeFacts] = []
     while queue:
-        for uri, _kind in _policy_references(queue.pop(0)):
+        for uri in _policy_references(queue.pop(0)):
             if uri in seen:
                 continue
             seen.add(uri)
@@ -454,7 +464,7 @@ def _accreditation_suspension(
             # Anchor-issued: by a configured accreditation anchor, or by an
             # accreditation body recognized through the recognition A points up to.
             if (
-                _type_of(doc) == "RmAccreditation"
+                _type_of(doc) == "RmpAccreditation"
                 and _subject(doc).get("id") == actor
                 and grant_issuer_standing(
                     "anchor",
@@ -612,7 +622,7 @@ def study_authority(
     bases: list[BasisResult] = []
     chain = [study.uri]
     basis, h_node = _authorizing_reference(
-        "laboratory-authority-reference", s_doc, "RmLabAuthority", lookup, stack
+        "laboratory-authority-reference", s_doc, "LabAccreditation", lookup, stack
     )
     bases.append(basis)
     if h_node is None or h_node.document is None:
@@ -620,7 +630,12 @@ def study_authority(
     h = h_node.document
     chain.append(h_node.uri)
     bases.append(
-        _grantee("laboratory-binding", h, s_doc.get("issuer"), "Laboratory authority H")
+        _grantee(
+            "laboratory-binding",
+            h,
+            issuer_id(s_doc.get("issuer")),
+            "Laboratory authority H",
+        )
     )
     bases.append(
         _activity(
@@ -693,11 +708,13 @@ def certificate_support(
     references = [
         str(e.get("id"))
         for e in _list(d_doc.get("evidence"))
-        if isinstance(e, dict) and e.get("type") == "RmStudyReference"
+        if isinstance(e, dict) and e.get("type") == "HomogeneityStudyReference"
     ]
     if not references:
         basis = _unknown(
-            "study-reference", "No RmStudyReference in evidence.", ("/evidence",)
+            "study-reference",
+            "No HomogeneityStudyReference in evidence.",
+            ("/evidence",),
         )
         return SupportResult(
             "not_established", "D cites no required study.", (basis,), (target.uri,)

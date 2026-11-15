@@ -4,6 +4,8 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { expandedReal } from '../src/reliance/dsi.js';
+import { MG_PER_KG } from '../src/reliance/rm-scope.js';
 import { createProof } from '../src/proofs/index.js';
 import {
   catalogDocumentLoader, createRelianceRequest, loadBindingManifest, loadRelianceProfile, sha384SRI,
@@ -22,17 +24,17 @@ const profile = loadRelianceProfile(JSON.parse(readFileSync(new URL('profiles/rm
 const signed = readPinnedResources(new URL('test-vectors/signed/catalog.json', rmDir).pathname);
 
 const URI = {
-  A: 'https://nab.vc4qi.example/credentials/A',
-  H: 'https://nab.vc4qi.example/credentials/H',
-  O: 'https://producer.vc4qi.example/credentials/O',
-  S: 'https://lab.vc4qi.example/credentials/S',
-  D: 'https://producer.vc4qi.example/credentials/D178',
-  D197: 'https://producer.vc4qi.example/credentials/D197',
-  D520: 'https://producer.vc4qi.example/credentials/D520',
+  A: 'https://nab.vc4qi.example/credentials/ACC-RMP',
+  H: 'https://nab.vc4qi.example/credentials/ACC-LAB',
+  O: 'https://producer.vc4qi.example/credentials/LIST-RMP',
+  S: 'https://lab.vc4qi.example/credentials/HOM-LOT1',
+  D: 'https://producer.vc4qi.example/credentials/RM178',
+  D197: 'https://producer.vc4qi.example/credentials/RM197',
+  D520: 'https://producer.vc4qi.example/credentials/RM520',
   PRODUCER: 'https://producer.vc4qi.example/controller',
   PRODUCER_STATUS: 'https://producer.vc4qi.example/status/1',
   LAB: 'https://lab.vc4qi.example/controller',
-  R: 'https://global-aci.vc4qi.example/credentials/R',
+  R: 'https://global-aci.vc4qi.example/credentials/REC-NAB',
   GACI_STATUS: 'https://global-aci.vc4qi.example/status/1',
   GACI_SUSPENSION: 'https://global-aci.vc4qi.example/status/suspension/1',
 };
@@ -113,11 +115,11 @@ describe('RM v1 signed vertical slice (I1)', () => {
     const byFact = (fact: string) => result.facts.filter(f => f.fact === fact);
     expect(byFact('grantorOrActor')).toEqual([{ fact: 'grantorOrActor', pointer: '/issuer', value: URI.PRODUCER }]);
     expect(byFact('authorizingReference')).toEqual([
-      { fact: 'authorizingReference', pointer: '/termsOfUse/0/authorizationCredential/id', value: URI.O }]);
+      { fact: 'authorizingReference', pointer: '/termsOfUse/0/id', value: URI.O }]);
     expect(byFact('requiredStudy')).toEqual([{ fact: 'requiredStudy', pointer: '/evidence/0/id', value: URI.S }]);
     const [selected] = byFact('selectedResult');
     expect(selected?.pointer).toBe('/credentialSubject/materialPropertiesList/0/results/0');
-    expect((selected?.value as { data: { quantity: { value: string } } }).data.quantity.value).toBe('178');
+    expect((selected?.value as { data: { quantity: { real: { value: string } } } }).data.quantity.real.value).toBe('178');
   });
 
   it('P01: the signed chain for x = 178 is verified and relied upon, with witnesses', async () => {
@@ -142,7 +144,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
     expect(target.every(t => t.nodeUse.includes('| target |'))).toBe(true);
     const byPredicate = (p: string) => target.find(t => t.predicate === p);
     expect(byPredicate('schema')).toMatchObject({ gate: 0, state: 'established' });
-    expect(byPredicate('related-resource-integrity')).toMatchObject({ gate: 1, state: 'established' });
+    expect(byPredicate('link-integrity')).toMatchObject({ gate: 1, state: 'established' });
     expect(byPredicate('signature')).toMatchObject({ gate: 2, state: 'established' });
     expect(byPredicate('validity-period')).toMatchObject({ gate: 3, state: 'established' });
     expect(byPredicate('claim-authorization:as-mass-fraction')).toMatchObject({ gate: 5, execution: 'executed' });
@@ -151,10 +153,11 @@ describe('RM v1 signed vertical slice (I1)', () => {
     expect(byPredicate('claim-mapping:as-mass-fraction')).toMatchObject({ gate: 4, state: 'established' });
     expect(byPredicate('claim-coverage:as-mass-fraction:operational-scope')).toMatchObject({ gate: 5, state: 'established' });
     expect(byPredicate('conformity:as-mass-fraction-max-200-mg-per-kg')).toMatchObject({ gate: 6, execution: 'executed', state: 'established' });
-    // A and H point up to R, so the chain resolves it for every verifier; it decides
-    // only for a verifier whose route uses it (rm-v1-recognition.test.ts).
+    // A and H point up to R and to the state's appointment APP, so the chain resolves
+    // both for every verifier; each decides only for a verifier whose route uses it
+    // (rm-v1-recognition.test.ts, rm-v1-appointment.test.ts).
     expect(result.resources.filter(r => r.kind === 'artifact').map(r => r.uri).sort())
-      .toEqual([URI.A, URI.D, URI.H, URI.O, URI.R, URI.S].sort());
+      .toEqual([URI.A, URI.D, URI.H, URI.O, URI.R, URI.S, 'https://state.vc4qi.example/credentials/APP-NAB'].sort());
     expect(result.resources.every(r => r.digestSRI.startsWith('sha384-'))).toBe(true);
   });
 
@@ -187,7 +190,8 @@ describe('RM v1 signed vertical slice (I1)', () => {
       expect(result.resources.filter(r => r.kind === 'status').map(r => r.uri).sort()).toEqual([
         URI.GACI_STATUS, URI.GACI_SUSPENSION,
         'https://lab.vc4qi.example/status/1', 'https://nab.vc4qi.example/status/1',
-        'https://nab.vc4qi.example/status/suspension/1', URI.PRODUCER_STATUS].sort());
+        'https://nab.vc4qi.example/status/suspension/1', URI.PRODUCER_STATUS,
+        'https://state.vc4qi.example/status/1', 'https://state.vc4qi.example/status/suspension/1'].sort());
       expect(result.decision).toBe('accept');
     });
 
@@ -258,7 +262,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
 
     it('V09: a credential cannot declare a different schema for itself', async () => {
       const document = json(URI.D);
-      document.credentialSchema = { id: 'https://vc4qi.example/schemas/rm/1/accreditation.json', type: 'JsonSchema' };
+      document.credentialSchema = { id: 'https://vc4qi.example/schemas/rm/1/rmp-accreditation.json', type: 'JsonSchema' };
       const forged = await resign(document, 'producer', `${URI.PRODUCER}#key-1`);
       const artifact = await verifyRmArtifact(URI.D, session({ [URI.D]: forged }), { manifest, evaluationTime: NOW });
       expect(artifact.checks.at(-1)).toMatchObject({ check: 'type', state: 'contradicted' });
@@ -282,7 +286,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
 
       const missing = json(URI.D);
       const q = ((missing.credentialSubject as JsonObject).materialPropertiesList as JsonObject[])[0]!;
-      delete (((q.results as JsonObject[])[0]!.data as JsonObject).quantity as JsonObject).quantityKind;
+      delete ((((q.results as JsonObject[])[0]!.data as JsonObject).quantity as JsonObject).real as JsonObject).quantityTypeQUDT;
       const blocked = await verifyRmArtifact(URI.D, session({ [URI.D]: serialize(missing) }), { manifest, evaluationTime: NOW });
       expect(blocked.checks.at(-1)).toMatchObject({ check: 'schema', state: 'contradicted' });
     });
@@ -331,7 +335,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
 
   describe('negative controls', () => {
     it('an arbitrary authorization policy name is not accepted', async () => {
-      for (const name of ['AuthorizedByPolicy', 'RmAuthorizationPolicyV2', 'rmAuthorizationPolicy']) {
+      for (const name of ['AuthorizedByPolicy', 'IssuedUnderPolicyV2', 'issuedUnderPolicy', 'RmAuthorizationPolicy']) {
         const document = json(URI.D);
         (document.termsOfUse as JsonObject[])[0]!.type = name;
         const artifact = await verifyRmArtifact(URI.D, session({ [URI.D]: serialize(document) }), { manifest, evaluationTime: NOW });
@@ -344,8 +348,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
       const document = json(URI.D);
       ((document.credentialSubject as JsonObject).materialPropertiesList as JsonObject[])[0]!
         .results = [{ ...(((document.credentialSubject as JsonObject).materialPropertiesList as JsonObject[])[0]!.results as JsonObject[])[0]!,
-          data: { quantity: { quantityKind: 'https://vc4qi.example/bindings/rm/1#MassFraction', value: '150',
-            unit: { ucumCode: 'mg/kg' }, uncertainty: { expandedUncertainty: '5', coverageFactor: '2' } } } }];
+          data: { quantity: { real: expandedReal('As', 'MassFraction', '150', MG_PER_KG, '5') } } }];
       const s = session({ [URI.D]: serialize(document) });
       const artifact = await verifyRmArtifact(URI.D, s, { manifest, evaluationTime: NOW });
       expect(artifact.protection.state).toBe('contradicted');

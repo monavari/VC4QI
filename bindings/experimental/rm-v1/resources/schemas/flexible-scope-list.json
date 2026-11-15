@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://vc4qi.example/schemas/rm/1/study.json",
-  "title": "RM homogeneity/stability study (S)",
+  "$id": "https://vc4qi.example/schemas/rm/1/flexible-scope-list.json",
+  "title": "List of activities under a flexible scope of accreditation",
   "description": "Experimental VC4QI RM binding v1 fixture schema. Not an external standard.",
   "type": "object",
   "required": [
@@ -13,8 +13,7 @@
     "validUntil",
     "credentialSchema",
     "credentialSubject",
-    "credentialStatus",
-    "relatedResource"
+    "credentialStatus"
   ],
   "properties": {
     "@context": {
@@ -30,7 +29,7 @@
     "type": {
       "const": [
         "VerifiableCredential",
-        "RmStudy"
+        "FlexibleScopeList"
       ]
     },
     "issuer": {
@@ -53,7 +52,7 @@
       ],
       "properties": {
         "id": {
-          "const": "https://vc4qi.example/schemas/rm/1/study.json"
+          "const": "https://vc4qi.example/schemas/rm/1/flexible-scope-list.json"
         },
         "type": {
           "const": "JsonSchema"
@@ -65,36 +64,103 @@
       "type": "object",
       "required": [
         "id",
-        "activityTime",
-        "studyTypeIri",
-        "propertyIri",
-        "matrixIri",
-        "outcomeIri"
+        "permittedActivity",
+        "scope"
       ],
       "properties": {
         "id": {
           "type": "string",
           "format": "uri"
         },
-        "activityTime": {
-          "type": "string",
-          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$"
+        "permittedActivity": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "https://vc4qi.example/bindings/rm/1#issueRmCertificate"
+            ]
+          }
         },
-        "studyTypeIri": {
-          "type": "string",
-          "format": "uri"
-        },
-        "propertyIri": {
-          "type": "string",
-          "format": "uri"
-        },
-        "matrixIri": {
-          "type": "string",
-          "format": "uri"
-        },
-        "outcomeIri": {
-          "type": "string",
-          "format": "uri"
+        "scope": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "matrixIri",
+              "formIri",
+              "allowedPropertyIris",
+              "allowedMethodIris",
+              "quantityTypeQUDT",
+              "range"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uri"
+              },
+              "matrixIri": {
+                "type": "string",
+                "format": "uri"
+              },
+              "formIri": {
+                "type": "string",
+                "format": "uri"
+              },
+              "allowedPropertyIris": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              },
+              "allowedMethodIris": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              },
+              "quantityTypeQUDT": {
+                "enum": [
+                  "MassFraction"
+                ]
+              },
+              "range": {
+                "type": "object",
+                "required": [
+                  "from",
+                  "to",
+                  "unit"
+                ],
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                  },
+                  "to": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                  },
+                  "unit": {
+                    "enum": [
+                      "\\milli\\gram\\kilogram\\tothe{-1}",
+                      "\\kilogram\\kilogram\\tothe{-1}"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -106,53 +172,17 @@
       "items": {
         "type": "object",
         "required": [
-          "type",
-          "authorizationCredential"
-        ],
-        "properties": {
-          "type": {
-            "const": "RmAuthorizationPolicy"
-          },
-          "authorizationCredential": {
-            "type": "object",
-            "required": [
-              "id",
-              "type"
-            ],
-            "properties": {
-              "id": {
-                "type": "string",
-                "format": "uri"
-              },
-              "type": {
-                "enum": [
-                  "RmAccreditation",
-                  "RmOperationalScope",
-                  "RmLabAuthority",
-                  "RecognizedEntityCredential"
-                ]
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      }
-    },
-    "relatedResource": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "type": "object",
-        "required": [
           "id",
+          "type",
           "digestSRI"
         ],
         "properties": {
           "id": {
             "type": "string",
             "format": "uri"
+          },
+          "type": {
+            "const": "IssuedUnderPolicy"
           },
           "digestSRI": {
             "type": "string",

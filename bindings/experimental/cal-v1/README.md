@@ -29,7 +29,12 @@ gates 4–6 (`reliance/cal-v1-evaluator.ts`, `cal-v1-slice.ts`; Python
 Each selected measurement group is one required claim. One complete scope record must
 cover the group's quantity kind, every method it names and every result. When the
 profile applies it, an expanded uncertainty below the CMC floor contradicts scope. The
-binding carries a JSON-LD simplification of DCC results, not native DCC XML.
+binding carries a JSON-LD simplification of DCC results, not native DCC XML: as in the
+DCC, each result is a PTB D-SI 2.2.1 real (`results[]/real`, with QUDT quantity kind
+`Pressure`, a D-SI unit `\pascal`, `\kilo\pascal` or `\mega\pascal`, and an `expandedMU`),
+and every result of a group names the same quantity kind, which is the group's. Scope
+ranges and CMC floors use the same D-SI units; see
+[bindings](../../../docs/bindings.md#quantity-values-ptb-d-si).
 
 An operational scope must lie within one accreditation record (quantity kind, methods,
 range and, when the floor applies, a CMC not below the accreditation's), and claims are

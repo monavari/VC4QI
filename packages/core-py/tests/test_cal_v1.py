@@ -132,8 +132,11 @@ def reissue(
         edit_dcc(dcc)
     ca_text = overrides.get(CA)
     if isinstance(ca_text, str):
-        dcc["relatedResource"] = [
-            {"id": CA, "digestSRI": sha384_sri(ca_text.encode("utf-8"))}
+        dcc["termsOfUse"] = [
+            {**p, "digestSRI": sha384_sri(ca_text.encode("utf-8"))}
+            if p["id"] == CA
+            else p
+            for p in dcc["termsOfUse"]
         ]
     overrides[DCC] = sign(dcc)
     return overrides
@@ -142,22 +145,23 @@ def reissue(
 def reissue_chain(
     steps: list[tuple[str, Callable[[dict[str, Any]], None] | None]],
 ) -> dict[str, str | None]:
-    """Re-issue bottom-up, updating relatedResource digests of re-issued credentials."""
+    """Re-issue bottom-up, updating the link digests of re-issued credentials."""
     overrides: dict[str, str | None] = {}
     for uri, edit in steps:
         d = doc(uri)
         if edit is not None:
             edit(d)
-        if isinstance(d.get("relatedResource"), list):
-            related = []
-            for r in d["relatedResource"]:
-                text = overrides.get(r["id"])
-                related.append(
-                    {"id": r["id"], "digestSRI": sha384_sri(text.encode("utf-8"))}
-                    if isinstance(text, str)
-                    else r
-                )
-            d["relatedResource"] = related
+        for field in ("termsOfUse", "evidence"):
+            if isinstance(d.get(field), list):
+                updated = []
+                for r in d[field]:
+                    text = overrides.get(r.get("id"))
+                    updated.append(
+                        {**r, "digestSRI": sha384_sri(text.encode("utf-8"))}
+                        if isinstance(text, str)
+                        else r
+                    )
+                d[field] = updated
         overrides[uri] = sign(d)
     return overrides
 
@@ -175,7 +179,12 @@ def groups(d: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def result0(d: dict[str, Any], group: int = 0) -> dict[str, Any]:
-    return groups(d)[group]["results"][0]  # type: ignore[no-any-return]
+    """The first result's PTB D-SI real in a group."""
+    return groups(d)[group]["results"][0]["real"]  # type: ignore[no-any-return]
+
+
+def expanded0(d: dict[str, Any], group: int = 0) -> dict[str, Any]:
+    return result0(d, group)["measurementUncertaintyUnivariate"]["expandedMU"]  # type: ignore[no-any-return]
 
 
 def request(**overrides: Any) -> RelianceRequest:
@@ -251,7 +260,7 @@ def test_method_outside_record_contradicts() -> None:
 
 def test_coverage_factor_other_than_two_is_not_mapped() -> None:
     def edit(d: dict[str, Any]) -> None:
-        result0(d)["coverageFactor"] = "3"
+        expanded0(d)["coverageFactor"] = "3"
 
     result = run(reissue(None, edit))
     mapping = entry(result, "claim-mapping:g1")
@@ -295,7 +304,7 @@ def test_s19_failed_first_group_is_not_erased() -> None:
 
 def test_s21_uncertainty_below_cmc_contradicts_scope() -> None:
     def edit(d: dict[str, Any]) -> None:
-        result0(d)["expandedUncertainty"] = "0.3"
+        expanded0(d)["valueExpandedMU"] = "0.3"
 
     overrides = reissue(None, edit)
     applied = run(overrides)
@@ -361,7 +370,7 @@ def test_capability_better_than_admitted_widens_when_floor_applies() -> None:
         scope0(d)["cmcFloor"]["value"] = "0.3"
 
     def edit_dcc(d: dict[str, Any]) -> None:
-        result0(d)["expandedUncertainty"] = "0.4"
+        expanded0(d)["valueExpandedMU"] = "0.4"
 
     overrides = reissue_chain([(OPS, edit_o), (DCC2, edit_dcc)])
     applied = run_capability(overrides)
@@ -613,7 +622,6 @@ def test_test_before_calibration_contradicts_support() -> None:
 def test_report_citing_no_calibration_is_not_established() -> None:
     def edit(d: dict[str, Any]) -> None:
         del d["evidence"]
-        d["relatedResource"] = [r for r in d["relatedResource"] if r["id"] != DCC]
 
     result = run_report(reissue_chain([(REPORT, edit)]))
     assert result.support[0].state == "not_established"

@@ -127,7 +127,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-0EQonD/gtjua62AQ3uh4rLTZQpAhTVaQa1j5Ml0sOR/3PxUSaj9uQjVNepDv3pml"
+      "digestSRI": "sha384-hmvdk111sL7dS50N+KK2pH2HOZtMA+3jghGBR38R9tLkAqsrv2urD3VX+dwN6IXX"
     },
     {
       "uri": "https://gs-body.vc4qi.example/credentials/TR-1",
@@ -135,7 +135,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-4JcQ564AWQQaAuYxKsa8TQP7hP9uLip5rCGyG1ePrhx+BJlwZkpf9zh9AMCVSZ/f"
+      "digestSRI": "sha384-RDPNX50kR9VE82vVJhRmGJqjd7hJaLPkkIRlYkIdaYDOK5IoCRVOoyDoGtVZN0Om"
     },
     {
       "uri": "https://testlab-gs.vc4qi.example/credentials/TR-2",
@@ -143,7 +143,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-eTWJLkANOH35BSUbOG70442PdFvCEXABZX8gQ+2YK1+0F/N+6dJvxX8btckbYWPy"
+      "digestSRI": "sha384-HsP2aIGSb7X7xxeLJZuKPKCt/efIK/SZw7oXsxN/NhHeVUadjaa0tUdjLgZk/vpy"
     },
     {
       "uri": "https://gs-body.vc4qi.example/credentials/TR-3",
@@ -151,7 +151,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-OY1DQULFh98iqYYjbja1AgwmKRP8gB/j6AjMlk6dBLESR5f/XBhR3ADZyWDlg4vB"
+      "digestSRI": "sha384-gRO9NV2Lb6NVGpJadPmVqF+CMeSB8+mWfNjXOjIoIPmnhlKWd5/y9wZ1wGMTN7HP"
     },
     {
       "uri": "https://gs-body.vc4qi.example/credentials/GSC-1",
@@ -159,7 +159,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-0n6H23kKXsF/WOUktib0oItz+50+OyFOLbTU4RPgyxnvtHTEw7YuhqevGrr8QN4d"
+      "digestSRI": "sha384-Sz7bfHhhZ4IdaJKnqjetYwWhOexky6m3LyG/Hq16tim/l4S0/gv8XaoOOU/dH0LX"
     },
     {
       "uri": "https://gs-body.vc4qi.example/credentials/GSC-2",
@@ -167,7 +167,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-qjgmAzyLlJCE2ybp0vOZVcUnacIUMjW4az4GhWtG7DlCBpnKDgaEPv1zm/GLVUfo"
+      "digestSRI": "sha384-aCCTQbxSNA/1mImjur4F02kuDtVKg95ne8tKbV40+4DwNtRX+lklhwZTB5fMNqZM"
     },
     {
       "uri": "https://gs-body.vc4qi.example/credentials/GSC-3",
@@ -175,7 +175,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-UtRwI+ULOwtFOgKjZgxm5IALwgcYkH6+2s/t4fVRXRKtzZb6IODDlI5XmpDJ9zrW"
+      "digestSRI": "sha384-34/H7m/G8k8sz7+bZfZfI2fhyKknBZ1fsb3O6GMS5aMFms6CuzGxJn3F6dDrcSf7"
     },
     {
       "uri": "https://maker.vc4qi.example/credentials/GSM-1",
@@ -183,7 +183,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-PO7mwhOpkK0EZX9R1NuFbjMw+34Vo2QdG7aWXrLGsG5tGmfD/tM/TNiXeTcVZ2gc"
+      "digestSRI": "sha384-L/cx/SAQA0v1qafkR1CRdA1QNLeA5EvggQP1JVVqgRNodMJbiz6/RF329Wo/NdpR"
     },
     {
       "uri": "https://maker.vc4qi.example/credentials/GSM-2",
@@ -191,7 +191,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-maKn4uAvK3MunmTBwjcCS06TZ0r67cEfpUprn6gVTo1ZKNcXSN+oat6VhLBwFWi7"
+      "digestSRI": "sha384-aII3X3WMZBMQEYvs58ZgWX6Nm3pYDv3QF0YE/3terwcPHfMOZshJuwGjrBI4QS2X"
     },
     {
       "uri": "https://maker.vc4qi.example/credentials/GSM-3",
@@ -199,7 +199,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-qzbUpxt9PYBAXxuVELWDjR7NM7YA+X4psNR+bjN62trp7yZVdt71h005CAHNe3zU"
+      "digestSRI": "sha384-CbeUktaigCQMFzUOrHy/o9X0IuX+Ash77YXonp2tYv9hVIGW73OHIe7Td3KWeRQU"
     },
     {
       "uri": "https://maker.vc4qi.example/credentials/GSM-4",
@@ -207,7 +207,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-1gT1JuLsuhbJv6AqpVHq1LjMzZa8A964EYcG3BuZ03SEfU4dFGojh0d9YHokepPX"
+      "digestSRI": "sha384-mtcXn5vWA6ibnRUSh29Ze1hjx+dDip4baWaW8YsFshu7n4A1ckjR1LqviHcOguiQ"
     },
     {
       "uri": "https://clone.vc4qi.example/credentials/GSM-5",
@@ -215,7 +215,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-E4bpq/d01ZokrduULPR0vnYDgVmudizYvuhchj+ntIMFl98Q9EbDDWzc/mCjmQPV"
+      "digestSRI": "sha384-qh2a1GjffnnY0z2MI6q+9WVQnCVQYdjTMVmalE/fCzA5U37puh0Q23dDSEwvN5YG"
     },
     {
       "uri": "https://maker.vc4qi.example/credentials/GSM-6",
@@ -223,7 +223,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-JVvQAoK8O5+2Jawz3WOTkk7UyXjGIssMhs7/EaQn1hNknGumMDOyYE3SlNAgLEmr"
+      "digestSRI": "sha384-YOToVMMl1GL6sFDj/pqP1AlZsGxQsxBKvudCB9Q7evoorqlHtViY9t8BBq7Tp5ro"
     },
     {
       "uri": "https://maker.vc4qi.example/credentials/DPP-1",
@@ -231,7 +231,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-LMBoywa6D2C28uAqsk4oIcDpmukq8P3NhDlx/t4BR2cJxDMPlrMetMaMZtcRvUz/"
+      "digestSRI": "sha384-VMbUi9Q4WLckVPVEygdPlzvRc9jH40iZ+YAX+hoFV+Zcb9jOKmPTjjCTwil1l2Hl"
     },
     {
       "uri": "https://maker.vc4qi.example/credentials/DPP-2",
@@ -239,7 +239,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-BTCCsobvyzGHmsXXqctkEiJV7mXu940oR58ank7BTcEcRRCs/E/Q/68oI1TScO/0"
+      "digestSRI": "sha384-cBy5VA2Lmm1N8P5zBRfc97UDIbcZ5zLAdyMLCZTWLPaQNHzlWLzNNdhOiVAMWjPT"
     },
     {
       "uri": "https://maker.vc4qi.example/credentials/DPP-3",
@@ -247,7 +247,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-ItwJmc2JKuKls4Yk5CJyjQ4UTEcNGddkSu0P4t7N2hqqWcsPSGTzp4z0vVJByMRz"
+      "digestSRI": "sha384-mmHgKPtpJ1Z5XcPe3xAdsTdY9NAbbQCCOtgRNQgfbztGI/bU82KDbwDWAPn9Yyni"
     }
   ]
 }

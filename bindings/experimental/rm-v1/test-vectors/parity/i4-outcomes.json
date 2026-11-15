@@ -3,7 +3,7 @@
   "scenarios": [
     {
       "id": "x178-guarded",
-      "targetId": "https://producer.vc4qi.example/credentials/D178",
+      "targetId": "https://producer.vc4qi.example/credentials/RM178",
       "profile": "rm-verifier-1.json",
       "conformity": {
         "requirementId": "as-mass-fraction-max-200-mg-per-kg",
@@ -17,10 +17,10 @@
             "state": "established",
             "routeWitnessIds": [
               "route:operational-scope",
-              "https://producer.vc4qi.example/credentials/D178",
-              "https://producer.vc4qi.example/credentials/O",
-              "https://nab.vc4qi.example/credentials/A",
-              "record:https://producer.vc4qi.example/credentials/O#scope-as-m1"
+              "https://producer.vc4qi.example/credentials/RM178",
+              "https://producer.vc4qi.example/credentials/LIST-RMP",
+              "https://nab.vc4qi.example/credentials/ACC-RMP",
+              "record:https://producer.vc4qi.example/credentials/LIST-RMP#scope-as-m1"
             ]
           }
         ],
@@ -28,9 +28,9 @@
           {
             "state": "established",
             "witnessIds": [
-              "https://producer.vc4qi.example/credentials/D178",
-              "https://lab.vc4qi.example/credentials/S",
-              "https://nab.vc4qi.example/credentials/H"
+              "https://producer.vc4qi.example/credentials/RM178",
+              "https://lab.vc4qi.example/credentials/HOM-LOT1",
+              "https://nab.vc4qi.example/credentials/ACC-LAB"
             ]
           }
         ],
@@ -69,7 +69,7 @@
             "predicate": "restriction:accreditation-suspension",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/credentials/A: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
+            "reason": "https://nab.vc4qi.example/credentials/ACC-RMP: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
           },
           {
             "gate": 5,
@@ -90,7 +90,7 @@
             "predicate": "route:operational-scope:authorizing-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmOperationalScope https://producer.vc4qi.example/credentials/O."
+            "reason": "References FlexibleScopeList https://producer.vc4qi.example/credentials/LIST-RMP."
           },
           {
             "gate": 5,
@@ -118,7 +118,7 @@
             "predicate": "route:operational-scope:maintenance-grant",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmAccreditation https://nab.vc4qi.example/credentials/A."
+            "reason": "References RmpAccreditation https://nab.vc4qi.example/credentials/ACC-RMP."
           },
           {
             "gate": 5,
@@ -139,7 +139,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/LIST-RMP#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/ACC-RMP#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -160,7 +160,7 @@
             "predicate": "support:study-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "Cites study https://lab.vc4qi.example/credentials/S."
+            "reason": "Cites study https://lab.vc4qi.example/credentials/HOM-LOT1."
           },
           {
             "gate": 6,
@@ -195,7 +195,7 @@
             "predicate": "support:laboratory-authority-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmLabAuthority https://nab.vc4qi.example/credentials/H."
+            "reason": "References LabAccreditation https://nab.vc4qi.example/credentials/ACC-LAB."
           },
           {
             "gate": 6,
@@ -244,7 +244,7 @@
     },
     {
       "id": "x197-guarded",
-      "targetId": "https://producer.vc4qi.example/credentials/D197",
+      "targetId": "https://producer.vc4qi.example/credentials/RM197",
       "profile": "rm-verifier-1.json",
       "conformity": {
         "requirementId": "as-mass-fraction-max-200-mg-per-kg",
@@ -258,10 +258,10 @@
             "state": "established",
             "routeWitnessIds": [
               "route:operational-scope",
-              "https://producer.vc4qi.example/credentials/D197",
-              "https://producer.vc4qi.example/credentials/O",
-              "https://nab.vc4qi.example/credentials/A",
-              "record:https://producer.vc4qi.example/credentials/O#scope-as-m1"
+              "https://producer.vc4qi.example/credentials/RM197",
+              "https://producer.vc4qi.example/credentials/LIST-RMP",
+              "https://nab.vc4qi.example/credentials/ACC-RMP",
+              "record:https://producer.vc4qi.example/credentials/LIST-RMP#scope-as-m1"
             ]
           }
         ],
@@ -269,9 +269,9 @@
           {
             "state": "established",
             "witnessIds": [
-              "https://producer.vc4qi.example/credentials/D197",
-              "https://lab.vc4qi.example/credentials/S",
-              "https://nab.vc4qi.example/credentials/H"
+              "https://producer.vc4qi.example/credentials/RM197",
+              "https://lab.vc4qi.example/credentials/HOM-LOT1",
+              "https://nab.vc4qi.example/credentials/ACC-LAB"
             ]
           }
         ],
@@ -310,7 +310,7 @@
             "predicate": "restriction:accreditation-suspension",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/credentials/A: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
+            "reason": "https://nab.vc4qi.example/credentials/ACC-RMP: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
           },
           {
             "gate": 5,
@@ -331,7 +331,7 @@
             "predicate": "route:operational-scope:authorizing-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmOperationalScope https://producer.vc4qi.example/credentials/O."
+            "reason": "References FlexibleScopeList https://producer.vc4qi.example/credentials/LIST-RMP."
           },
           {
             "gate": 5,
@@ -359,7 +359,7 @@
             "predicate": "route:operational-scope:maintenance-grant",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmAccreditation https://nab.vc4qi.example/credentials/A."
+            "reason": "References RmpAccreditation https://nab.vc4qi.example/credentials/ACC-RMP."
           },
           {
             "gate": 5,
@@ -380,7 +380,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/LIST-RMP#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/ACC-RMP#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -401,7 +401,7 @@
             "predicate": "support:study-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "Cites study https://lab.vc4qi.example/credentials/S."
+            "reason": "Cites study https://lab.vc4qi.example/credentials/HOM-LOT1."
           },
           {
             "gate": 6,
@@ -436,7 +436,7 @@
             "predicate": "support:laboratory-authority-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmLabAuthority https://nab.vc4qi.example/credentials/H."
+            "reason": "References LabAccreditation https://nab.vc4qi.example/credentials/ACC-LAB."
           },
           {
             "gate": 6,
@@ -485,7 +485,7 @@
     },
     {
       "id": "x520-guarded",
-      "targetId": "https://producer.vc4qi.example/credentials/D520",
+      "targetId": "https://producer.vc4qi.example/credentials/RM520",
       "profile": "rm-verifier-1.json",
       "conformity": {
         "requirementId": "as-mass-fraction-max-200-mg-per-kg",
@@ -504,9 +504,9 @@
           {
             "state": "established",
             "witnessIds": [
-              "https://producer.vc4qi.example/credentials/D520",
-              "https://lab.vc4qi.example/credentials/S",
-              "https://nab.vc4qi.example/credentials/H"
+              "https://producer.vc4qi.example/credentials/RM520",
+              "https://lab.vc4qi.example/credentials/HOM-LOT1",
+              "https://nab.vc4qi.example/credentials/ACC-LAB"
             ]
           }
         ],
@@ -545,7 +545,7 @@
             "predicate": "restriction:accreditation-suspension",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/credentials/A: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
+            "reason": "https://nab.vc4qi.example/credentials/ACC-RMP: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
           },
           {
             "gate": 5,
@@ -566,7 +566,7 @@
             "predicate": "route:operational-scope:authorizing-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmOperationalScope https://producer.vc4qi.example/credentials/O."
+            "reason": "References FlexibleScopeList https://producer.vc4qi.example/credentials/LIST-RMP."
           },
           {
             "gate": 5,
@@ -594,7 +594,7 @@
             "predicate": "route:operational-scope:maintenance-grant",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmAccreditation https://nab.vc4qi.example/credentials/A."
+            "reason": "References RmpAccreditation https://nab.vc4qi.example/credentials/ACC-RMP."
           },
           {
             "gate": 5,
@@ -615,7 +615,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/LIST-RMP#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/ACC-RMP#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -636,7 +636,7 @@
             "predicate": "support:study-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "Cites study https://lab.vc4qi.example/credentials/S."
+            "reason": "Cites study https://lab.vc4qi.example/credentials/HOM-LOT1."
           },
           {
             "gate": 6,
@@ -671,7 +671,7 @@
             "predicate": "support:laboratory-authority-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmLabAuthority https://nab.vc4qi.example/credentials/H."
+            "reason": "References LabAccreditation https://nab.vc4qi.example/credentials/ACC-LAB."
           },
           {
             "gate": 6,
@@ -720,7 +720,7 @@
     },
     {
       "id": "x197-authorization-only",
-      "targetId": "https://producer.vc4qi.example/credentials/D197",
+      "targetId": "https://producer.vc4qi.example/credentials/RM197",
       "profile": "rm-verifier-1.json",
       "conformity": null,
       "outcome": {
@@ -731,10 +731,10 @@
             "state": "established",
             "routeWitnessIds": [
               "route:operational-scope",
-              "https://producer.vc4qi.example/credentials/D197",
-              "https://producer.vc4qi.example/credentials/O",
-              "https://nab.vc4qi.example/credentials/A",
-              "record:https://producer.vc4qi.example/credentials/O#scope-as-m1"
+              "https://producer.vc4qi.example/credentials/RM197",
+              "https://producer.vc4qi.example/credentials/LIST-RMP",
+              "https://nab.vc4qi.example/credentials/ACC-RMP",
+              "record:https://producer.vc4qi.example/credentials/LIST-RMP#scope-as-m1"
             ]
           }
         ],
@@ -742,9 +742,9 @@
           {
             "state": "established",
             "witnessIds": [
-              "https://producer.vc4qi.example/credentials/D197",
-              "https://lab.vc4qi.example/credentials/S",
-              "https://nab.vc4qi.example/credentials/H"
+              "https://producer.vc4qi.example/credentials/RM197",
+              "https://lab.vc4qi.example/credentials/HOM-LOT1",
+              "https://nab.vc4qi.example/credentials/ACC-LAB"
             ]
           }
         ],
@@ -778,7 +778,7 @@
             "predicate": "restriction:accreditation-suspension",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/credentials/A: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
+            "reason": "https://nab.vc4qi.example/credentials/ACC-RMP: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
           },
           {
             "gate": 5,
@@ -799,7 +799,7 @@
             "predicate": "route:operational-scope:authorizing-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmOperationalScope https://producer.vc4qi.example/credentials/O."
+            "reason": "References FlexibleScopeList https://producer.vc4qi.example/credentials/LIST-RMP."
           },
           {
             "gate": 5,
@@ -827,7 +827,7 @@
             "predicate": "route:operational-scope:maintenance-grant",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmAccreditation https://nab.vc4qi.example/credentials/A."
+            "reason": "References RmpAccreditation https://nab.vc4qi.example/credentials/ACC-RMP."
           },
           {
             "gate": 5,
@@ -848,7 +848,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/LIST-RMP#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/ACC-RMP#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -869,7 +869,7 @@
             "predicate": "support:study-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "Cites study https://lab.vc4qi.example/credentials/S."
+            "reason": "Cites study https://lab.vc4qi.example/credentials/HOM-LOT1."
           },
           {
             "gate": 6,
@@ -904,7 +904,7 @@
             "predicate": "support:laboratory-authority-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmLabAuthority https://nab.vc4qi.example/credentials/H."
+            "reason": "References LabAccreditation https://nab.vc4qi.example/credentials/ACC-LAB."
           },
           {
             "gate": 6,
@@ -946,7 +946,7 @@
     },
     {
       "id": "x197-simple-acceptance",
-      "targetId": "https://producer.vc4qi.example/credentials/D197",
+      "targetId": "https://producer.vc4qi.example/credentials/RM197",
       "profile": "rm-verifier-1.json",
       "conformity": {
         "requirementId": "as-mass-fraction-max-200-mg-per-kg",
@@ -960,10 +960,10 @@
             "state": "established",
             "routeWitnessIds": [
               "route:operational-scope",
-              "https://producer.vc4qi.example/credentials/D197",
-              "https://producer.vc4qi.example/credentials/O",
-              "https://nab.vc4qi.example/credentials/A",
-              "record:https://producer.vc4qi.example/credentials/O#scope-as-m1"
+              "https://producer.vc4qi.example/credentials/RM197",
+              "https://producer.vc4qi.example/credentials/LIST-RMP",
+              "https://nab.vc4qi.example/credentials/ACC-RMP",
+              "record:https://producer.vc4qi.example/credentials/LIST-RMP#scope-as-m1"
             ]
           }
         ],
@@ -971,9 +971,9 @@
           {
             "state": "established",
             "witnessIds": [
-              "https://producer.vc4qi.example/credentials/D197",
-              "https://lab.vc4qi.example/credentials/S",
-              "https://nab.vc4qi.example/credentials/H"
+              "https://producer.vc4qi.example/credentials/RM197",
+              "https://lab.vc4qi.example/credentials/HOM-LOT1",
+              "https://nab.vc4qi.example/credentials/ACC-LAB"
             ]
           }
         ],
@@ -1012,7 +1012,7 @@
             "predicate": "restriction:accreditation-suspension",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/credentials/A: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
+            "reason": "https://nab.vc4qi.example/credentials/ACC-RMP: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
           },
           {
             "gate": 5,
@@ -1033,7 +1033,7 @@
             "predicate": "route:operational-scope:authorizing-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmOperationalScope https://producer.vc4qi.example/credentials/O."
+            "reason": "References FlexibleScopeList https://producer.vc4qi.example/credentials/LIST-RMP."
           },
           {
             "gate": 5,
@@ -1061,7 +1061,7 @@
             "predicate": "route:operational-scope:maintenance-grant",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmAccreditation https://nab.vc4qi.example/credentials/A."
+            "reason": "References RmpAccreditation https://nab.vc4qi.example/credentials/ACC-RMP."
           },
           {
             "gate": 5,
@@ -1082,7 +1082,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/LIST-RMP#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/ACC-RMP#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -1103,7 +1103,7 @@
             "predicate": "support:study-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "Cites study https://lab.vc4qi.example/credentials/S."
+            "reason": "Cites study https://lab.vc4qi.example/credentials/HOM-LOT1."
           },
           {
             "gate": 6,
@@ -1138,7 +1138,7 @@
             "predicate": "support:laboratory-authority-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmLabAuthority https://nab.vc4qi.example/credentials/H."
+            "reason": "References LabAccreditation https://nab.vc4qi.example/credentials/ACC-LAB."
           },
           {
             "gate": 6,
@@ -1187,7 +1187,7 @@
     },
     {
       "id": "x178-unknown-requirement",
-      "targetId": "https://producer.vc4qi.example/credentials/D178",
+      "targetId": "https://producer.vc4qi.example/credentials/RM178",
       "profile": "rm-verifier-1.json",
       "conformity": {
         "requirementId": "as-max-100",
@@ -1201,10 +1201,10 @@
             "state": "established",
             "routeWitnessIds": [
               "route:operational-scope",
-              "https://producer.vc4qi.example/credentials/D178",
-              "https://producer.vc4qi.example/credentials/O",
-              "https://nab.vc4qi.example/credentials/A",
-              "record:https://producer.vc4qi.example/credentials/O#scope-as-m1"
+              "https://producer.vc4qi.example/credentials/RM178",
+              "https://producer.vc4qi.example/credentials/LIST-RMP",
+              "https://nab.vc4qi.example/credentials/ACC-RMP",
+              "record:https://producer.vc4qi.example/credentials/LIST-RMP#scope-as-m1"
             ]
           }
         ],
@@ -1212,9 +1212,9 @@
           {
             "state": "established",
             "witnessIds": [
-              "https://producer.vc4qi.example/credentials/D178",
-              "https://lab.vc4qi.example/credentials/S",
-              "https://nab.vc4qi.example/credentials/H"
+              "https://producer.vc4qi.example/credentials/RM178",
+              "https://lab.vc4qi.example/credentials/HOM-LOT1",
+              "https://nab.vc4qi.example/credentials/ACC-LAB"
             ]
           }
         ],
@@ -1253,7 +1253,7 @@
             "predicate": "restriction:accreditation-suspension",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/credentials/A: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
+            "reason": "https://nab.vc4qi.example/credentials/ACC-RMP: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
           },
           {
             "gate": 5,
@@ -1274,7 +1274,7 @@
             "predicate": "route:operational-scope:authorizing-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmOperationalScope https://producer.vc4qi.example/credentials/O."
+            "reason": "References FlexibleScopeList https://producer.vc4qi.example/credentials/LIST-RMP."
           },
           {
             "gate": 5,
@@ -1302,7 +1302,7 @@
             "predicate": "route:operational-scope:maintenance-grant",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmAccreditation https://nab.vc4qi.example/credentials/A."
+            "reason": "References RmpAccreditation https://nab.vc4qi.example/credentials/ACC-RMP."
           },
           {
             "gate": 5,
@@ -1323,7 +1323,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/LIST-RMP#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/ACC-RMP#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -1344,7 +1344,7 @@
             "predicate": "support:study-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "Cites study https://lab.vc4qi.example/credentials/S."
+            "reason": "Cites study https://lab.vc4qi.example/credentials/HOM-LOT1."
           },
           {
             "gate": 6,
@@ -1379,7 +1379,7 @@
             "predicate": "support:laboratory-authority-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmLabAuthority https://nab.vc4qi.example/credentials/H."
+            "reason": "References LabAccreditation https://nab.vc4qi.example/credentials/ACC-LAB."
           },
           {
             "gate": 6,
@@ -1428,7 +1428,7 @@
     },
     {
       "id": "x178-historical-question",
-      "targetId": "https://producer.vc4qi.example/credentials/D178",
+      "targetId": "https://producer.vc4qi.example/credentials/RM178",
       "profile": "rm-verifier-1.json",
       "activityTime": "2026-03-01T00:00:00Z",
       "conformity": {
@@ -1492,7 +1492,7 @@
     },
     {
       "id": "x178-two-routes",
-      "targetId": "https://producer.vc4qi.example/credentials/D178",
+      "targetId": "https://producer.vc4qi.example/credentials/RM178",
       "profile": "rm-verifier-two-routes-1.json",
       "conformity": {
         "requirementId": "as-mass-fraction-max-200-mg-per-kg",
@@ -1506,10 +1506,10 @@
             "state": "established",
             "routeWitnessIds": [
               "route:operational-scope",
-              "https://producer.vc4qi.example/credentials/D178",
-              "https://producer.vc4qi.example/credentials/O",
-              "https://nab.vc4qi.example/credentials/A",
-              "record:https://producer.vc4qi.example/credentials/O#scope-as-m1"
+              "https://producer.vc4qi.example/credentials/RM178",
+              "https://producer.vc4qi.example/credentials/LIST-RMP",
+              "https://nab.vc4qi.example/credentials/ACC-RMP",
+              "record:https://producer.vc4qi.example/credentials/LIST-RMP#scope-as-m1"
             ]
           }
         ],
@@ -1517,9 +1517,9 @@
           {
             "state": "established",
             "witnessIds": [
-              "https://producer.vc4qi.example/credentials/D178",
-              "https://lab.vc4qi.example/credentials/S",
-              "https://nab.vc4qi.example/credentials/H"
+              "https://producer.vc4qi.example/credentials/RM178",
+              "https://lab.vc4qi.example/credentials/HOM-LOT1",
+              "https://nab.vc4qi.example/credentials/ACC-LAB"
             ]
           }
         ],
@@ -1558,7 +1558,7 @@
             "predicate": "restriction:accreditation-suspension",
             "state": "established",
             "execution": "executed",
-            "reason": "https://nab.vc4qi.example/credentials/A: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
+            "reason": "https://nab.vc4qi.example/credentials/ACC-RMP: Not suspended: bit 0 of https://nab.vc4qi.example/status/suspension/1 is clear."
           },
           {
             "gate": 5,
@@ -1579,7 +1579,7 @@
             "predicate": "route:operational-scope:authorizing-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmOperationalScope https://producer.vc4qi.example/credentials/O."
+            "reason": "References FlexibleScopeList https://producer.vc4qi.example/credentials/LIST-RMP."
           },
           {
             "gate": 5,
@@ -1607,7 +1607,7 @@
             "predicate": "route:operational-scope:maintenance-grant",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmAccreditation https://nab.vc4qi.example/credentials/A."
+            "reason": "References RmpAccreditation https://nab.vc4qi.example/credentials/ACC-RMP."
           },
           {
             "gate": 5,
@@ -1628,7 +1628,7 @@
             "predicate": "route:operational-scope:bounded-projection",
             "state": "established",
             "execution": "executed",
-            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/O#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/A#scope-non-ferrous)."
+            "reason": "Each projected record lies within one parent record (https://producer.vc4qi.example/credentials/LIST-RMP#scope-as-m1 ⊆ https://nab.vc4qi.example/credentials/ACC-RMP#scope-non-ferrous)."
           },
           {
             "gate": 5,
@@ -1656,14 +1656,14 @@
             "predicate": "route:direct-accreditation:authorizing-reference",
             "state": "not_established",
             "execution": "executed",
-            "reason": "No recognized authorization policy references a RmAccreditation."
+            "reason": "No recognized authorization policy references a RmpAccreditation."
           },
           {
             "gate": 6,
             "predicate": "support:study-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "Cites study https://lab.vc4qi.example/credentials/S."
+            "reason": "Cites study https://lab.vc4qi.example/credentials/HOM-LOT1."
           },
           {
             "gate": 6,
@@ -1698,7 +1698,7 @@
             "predicate": "support:laboratory-authority-reference",
             "state": "established",
             "execution": "executed",
-            "reason": "References RmLabAuthority https://nab.vc4qi.example/credentials/H."
+            "reason": "References LabAccreditation https://nab.vc4qi.example/credentials/ACC-LAB."
           },
           {
             "gate": 6,

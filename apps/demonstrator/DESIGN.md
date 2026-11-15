@@ -13,9 +13,12 @@ fixtures, or is marked as not evaluated.
 1. **The verifier decides.** The verifier is the main character. Its verdict is always
    on screen, and every other actor's action is shown through its effect on that
    verdict.
-2. **One meaning per visual channel.** Colour shows state, position shows the actor,
-   shape shows the kind of asset, line style shows the relation. No channel carries a
-   second meaning. Actors therefore have no colours of their own.
+2. **One meaning per visual channel.** State colours (green, red, amber) show state,
+   position shows the actor, shape shows the kind of asset, line style shows the
+   relation. Two further colours, never used for state, say who signs: violet an
+   authority (the state, Global ACI, the accreditation body, the scheme owner), blue an actor that
+   works under a grant (producer, laboratory, GS body, manufacturer). Holder and verifier
+   have none.
 3. **Never colour alone.** Every state also has an icon and a word.
 4. **One step, one question.** In a guided story the acting columns are outlined, and
    only that step's actions are live. A "try it" step may make several actions live
@@ -24,7 +27,11 @@ fixtures, or is marked as not evaluated.
    what the verifier reads.
 5. **Actions belong to the actor who can take them.** Suspending sits with the
    accreditation body, leaving out a study with the holder, the decision rule with the
-   verifier. Where one clicks says who may do what.
+   verifier: in the actor's column on the board, under the actor's monogram in the left
+   column of the vertical layout. Where one clicks says who may do what.
+8. **Detail folds.** A step shows a one-line title and one sentence; the rest opens under
+   "More", over the board. Explainers open only what a credential says; links, envelope,
+   checks and bytes fold, and what the reader opened stays open from step to step.
 6. **Nothing simulated, and "not evaluated" is said.** Placeholders have their own look
    and never borrow a state colour.
 7. **Plain words first, terms second.** The page says *signed by*, *is about*, *held by*,
@@ -50,7 +57,7 @@ what is handed over, why, the detail.
 | --- | --- | --- |
 | 1 | Verdict | Solid state fill, white text; title 1.5rem/750, reason 1rem. One per screen. |
 | 2 | Step title (`h1`) | 2rem/750, ink. |
-| 3 | Actor names | Column header: monogram (2.25rem circle, ink outline, .9rem/750 letters) and name 1.15rem/700, ink. In the step header: the acting monograms with an arrow and their names, 1.05rem/650, ink. |
+| 3 | Actor names | Column header: monogram (2.25rem pill, outlined in the signer colour or ink, .78rem/750 letters) and name 1.15rem/700, ink. |
 | 4 | Assets | Credential card: code badge (mono .9rem/700) and kind (1rem/650), one key fact (.95rem, ink). |
 | 5 | Explanation | Step lead 1.12rem, muted, at most 46rem wide. |
 | 6 | Answers | The six questions: label .9rem/650 ink, answer with icon in its state colour. |
@@ -66,7 +73,7 @@ what is handed over, why, the detail.
   line under each chain box; both were hard to read at a distance.)
 - Ink is for names, titles, values and answers; muted is for explanation and detail only.
   State colours are used on icons, state words and borders, never on running text.
-- Uppercase is used only for level-7 labels and the kicker.
+- Uppercase is used only for level-7 labels, the lane verbs and fold headings.
 - Check: on a 1280×720 projector, from four metres, the verdict, the step title and every
   actor name are readable.
 
@@ -84,6 +91,7 @@ what is handed over, why, the detail.
 | `--petrol` | *now and here*: current step, acting column, primary button | navigation and attention |
 | `--cyan` | keyboard focus | focus only |
 | `--red` | brand | wordmark only |
+| `--g-auth` (violet), `--g-act` (blue) | who signs: an authority, or an actor under a grant | the stripe on a card, the monogram, the signer chip |
 
 Dark mode redefines every token; nothing is hard-coded outside `:root`.
 
@@ -93,12 +101,15 @@ One column per actor, in a fixed order from where trust comes from to where it i
 An actor's column appears when the chain first reaches it, in its fixed place, so a story
 starts with one actor and the board fills as it goes; "Your turn" shows every actor.
 A band that concerns one moment of the story appears only in that moment: in the RM
-story, the evaluated note that a verifier abroad reaches the accreditation body through
+story, the evaluated note that a verifier abroad reaches the NAB through
 R, Global ACI's recognition of it (a fictional stand-in, W3C Recognized Entities draft).
-For the RM story: Global ACI (ACI), Accreditation body (AB), Laboratory (LAB), RM
-producer (RMP), Holder (H), Verifier (V). With more than four actor columns the
-verifier's column narrows and a name may drop below its monogram; it never truncates. For the GS story: Accreditation body (AB), Scheme owner (SO), GS body
-(GSB), Manufacturer (MFR), Verifier (V).
+For the RM story: Global ACI (GACI), State (GOV), National accreditation body (NAB), Laboratory
+(LAB), RM producer (RMP), Customer lab (CUST), Verifier (VER). The state sits next to the
+NAB, so the grant lines from ACC-RMP and ACC-LAB to APP-NAB are short; REC-NAB sits in
+the lower row of Global ACI's column, so the recognition lines cross no card. Monograms are pills, so three or
+four letters fit. With more than four actor columns the
+verifier's column narrows and a name may drop below its monogram; it never truncates. For the GS story: National accreditation body (NAB), Scheme owner (SO), GS body
+(GSB), Manufacturer (MFR), Verifier (VER).
 
 - The header carries the monogram, the name, one line on what the actor does, and what it
   publishes, as small chips: key, revocation list, suspension list.
@@ -121,16 +132,28 @@ verifier's column narrows and a name may drop below its monogram; it never trunc
 A card shows its code badge, its kind in words, one key fact and a footer "signed by … ·
 about …". What the binding proposes rather than reuses carries a "proposal" tag beside
 its kind (R). Its state is its border colour and a corner icon. A credential sits in its
-issuer's column; selecting it labels the columns that sign it, that it is about, that
-hold it, and the credentials it cites.
+issuer's column; hovering or focusing it labels the columns (lanes, in the vertical
+layout) that sign it, that it is about and that hold it, on their top edge so nothing
+grows.
 
 ### Relations: line style
 
 | Line | Means | Points to |
 | --- | --- | --- |
-| solid | cites as authority (`termsOfUse`) | the cited credential, towards the root |
-| dotted | cites as evidence (`evidence`) | the study |
+| solid | *acts under* (`termsOfUse`, `IssuedUnderPolicy`: a grant) | the cited credential, towards the root |
+| dash-dot | *is recognized in* (`termsOfUse`, `RecognitionPolicy`: no authority) | the issuer's recognition |
+| dotted | *is backed by* (`evidence`) | the study |
 | dashed grey | handed over | the holder |
+
+Every upward link is a term of use, and its type says what it means: a grant
+(`IssuedUnderPolicy`) is drawn solid, a recognition (`RecognitionPolicy`) dash-dot,
+because a recognition grants no authority and must never look like one. The key says
+this in plain words first, the type second. In a build step each new line carries its
+policy type (`IssuedUnderPolicy`, `RecognitionPolicy`) or `evidence` at its middle, in a
+layer above the cards. A line leaves and enters on the sides facing each other; lines that
+meet on one side of a card share it, spread in the order of where they come from. The
+head is drawn along the line's own last stretch and the line stops at its base, so the
+head points the way the visible line runs.
 
 Citation lines take the state of their link: the claim's own links carry the answers to
 "authorized" and "supported", deeper links the verification of the credential they point
@@ -138,11 +161,102 @@ to, so a wrong link shows on that link alone. Once a request is accepted, a link
 credential the verifier verified but did not rely on is grey (R for a verifier whose root
 is the accreditation body). Handover lines are always grey.
 
+### What a card shows
+
+A code read from the credential's id, kind first, then whom it is about (APP-NAB, REC-NAB,
+ACC-RMP, ACC-LAB, LIST-RMP, HOM-LOT1, RM178; the paper's APP, R, A, H, O, S, D), and the
+credential's own `name` (“Accreditation of the RM producer”), so neither is written in the
+page; under it the credential's own type in mono (the last entry
+of `type`, for example `RmpAccreditation`) and, in the lanes, the signer's monogram, then
+what it says, its tags and who signed it about whom. A stripe in the signer's colour runs
+down the card's left edge. Explanations name a credential by full name and code
+(“Producer’s operational scope LIST-RMP”). Column heads carry the actor's name and published
+lists only; the descriptions are gone, as are other texts the board does not need.
+
+### Explaining a credential or a link
+
+Clicking a credential or a line explains it in a floating sheet, in both layouts. A credential: its type and what that type is, who signed it,
+about whom, who holds it, its validity, status entries and proof, what it points to and
+what points to it, and in evaluated steps every check that touched it, in the evaluator's
+words with the gate and predicate underneath. A link: the plain sentence (*D178 acts
+under O*), the field, the pinning digest, the link as it stands in the signed bytes, what a
+verifier checks on such a link, and in evaluated steps the checks that read its target.
+A link the verifier verified but did not rely on says so. The *Terms* button lists the
+vocabulary in one line each.
+
+### The vertical layout
+
+`rm/index.html`, the RM story's default page, draws the story in two columns
+(`rm/board.html` keeps the actor board, unlisted; `rm/vertical.html` forwards to the
+default). On the left, scrolling on its
+own: the step (title and sentence), then in evaluated steps the verifier's policy check
+(verdict, the six questions, its live settings) and what the other parties can do in this
+step, each under its monogram; the key at the bottom. The chain takes the rest of the
+width, top to bottom, one lane per actor (appoints and recognizes, accredits, studies the
+batch, declares its scope and certifies, holds and shows), with open space between the
+lanes. The two roots share the top row, side by side: the state with APP-NAB (authority) on
+the left, Global ACI with REC-NAB (no authority) on the right; on narrow screens they stack.
+Cards look as on the opening graph: code, name, type, who signs it about whom (the signer
+in its group colour), tags, in smaller type, all of one width, either side of a wide
+middle gap, a lone card in the middle. Every line carries its name in the space it crosses, on two
+lines: the field (`termsOfUse`, `evidence`) over its entry's type (`IssuedUnderPolicy`,
+`HomogeneityStudyReference`), so a term of use and an evidence entry never look like one level; lines that meet at one card are named near where they
+start, and a name moves along its line until it overlaps neither a card nor another name
+(two lines that cross are named apart). Hovering a card tags the lanes that sign it, that it is about and that hold it,
+as on the board. Lanes hold no controls, so a lane never changes height. Clicking a credential or a
+line opens it in a floating sheet (what it says, its links, envelope, checks and signed
+bytes, folded but for what it says), and the card stays ringed while the sheet is open.
+Lanes not yet reached and credentials not yet issued hold their place invisibly. A link
+in the top bar switches layouts and keeps the step and its state.
+
+### The RM story's order
+
+The argument: a few simple rules, applied the same way at every step, map the quality
+infrastructure to credentials, reinventing as little as possible; and the verifier, not
+the issuer, decides. So the story runs: one credential and its links; the chain, built
+by five issuer rules; the verifier's profile and its six checks; scenarios in five
+groups; the proposal; the whole chain; a free sandbox. The workshop is about the top of
+the chain, so the group about roots (NAB, state, Global ACI) comes first: with little
+time, stop after the first two groups.
+
+- **Build steps** carry, under the title, what in the quality infrastructure they map to
+  which credential (`Maps National appointment … → VerifiableAuthorisationForTrustChain,
+  GOV → NAB`) and the numbered issuer rules they apply, so the same rules visibly repeat.
+- **The verifier** gets two pages before it decides: its profile (whom it trusts, which
+  paths count, what it asks, its rule, about when, how fresh status must be; each with
+  why it is the verifier's and where it sits in the profile) and the six checks (each a
+  plain question, its gates, an example of failing and the group that tests it).
+- **Scenario groups** are named by the verifier's question: whom do I trust, was it valid
+  at that time, is the chain complete and within scope, is it genuine, is it good enough
+  for me. Each scenario is a button: who acts (monogram), when, one line on what happens,
+  and how often it happens in practice (everyday, occasional, rare). Scenarios are
+  plausible: a state does not withdraw a NAB's appointment, so it has no action; Global
+  ACI suspending a recognition is rare; an expired certificate is uncommon for a brass
+  disc and common for organic materials. One click applies a scenario, a second click or
+  Reset returns to the clean chain, and the verdict marks each check whose answer
+  changed. The time group shows a timeline (the study, RM178, the suspension, today,
+  RM178's expiry, March 2028) with the date asked about marked, and says which status
+  lists answer it.
+- **Your turn** comes last. Every action says when it happens and how often.
+
 ### Pages instead of the board
 
-A step may draw a page instead of the board: in the RM story, the start page (D178
-drawn with what each link points to, beside the eight design rules) and the recognition
-proposal. A page
+A step may draw a page instead of the board, at full width in both layouts. The RM story
+opens with one credential, RM178, drawn as a card listing its fields; the four that link
+out leave the card as arrows to what they name: the term of use up to LIST-RMP (who let me
+issue this), the subject down to the disc, evidence and status beside to HOM-LOT1 and the
+status list. Each field is tagged **W3C** (a standard or draft used as written), **EBSI**
+(reused) or **VC4QI** (new here). Beside it, every link the chain uses, read from the signed credentials:
+the field and type, what it names (and that credential's type), who signs that about
+whom, and which credentials name it, from the law at the top to the study beside
+RM178. The five issuer rules follow, then folds: what W3C VCDM 2.0 says each field is
+for, and why a term of use points up. After the proposal and its reconciliation with W3C
+Recognized Entities (one rule for every upward link, `IssuedUnderPolicy` for a grant,
+`RecognitionPolicy` for a recognition, mirrored by `issuer.recognizedIn`), the whole chain
+is drawn on one wide graph, the two roots on top: each credential with its code, name,
+type, kind and who signs it about whom; each link with its field, its type and target and
+the digest that pins it; the numbers of the issuer rules on the links they follow, the
+rules under the graph (hovering one lights its numbers). A page
 reads the generated credentials and evaluates nothing, says so in a tag above it, and
 uses no state colour: direction is arrow shape (↑ up to authority, ↓ down to the
 subject, → sideways to evidence), state is a drawn switch, the seal a solid diamond.
@@ -179,8 +293,8 @@ Plain words lead and the terms follow in mono, each with where it comes from.
   A citation line can be clicked to leave its credential out (the holder's choice); the
   same choice is a segmented control in the holder's column for keyboards.
 - So that a step fits the screen, a guided step shows its live controls, plus any whose
-  value it changed (faded, marked "available in *Your turn*"), and the verifier's root.
-  The last step shows and unlocks every action.
+  value it or its scenario changed (faded, marked "available in *Your turn*"), and the
+  verifier's root. The last step shows and unlocks every action.
 - What each actor does stays in its column header on every step, so the rows never move;
   the verifier's description is dropped once it decides, which moves no credential.
 - How the board keeps its place on wide screens: room for a two-line title and for the
@@ -190,8 +304,8 @@ Plain words lead and the terms follow in mono, each with where it comes from.
   re-signed list is marked by filling its label, not by more text; a band sits under
   the board; the scrollbar's room is always kept.
 - Step text is one or two sentences under the title.
-- Every change re-evaluates immediately. The URL hash holds the whole state, so a link
-  reproduces a slide. Arrow keys and Page Up/Down move between steps.
+- Every change re-evaluates immediately. The URL hash holds the whole state (in a
+  scenario group, the scenario: `#time/expired`), so a link reproduces a slide. Arrow keys and Page Up/Down move between steps.
 
 ## Deviations in the current pages
 

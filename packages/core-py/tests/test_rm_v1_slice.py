@@ -50,23 +50,27 @@ MANIFEST = load_binding_manifest(
 PINNED = read_pinned_resources(RM_V1_DIRECTORY / "catalog.json")
 SIGNED = read_pinned_resources(RM_V1_DIRECTORY / "test-vectors/signed/catalog.json")
 URI = {
-    "A": "https://nab.vc4qi.example/credentials/A",
-    "H": "https://nab.vc4qi.example/credentials/H",
-    "O": "https://producer.vc4qi.example/credentials/O",
-    "S": "https://lab.vc4qi.example/credentials/S",
-    "D": "https://producer.vc4qi.example/credentials/D178",
-    "D197": "https://producer.vc4qi.example/credentials/D197",
-    "D520": "https://producer.vc4qi.example/credentials/D520",
+    "A": "https://nab.vc4qi.example/credentials/ACC-RMP",
+    "H": "https://nab.vc4qi.example/credentials/ACC-LAB",
+    "O": "https://producer.vc4qi.example/credentials/LIST-RMP",
+    "S": "https://lab.vc4qi.example/credentials/HOM-LOT1",
+    "D": "https://producer.vc4qi.example/credentials/RM178",
+    "D197": "https://producer.vc4qi.example/credentials/RM197",
+    "D520": "https://producer.vc4qi.example/credentials/RM520",
     "PRODUCER": "https://producer.vc4qi.example/controller",
     "LAB": "https://lab.vc4qi.example/controller",
     "PRODUCER_STATUS": "https://producer.vc4qi.example/status/1",
-    "A2": "https://nab.vc4qi.example/credentials/A2",
+    "A2": "https://nab.vc4qi.example/credentials/ACC-RMP-2",
     "NAB_STATUS": "https://nab.vc4qi.example/status/1",
     "NAB_SUSPENSION": "https://nab.vc4qi.example/status/suspension/1",
-    "R": "https://global-aci.vc4qi.example/credentials/R",
+    "R": "https://global-aci.vc4qi.example/credentials/REC-NAB",
     "GACI": "https://global-aci.vc4qi.example/controller",
     "GACI_STATUS": "https://global-aci.vc4qi.example/status/1",
     "GACI_SUSPENSION": "https://global-aci.vc4qi.example/status/suspension/1",
+    "STATE": "https://state.vc4qi.example/controller",
+    "APP": "https://state.vc4qi.example/credentials/APP-NAB",
+    "STATE_STATUS": "https://state.vc4qi.example/status/1",
+    "STATE_SUSPENSION": "https://state.vc4qi.example/status/suspension/1",
 }
 NOW = "2026-09-25T12:00:00Z"
 BUDGET = CatalogBudget(max_resources=256, max_bytes=5_000_000)
@@ -206,16 +210,14 @@ def test_extracts_protected_facts_with_source_pointers() -> None:
         f.fact: [(x.pointer, x.value) for x in facts if x.fact == f.fact] for f in facts
     }
     assert by_fact["grantorOrActor"] == [("/issuer", URI["PRODUCER"])]
-    assert by_fact["authorizingReference"] == [
-        ("/termsOfUse/0/authorizationCredential/id", URI["O"])
-    ]
+    assert by_fact["authorizingReference"] == [("/termsOfUse/0/id", URI["O"])]
     assert by_fact["requiredStudy"] == [("/evidence/0/id", URI["S"])]
     # Every certified result (As, Cu, Zn, Pb) is a candidate; As is the first.
     results = by_fact["selectedResult"]
     assert [p for p, _ in results] == [
         f"/credentialSubject/materialPropertiesList/0/results/{i}" for i in range(4)
     ]
-    assert results[0][1]["data"]["quantity"]["value"] == "178"
+    assert results[0][1]["data"]["quantity"]["real"]["value"] == "178"
 
 
 def test_p01_signed_chain_for_178_is_relied_upon() -> None:
@@ -243,7 +245,7 @@ def test_p01_signed_chain_for_178_is_relied_upon() -> None:
 def test_changed_value_without_resigning_is_rejected() -> None:
     document = doc(URI["D"])
     quantity = document["credentialSubject"]["materialPropertiesList"][0]["results"][0]
-    quantity["data"]["quantity"]["value"] = "150"
+    quantity["data"]["quantity"]["real"]["value"] = "150"
     overrides = {URI["D"]: serialize(document)}
     artifact = verify(URI["D"], overrides)
     assert (artifact.checks[-1].check, artifact.checks[-1].state) == (
@@ -407,7 +409,13 @@ def test_signed_fixtures_carry_no_legacy_wire_fields() -> None:
 
 
 @pytest.mark.parametrize(
-    "name", ["AuthorizedByPolicy", "RmAuthorizationPolicyV2", "rmAuthorizationPolicy"]
+    "name",
+    [
+        "AuthorizedByPolicy",
+        "IssuedUnderPolicyV2",
+        "issuedUnderPolicy",
+        "RmAuthorizationPolicy",
+    ],
 )
 def test_arbitrary_authorization_policy_name_is_not_accepted(name: str) -> None:
     document = doc(URI["D"])
@@ -427,7 +435,7 @@ def test_gate_numbered_trace_and_resources() -> None:
     assert all("| target |" in t.node_use for t in target)
     by = {t.predicate: t for t in target}
     assert (by["schema"].gate, by["schema"].state) == (0, "established")
-    assert (by["related-resource-integrity"].gate, by["signature"].gate) == (1, 2)
+    assert (by["link-integrity"].gate, by["signature"].gate) == (1, 2)
     assert (by["validity-period"].gate, by["validity-period"].state) == (
         3,
         "established",
@@ -437,10 +445,11 @@ def test_gate_numbered_trace_and_resources() -> None:
     assert by["route:operational-scope:bounded-projection"].state == "established"
     assert by["support:same-batch"].state == "established"
     assert by["conformity:as-mass-fraction-max-200-mg-per-kg"].gate == 6
-    # A and H point up to R, so the chain resolves it for every verifier; it decides
-    # only for a verifier whose route uses it (test_rm_v1_recognition.py).
+    # A and H point up to R and to the state's appointment APP, so the chain resolves
+    # both for every verifier; each decides only for a verifier whose route uses it
+    # (test_rm_v1_recognition.py, test_rm_v1_appointment.py).
     assert sorted(r.uri for r in result.resources if r.kind == "artifact") == sorted(
-        URI[k] for k in ("A", "D", "H", "O", "R", "S")
+        URI[k] for k in ("A", "D", "H", "O", "R", "S", "APP")
     )
 
 
@@ -482,6 +491,8 @@ def test_status_established_for_the_whole_chain() -> None:
             "https://nab.vc4qi.example/status/1",
             "https://nab.vc4qi.example/status/suspension/1",
             URI["PRODUCER_STATUS"],
+            URI["STATE_STATUS"],
+            URI["STATE_SUSPENSION"],
         ]
     )
 
@@ -581,7 +592,7 @@ def test_v09_other_profile_is_refused_at_gate_0() -> None:
 def test_v09_credential_cannot_declare_another_schema() -> None:
     document = doc(URI["D"])
     document["credentialSchema"] = {
-        "id": "https://vc4qi.example/schemas/rm/1/accreditation.json",
+        "id": "https://vc4qi.example/schemas/rm/1/rmp-accreditation.json",
         "type": "JsonSchema",
     }
     forged = resign(document, "producer", f"{URI['PRODUCER']}#key-1")
@@ -612,7 +623,7 @@ def test_v11_optional_annotation_inert_missing_required_term_blocks() -> None:
     missing = doc(URI["D"])
     del missing["credentialSubject"]["materialPropertiesList"][0]["results"][0]["data"][
         "quantity"
-    ]["quantityKind"]
+    ]["real"]["quantityTypeQUDT"]
     blocked = verify(URI["D"], {URI["D"]: serialize(missing)})
     assert (blocked.checks[-1].check, blocked.checks[-1].state) == (
         "schema",

@@ -32,17 +32,20 @@ signatures on purpose.
 ## Walkthrough: the reference-material witness
 
 The RM binding carries the complete witness from the [model](model.md#6-scope-quantities-and-conformity):
-accreditation A (As, Cu, Zn, Pb, 0.1 mg/kg to 997 g/kg, M1 and M2, shaped after a
-flexible-scope annex row), the producer's own operational scope O within it (As,
-[50, 500] mg/kg, M1 only), certificate D (CuZn39Pb3 brass, arsenic, U = 5 mg/kg, k = 2),
-study S and laboratory authority H. The verifier asks for `x + U <= 200 mg/kg`
-(`guarded-acceptance-expanded-u`).
+the accreditation ACC-RMP of the RM producer (As, Cu, Zn, Pb, 0.1 mg/kg to 997 g/kg, M1
+and M2, shaped after a flexible-scope annex row), the producer's own flexible scope list
+LIST-RMP within it (As, [50, 500] mg/kg, M1 only), the certificate RM178 (CuZn39Pb3 brass,
+arsenic, U = 5 mg/kg, k = 2), the homogeneity study HOM-LOT1 and the laboratory's
+accreditation ACC-LAB. The verifier asks for `x + U <= 200 mg/kg`
+(`guarded-acceptance-expanded-u`). As in the DRMD, every certified value is a PTB D-SI
+2.2.1 real (QUDT `MassFraction`, unit `\milli\gram\kilogram\tothe{-1}` or `\percent`,
+expanded uncertainty with k = 2); see [bindings](bindings.md#quantity-values-ptb-d-si).
 
 | Signed certificate | Scope | Conformity | Decision |
 | --- | --- | --- | --- |
-| `D178.json` | established | 183 ≤ 200 | accept |
-| `D197.json` | established | 202 > 200 | reject (authorization established) |
-| `D520.json` | contradicted | not run | reject |
+| `RM178.json` | established | 183 ≤ 200 | accept |
+| `RM197.json` | established | 202 > 200 | reject (authorization established) |
+| `RM520.json` | contradicted | not run | reject |
 
 520 mg/kg lies inside A but outside O. The certificate draws its authority from O, and
 the parent never rescues the child.
@@ -51,9 +54,10 @@ The [demonstrator](https://monavari.github.io/VC4QI/demo/#rm) runs exactly these
 in the browser with the same evaluator, and adds a tamper test and a withheld study. Its
 DCC, GS and DPP tabs do the same for the calibration and GS bindings, and the
 [GS story](https://monavari.github.io/VC4QI/demo/gs/) puts the GS chain on an actor board. The
-[RM story](https://monavari.github.io/VC4QI/demo/rm/) puts this chain on an actor board
-and adds a suspended accreditation, a revoked study, a verifier that does not trust the
-accreditation body, and certificates you sign yourself.
+[RM story](https://monavari.github.io/VC4QI/demo/rm/) draws this chain top to bottom and
+plays scenarios on it: verifiers with different roots, a suspended accreditation asked
+about today or at issuance, an expired certificate, a withdrawn study, an edited value,
+and certificates you sign yourself.
 
 For the accepted case the claim witnesses are the route `operational-scope`, D, O, A
 and the record `O#scope-as-m1`; support names D, S and H. An authorization-only request

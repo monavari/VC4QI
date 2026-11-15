@@ -3,15 +3,17 @@
 // the experimental RM v1 binding (phase I4). Browser-safe and pure.
 //
 // A selected result is first mapped into governed coordinates: exact identifiers for
-// matrix, form, property, method and quantity kind, and exact kg/kg quantities. It is
+// matrix, form, property and method, the QUDT quantity kind, and exact kg/kg quantities
+// read from the result's PTB D-SI real (dsi.ts). It is
 // then covered by ONE complete scope record of the route's own scope credential (no
 // splicing across records, no fallback to a parent grant). Conformity is a separate
 // question, asked only after the claim is authorized, under a verifier-selected
 // requirement and decision rule.
 import { semanticOr } from './index.js';
+import { readExpandedReal } from './dsi.js';
 import {
-  compareDecimal, addDecimal, EXACT_CONCEPTS, formatDecimal, parseDecimal, recordInterval, RM_UNIT_EXPONENTS, toKgPerKg,
-  type Concepts, type Decimal,
+  compareDecimal, addDecimal, EXACT_CONCEPTS, formatDecimal, MG_PER_KG, parseDecimal, recordInterval, RM_UNIT_EXPONENTS,
+  rmUnitSymbol, toKgPerKg, type Concepts, type Decimal,
 } from './rm-scope.js';
 import type { SemanticState } from './types.js';
 
@@ -30,7 +32,8 @@ export interface ClaimCoordinates {
   readonly formIri: string;
   readonly propertyIri: string;
   readonly methodIri: string;
-  readonly quantityKindIri: string;
+  /** QUDT quantity-kind name, as D-SI's `quantityTypeQUDT` carries it (for example MassFraction). */
+  readonly quantityTypeQUDT: string;
   /** Exact value and expanded uncertainty in kg/kg. */
   readonly value: Decimal;
   readonly uncertainty: Decimal;
@@ -56,28 +59,31 @@ export function mapClaim(D: Doc, pointer: string, result: unknown): Outcome & { 
   if (!isObject(result)) return { state: 'not_established', reason: `No result at ${pointer}.`, sources };
   const quantity = isObject(result.data) && isObject(result.data.quantity) ? result.data.quantity : undefined;
   if (quantity === undefined) return { state: 'not_established', reason: 'The result has no quantity.', sources };
-  const unit = isObject(quantity.unit) ? quantity.unit.ucumCode : undefined;
+  const realPointer = `${pointer}/data/quantity/real`;
+  const real = readExpandedReal(quantity.real);
+  if (!real.ok) return { state: 'not_established', reason: `The result's quantity has ${real.reason}.`, sources: [`${realPointer}${real.path}`] };
+  const unit = real.unit;
   if (typeof unit !== 'string' || RM_UNIT_EXPONENTS[unit] === undefined) {
-    return { state: 'not_established', reason: `Unit ${String(unit)} has no supported mapping (mg/kg, kg/kg).`, sources: [`${pointer}/data/quantity/unit`] };
+    return { state: 'not_established', reason: `Unit ${String(unit)} has no supported D-SI mapping (mg/kg, kg/kg, %).`, sources: [`${realPointer}/unit`] };
   }
-  const uncertainty = isObject(quantity.uncertainty) ? quantity.uncertainty : undefined;
-  const k = parseDecimal(uncertainty?.coverageFactor);
+  const k = parseDecimal(real.coverageFactor);
   if (k === undefined || compareDecimal(k, { n: 2n, scale: 0 }) !== 0) {
-    return { state: 'not_established', reason: `Coverage factor ${String(uncertainty?.coverageFactor)} is not the binding's k = 2.`, sources: [`${pointer}/data/quantity/uncertainty`] };
+    return { state: 'not_established', reason: `Coverage factor ${String(real.coverageFactor)} is not the binding's k = 2.`,
+      sources: [`${realPointer}/measurementUncertaintyUnivariate/expandedMU`] };
   }
-  const value = toKgPerKg(quantity.value, unit);
-  const expanded = toKgPerKg(uncertainty?.expandedUncertainty, unit);
+  const value = toKgPerKg(real.value, unit);
+  const expanded = toKgPerKg(real.valueExpandedMU, unit);
   if (value === undefined || expanded === undefined) {
-    return { state: 'not_established', reason: 'Value or expanded uncertainty is not a supported decimal.', sources: [`${pointer}/data/quantity`] };
+    return { state: 'not_established', reason: 'Value or expanded uncertainty is not a supported decimal.', sources: [realPointer] };
   }
   const dims = { matrixIri: material.matrixIri, formIri: material.formIri, propertyIri: result.propertyIri,
-    methodIri: result.methodIri, quantityKindIri: quantity.quantityKind };
+    methodIri: result.methodIri, quantityTypeQUDT: real.quantityTypeQUDT };
   const missing = Object.entries(dims).filter(([, v]) => typeof v !== 'string').map(([k2]) => k2);
   if (missing.length > 0) return { state: 'not_established', reason: `Missing governed identifier: ${missing.join(', ')}.`, sources };
   return {
     state: 'established',
     reason: `Mapped ${short(dims.propertyIri)} by ${short(dims.methodIri)} in ${short(dims.matrixIri)}: `
-      + `${String(quantity.value)} ± ${String(uncertainty?.expandedUncertainty)} ${unit} (k = 2).`,
+      + `${String(real.value)} ± ${String(real.valueExpandedMU)} ${rmUnitSymbol(unit)} (k = 2).`,
     sources,
     coordinates: { ...(dims as Record<keyof typeof dims, string>), value, uncertainty: expanded },
   };
@@ -117,7 +123,7 @@ export function claimCoverage(
     const failures: string[] = [];
     if (!concepts.within(claim.matrixIri, record.matrixIri)) failures.push(`matrix ${short(claim.matrixIri)} ≠ ${short(record.matrixIri)}`);
     if (!concepts.within(claim.formIri, record.formIri)) failures.push(`form ${short(claim.formIri)} ≠ ${short(record.formIri)}`);
-    if (record.quantityKindIri !== claim.quantityKindIri) failures.push(`quantity kind ${short(claim.quantityKindIri)} ≠ ${short(record.quantityKindIri)}`);
+    if (record.quantityTypeQUDT !== claim.quantityTypeQUDT) failures.push(`quantity kind ${String(claim.quantityTypeQUDT)} ≠ ${String(record.quantityTypeQUDT)}`);
     if (!strings(record.allowedPropertyIris).some(set => concepts.within(claim.propertyIri, set))) failures.push(`property ${short(claim.propertyIri)} is not allowed`);
     if (compareDecimal(claim.value, interval.low) < 0) failures.push('value is below the range');
     if (compareDecimal(claim.value, interval.high) > 0) failures.push('value is above the range');
@@ -126,10 +132,10 @@ export function claimCoverage(
       return { id, state: 'contradicted' as SemanticState, reason: `${short(id)}: ${[...failures, ...(method.state === 'contradicted' ? [method.reason] : [])].join('; ')}` };
     }
     if (method.state === 'not_established') return { id, state: 'not_established' as SemanticState, reason: `${short(id)}: ${method.reason}` };
-    const low = formatDecimal(fromKgPerKg(interval.low, 'mg/kg')), high = formatDecimal(fromKgPerKg(interval.high, 'mg/kg'));
+    const low = formatDecimal(fromKgPerKg(interval.low, MG_PER_KG)), high = formatDecimal(fromKgPerKg(interval.high, MG_PER_KG));
     return { id, state: 'established' as SemanticState,
       reason: `${short(id)} covers ${short(claim.propertyIri)}, ${method.reason}, ${short(claim.matrixIri)}/${short(claim.formIri)}, `
-        + `${formatDecimal(fromKgPerKg(claim.value, 'mg/kg'))} mg/kg within ${low}–${high} mg/kg` };
+        + `${formatDecimal(fromKgPerKg(claim.value, MG_PER_KG))} mg/kg within ${low}–${high} mg/kg` };
   });
   const state = semanticOr(outcomes.map(o => o.state));
   const covering = outcomes.find(o => o.state === 'established');
@@ -153,7 +159,9 @@ export function fromKgPerKg(value: Decimal, unit: string): Decimal {
 export interface ConformityRequirement {
   readonly id: string;
   readonly propertyIri: string;
-  readonly quantityKindIri: string;
+  /** QUDT quantity-kind name (D-SI `quantityTypeQUDT`). */
+  readonly quantityTypeQUDT: string;
+  /** The limit; `unit` is a D-SI identifier. */
   readonly upperLimit: { readonly value: string; readonly unit: string };
 }
 /** Verifier-owned decision rule (ILAC-G8 style): simple acceptance or guard band w = U. */
@@ -168,7 +176,7 @@ export interface DecisionRule {
  * equivalent encodings of the same quantity give the same witness.
  */
 export function evaluateConformity(claim: ClaimCoordinates, requirement: ConformityRequirement, rule: DecisionRule): Outcome & { arithmetic?: string } {
-  if (claim.propertyIri !== requirement.propertyIri || claim.quantityKindIri !== requirement.quantityKindIri) {
+  if (claim.propertyIri !== requirement.propertyIri || claim.quantityTypeQUDT !== requirement.quantityTypeQUDT) {
     return { state: 'not_established', reason: `Requirement ${requirement.id} does not apply to this claim's property and quantity kind.`, sources: [] };
   }
   const limit = toKgPerKg(requirement.upperLimit.value, requirement.upperLimit.unit);
@@ -179,7 +187,7 @@ export function evaluateConformity(claim: ClaimCoordinates, requirement: Conform
   const tested = guarded ? addDecimal(claim.value, claim.uncertainty) : claim.value;
   const conforms = compareDecimal(tested, limit) <= 0;
   const lhs = guarded ? `${show(claim.value)} + ${show(claim.uncertainty)} = ${show(tested)}` : show(claim.value);
-  const arithmetic = `${lhs} ${conforms ? '≤' : '>'} ${show(limit)} ${unit}`;
+  const arithmetic = `${lhs} ${conforms ? '≤' : '>'} ${show(limit)} ${rmUnitSymbol(unit)}`;
   return {
     state: conforms ? 'established' : 'contradicted',
     reason: `${conforms ? 'Conforms' : 'Does not conform'} under ${rule.id}: ${arithmetic}.`,

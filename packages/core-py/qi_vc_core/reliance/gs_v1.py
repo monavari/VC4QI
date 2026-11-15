@@ -276,7 +276,7 @@ def gs_competence_and_scheme(
             kind,
             lookup,
             (target.uri,),
-            "GsAuthorizationPolicy",
+            "IssuedUnderPolicy",
         )
         bases.append(basis)
         if node is None or node.document is None:
@@ -418,7 +418,7 @@ def gs_certified_product(
         "GsCertificate",
         lookup,
         (target.uri,),
-        "GsAuthorizationPolicy",
+        "IssuedUnderPolicy",
     )
     bases.append(basis)
     if c_node is None or c_node.document is None:
@@ -684,7 +684,7 @@ def _study(
         "GsAccreditation",
         lookup,
         (certificate.uri, uri),
-        "GsAuthorizationPolicy",
+        "IssuedUnderPolicy",
     )
     bases.append(basis)
     if g_node is None or g_node.document is None:

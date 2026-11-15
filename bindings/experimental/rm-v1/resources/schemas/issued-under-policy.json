@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vc4qi.example/schemas/rm/1/issued-under-policy.json",
+  "title": "IssuedUnderPolicy entry in termsOfUse: issued exercising the named grant",
+  "type": "object",
+  "required": [
+    "id",
+    "type",
+    "digestSRI"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "type": {
+      "const": "IssuedUnderPolicy"
+    },
+    "digestSRI": {
+      "type": "string",
+      "pattern": "^sha384-[A-Za-z0-9+/]{64}$"
+    }
+  },
+  "additionalProperties": false
+}
