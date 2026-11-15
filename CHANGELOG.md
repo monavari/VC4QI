@@ -16,7 +16,12 @@
   NAB's appointment). The accreditation body is called the national accreditation body
   (NAB) in both stories. The graph now combines every verification of a credential, so a
   failed use (an expired certificate) shows on its card. REC1 is valid until 2029, so it
-  outlasts RM178; RM fixtures regenerated.
+  outlasts RM178; RM fixtures regenerated. The vertical layout is now the RM story's
+  default page (`demo/rm/`); the actor board stays at `rm/board.html`, unlisted, and
+  `rm/vertical.html` forwards. Lines are thicker, an evaluated one most, so green reads
+  apart from grey. Every link is named by its field, then its entry's type
+  (`termsOfUse · IssuedUnderPolicy`, `evidence · RmStudyReference`). A test checks that
+  each card's signer and subject agree with its signed credential.
 - **A state's appointment of the accreditation body (RM, experimental).** A fictional
   state issues APP, its appointment of the NAB (Regulation (EC) No 765/2008, Art. 4(1)),
   in the shape of EBSI's root trust-chain credential: type

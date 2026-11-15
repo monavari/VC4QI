@@ -185,7 +185,9 @@ vocabulary in one line each.
 
 ### The vertical layout
 
-`rm/vertical.html` draws the same story in two columns. On the left, scrolling on its
+`rm/index.html`, the RM story's default page, draws the story in two columns
+(`rm/board.html` keeps the actor board, unlisted; `rm/vertical.html` forwards to the
+default). On the left, scrolling on its
 own: the step (title and sentence), then in evaluated steps the verifier's policy check
 (verdict, the six questions, its live settings) and what the other parties can do in this
 step, each under its monogram; the key at the bottom. The chain takes the rest of the
@@ -195,8 +197,9 @@ lanes. The two roots share the top row, side by side: the state with APP1 (autho
 the left, Global ACI with REC1 (no authority) on the right; on narrow screens they stack.
 Cards look as on the opening graph: code, name, type, who signs it about whom (the signer
 in its group colour), tags, in smaller type, all of one width, either side of a wide
-middle gap, a lone card in the middle. Every line carries its name (the termsOfUse type or
-`evidence`) in the space it crosses; lines that meet at one card are named near where they
+middle gap, a lone card in the middle. Every line carries its name in the space it crosses, on two
+lines: the field (`termsOfUse`, `evidence`) over its entry's type (`IssuedUnderPolicy`,
+`RmStudyReference`), so a term of use and an evidence entry never look like one level; lines that meet at one card are named near where they
 start, and a name moves along its line until it overlaps neither a card nor another name
 (two lines that cross are named apart). Hovering a card tags the lanes that sign it, that it is about and that hold it,
 as on the board. Lanes hold no controls, so a lane never changes height. Clicking a credential or a
@@ -238,10 +241,11 @@ time, stop after the first two groups.
 ### Pages instead of the board
 
 A step may draw a page instead of the board, at full width in both layouts. The RM story
-opens with one credential, RM178, drawn as a card with its links around it: the term of
-use up (who let me issue this), the subject down, evidence and status beside; each part
-tagged **W3C** (a standard or draft used as written), **EBSI** (reused) or **ours** (new
-in this binding). Beside it, every link the chain uses, read from the signed credentials:
+opens with one credential, RM178, drawn as a card listing its fields; the four that link
+out leave the card as arrows to what they name: the term of use up to OS1 (who let me
+issue this), the subject down to the disc, evidence and status beside to HS1 and the
+status list. Each field is tagged **W3C** (a standard or draft used as written), **EBSI**
+(reused) or **VC4QI** (new here). Beside it, every link the chain uses, read from the signed credentials:
 the field and type, what it names (and that credential's type), who signs that about
 whom, and which credentials name it, from the law at the top to the study beside
 RM178. The five issuer rules follow, then folds: what W3C VCDM 2.0 says each field is

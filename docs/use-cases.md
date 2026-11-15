@@ -51,9 +51,10 @@ The [demonstrator](https://monavari.github.io/VC4QI/demo/#rm) runs exactly these
 in the browser with the same evaluator, and adds a tamper test and a withheld study. Its
 DCC, GS and DPP tabs do the same for the calibration and GS bindings, and the
 [GS story](https://monavari.github.io/VC4QI/demo/gs/) puts the GS chain on an actor board. The
-[RM story](https://monavari.github.io/VC4QI/demo/rm/) puts this chain on an actor board
-and adds a suspended accreditation, a revoked study, a verifier that does not trust the
-accreditation body, and certificates you sign yourself.
+[RM story](https://monavari.github.io/VC4QI/demo/rm/) draws this chain top to bottom and
+plays scenarios on it: verifiers with different roots, a suspended accreditation asked
+about today or at issuance, an expired certificate, a withdrawn study, an edited value,
+and certificates you sign yourself.
 
 For the accepted case the claim witnesses are the route `operational-scope`, D, O, A
 and the record `O#scope-as-m1`; support names D, S and H. An authorization-only request

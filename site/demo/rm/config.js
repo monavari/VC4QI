@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-// The RM story's configuration, shared by its two layouts: the actor board (index.html) and
-// the vertical lanes with an explainer (vertical.html). board.js documents every field.
+// The RM story's configuration, shared by its two layouts: the actor board (board.html) and
+// the vertical lanes with an explainer (index.html, the default). board.js documents every field.
 import { short } from '../board.js';
 
 // 997000 mg/kg reads as 997 g/kg, the way an annex writes it.
@@ -94,7 +94,7 @@ const RULES = [
   ['Evidence sits beside', 'A study supports a claim; it grants nothing.'],
   ['Each issuer keeps its status', 'Revocation and suspension are bits in the issuer’s own status lists, dated, kept so a past date can be asked about.'],
 ];
-const ORIGIN = { w3c: ['W3C', 'A W3C standard or draft, used as written'], ebsi: ['EBSI', 'Reused from EBSI'], ours: ['ours', 'New in this binding'] };
+const ORIGIN = { w3c: ['W3C', 'A W3C standard or draft, used as written'], ebsi: ['EBSI', 'Reused from EBSI'], ours: ['VC4QI', 'New in VC4QI'] };
 const org = (k, esc) => "<span class='org o-" + k + "' title='" + esc(ORIGIN[k][1]) + "'>" + ORIGIN[k][0] + '</span>';
 /**
  * The closing page: the whole chain on one wide graph, read from the signed credentials.
@@ -196,21 +196,43 @@ function taxonomy({ R, esc }) {
   const res = D.credentialSubject.materialPropertiesList[0].results[0], q = res.data.quantity;
   const status = [D.credentialStatus].flat()[0], tou = [D.termsOfUse].flat()[0], ev = [D.evidence].flat()[0];
   const c = t => '<code>' + esc(t) + '</code>';
-  const arm = (cls, field, title, value, origins) => "<div class='arm " + cls + "'><span class='fld'>" + c(field) + "</span><b>" + esc(title) + "</b><span class='val'>" + value + '</span>'
-    + "<span class='orgs'>" + origins.map(o => org(o, esc)).join('') + '</span></div>';
-  const anat = "<figure class='anat' aria-label='Certificate RM178 and its links'>"
-    + arm('up', 'termsOfUse', 'Who let me issue this', c(tou.type) + ' → ' + esc(CODES.O) + ', the producer’s operational scope', ['w3c', 'ours'])
-    + arm('left', 'credentialStatus', 'Is it still in force?', 'Bit ' + esc(status.statusListIndex) + ' of the producer’s ' + esc(status.statusPurpose) + ' list', ['w3c'])
-    + "<div class='vc'><div class='vchead'><span class='code'>" + esc(CODES.D178 ?? 'RM178') + '</span><b>RM certificate</b></div><dl>'
-    + '<dt>' + c('type') + '</dt><dd>' + c(typeOf(D)) + ' ' + org('ours', esc) + '</dd>'
-    + '<dt>' + c('issuer') + '</dt><dd>the RM producer</dd>'
-    + '<dt>' + c('validFrom') + '–' + c('validUntil') + '</dt><dd>' + esc(day(D.validFrom) + ' – ' + day(D.validUntil)) + '</dd>'
-    + '<dt>' + c('relatedResource') + '</dt><dd>' + (D.relatedResource ?? []).map(r => esc(codeOf(r.id))).join(', ') + ' pinned by sha384 digest</dd>'
-    + '<dt>' + c('proof') + '</dt><dd>' + c(D.proof.cryptosuite) + ' signature</dd></dl>'
-    + "<p class='orgs'>" + org('w3c', esc) + ' every field: VC Data Model 2.0, Data Integrity</p></div>'
-    + arm('right', 'evidence', 'What supports it', esc(codeOf(ev.id)) + ', the homogeneity study. It grants nothing', ['w3c'])
-    + arm('down', 'credentialSubject', 'What it is about', 'Disc lot 1: ' + esc(short(res.propertyIri) + ' = ' + q.value + ' ± ' + q.uncertainty.expandedUncertainty + ' ' + q.unit.ucumCode) + ', shaped after the DRMD', ['w3c', 'ours'])
-    + '</figure>';
+  const T = (x, y, text, cls = '', anchor = 'start') => "<text x='" + x + "' y='" + y + "' class='" + cls + "' text-anchor='" + anchor + "'>" + esc(text) + '</text>';
+  const line = d => "<path d='" + d + "' class='ln' marker-end='url(#an-arr)'/>";
+  // Another credential (or a thing), as a smaller box the credential's field points to.
+  const box = (x, y, w, h, code, name, sub, thing = false) => "<g class='node'><rect x='" + x + "' y='" + y + "' width='" + w + "' height='" + h + "' rx='" + (thing ? h / 2 : 8) + "' class='nb" + (thing ? ' plain' : '') + "'/>"
+    + (code ? "<rect x='" + (x + 12) + "' y='" + (y + 12) + "' width='" + (code.length * 9.2 + 12) + "' height='22' rx='5' class='chip'/>" + T(x + 18, y + 28, code, 'code') : '')
+    + T(code ? x + 24 + code.length * 9.2 + 12 : x + w / 2, y + 28, name, 'b', code ? 'start' : 'middle') + T(x + w / 2, y + 52, sub, 's', 'middle') + '</g>';
+  // RM178's fields, each a row; the four that link out leave the card toward what they name.
+  const X = 250, W = 390, Y = 150, row0 = Y + 72, step = 34, H = 380;
+  const pins = (D.relatedResource ?? []).map(r => codeOf(r.id) + ' ' + String(r.digestSRI).slice(7, 13) + '…').join(', ');
+  const fields = [
+    ['termsOfUse', tou.type + ' → ' + codeOf(tou.authorizationCredential.id), 'W3C · VC4QI type'],
+    ['type', typeOf(D), 'VC4QI'], ['issuer', 'the RM producer', 'W3C'], ['validFrom, validUntil', day(D.validFrom) + ' – ' + day(D.validUntil), 'W3C'],
+    ['evidence', ev.type + ' → ' + codeOf(ev.id), 'W3C'], ['credentialStatus', status.statusPurpose + ', bit ' + status.statusListIndex, 'W3C'],
+    ['relatedResource', pins, 'W3C'], ['proof', D.proof.cryptosuite, 'W3C'],
+    ['credentialSubject', 'disc lot 1: ' + short(res.propertyIri) + ' = ' + q.value + ' ± ' + q.uncertainty.expandedUncertainty + ' ' + q.unit.ucumCode, 'W3C · DRMD shape'],
+  ];
+  const rowY = i => row0 + i * step;
+  const ev_y = rowY(4) + 2, st_y = rowY(5) + 2, cx = X + 150;
+  const svgA = "<svg viewBox='0 0 870 650' role='img' aria-labelledby='an-t'><title id='an-t'>Certificate RM178: its fields, and the four that link to other credentials and to the disc</title>"
+    + "<defs><marker id='an-arr' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0 0 L10 5 L0 10 z' class='ah'/></marker></defs>"
+    + line('M' + cx + ' ' + Y + ' L' + cx + ' 88') + line('M' + (X + W) + ' ' + ev_y + ' L692 ' + ev_y) + line('M' + X + ' ' + st_y + ' L178 ' + st_y)
+    + line('M' + cx + ' ' + (Y + H) + ' L' + cx + ' 572')
+    + T(cx + 12, 112, 'termsOfUse · ' + tou.type, 'lf') + T(cx + 12, 132, 'who let me issue this', 'lm')
+    + T(cx + 12, 552, 'credentialSubject: what it is about', 'lf')
+    + T(778, ev_y + 58, 'evidence', 'lf', 'middle') + T(778, ev_y + 76, ev.type, 'lm', 'middle') + T(778, ev_y + 94, 'grants nothing', 'lm', 'middle')
+    + T(92, st_y + 58, 'credentialStatus', 'lf', 'middle') + T(92, st_y + 76, 'still in force?', 'lm', 'middle')
+    + box(cx - 100, 16, 200, 72, codeOf(tou.authorizationCredential.id), 'Operational scope', 'a credential: the RMP’s')
+    + box(694, ev_y - 36, 168, 72, codeOf(ev.id), 'Study', 'a credential: the LAB’s')
+    + box(8, st_y - 36, 168, 72, '', 'Status list', 'a credential: the RMP’s')
+    + box(cx - 100, 572, 200, 64, '', 'Disc lot 1', 'the material, a thing', true)
+    + "<g class='node'><rect x='" + X + "' y='" + Y + "' width='" + W + "' height='" + H + "' rx='12' class='nb claim'/>"
+    + "<rect x='" + (X + 16) + "' y='" + (Y + 16) + "' width='76' height='26' rx='5' class='chip'/>" + T(X + 24, Y + 34, codeOf(D.id), 'code') + T(X + 104, Y + 35, 'RM certificate', 'b')
+    + fields.map(([f, v, o], i) => T(X + 16, rowY(i), f, 'lf') + T(X + W - 14, rowY(i), o, 'org' + (o.startsWith('VC4QI') ? ' o-vc4qi' : ''), 'end')
+      + T(X + 16, rowY(i) + 16, v, 'rv')).join('')
+    + '</g></svg>';
+  const anat = "<figure class='credfig anat'>" + svgA
+    + "<figcaption>Every field is W3C’s (VC Data Model 2.0, Data Integrity); the types in two of them are VC4QI’s. Four fields link out: up to the grant, down to the subject, beside to evidence and status.</figcaption></figure>";
   const linkOrigin = { TrustFrameworkPolicy: 'ebsi', IssuedUnderPolicy: 'ours', RecognitionPolicy: 'ours', evidence: 'w3c' };
   const typeOrigin = t => t === 'VerifiableAuthorisationForTrustChain' ? 'ebsi' : t === 'RecognizedEntityCredential' ? 'w3c' : 'ours';
   const who = a => "<span class='pair'><span class='mono-badge sm'>" + esc(monoOf(a.actor)) + "</span> → " + (a.about === 'object' ? esc(a.aboutLabel) : "<span class='mono-badge sm'>" + esc(monoOf(a.about)) + '</span>') + '</span>';
@@ -227,8 +249,8 @@ function taxonomy({ R, esc }) {
   const parts = anatomyParts({ R, esc });
   return "<div class='taxo'><div class='taxocols'>" + anat
     + "<section class='linkset'><h3>What each link names in this chain</h3>" + table
-    + "<p class='orglegend'>" + org('w3c', esc) + ' a W3C standard or draft, used as written · ' + org('ebsi', esc) + ' reused from EBSI · ' + org('ours', esc) + ' new in this binding. '
-    + 'The two link types are ours; the field they sit in, and its purpose, are the standard’s (VCDM §5.5).</p></section></div>'
+    + "<p class='orglegend'>" + org('w3c', esc) + ' a W3C standard or draft, used as written · ' + org('ebsi', esc) + ' reused from EBSI · ' + org('ours', esc) + ' new in VC4QI. '
+    + 'The two link types are VC4QI’s; the field they sit in, and its purpose, are the standard’s (VCDM §5.5).</p></section></div>'
     + "<section class='rulesrow'><h3>Issuers follow five rules</h3>" + rulesHTML(esc)
     + "<p class='src'>After the chain is built, the verifier runs six checks on it, under its own profile.</p></section>"
     + "<details class='fold'><summary>What W3C says each field is for</summary>" + parts.table + '</details>'
