@@ -20,90 +20,170 @@
 *,*::before,*::after{ box-sizing:border-box; }
 html{ -webkit-text-size-adjust:100%; }
 body{ margin:0; background:var(--paper); color:var(--ink); font:16px/1.55 var(--sans); }
-main{ max-width:46rem; margin:0 auto; padding:1.25rem 16px 3rem; }
+.wrap{ max-width:72rem; margin:0 auto; padding:0 16px; }
+@media (min-width:48rem){ .wrap{ padding:0 2rem; } }
 a{ color:var(--link); text-underline-offset:3px; }
 :focus-visible{ outline:3px solid var(--cyan); outline-offset:2px; border-radius:4px; }
-.masthead{ display:flex; justify-content:space-between; align-items:baseline; gap:1rem; font-size:.82rem; color:var(--muted); border-bottom:1px solid var(--line); padding-bottom:.6rem; }
-.masthead strong{ color:var(--red); }
-h1{ font-size:clamp(1.6rem, 5vw, 2.2rem); line-height:1.15; margin:1.6rem 0 .5rem; }
-h1 span{ display:block; font-size:.5em; font-weight:500; color:var(--muted); margin-top:.35rem; }
-.lead{ font-size:1.05rem; margin:.6rem 0 0; }
-h2{ font-size:1.15rem; margin:2.2rem 0 .5rem; }
 p{ margin:.5rem 0; }
 .muted{ color:var(--muted); font-size:.92rem; }
-.demo{ display:grid; grid-template-columns:1fr auto; gap:1.2rem; align-items:center; margin-top:1.6rem; padding:1.1rem 1.2rem; border-radius:12px; background:var(--tcyan); border:2px solid var(--cyan); }
-.demo h2{ margin:0 0 .3rem; }
-.demo p{ margin:0 0 .8rem; font-size:.95rem; }
-.btn{ display:inline-block; background:var(--petrol); color:#fff; text-decoration:none; font-weight:650; padding:.55rem 1rem; border-radius:8px; }
+
+/* masthead */
+.masthead{ border-bottom:1px solid var(--line); font-size:.85rem; color:var(--muted); }
+.masthead .wrap{ display:flex; justify-content:space-between; align-items:center; gap:1rem; min-height:3rem; }
+.masthead strong{ color:var(--red); letter-spacing:.02em; }
+.masthead nav{ display:flex; gap:1.2rem; flex-wrap:wrap; }
+.masthead nav a{ color:var(--muted); text-decoration:none; }
+.masthead nav a:hover{ color:var(--link); text-decoration:underline; }
+
+/* hero */
+.hero{ display:grid; gap:2rem; align-items:center; padding:2.4rem 0 2rem; }
+@media (min-width:56rem){ .hero{ grid-template-columns:minmax(0,1fr) auto; gap:3rem; padding:3.5rem 0 2.5rem; } }
+h1{ font-size:clamp(2rem, 5vw, 3rem); line-height:1.1; margin:0; letter-spacing:-.01em; }
+h1 span{ display:block; font-size:.42em; font-weight:500; color:var(--muted); margin-top:.5rem; letter-spacing:0; }
+.lead{ font-size:clamp(1.05rem, 1.6vw, 1.2rem); margin:1.1rem 0 0; max-width:42rem; }
+.hero .muted{ max-width:42rem; }
+.actions{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:1.4rem; }
+.btn{ display:inline-block; background:var(--petrol); color:#fff; text-decoration:none; font-weight:650; padding:.65rem 1.15rem; border-radius:8px; border:2px solid var(--petrol); }
 .btn:hover{ filter:brightness(1.1); }
-.btn + .btn{ margin:.4rem 0 0 .4rem; }
-.qr{ width:8.5rem; background:#fff; border-radius:8px; padding:.25rem; display:block; }
-.qr + small{ display:block; text-align:center; font-size:.72rem; color:var(--muted); margin-top:.25rem; }
-@media (max-width:34rem){ .demo{ grid-template-columns:1fr; } .demo figure{ display:none; } }
-figure{ margin:0; }
-.cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(13rem, 1fr)); gap:.7rem; }
-.card{ background:var(--wash); border-radius:10px; padding:.8rem .9rem; }
+.btn.ghost{ background:transparent; color:var(--link); }
+.scan{ display:none; }
+@media (min-width:56rem){
+  .scan{ display:block; margin:0; padding:1.1rem 1.1rem .8rem; background:var(--tcyan); border:2px solid var(--cyan); border-radius:14px; text-align:center; }
+}
+.scan img{ width:11rem; height:11rem; display:block; background:#fff; border-radius:8px; padding:.3rem; }
+.scan figcaption{ font-size:.82rem; color:var(--muted); margin-top:.5rem; }
+.scan figcaption b{ display:block; color:var(--ink); font-size:.9rem; }
+
+/* sections */
+section{ padding:2rem 0; border-top:1px solid var(--line); }
+h2{ font-size:1.3rem; margin:0 0 .3rem; }
+.intro{ margin:0 0 1.1rem; color:var(--muted); max-width:46rem; }
+
+/* try it */
+.try{ display:grid; gap:1rem; grid-template-columns:repeat(auto-fit, minmax(17rem, 1fr)); }
+.tile{ display:flex; flex-direction:column; gap:.4rem; padding:1.1rem 1.2rem 1rem; border-radius:12px; background:var(--wash); color:var(--ink); text-decoration:none; border:2px solid transparent; }
+.tile:hover{ border-color:var(--cyan); background:var(--tcyan); }
+.tile .tag{ font-size:.74rem; font-weight:650; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.tile b{ font-size:1.1rem; }
+.tile p{ margin:0; font-size:.94rem; color:var(--muted); flex:1; }
+.tile .go{ margin-top:.5rem; font-weight:650; color:var(--link); }
+.tile.main{ background:var(--tcyan); border-color:var(--cyan); }
+
+/* questions */
+.cards{ display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit, minmax(10.5rem, 1fr)); }
+.card{ background:var(--wash); border-radius:10px; padding:.85rem .95rem; }
 .card b{ display:block; margin-bottom:.2rem; }
 .card p{ margin:0; font-size:.9rem; color:var(--muted); }
-.status{ border-left:4px solid var(--petrol); padding:.2rem 0 .2rem .9rem; }
-ul.links{ list-style:none; padding:0; margin:.4rem 0 0; }
-ul.links li{ padding:.35rem 0; border-bottom:1px solid var(--line); }
+.note{ margin-top:.9rem; }
+
+/* status and links */
+.two{ display:grid; gap:2rem; }
+@media (min-width:56rem){ .two{ grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:3rem; } }
+.status{ border-left:4px solid var(--petrol); padding:.1rem 0 .1rem 1rem; margin-top:.6rem; }
+ul.links{ list-style:none; padding:0; margin:.6rem 0 0; }
+ul.links li{ padding:.45rem 0; border-bottom:1px solid var(--line); }
+ul.links li:first-child{ border-top:1px solid var(--line); }
 ul.links li span{ display:block; font-size:.85rem; color:var(--muted); }
 code{ font:.88em var(--mono); }
-footer{ margin-top:2.6rem; border-top:1px solid var(--line); padding-top:1rem; font-size:.84rem; color:var(--muted); }
-footer p{ margin:.35rem 0; }
+
+footer{ border-top:1px solid var(--line); padding:1.2rem 0 2.5rem; font-size:.84rem; color:var(--muted); }
+footer .wrap{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:.4rem 2rem; }
+footer p{ margin:0; }
 </style>
 </head>
 <body>
-<main>
-  <div class="masthead"><span><strong>VC4QI</strong></span><span>Research software</span></div>
+<header class="masthead">
+  <div class="wrap">
+    <strong>VC4QI</strong>
+    <nav aria-label="Site">
+      <a href="demo/rm/">Demonstrator</a>
+      <a href="docs/index.html">Documentation</a>
+      <a href="https://github.com/monavari/VC4QI">GitHub</a>
+    </nav>
+  </div>
+</header>
 
-  <h1>VC4QI<span>Verifiable Credentials for Quality Infrastructure</span></h1>
-  <p class="lead">Accreditation certificates, operational scopes, calibration and reference-material certificates can be issued as W3C Verifiable Credentials. VC4QI asks what a verifier may actually rely on when it receives them.</p>
-  <p class="muted">Credentials represent institutional authority and evidence. They do not create it. The verifier selects the profile and decides which answers it needs.</p>
-
-  <section class="demo" aria-labelledby="h-demo">
+<main class="wrap">
+  <div class="hero">
     <div>
-      <h2 id="h-demo">Try it: the demonstrator</h2>
-      <p>Four examples, one top bar: a certified reference material (M375a), calibration certificates (DCC), a GS certificate and an experimental product passport. Your browser runs the repository's own reliance evaluators on signed test credentials and answers six questions: authentic, current, understood, authorized, supported and fit for use. Switch the case or the verifier, tamper with a credential or withhold one, and watch the answer change. The RM and GS stories put a chain on an actor board, one column per party, where you can suspend, revoke or certify a value yourself.</p>
-      <a class="btn" href="demo/">Open the demonstrator</a> <a class="btn" href="demo/rm/">RM story</a> <a class="btn" href="demo/gs/">GS story</a>
+      <h1>VC4QI<span>Verifiable Credentials for Quality Infrastructure</span></h1>
+      <p class="lead">Accreditation certificates, operational scopes, calibration and reference-material certificates can be issued as W3C Verifiable Credentials. VC4QI asks what a verifier may actually rely on when it receives them.</p>
+      <p class="muted">Credentials represent institutional authority and evidence. They do not create it. The verifier selects the profile and decides which answers it needs.</p>
+      <div class="actions">
+        <a class="btn" href="demo/rm/">Open the demonstrator</a>
+        <a class="btn ghost" href="docs/index.html">Read the documentation</a>
+      </div>
     </div>
-    <figure>
-      <img class="qr" src="assets/qr-m375a.svg" alt="QR code linking to monavari.github.io/VC4QI/m375a/" width="136" height="136">
-      <small>Scan to open on a phone</small>
+    <figure class="scan">
+      <img src="assets/qr-demo.svg" alt="QR code linking to monavari.github.io/VC4QI/demo/rm/" width="176" height="176">
+      <figcaption><b>Scan to open the demonstrator</b>monavari.github.io/VC4QI/demo/rm/</figcaption>
     </figure>
+  </div>
+
+  <section aria-labelledby="h-try">
+    <h2 id="h-try">Try it</h2>
+    <p class="intro">Everything runs in your browser: the repository's own evaluators on signed test credentials, with no server and nothing fetched.</p>
+    <div class="try">
+      <a class="tile main" href="demo/rm/">
+        <span class="tag">Story</span>
+        <b>Reference material, top to bottom</b>
+        <p>From the state and Global ACI through the accreditation body to one certified value. Suspend an accreditation, withdraw the study or edit a value, and choose whom the verifier trusts.</p>
+        <span class="go">Open the RM story →</span>
+      </a>
+      <a class="tile" href="demo/gs/">
+        <span class="tag">Story</span>
+        <b>GS mark to product passport</b>
+        <p>The GS body, its test reports and the certificate behind a mark in a product passport. Revoke the body's authority, withdraw the certificate or edit the serial, and see what still holds.</p>
+        <span class="go">Open the GS story →</span>
+      </a>
+      <a class="tile" href="demo/#rm">
+        <span class="tag">Examples</span>
+        <b>Four cases, one verifier</b>
+        <p>A certified reference material (M375a), calibration certificates (DCC), a GS certificate and a product passport. Switch the verifier, tamper with a credential or leave one out, and watch the six answers change.</p>
+        <span class="go">Open the examples →</span>
+      </a>
+    </div>
   </section>
 
-  <h2>The questions a verifier asks</h2>
-  <div class="cards">
-    <div class="card"><b>Authentic?</b><p>Signed by the issuer and unchanged since.</p></div>
-    <div class="card"><b>Valid?</b><p>Inside its validity period and not revoked.</p></div>
-    <div class="card"><b>Understood?</b><p>Units and identifiers follow the verifier's profile.</p></div>
-    <div class="card"><b>Authorized?</b><p>The issuer may make this claim: an accreditation chain covers it.</p></div>
-    <div class="card"><b>Supported?</b><p>Required studies exist and come from their own authority.</p></div>
-    <div class="card"><b>Fit for use?</b><p>The value meets the verifier's own requirement.</p></div>
-  </div>
-  <p class="muted">Each answer is yes, no or cannot tell. "Cannot tell" never counts as yes, and "authorized" is a separate question from "fit for use".</p>
+  <section aria-labelledby="h-q">
+    <h2 id="h-q">The questions a verifier asks</h2>
+    <p class="intro">Each answer is yes, no or cannot tell. "Cannot tell" never counts as yes, and "authorized" is a separate question from "fit for use".</p>
+    <div class="cards">
+      <div class="card"><b>Authentic?</b><p>Signed by the issuer and unchanged since.</p></div>
+      <div class="card"><b>Valid?</b><p>Inside its validity period and not revoked.</p></div>
+      <div class="card"><b>Understood?</b><p>Values, units and identifiers follow the verifier's profile.</p></div>
+      <div class="card"><b>Authorized?</b><p>The issuer may make this claim: an accreditation chain covers it.</p></div>
+      <div class="card"><b>Supported?</b><p>Required studies exist and come from their own authority.</p></div>
+      <div class="card"><b>Fit for use?</b><p>The value meets the verifier's own requirement.</p></div>
+    </div>
+  </section>
 
-  <h2>Project status</h2>
-  <div class="status">
-    <p>VC4QI is research software: a TypeScript reference library with a Python mirror, a browser demo and signed example credentials. Its standards-first evaluator now decides requests for reference materials, calibration certificates, statutory metrology, test reports and GS certification on signed test credentials. The library's default entry point still uses the earlier model until the planned API switch.</p>
-    <p class="muted">The M375a page runs the repository's complete evaluator in your browser, with no server: signatures, integrity, validity and status, then authority, scope, the required study and the verifier's decision rule. The accreditation body, laboratory, operational scope, methods and keys are fictional fixtures. No production service, accreditation infrastructure or external endorsement is claimed.</p>
-  </div>
+  <section class="two">
+    <div>
+      <h2 id="h-status">Project status</h2>
+      <div class="status">
+        <p>VC4QI is research software: a TypeScript reference library with a Python mirror, a browser demonstrator and signed example credentials. Its standards-first evaluator decides requests for reference materials, calibration certificates, statutory metrology, test reports and GS certification, and every measured value is a PTB D-SI real.</p>
+        <p class="muted">The accreditation bodies, laboratories, scopes, methods and keys are fictional fixtures. No production service, accreditation infrastructure or external endorsement is claimed.</p>
+      </div>
+    </div>
+    <div>
+      <h2 id="h-more">Read more</h2>
+      <ul class="links">
+        <li><a href="docs/index.html">Documentation</a><span>Overview, reliance model, use cases, API and architecture</span></li>
+        <li><a href="docs/model.html">Reliance model</a><span>The rules a verifier applies before relying on a credential</span></li>
+        <li><a href="docs/status.html">Status</a><span>What runs today, the acceptance ledger and open issues</span></li>
+        <li><a href="https://github.com/monavari/VC4QI">Source code on GitHub</a><span>Code under Apache-2.0, documentation under CC BY 4.0</span></li>
+        <li><a href="https://github.com/monavari/VC4QI/blob/main/CITATION.cff">How to cite</a><span>Citation metadata for the software</span></li>
+      </ul>
+    </div>
+  </section>
+</main>
 
-  <h2>Read more</h2>
-  <ul class="links">
-    <li><a href="docs/index.html">Documentation</a><span>Overview, reliance model, use cases, API and architecture</span></li>
-    <li><a href="docs/model.html">Reliance model</a><span>The rules a verifier applies before relying on a credential</span></li>
-    <li><a href="docs/status.html">Status</a><span>What runs today, the acceptance ledger and open issues</span></li>
-    <li><a href="https://github.com/monavari/VC4QI">Source code on GitHub</a><span>Code under Apache-2.0, documentation under CC BY 4.0</span></li>
-    <li><a href="https://github.com/monavari/VC4QI/blob/main/CITATION.cff">How to cite</a><span>Citation metadata for the software</span></li>
-  </ul>
-
-  <footer>
+<footer>
+  <div class="wrap">
     <p>Mehran Monavari · <a href="https://github.com/monavari/VC4QI">github.com/monavari/VC4QI</a></p>
     <p>This site is static. It sets no cookies and loads nothing from third parties.</p>
-  </footer>
-</main>
+  </div>
+</footer>
 </body>
 </html>

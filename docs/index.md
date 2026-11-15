@@ -26,10 +26,11 @@ the design is as it is.
 
 ## Try it
 
-The [demonstrator](https://monavari.github.io/VC4QI/demo/) runs the repository's evaluators in your browser on
-signed test credentials. It offers four examples: a reference material (RM), calibration
-certificates (DCC), a GS certificate and an experimental product passport (DPP). The
-[RM story](https://monavari.github.io/VC4QI/demo/rm/) opens with one credential and
+The [demonstrator](https://monavari.github.io/VC4QI/demo/) runs the repository's
+evaluators in your browser on signed test credentials and opens on the RM story. Its
+[examples page](https://monavari.github.io/VC4QI/demo/#rm) offers four examples: a
+reference material (RM), calibration certificates (DCC), a GS certificate and an
+experimental product passport (DPP). The [RM story](https://monavari.github.io/VC4QI/demo/rm/) opens with one credential and
 its links, builds the chain by five issuer rules in lanes of authority, introduces the
 verifier's profile and its six checks, then plays scenarios grouped by the question the
 verifier asks; an explainer opens for each credential, link and check. The
