@@ -29,20 +29,20 @@ fixtures, or is marked as not evaluated.
    accreditation body, leaving out a study with the holder, the decision rule with the
    verifier: in the actor's column on the board, under the actor's monogram in the left
    column of the vertical layout. Where one clicks says who may do what.
-8. **Detail folds.** A step shows a one-line title and one sentence; the rest opens under
+6. **Detail folds.** A step shows a one-line title and one sentence; the rest opens under
    "More", over the board. Explainers open only what a credential says; links, envelope,
    checks and bytes fold, and what the reader opened stays open from step to step.
-6. **Nothing simulated, and "not evaluated" is said.** Placeholders have their own look
+7. **Nothing simulated, and "not evaluated" is said.** Placeholders have their own look
    and never borrow a state colour.
-7. **Plain words first, terms second.** The page says *signed by*, *is about*, *held by*,
+8. **Plain words first, terms second.** The page says *signed by*, *is about*, *held by*,
    *cites*. The terms (issuer, credentialSubject, holder, termsOfUse, evidence) appear
    small underneath and in the signed bytes.
-8. **Readable from the back of the room.** Presenting targets are 1920×1080 and
+9. **Readable from the back of the room.** Presenting targets are 1920×1080 and
    1280×720. At 1920×1080 a whole step fits without scrolling; at 1280×720 the step,
    the verdict and the first row of credentials do, and the rest scrolls. Text meets
    WCAG AA contrast.
    Phones get a full reading layout, one column, but are not the presenting layout.
-9. **Motion only for handover.** A credential moving from issuer to holder may animate
+10. **Motion only for handover.** A credential moving from issuer to holder may animate
    for about 300 ms. Nothing else moves, and `prefers-reduced-motion` turns it off.
    Nothing moves between steps either: on wide screens the step header, the columns and
    every credential keep their place from step to step, so a step changes what is shown,
