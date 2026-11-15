@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://vc4qi.example/schemas/rm/1/accreditation.json",
-  "title": "RM producer accreditation (A)",
+  "$id": "https://vc4qi.example/schemas/rm/1/rmp-accreditation.json",
+  "title": "Accreditation of a reference material producer (ISO 17034)",
   "description": "Experimental VC4QI RM binding v1 fixture schema. Not an external standard.",
   "type": "object",
   "required": [
@@ -29,7 +29,7 @@
     "type": {
       "const": [
         "VerifiableCredential",
-        "RmAccreditation"
+        "RmpAccreditation"
       ]
     },
     "issuer": {
@@ -86,7 +86,7 @@
       ],
       "properties": {
         "id": {
-          "const": "https://vc4qi.example/schemas/rm/1/accreditation.json"
+          "const": "https://vc4qi.example/schemas/rm/1/rmp-accreditation.json"
         },
         "type": {
           "const": "JsonSchema"
@@ -208,29 +208,21 @@
           {
             "type": "object",
             "required": [
+              "id",
               "type",
-              "authorizationCredential"
+              "digestSRI"
             ],
             "properties": {
+              "id": {
+                "type": "string",
+                "format": "uri"
+              },
               "type": {
                 "const": "IssuedUnderPolicy"
               },
-              "authorizationCredential": {
-                "type": "object",
-                "required": [
-                  "id",
-                  "type"
-                ],
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "format": "uri"
-                  },
-                  "type": {
-                    "const": "VerifiableAuthorisationForTrustChain"
-                  }
-                },
-                "additionalProperties": false
+              "digestSRI": {
+                "type": "string",
+                "pattern": "^sha384-[A-Za-z0-9+/]{64}$"
               }
             },
             "additionalProperties": false
@@ -238,57 +230,26 @@
           {
             "type": "object",
             "required": [
+              "id",
               "type",
-              "recognitionCredential"
+              "digestSRI"
             ],
             "properties": {
+              "id": {
+                "type": "string",
+                "format": "uri"
+              },
               "type": {
                 "const": "RecognitionPolicy"
               },
-              "recognitionCredential": {
-                "type": "object",
-                "required": [
-                  "id",
-                  "type"
-                ],
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "format": "uri"
-                  },
-                  "type": {
-                    "const": "RecognizedEntityCredential"
-                  }
-                },
-                "additionalProperties": false
+              "digestSRI": {
+                "type": "string",
+                "pattern": "^sha384-[A-Za-z0-9+/]{64}$"
               }
             },
             "additionalProperties": false
           }
         ]
-      }
-    },
-    "relatedResource": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "type": "object",
-        "required": [
-          "id",
-          "digestSRI"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uri"
-          },
-          "digestSRI": {
-            "type": "string",
-            "pattern": "^sha384-[A-Za-z0-9+/]{64}$"
-          }
-        },
-        "additionalProperties": false
       }
     },
     "credentialStatus": {
@@ -412,10 +373,5 @@
       "additionalProperties": false
     }
   },
-  "additionalProperties": false,
-  "dependentRequired": {
-    "termsOfUse": [
-      "relatedResource"
-    ]
-  }
+  "additionalProperties": false
 }

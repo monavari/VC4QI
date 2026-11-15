@@ -30,7 +30,7 @@ function requestFor(
 const CASES = [
   {
     binding: 'rm-v1', profile: 'rm-verifier-1', direct: evaluateRmSlice,
-    target: 'https://producer.vc4qi.example/credentials/D178',
+    target: 'https://producer.vc4qi.example/credentials/RM178',
     claims: [{ id: 'as', sourcePointer: '/credentialSubject/materialPropertiesList/0/results/0' }], supplied: [],
   },
   {

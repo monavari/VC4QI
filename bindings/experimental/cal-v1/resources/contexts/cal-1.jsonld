@@ -13,8 +13,6 @@
     "CalTestReport": "cal:CalTestReport",
     "CalCalibrationReference": "cal:CalCalibrationReference",
     "IssuedUnderPolicy": "chain:IssuedUnderPolicy",
-
-    "authorizationCredential": "chain:authorizationCredential",
     "permittedActivity": {"@id": "cal:permittedActivity", "@type": "@id", "@container": "@set"},
     "scope": {"@id": "cal:scope", "@container": "@set"},
     "quantityKindIri": {"@id": "cal:quantityKind", "@type": "@id"},

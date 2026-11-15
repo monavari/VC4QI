@@ -14,8 +14,8 @@ import {
 
 type Result = Awaited<ReturnType<typeof evaluateRmSlice>>['result'];
 const RM = 'https://vc4qi.example/bindings/rm/1#';
-const D197 = 'https://producer.vc4qi.example/credentials/D197';
-const D520 = 'https://producer.vc4qi.example/credentials/D520';
+const D197 = 'https://producer.vc4qi.example/credentials/RM197';
+const D520 = 'https://producer.vc4qi.example/credentials/RM520';
 const RESULT = '/credentialSubject/materialPropertiesList/0/results/0';
 
 const run = (overrides: Record<string, string | null> = {}, req = request(), p = profile) =>

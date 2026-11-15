@@ -4,34 +4,21 @@
   "title": "IssuedUnderPolicy entry in termsOfUse: issued exercising the named grant",
   "type": "object",
   "required": [
+    "id",
     "type",
-    "authorizationCredential"
+    "digestSRI"
   ],
   "properties": {
+    "id": {
+      "type": "string",
+      "format": "uri"
+    },
     "type": {
       "const": "IssuedUnderPolicy"
     },
-    "authorizationCredential": {
-      "type": "object",
-      "required": [
-        "id",
-        "type"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uri"
-        },
-        "type": {
-          "enum": [
-            "RmAccreditation",
-            "RmOperationalScope",
-            "RmLabAuthority",
-            "VerifiableAuthorisationForTrustChain"
-          ]
-        }
-      },
-      "additionalProperties": false
+    "digestSRI": {
+      "type": "string",
+      "pattern": "^sha384-[A-Za-z0-9+/]{64}$"
     }
   },
   "additionalProperties": false

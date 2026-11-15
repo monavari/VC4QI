@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+- **A link is one entry, with its digest on it (all bindings).** Every upward link is a
+  `termsOfUse` entry whose `id` is the credential it names, whose `type` says what it
+  means (`IssuedUnderPolicy`, `RecognitionPolicy`) and whose `digestSRI` pins that
+  credential's exact bytes; evidence entries carry their digest the same way (VCDM 2.0
+  §5.3: any object with an `id` MAY carry integrity information; EBSI's
+  `IssuanceCertificate` names the issuer's accreditation by `id` too). The nested
+  `authorizationCredential` and `recognitionCredential` objects and the separate
+  `relatedResource` list are gone. A route now selects its grant by the type of the
+  credential an entry names, not by a declared type; a named credential that cannot be
+  read leaves it not established. Contexts, schemas, manifests, generators, both
+  evaluators and their tests follow, and all three bindings' fixtures are re-signed.
+  Every example verdict is unchanged.
+- **RM credentials named in ISO terms, with self-explanatory codes.** `RmAccreditation` is
+  `RmpAccreditation` (ISO 17034), `RmLabAuthority` is `LabAccreditation` (ISO/IEC 17025),
+  `RmOperationalScope` is `FlexibleScopeList` (the producer's list of activities under a
+  flexible scope, ISO/IEC 17011 and EA-2/15), `RmStudy` is `HomogeneityStudy`. Each
+  credential's id ends in a code that says what it is and of whom: APP-NAB, REC-NAB,
+  ACC-RMP, ACC-RMP-2, ACC-LAB, LIST-RMP, HOM-LOT1, RM178/197/520. Every credential carries a
+  `name` and a `description`, and the demo reads codes and card names from the
+  credentials. ACC-LAB gains a suspension entry, like ACC-RMP.
 - **The RM demonstrator, reordered around its argument.** It opens with one credential
   (RM178) and its links, each part tagged W3C, EBSI or ours, beside every link type the
   chain uses with who signs what it names about whom. Build steps name what they map and

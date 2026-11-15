@@ -30,7 +30,32 @@ from .test_rm_v1_slice import (
     request,
     resign,
     serialize,
+    text,
 )
+
+
+def link(uri: str, kind: str = "IssuedUnderPolicy") -> dict[str, Any]:
+    """A link to `uri` as signed today: a termsOfUse entry with its digest."""
+    return {"id": uri, "type": kind, "digestSRI": sha384_sri(text(uri).encode("utf-8"))}
+
+
+def repin(document: dict[str, Any], overrides: dict[str, str | None]) -> bool:
+    """Update the digest on each link to a re-issued credential."""
+    changed = False
+    for field in ("termsOfUse", "evidence"):
+        entries = document.get(field)
+        if not isinstance(entries, list):
+            continue
+        updated = []
+        for entry in entries:
+            replacement = overrides.get(entry.get("id"))
+            if isinstance(replacement, str) and "digestSRI" in entry:
+                entry = {**entry, "digestSRI": sha384_sri(replacement.encode("utf-8"))}
+                changed = True
+            updated.append(entry)
+        document[field] = updated
+    return changed
+
 
 KEY = {
     "https://nab.vc4qi.example/controller": "nab",
@@ -69,15 +94,8 @@ def reissue(
         if uri == URI["D"] and edit_d is not None:
             edit_d(document)
             dirty = True
-        refs = []
-        for ref in document.get("relatedResource", []):
-            replacement = overrides.get(ref["id"])
-            if isinstance(replacement, str):
-                dirty = True
-                ref = {**ref, "digestSRI": sha384_sri(replacement.encode("utf-8"))}
-            refs.append(ref)
-        if refs:
-            document["relatedResource"] = refs
+        if repin(document, overrides):
+            dirty = True
         if dirty:
             overrides[uri] = sign(document)
     return overrides
@@ -136,7 +154,7 @@ def test_p06_accreditation_naming_another_grantee() -> None:
     assert all(
         t.state == "established"
         for t in result.trace
-        if t.predicate == "related-resource-integrity"
+        if t.predicate == "link-integrity"
     )
     assert basis(result, "accreditation-grantee").state == "contradicted"
     assert result.decision == "reject"
@@ -218,7 +236,7 @@ def test_v07_unrelated_credential_confers_nothing() -> None:
                 URI["O"],
                 URI["S"],
                 URI["H"],
-                "https://producer.vc4qi.example/credentials/D197",
+                "https://producer.vc4qi.example/credentials/RM197",
             )
         )
     )
@@ -392,12 +410,7 @@ def citing_a2(
     changed: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, str | None]:
     def add(d: dict[str, Any]) -> None:
-        d["termsOfUse"].append(
-            {
-                "type": "IssuedUnderPolicy",
-                "authorizationCredential": {"id": URI["A2"], "type": "RmAccreditation"},
-            }
-        )
+        d["termsOfUse"].append(link(URI["A2"]))
 
     return reissue(changed or {}, add)
 
@@ -481,7 +494,7 @@ def test_c06_suspension_cannot_be_bypassed_by_another_route() -> None:
     assert entry(result, "route:operational-scope").state == "established"
     restriction = entry(result, "restriction:accreditation-suspension")
     assert restriction.state == "contradicted"
-    assert "A2: Suspended" in restriction.reason
+    assert "ACC-RMP-2: Suspended" in restriction.reason
     assert entry(result, "authority").state == "contradicted"
     assert result.decision == "reject"
 
@@ -517,60 +530,66 @@ def test_unreadable_suspension_status_never_holds() -> None:
     assert entry(result, "authority").state == "not_established"
 
 
-def test_reference_type_mismatch_is_contradicted() -> None:
+def test_entry_naming_another_type_gives_the_route_nothing() -> None:
+    # D's IssuedUnderPolicy names A2, an accreditation, where the route wants a
+    # scope list.
     def retarget(d: dict[str, Any]) -> None:
-        d["termsOfUse"][0]["authorizationCredential"]["id"] = URI["A2"]
+        d["termsOfUse"] = [link(URI["A2"])]
 
     supplied = (URI["A"], URI["O"], URI["S"], URI["H"], URI["A2"])
     result = run(reissue({}, retarget), request(supplied_evidence=supplied))
     reference = basis(result, "authorizing-reference")
-    assert reference.state == "contradicted"
-    assert "declares RmOperationalScope" in reference.reason
+    assert reference.state == "not_established"
+    assert "references a FlexibleScopeList" in reference.reason
 
 
 # --- C12-C15 and V06: cycles, shared nodes, roles, provenance ----------------------
 
 
 def policy_for(uri: str, kind: str) -> dict[str, Any]:
-    return {
-        "type": "IssuedUnderPolicy",
-        "authorizationCredential": {"id": uri, "type": kind},
-    }
+    # A link is selected by the type of the credential it names, so these cycles cannot
+    # close: D (a certificate) is never taken for a grant of `kind`.
+    del kind
+    return link(uri)
 
 
 def test_c12_authorization_cycle_is_not_accepted() -> None:
     o = doc(URI["O"])
-    o["termsOfUse"] = [policy_for(URI["D"], "RmAccreditation")]
+    o["termsOfUse"] = [policy_for(URI["D"], "RmpAccreditation")]
     result = run(reissue({URI["O"]: o}))
     grant = basis(result, "maintenance-grant")
     assert grant.state == "not_established"
-    assert "Circular authorization" in grant.reason
+    assert "Circular authorization" in grant.reason or "references a" in grant.reason
     assert entry(result, "authority").state == "not_established"
     assert result.decision != "accept"
 
 
 def test_c12_self_reference_is_not_accepted() -> None:
     def cite_self(d: dict[str, Any]) -> None:
-        d["termsOfUse"] = [policy_for(URI["D"], "RmOperationalScope")]
+        d["termsOfUse"] = [policy_for(URI["D"], "FlexibleScopeList")]
 
     result = run(reissue({}, cite_self))
-    assert "Circular authorization" in basis(result, "authorizing-reference").reason
+    reason = basis(result, "authorizing-reference").reason
+    assert "Circular authorization" in reason or "references a" in reason
     assert entry(result, "authority").state == "not_established"
 
 
 def test_c12_mixed_cycle_is_not_accepted() -> None:
     s = doc(URI["S"])
-    s["termsOfUse"] = [policy_for(URI["D"], "RmLabAuthority")]
+    s["termsOfUse"] = [policy_for(URI["D"], "LabAccreditation")]
     result = run(reissue({URI["S"]: s}))
     reference = support(result, "laboratory-authority-reference")
-    assert "Circular authorization" in reference.reason
+    assert (
+        "Circular authorization" in reference.reason
+        or "references a" in reference.reason
+    )
     assert result.support[0].state == "not_established"
     assert result.decision != "accept"
 
 
 def test_c13_shared_accreditation_is_reused_not_a_cycle() -> None:
     def cite_a(d: dict[str, Any]) -> None:
-        d["termsOfUse"].append(policy_for(URI["A"], "RmAccreditation"))
+        d["termsOfUse"].append(policy_for(URI["A"], "RmpAccreditation"))
 
     result = two_routes(reissue({}, cite_a))
     assert entry(result, "route:operational-scope").state == "established"
@@ -582,10 +601,10 @@ def test_c13_shared_accreditation_is_reused_not_a_cycle() -> None:
 
 def test_c14_same_credential_in_two_roles_is_checked_per_role() -> None:
     o = doc(URI["O"])
-    o["termsOfUse"] = [policy_for(URI["A2"], "RmAccreditation")]
+    o["termsOfUse"] = [policy_for(URI["A2"], "RmpAccreditation")]
 
     def cite_a2(d: dict[str, Any]) -> None:
-        d["termsOfUse"].append(policy_for(URI["A2"], "RmAccreditation"))
+        d["termsOfUse"].append(policy_for(URI["A2"], "RmpAccreditation"))
 
     overrides = reissue({URI["O"]: o}, cite_a2)
     req = request(
@@ -602,8 +621,8 @@ def test_c14_same_credential_in_two_roles_is_checked_per_role() -> None:
 def test_c15_unused_reference_cycle_changes_nothing() -> None:
     d197, d520 = URI["D197"], URI["D520"]
     x, y = doc(d197), doc(d520)
-    x["termsOfUse"] = [policy_for(d520, "RmOperationalScope")]
-    y["termsOfUse"] = [policy_for(d197, "RmOperationalScope")]
+    x["termsOfUse"] = [policy_for(d520, "FlexibleScopeList")]
+    y["termsOfUse"] = [policy_for(d197, "FlexibleScopeList")]
     baseline = run()
     supplied = (URI["A"], URI["O"], URI["S"], URI["H"], d197, d520)
     result = run({d197: sign(x), d520: sign(y)}, request(supplied_evidence=supplied))

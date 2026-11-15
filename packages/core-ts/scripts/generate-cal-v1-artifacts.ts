@@ -144,8 +144,7 @@ async function main() {
           results: [{ value: '5', unit: 'MPa', expandedUncertainty: '0.002', coverageFactor: '2' }] },
       ],
     },
-    termsOfUse: [{ type: 'IssuedUnderPolicy', authorizationCredential: { id: CA_ID, type: 'CalAccreditation' } }],
-    relatedResource: [{ id: CA_ID, digestSRI: sha384SRI(new TextEncoder().encode(caText)) }],
+    termsOfUse: [{ id: CA_ID, type: 'IssuedUnderPolicy', digestSRI: sha384SRI(new TextEncoder().encode(caText)) }],
   }, lab, '2026-01-15T00:00:00Z')));
 
   // calibration-capability: the laboratory maintains a bounded operational scope within CA.
@@ -162,8 +161,7 @@ async function main() {
         cmcFloor: { value: '0.8', unit: 'kPa' },
       }],
     },
-    termsOfUse: [{ type: 'IssuedUnderPolicy', authorizationCredential: { id: CA_ID, type: 'CalAccreditation' } }],
-    relatedResource: [{ id: CA_ID, digestSRI: sha384SRI(new TextEncoder().encode(caText)) }],
+    termsOfUse: [{ id: CA_ID, type: 'IssuedUnderPolicy', digestSRI: sha384SRI(new TextEncoder().encode(caText)) }],
   }, lab, '2025-06-01T00:00:00Z')));
   record(DCC2_ID, 'credentials/DCC-2.json', 'application/vc', serialize(await sign({
     ...envelope(DCC2_ID, 'CalCertificate', 'certificate.json', LAB, '2026-03-02T00:00:00Z', '2028-03-02T00:00:00Z'),
@@ -175,8 +173,7 @@ async function main() {
           results: [{ value: '1000', unit: 'kPa', expandedUncertainty: '0.9', coverageFactor: '2' }] },
       ],
     },
-    termsOfUse: [{ type: 'IssuedUnderPolicy', authorizationCredential: { id: O_ID, type: 'CalOperationalScope' } }],
-    relatedResource: [{ id: O_ID, digestSRI: sha384SRI(new TextEncoder().encode(oText)) }],
+    termsOfUse: [{ id: O_ID, type: 'IssuedUnderPolicy', digestSRI: sha384SRI(new TextEncoder().encode(oText)) }],
   }, lab, '2026-03-02T00:00:00Z')));
 
   // nmi-legal-mandate: a statutory route with no accreditation root. Fictional; no legal effect.
@@ -204,8 +201,7 @@ async function main() {
           results: [{ value: '20', unit: 'MPa', expandedUncertainty: '0.4', coverageFactor: '2' }] },
       ],
     },
-    termsOfUse: [{ type: 'IssuedUnderPolicy', authorizationCredential: { id: M_ID, type: 'CalLegalMandate' } }],
-    relatedResource: [{ id: M_ID, digestSRI: sha384SRI(new TextEncoder().encode(mText)) }],
+    termsOfUse: [{ id: M_ID, type: 'IssuedUnderPolicy', digestSRI: sha384SRI(new TextEncoder().encode(mText)) }],
   }, nmi, '2026-04-02T00:00:00Z')));
 
   // test-report-supported-dcc: a testing laboratory's report, supported by DCC-1 for the
@@ -234,12 +230,8 @@ async function main() {
           results: [{ value: '2', unit: 'MPa', expandedUncertainty: '0.004', coverageFactor: '2' }] },
       ],
     },
-    termsOfUse: [{ type: 'IssuedUnderPolicy', authorizationCredential: { id: T_ID, type: 'CalAccreditation' } }],
-    evidence: [{ id: DCC_ID, type: 'CalCalibrationReference' }],
-    relatedResource: [
-      { id: T_ID, digestSRI: sha384SRI(new TextEncoder().encode(tText)) },
-      { id: DCC_ID, digestSRI: sha384SRI(new TextEncoder().encode(dccText)) },
-    ],
+    termsOfUse: [{ id: T_ID, type: 'IssuedUnderPolicy', digestSRI: sha384SRI(new TextEncoder().encode(tText)) }],
+    evidence: [{ id: DCC_ID, type: 'CalCalibrationReference', digestSRI: sha384SRI(new TextEncoder().encode(dccText)) }],
   }, tlab, '2026-06-11T00:00:00Z')));
 
   outputs.set('catalog.json', `${JSON.stringify({

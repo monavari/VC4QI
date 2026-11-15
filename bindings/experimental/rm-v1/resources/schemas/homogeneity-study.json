@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://vc4qi.example/schemas/rm/1/study.json",
-  "title": "RM homogeneity/stability study (S)",
+  "$id": "https://vc4qi.example/schemas/rm/1/homogeneity-study.json",
+  "title": "Homogeneity study of a reference material batch",
   "description": "Experimental VC4QI RM binding v1 fixture schema. Not an external standard.",
   "type": "object",
   "required": [
@@ -13,8 +13,7 @@
     "validUntil",
     "credentialSchema",
     "credentialSubject",
-    "credentialStatus",
-    "relatedResource"
+    "credentialStatus"
   ],
   "properties": {
     "@context": {
@@ -30,7 +29,7 @@
     "type": {
       "const": [
         "VerifiableCredential",
-        "RmStudy"
+        "HomogeneityStudy"
       ]
     },
     "issuer": {
@@ -53,7 +52,7 @@
       ],
       "properties": {
         "id": {
-          "const": "https://vc4qi.example/schemas/rm/1/study.json"
+          "const": "https://vc4qi.example/schemas/rm/1/homogeneity-study.json"
         },
         "type": {
           "const": "JsonSchema"
@@ -106,53 +105,17 @@
       "items": {
         "type": "object",
         "required": [
-          "type",
-          "authorizationCredential"
-        ],
-        "properties": {
-          "type": {
-            "const": "IssuedUnderPolicy"
-          },
-          "authorizationCredential": {
-            "type": "object",
-            "required": [
-              "id",
-              "type"
-            ],
-            "properties": {
-              "id": {
-                "type": "string",
-                "format": "uri"
-              },
-              "type": {
-                "enum": [
-                  "RmAccreditation",
-                  "RmOperationalScope",
-                  "RmLabAuthority",
-                  "VerifiableAuthorisationForTrustChain"
-                ]
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      }
-    },
-    "relatedResource": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "type": "object",
-        "required": [
           "id",
+          "type",
           "digestSRI"
         ],
         "properties": {
           "id": {
             "type": "string",
             "format": "uri"
+          },
+          "type": {
+            "const": "IssuedUnderPolicy"
           },
           "digestSRI": {
             "type": "string",

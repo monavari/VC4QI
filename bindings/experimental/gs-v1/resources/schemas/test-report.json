@@ -14,8 +14,7 @@
     "credentialSchema",
     "credentialSubject",
     "credentialStatus",
-    "termsOfUse",
-    "relatedResource"
+    "termsOfUse"
   ],
   "properties": {
     "@context": {
@@ -112,52 +111,17 @@
       "items": {
         "type": "object",
         "required": [
-          "type",
-          "authorizationCredential"
-        ],
-        "properties": {
-          "type": {
-            "const": "IssuedUnderPolicy"
-          },
-          "authorizationCredential": {
-            "type": "object",
-            "required": [
-              "id",
-              "type"
-            ],
-            "properties": {
-              "id": {
-                "type": "string",
-                "format": "uri"
-              },
-              "type": {
-                "enum": [
-                  "GsAccreditation",
-                  "GsSchemeAuthorization",
-                  "GsCertificate"
-                ]
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      }
-    },
-    "relatedResource": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "type": "object",
-        "required": [
           "id",
+          "type",
           "digestSRI"
         ],
         "properties": {
           "id": {
             "type": "string",
             "format": "uri"
+          },
+          "type": {
+            "const": "IssuedUnderPolicy"
           },
           "digestSRI": {
             "type": "string",

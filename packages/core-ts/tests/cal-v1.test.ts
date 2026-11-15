@@ -75,23 +75,24 @@ async function reissue(changedCA?: JsonObject, editDCC?: (d: JsonObject) => void
   const dcc = json(URI.DCC);
   editDCC?.(dcc);
   if (overrides[URI.CA]) {
-    dcc.relatedResource = [{ id: URI.CA, digestSRI: sha384SRI(new TextEncoder().encode(overrides[URI.CA])) }];
+    dcc.termsOfUse = (dcc.termsOfUse as JsonObject[]).map(p => (p.id === URI.CA
+      ? { ...p, digestSRI: sha384SRI(new TextEncoder().encode(overrides[URI.CA]!)) } : p));
   }
   overrides[URI.DCC] = await resign(dcc);
   return overrides;
 }
 /**
  * Re-issue a chain bottom-up: each listed credential is edited (optionally), its
- * relatedResource digests are updated for already re-issued credentials, and it is re-signed.
+ * link digests are updated for already re-issued credentials, and it is re-signed.
  */
 async function reissueChain(steps: [string, ((d: JsonObject) => void)?][]) {
   const overrides: Record<string, string> = {};
   for (const [uri, edit] of steps) {
     const doc = json(uri);
     edit?.(doc);
-    if (Array.isArray(doc.relatedResource)) {
-      doc.relatedResource = (doc.relatedResource as JsonObject[]).map(r => (overrides[String(r.id)]
-        ? { id: r.id, digestSRI: sha384SRI(new TextEncoder().encode(overrides[String(r.id)])) } : r));
+    for (const field of ['termsOfUse', 'evidence'] as const) {
+      if (Array.isArray(doc[field])) doc[field] = (doc[field] as JsonObject[]).map(r => (overrides[String(r.id)]
+        ? { ...r, digestSRI: sha384SRI(new TextEncoder().encode(overrides[String(r.id)]!)) } : r));
     }
     overrides[uri] = await resign(doc);
   }
@@ -370,7 +371,6 @@ describe('test-report-supported-dcc: a test report supported by its instrument c
   it('a report citing no calibration is not established', async () => {
     const result = await runReport(await reissueChain([[URI.REPORT, d => {
       delete d.evidence;
-      d.relatedResource = (d.relatedResource as JsonObject[]).filter(r => r.id !== URI.DCC);
     }]]));
     expect(result.support[0]).toMatchObject({ state: 'not_established' });
     expect(result.decision).toBe('not_established');

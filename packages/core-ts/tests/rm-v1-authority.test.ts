@@ -8,8 +8,7 @@ import { evaluateRmSlice } from '../src/reliance/rm-v1-slice.js';
 import type { JsonObject } from '../src/types.js';
 import {
   catalogWith, json, manifest, profile, profileJson, reissue, request, resign, serialize, statusListWith,
-  twoRouteProfile, URI,
-} from './rm-v1-helpers.js';
+  twoRouteProfile, URI, link } from './rm-v1-helpers.js';
 
 type Result = Awaited<ReturnType<typeof evaluateRmSlice>>['result'];
 const run = (overrides: Record<string, string | null> = {}, req = request(), p = profile) =>
@@ -42,7 +41,7 @@ describe('I3 authority routes on the signed RM chain', () => {
     const A = json(URI.A);
     subject(A).id = URI.LAB;
     const result = await run(await reissue({ [URI.A]: A }));
-    expect(result.trace.filter(t => t.predicate === 'related-resource-integrity').every(t => t.state === 'established')).toBe(true);
+    expect(result.trace.filter(t => t.predicate === 'link-integrity').every(t => t.state === 'established')).toBe(true);
     expect(basis(result, 'accreditation-grantee')).toMatchObject({ state: 'contradicted' });
     expect(result.decision).toBe('reject');
   });
@@ -98,7 +97,7 @@ describe('I3 authority routes on the signed RM chain', () => {
   it('V07: an unrelated authentic credential added to the bundle confers nothing new', async () => {
     const baseline = await run();
     const padded = await run({}, request({ suppliedEvidence: [URI.A, URI.O, URI.S, URI.H,
-      'https://producer.vc4qi.example/credentials/D197'] }));
+      'https://producer.vc4qi.example/credentials/RM197'] }));
     expect(padded.authorization[0]?.routeWitnessIds).toEqual(baseline.authorization[0]?.routeWitnessIds);
     expect(padded.decision).toBe(baseline.decision);
   });
@@ -261,8 +260,7 @@ describe('I3 signed route composition under the two-route profile (C01-C07)', ()
     request({ profile: { id: twoRouteProfile.id, version: twoRouteProfile.version } }), twoRouteProfile);
   /** D re-issued citing both O (operational-scope route) and A2 (direct-accreditation route). */
   const citingA2 = (changed: Record<string, JsonObject> = {}) => reissue(changed, d => {
-    (d.termsOfUse as JsonObject[]).push({ type: 'IssuedUnderPolicy',
-      authorizationCredential: { id: URI.A2, type: 'RmAccreditation' } });
+    (d.termsOfUse as JsonObject[]).push(link(URI.A2));
   });
   const trace = (result: Result, predicate: string) => result.trace.find(t => t.predicate === predicate);
   const grantedToLab = (uri: string) => { const d = json(uri); subject(d).id = URI.LAB; return d; };
@@ -323,7 +321,7 @@ describe('I3 signed route composition under the two-route profile (C01-C07)', ()
     const result = await twoRoutes(overrides);
     expect(trace(result, 'route:operational-scope')).toMatchObject({ state: 'established' });
     expect(trace(result, 'restriction:accreditation-suspension')).toMatchObject({ state: 'contradicted' });
-    expect(trace(result, 'restriction:accreditation-suspension')?.reason).toMatch(/A2: Suspended/);
+    expect(trace(result, 'restriction:accreditation-suspension')?.reason).toMatch(/ACC-RMP-2: Suspended/);
     expect(trace(result, 'authority')).toMatchObject({ state: 'contradicted' });
     expect(result.decision).toBe('reject');
   });
@@ -353,12 +351,12 @@ describe('I3 signed route composition under the two-route profile (C01-C07)', ()
     expect(trace(result, 'authority')).toMatchObject({ state: 'not_established' });
   });
 
-  it('a reference whose declared type does not match the credential is contradicted', async () => {
-    const result = await run(await reissue({}, d => {
-      ((d.termsOfUse as JsonObject[])[0]!.authorizationCredential as JsonObject).id = URI.A2;
-    }), request({ suppliedEvidence: [URI.A, URI.O, URI.S, URI.H, URI.A2] }));
-    expect(basis(result, 'authorizing-reference')).toMatchObject({ state: 'contradicted' });
-    expect(basis(result, 'authorizing-reference')?.reason).toMatch(/declares RmOperationalScope/);
+  it('an entry that names a credential of another type gives the route nothing', async () => {
+    // D's IssuedUnderPolicy names A2, an accreditation, where the route wants a scope list.
+    const result = await run(await reissue({}, d => { d.termsOfUse = [link(URI.A2)]; }),
+      request({ suppliedEvidence: [URI.A, URI.O, URI.S, URI.H, URI.A2] }));
+    expect(basis(result, 'authorizing-reference')).toMatchObject({ state: 'not_established' });
+    expect(basis(result, 'authorizing-reference')?.reason).toMatch(/references a FlexibleScopeList/);
   });
 });
 
@@ -366,35 +364,37 @@ describe('I3 cycles, shared nodes and roles (C12-C15, V06)', () => {
   const twoRoutes = (overrides: Record<string, string | null> = {}, req = request()) => run(overrides,
     { ...req, profile: { id: twoRouteProfile.id, version: twoRouteProfile.version } }, twoRouteProfile);
   const trace = (result: Result, predicate: string) => result.trace.find(t => t.predicate === predicate);
-  const policyFor = (id: string, type: string) => ({ type: 'IssuedUnderPolicy', authorizationCredential: { id, type } });
+  const policyFor = (id: string, _type: string) => link(id);
 
   it('C12: an authorization cycle D -> O -> D is not accepted', async () => {
     const O = json(URI.O);
-    O.termsOfUse = [policyFor(URI.D, 'RmAccreditation')];
+    O.termsOfUse = [policyFor(URI.D, 'RmpAccreditation')];
     const result = await run(await reissue({ [URI.O]: O }));
+    // A link is selected by the type of the credential it names, so D (a certificate) is
+    // never taken for O's accreditation: the cycle cannot close.
     expect(basis(result, 'maintenance-grant')).toMatchObject({ state: 'not_established' });
-    expect(basis(result, 'maintenance-grant')?.reason).toMatch(/Circular authorization/);
+    expect(basis(result, 'maintenance-grant')?.reason).toMatch(/Circular authorization|references a RmpAccreditation/);
     expect(trace(result, 'authority')).toMatchObject({ state: 'not_established' });
     expect(result.decision).not.toBe('accept');
   });
 
   it('C12: a self-referencing authorization is not accepted', async () => {
-    const result = await run(await reissue({}, d => { d.termsOfUse = [policyFor(URI.D, 'RmOperationalScope')]; }));
-    expect(basis(result, 'authorizing-reference')?.reason).toMatch(/Circular authorization/);
+    const result = await run(await reissue({}, d => { d.termsOfUse = [policyFor(URI.D, 'FlexibleScopeList')]; }));
+    expect(basis(result, 'authorizing-reference')?.reason).toMatch(/Circular authorization|references a FlexibleScopeList/);
     expect(trace(result, 'authority')).toMatchObject({ state: 'not_established' });
   });
 
   it('C12: a mixed cycle (study authorized by the certificate it supports) is not accepted', async () => {
     const S = json(URI.S);
-    S.termsOfUse = [policyFor(URI.D, 'RmLabAuthority')];
+    S.termsOfUse = [policyFor(URI.D, 'LabAccreditation')];
     const result = await run(await reissue({ [URI.S]: S }));
-    expect(supportBasis(result, 'laboratory-authority-reference')?.reason).toMatch(/Circular authorization/);
+    expect(supportBasis(result, 'laboratory-authority-reference')?.reason).toMatch(/Circular authorization|references a LabAccreditation/);
     expect(result.support[0]?.state).toBe('not_established');
     expect(result.decision).not.toBe('accept');
   });
 
   it('C13: one accreditation shared by two routes is reused, not mistaken for a cycle', async () => {
-    const overrides = await reissue({}, d => { (d.termsOfUse as JsonObject[]).push(policyFor(URI.A, 'RmAccreditation')); });
+    const overrides = await reissue({}, d => { (d.termsOfUse as JsonObject[]).push(policyFor(URI.A, 'RmpAccreditation')); });
     const result = await twoRoutes(overrides);
     expect(trace(result, 'route:operational-scope')).toMatchObject({ state: 'established' });
     expect(trace(result, 'route:direct-accreditation')).toMatchObject({ state: 'established' });
@@ -407,9 +407,9 @@ describe('I3 cycles, shared nodes and roles (C12-C15, V06)', () => {
     // A2 grants certification but not scope maintenance: valid as a direct
     // accreditation, invalid as the grant behind an operational scope.
     const O = json(URI.O);
-    O.termsOfUse = [policyFor(URI.A2, 'RmAccreditation')];
+    O.termsOfUse = [policyFor(URI.A2, 'RmpAccreditation')];
     const overrides = await reissue({ [URI.O]: O }, d => {
-      (d.termsOfUse as JsonObject[]).push(policyFor(URI.A2, 'RmAccreditation'));
+      (d.termsOfUse as JsonObject[]).push(policyFor(URI.A2, 'RmpAccreditation'));
     });
     const result = await twoRoutes(overrides, request({ suppliedEvidence: [URI.O, URI.S, URI.H, URI.A2] }));
     expect(basis(result, 'projection-permission')).toMatchObject({ state: 'contradicted' });
@@ -419,11 +419,11 @@ describe('I3 cycles, shared nodes and roles (C12-C15, V06)', () => {
   });
 
   it('C15: an unused reference cycle among supplied credentials changes nothing', async () => {
-    const D197 = 'https://producer.vc4qi.example/credentials/D197';
-    const D520 = 'https://producer.vc4qi.example/credentials/D520';
+    const D197 = 'https://producer.vc4qi.example/credentials/RM197';
+    const D520 = 'https://producer.vc4qi.example/credentials/RM520';
     const x = json(D197), y = json(D520);
-    x.termsOfUse = [policyFor(D520, 'RmOperationalScope')];
-    y.termsOfUse = [policyFor(D197, 'RmOperationalScope')];
+    x.termsOfUse = [policyFor(D520, 'FlexibleScopeList')];
+    y.termsOfUse = [policyFor(D197, 'FlexibleScopeList')];
     const baseline = await run();
     const result = await run({ [D197]: await resign(x), [D520]: await resign(y) },
       request({ suppliedEvidence: [URI.A, URI.O, URI.S, URI.H, D197, D520] }));

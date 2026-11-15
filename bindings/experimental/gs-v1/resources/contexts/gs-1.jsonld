@@ -17,8 +17,6 @@
     "GsFactoryInspectionReference": "gs:GsFactoryInspectionReference",
     "GsMarkCredentialReference": "gs:GsMarkCredentialReference",
     "IssuedUnderPolicy": "chain:IssuedUnderPolicy",
-
-    "authorizationCredential": "chain:authorizationCredential",
     "permittedActivity": {"@id": "gs:permittedActivity", "@type": "@id", "@container": "@set"},
     "scope": {"@id": "gs:scope", "@container": "@set"},
     "productCategoryIri": {"@id": "gs:productCategory", "@type": "@id"},

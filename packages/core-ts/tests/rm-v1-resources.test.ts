@@ -56,14 +56,11 @@ function sampleCertificate(): JsonObject {
       }],
     },
     termsOfUse: [{
+      id: 'https://producer.vc4qi.example/credentials/LIST-RMP',
       type: 'IssuedUnderPolicy',
-      authorizationCredential: { id: 'https://producer.vc4qi.example/credentials/O', type: 'RmOperationalScope' },
-    }],
-    evidence: [{ id: 'https://lab.vc4qi.example/credentials/S', type: 'RmStudyReference' }],
-    relatedResource: [{
-      id: 'https://producer.vc4qi.example/credentials/O',
       digestSRI: `sha384-${'A'.repeat(64)}`,
     }],
+    evidence: [{ id: 'https://lab.vc4qi.example/credentials/HOM-LOT1', type: 'HomogeneityStudyReference', digestSRI: `sha384-${'B'.repeat(64)}` }],
     credentialStatus: {
       id: 'https://producer.vc4qi.example/status/1#9',
       type: 'BitstringStatusListEntry',
@@ -110,9 +107,11 @@ describe('experimental RM v1 pinned resources', () => {
     const nquads = await safeNQuads(sampleCertificate());
     expect(nquads).toContain(`<${rm('value')}> "178"^^<http://www.w3.org/2001/XMLSchema#decimal>`);
     expect(nquads).toContain(`<${rm('methodIri')}> <${rm('M1')}>`);
-    // The link terms are the shared chain vocabulary, the same IRI in every binding.
-    expect(nquads).toContain('<https://vc4qi.example/ns/chain#authorizationCredential> <https://producer.vc4qi.example/credentials/O>');
-    expect(nquads).toContain('<https://www.w3.org/2018/credentials#digestSRI>');
+    // A link is a termsOfUse entry whose id is the credential it names: typed with the shared
+    // chain vocabulary (the same IRI in every binding) and carrying its digest.
+    expect(nquads).toContain('<https://www.w3.org/2018/credentials#termsOfUse> <https://producer.vc4qi.example/credentials/LIST-RMP>');
+    expect(nquads).toContain('<https://producer.vc4qi.example/credentials/LIST-RMP> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://vc4qi.example/ns/chain#IssuedUnderPolicy>');
+    expect(nquads).toContain('<https://producer.vc4qi.example/credentials/LIST-RMP> <https://www.w3.org/2018/credentials#digestSRI>');
   });
 
   it('rejects an undefined term instead of silently dropping it', async () => {

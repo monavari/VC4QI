@@ -32,9 +32,9 @@ them for one domain; see [bindings](bindings.md).
 | --- | --- |
 | `@context` | Versioned JSON-LD meaning, processed safely, with no redefinition of protected terms |
 | `type`, `credentialSchema` | Declared types and validation; the verifier controls dispatch |
-| `termsOfUse` | `IssuedUnderPolicy` naming the grant issued under (`authorizationCredential`), or `RecognitionPolicy` naming a recognition (`recognitionCredential`); one shared vocabulary (`https://vc4qi.example/ns/chain#`) in every binding. At the top of a chain, an appointment's `TrustFrameworkPolicy` names the legal basis instead of a credential |
+| `termsOfUse` | An entry whose `id` is the credential it names, with that credential's `digestSRI`: `IssuedUnderPolicy` for the grant issued under, or `RecognitionPolicy` for a recognition; one shared vocabulary (`https://vc4qi.example/ns/chain#`) in every binding. At the top of a chain, an appointment's `TrustFrameworkPolicy` names the legal basis instead of a credential |
 | `evidence` | Recognized supporting information (support, never authority) |
-| `relatedResource` | Integrity of referenced resources (SHA-384 SRI over exact bytes) |
+| `digestSRI` on a link | Integrity of the credential a `termsOfUse` or `evidence` entry names (SHA-384 SRI over exact bytes; VCDM 2.0 §5.3) |
 | `credentialStatus` | The selected status mechanism, with an authorized signer and freshness |
 
 A type named like a trust policy has no authority unless the binding interprets it.
@@ -215,10 +215,10 @@ anchor (a fictional Global ACI stand-in) about one accreditation body, in the sh
 W3C Recognized Entities credential (Working Draft of 12 November 2026) with a single
 subject, the action in `recognizedTo`, the main scopes in `registration`, and its own
 revocation and suspension entries. Every upward link is a `termsOfUse` entry, followed
-and pinned the same way; its type says what it means: `IssuedUnderPolicy`
-(`authorizationCredential`) for a grant, `RecognitionPolicy` (`recognitionCredential`)
-for a recognition. A and H carry a `RecognitionPolicy` naming R, pinned by digest in
-`relatedResource`, and mirror it as `issuer.recognizedIn`, which must then name the same
+and pinned the same way: its `id` is the credential it names, its `digestSRI` that
+credential's digest, and its type says what it means: `IssuedUnderPolicy` for a grant,
+`RecognitionPolicy` for a recognition. The NAB's accreditations carry a
+`RecognitionPolicy` entry naming the recognition, and mirror it as `issuer.recognizedIn`, which must then name the same
 credential. A verifier whose profile anchors the accreditation body stops there, and R
 never decides for it. A verifier whose profile instead anchors the recognizer for the
 recognizer purpose (`bindingRules.recognition`: recognizer purpose, required action and

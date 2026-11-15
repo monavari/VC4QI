@@ -30,7 +30,7 @@ CASES = [
         "rm-v1",
         "rm-verifier-1",
         evaluate_rm_slice,
-        "https://producer.vc4qi.example/credentials/D178",
+        "https://producer.vc4qi.example/credentials/RM178",
         (SelectedClaim("as", "/credentialSubject/materialPropertiesList/0/results/0"),),
         (),
     ),

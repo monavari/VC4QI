@@ -36,9 +36,9 @@ SRI over exact bytes). Signed controller documents, credentials and status lists
   12 November 2026, editor's draft at `w3c/vc-recognized-entities@3961cf6`), and
   `mainScope`, `activity` and `standard` are RM binding terms used inside
   `registration` (the ILAC and IAF main scope; not Recognized Entities vocabulary). It
-  is used only by recognition `R` of the fictional Global ACI stand-in, which A, A2 and
-  H name in a `termsOfUse` `RecognitionPolicy`; the RM context defines
-  `RecognitionPolicy`, `recognitionCredential`, `recognizedIn` and the type
+  is used only by the recognition REC-NAB of the fictional Global ACI stand-in, which the
+  NAB's accreditations name in a `termsOfUse` `RecognitionPolicy`; the RM context defines
+  `RecognitionPolicy`, `recognizedIn` and the type
   `RecognizedEntityCredential` for that reference. Replace it with the published
   context and re-sign when the W3C publishes one.
 - The RM context also defines the terms of the state's appointment `APP`

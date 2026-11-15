@@ -32,23 +32,23 @@ const pinned = readPinnedResources(new URL('catalog.json', rmDir).pathname);
 export const signed = readPinnedResources(new URL('test-vectors/signed/catalog.json', rmDir).pathname);
 
 export const URI = {
-  A: 'https://nab.vc4qi.example/credentials/A',
-  A2: 'https://nab.vc4qi.example/credentials/A2',
+  A: 'https://nab.vc4qi.example/credentials/ACC-RMP',
+  A2: 'https://nab.vc4qi.example/credentials/ACC-RMP-2',
   NAB_STATUS: 'https://nab.vc4qi.example/status/1',
   NAB_SUSPENSION: 'https://nab.vc4qi.example/status/suspension/1',
-  H: 'https://nab.vc4qi.example/credentials/H',
-  O: 'https://producer.vc4qi.example/credentials/O',
-  S: 'https://lab.vc4qi.example/credentials/S',
-  D: 'https://producer.vc4qi.example/credentials/D178',
+  H: 'https://nab.vc4qi.example/credentials/ACC-LAB',
+  O: 'https://producer.vc4qi.example/credentials/LIST-RMP',
+  S: 'https://lab.vc4qi.example/credentials/HOM-LOT1',
+  D: 'https://producer.vc4qi.example/credentials/RM178',
   NAB: 'https://nab.vc4qi.example/controller',
   PRODUCER: 'https://producer.vc4qi.example/controller',
   LAB: 'https://lab.vc4qi.example/controller',
   GACI: 'https://global-aci.vc4qi.example/controller',
-  R: 'https://global-aci.vc4qi.example/credentials/R',
+  R: 'https://global-aci.vc4qi.example/credentials/REC-NAB',
   GACI_STATUS: 'https://global-aci.vc4qi.example/status/1',
   GACI_SUSPENSION: 'https://global-aci.vc4qi.example/status/suspension/1',
   STATE: 'https://state.vc4qi.example/controller',
-  APP: 'https://state.vc4qi.example/credentials/APP',
+  APP: 'https://state.vc4qi.example/credentials/APP-NAB',
   STATE_STATUS: 'https://state.vc4qi.example/status/1',
   STATE_SUSPENSION: 'https://state.vc4qi.example/status/suspension/1',
 } as const;
@@ -65,6 +65,9 @@ export const NOW = '2026-09-25T12:00:00Z';
 export const text = (uri: string) => new TextDecoder().decode(signed.find(r => r.uri === uri)!.bytes);
 export const json = (uri: string) => JSON.parse(text(uri)) as JsonObject;
 export const serialize = (document: JsonObject) => `${JSON.stringify(document, null, 2)}\n`;
+/** A link to the credential `id`, as signed today: a termsOfUse entry with its digest. */
+export const link = (id: string, type = 'IssuedUnderPolicy'): JsonObject =>
+  ({ id, type, digestSRI: sha384SRI(new TextEncoder().encode(text(id))) });
 
 /** Pinned resources plus signed fixtures, with some replaced (string) or removed (null). */
 export function catalogWith(overrides: Record<string, string | null> = {}): StaticResourceCatalog {
@@ -110,8 +113,21 @@ export async function statusListWith(uri: string, setBits: number[]): Promise<st
 /**
  * Re-issue the chain after changing credentials: walk APP, R, A, A2, H, O, S, D in
  * dependency order, re-sign each changed credential, and re-sign every credential
- * whose relatedResource digest pins a changed one. `editD` changes D itself.
+ * whose link (a termsOfUse or evidence entry) pins a changed one. `editD` changes D itself.
  */
+export function repin(document: JsonObject, overrides: Record<string, string | null | undefined>): boolean {
+  let changed = false;
+  for (const field of ['termsOfUse', 'evidence'] as const) {
+    if (!Array.isArray(document[field])) continue;
+    document[field] = (document[field] as JsonObject[]).map(entry => {
+      const replacement = overrides[String(entry.id)];
+      if (typeof replacement !== 'string' || entry.digestSRI === undefined) return entry;
+      changed = true;
+      return { ...entry, digestSRI: sha384SRI(new TextEncoder().encode(replacement)) };
+    });
+  }
+  return changed;
+}
 export async function reissue(
   changed: Record<string, JsonObject>, editD?: (d: JsonObject) => void,
 ): Promise<Record<string, string | null>> {
@@ -120,14 +136,7 @@ export async function reissue(
     const document = changed[uri] ?? json(uri);
     let dirty = uri in changed;
     if (uri === URI.D && editD) { editD(document); dirty = true; }
-    if (Array.isArray(document.relatedResource)) {
-      document.relatedResource = (document.relatedResource as JsonObject[]).map(ref => {
-        const replacement = overrides[String(ref.id)];
-        if (typeof replacement !== 'string') return ref;
-        dirty = true;
-        return { ...ref, digestSRI: sha384SRI(new TextEncoder().encode(replacement)) };
-      });
-    }
+    if (repin(document, overrides)) dirty = true;
     if (dirty) overrides[uri] = await resign(document);
   }
   return overrides;

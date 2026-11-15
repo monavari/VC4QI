@@ -14,7 +14,7 @@ accreditation or legal effect.
 
 | Binding | Use cases | Credential types | Routes | Profiles |
 | --- | --- | --- | --- | --- |
-| [RM v1](../bindings/experimental/rm-v1/README.md) `…/bindings/rm/1` | reference-material-recursive | `RmAccreditation`, `RmOperationalScope`, `RmCertificate`, `RmStudy`, `RmLabAuthority` | `operational-scope`, `direct-accreditation`; restriction `accreditation-suspension`; required study support | `rm-verifier-1`, `rm-verifier-two-routes-1` |
+| [RM v1](../bindings/experimental/rm-v1/README.md) `…/bindings/rm/1` | reference-material-recursive | `RmpAccreditation`, `FlexibleScopeList`, `RmCertificate`, `HomogeneityStudy`, `LabAccreditation` | `operational-scope`, `direct-accreditation`; restriction `accreditation-suspension`; required study support | `rm-verifier-1`, `rm-verifier-two-routes-1` |
 | [Calibration v1](../bindings/experimental/cal-v1/README.md) `…/bindings/cal/1` | calibration-direct-accreditation, calibration-capability, nmi-legal-mandate, test-report-supported-dcc | `CalAccreditation`, `CalOperationalScope`, `CalLegalMandate`, `CalCertificate`, `CalTestReport` | `direct-accreditation`, `operational-scope`, `statutory-mandate`; required instrument-calibration support for test reports | `cal-verifier-1`, `cal-verifier-capability-1`, `cal-verifier-nmi-1`, `cal-verifier-test-report-1` |
 | [GS v1](../bindings/experimental/gs-v1/README.md) `…/bindings/gs/1` | gs-scheme-authorization, experimental product passport | `GsAccreditation`, `GsSchemeAuthorization`, `GsCertificate`, `GsTestReport`, `GsInspectionReport`, `GsMarkCredential`, `ProductPassport` | `competence-and-scheme-permission`, `gs-certified-product`, `responsible-economic-operator`; required type-examination and factory-inspection support | `gs-verifier-1`, `gs-verifier-mark-1`, `gs-verifier-dpp-1` |
 
@@ -53,12 +53,16 @@ manifest version and regression tests.
 
 ## Common rules across the bindings
 
-- **Authorization references** are typed: `termsOfUse` holds a recognized policy with
-  `authorizationCredential: {id, type}`. A route selects its reference by the declared
-  type; the resolved credential must have that type, and several references of one type
-  are ambiguous rather than "take the first".
-- **Integrity**: `relatedResource` pins each referenced credential by SHA-384 SRI over
-  its exact signed bytes.
+- **Links** are single entries: a `termsOfUse` entry whose `id` is the credential it
+  names and whose `type` says what the link means (`IssuedUnderPolicy`, a grant;
+  `RecognitionPolicy`, a recognition), or an `evidence` entry. A route selects its
+  reference by the type of the credential the entry names; a named credential that cannot
+  be read leaves it not established, and several of one type are ambiguous rather than
+  "take the first". EBSI's `IssuanceCertificate` term of use names the issuer's
+  accreditation the same way, by `id`.
+- **Integrity**: each link entry carries `digestSRI`, the SHA-384 SRI of the exact signed
+  bytes of the credential it names (VCDM 2.0 §5.3: any object with an `id` MAY carry
+  integrity information). There is no separate `relatedResource` list.
 - **Protection**: `eddsa-rdfc-2022` proofs over JSON-LD safe mode, with keys taken from
   the issuer's controller document and authorized for `assertionMethod`.
 - **Status**: every credential names a W3C Bitstring Status List signed by its own
@@ -72,7 +76,9 @@ manifest version and regression tests.
 ## RM v1 in detail
 
 The RM binding is the complete reference witness of the [model](model.md#6-scope-quantities-and-conformity):
-accreditation A, operational scope O, certificate D, study S and laboratory authority H.
+the accreditation of the RM producer ACC-RMP (the paper's A), the producer's flexible scope
+list LIST-RMP (O), the certificate RM178 (D), the homogeneity study HOM-LOT1 (S) and the
+laboratory's accreditation ACC-LAB (H). Each credential's code is the last part of its id.
 
 | Fact | Native path |
 | --- | --- |
@@ -81,17 +87,16 @@ accreditation A, operational scope O, certificate D, study S and laboratory auth
 | Batch (D, S) | `/credentialSubject/id` |
 | Permitted activity | `/credentialSubject/permittedActivity[]` (`issueRmCertificate`, `maintainRmScope`, `issueRmStudy`) |
 | Scope records | `/credentialSubject/scope[]` with `matrixIri`, `formIri`, `allowedPropertyIris`, `allowedMethodIris`, `range` |
-| Authorizing reference | `/termsOfUse[]` of type `IssuedUnderPolicy` (`authorizationCredential`) |
-| Recognition reference (A, H) | `/termsOfUse[]` of type `RecognitionPolicy` (`recognitionCredential`), mirrored in `/issuer/recognizedIn`; never authority |
-| Appointment reference (A, H) | `/termsOfUse[]` of type `IssuedUnderPolicy` whose `authorizationCredential` has type `VerifiableAuthorisationForTrustChain` |
+| Authorizing reference | `/termsOfUse[]/id` of type `IssuedUnderPolicy`, with `digestSRI` |
+| Recognition reference (ACC-RMP, ACC-LAB) | `/termsOfUse[]/id` of type `RecognitionPolicy`, with `digestSRI`, mirrored in `/issuer/recognizedIn`; never authority |
+| Appointment reference (ACC-RMP, ACC-LAB) | `/termsOfUse[]/id` of type `IssuedUnderPolicy` naming a `VerifiableAuthorisationForTrustChain` |
 | Appointment permission (APP) | `/credentialSubject/permissionFor[]` with `schemaId`, `types`, `jurisdiction` (EBSI shape); legal basis in `/termsOfUse/legalBasis` |
-| Required study | `/evidence[]` of type `RmStudyReference` |
+| Required study | `/evidence[]` of type `HomogeneityStudyReference` |
 | Activity time | `/credentialSubject/activityTime` |
 | Selected claim | `/credentialSubject/materialPropertiesList/i/results/j` |
 
 The context uses the prefix `rm:` because VCDM 2.0 already protects `exp`. The link
-terms (`IssuedUnderPolicy`, `authorizationCredential`, `RecognitionPolicy`,
-`recognitionCredential`) are not RM terms: every binding maps them to the shared
+types (`IssuedUnderPolicy`, `RecognitionPolicy`) are not RM terms: every binding maps them to the shared
 namespace `https://vc4qi.example/ns/chain#`, so a grant link means the same in RM,
 calibration and GS, and the protected contexts can be combined. The appointment terms
 (`VerifiableAuthorisationForTrustChain`, `TrustFrameworkPolicy`, `trustFramework`,

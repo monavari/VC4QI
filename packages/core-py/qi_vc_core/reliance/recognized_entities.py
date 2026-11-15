@@ -6,7 +6,7 @@ Draft of 12 November 2026) with a single subject. Recognition is not authority: 
 accreditation body's authority is its national appointment, which a verifier that
 anchors the body trusts directly; recognition tells a verifier that anchors the
 recognizer to accept the body for a main scope. The grant names its issuer's
-recognition in termsOfUse, as a RecognitionPolicy whose recognitionCredential is a
+recognition in termsOfUse, as a RecognitionPolicy entry whose id is a
 RecognizedEntityCredential, pinned by digest like every other link (one rule for every
 upward link; the policy type says what it means). The issuer object may mirror it as
 issuer.recognizedIn; when present it must name the same credential. The verifier's
@@ -101,20 +101,15 @@ def recognition_rules(
 
 
 def recognition_references(grant: Doc) -> list[str]:
-    """Recognitions a grant names: termsOfUse RecognitionPolicy entries referencing a
-    RecognizedEntityCredential."""
-    references: list[str] = []
-    for policy in _list(grant.get("termsOfUse")):
-        if not isinstance(policy, dict) or policy.get("type") != RECOGNITION_POLICY:
-            continue
-        ref = policy.get("recognitionCredential")
-        if (
-            isinstance(ref, dict)
-            and ref.get("type") == RECOGNITION_TYPE
-            and _nonempty(ref.get("id"))
-        ):
-            references.append(str(ref["id"]))
-    return references
+    """Recognitions a grant names: termsOfUse RecognitionPolicy entries; the entry's
+    id is the recognition."""
+    return [
+        str(policy["id"])
+        for policy in _list(grant.get("termsOfUse"))
+        if isinstance(policy, dict)
+        and policy.get("type") == RECOGNITION_POLICY
+        and _nonempty(policy.get("id"))
+    ]
 
 
 def recognized_in(issuer: Any) -> str | None:

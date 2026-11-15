@@ -7,7 +7,7 @@ verify_rm_artifact checks one artifact from its exact catalog bytes with the sam
 ordered checks as TypeScript. PyLD has no JSON-LD safe mode, so the signature step
 first rejects undefined terms and types by expanding with a sentinel @vocab; this is
 narrower than jsonld.js safe mode (see the evidence document). Only after protection
-is established are validity, relatedResource integrity and protected facts read.
+is established are validity, link integrity and protected facts read.
 """
 
 from __future__ import annotations
@@ -87,11 +87,11 @@ from .types import (
 )
 
 RM_V1_ARTIFACT_SCHEMAS: dict[str, str] = {
-    "RmAccreditation": f"{RM_V1_SCHEMA_BASE}accreditation.json",
-    "RmOperationalScope": f"{RM_V1_SCHEMA_BASE}operational-scope.json",
+    "RmpAccreditation": f"{RM_V1_SCHEMA_BASE}rmp-accreditation.json",
+    "FlexibleScopeList": f"{RM_V1_SCHEMA_BASE}flexible-scope-list.json",
     "RmCertificate": f"{RM_V1_SCHEMA_BASE}certificate.json",
-    "RmStudy": f"{RM_V1_SCHEMA_BASE}study.json",
-    "RmLabAuthority": f"{RM_V1_SCHEMA_BASE}lab-authority.json",
+    "HomogeneityStudy": f"{RM_V1_SCHEMA_BASE}homogeneity-study.json",
+    "LabAccreditation": f"{RM_V1_SCHEMA_BASE}lab-accreditation.json",
     "BitstringStatusListCredential": f"{RM_V1_SCHEMA_BASE}status-list.json",
     "RecognizedEntityCredential": f"{RM_V1_SCHEMA_BASE}recognized-entity.json",
     "VerifiableAuthorisationForTrustChain": f"{RM_V1_SCHEMA_BASE}appointment.json",
@@ -173,9 +173,13 @@ class ProtectedFact:
 
 @dataclass(frozen=True)
 class RelatedResourceCheck:
+    """The integrity of one link: the digest on a termsOfUse or evidence entry."""
+
     id: str
     state: SemanticState
     reason: str
+    # Where the digest sits: /termsOfUse, /evidence (or /relatedResource).
+    pointer: str = "/termsOfUse"
 
 
 def _predicate(
@@ -292,15 +296,28 @@ def _validity(document: dict[str, Any], evaluation_time: str) -> PredicateResult
     return _predicate("established", (f"Valid at {evaluation_time}.",), pointers)
 
 
+def pinned_links(document: dict[str, Any]) -> list[tuple[str, Any, str]]:
+    """(id, digestSRI, pointer) of every link a credential pins: each termsOfUse and
+    evidence entry with an id carries the digest of the credential it names (VCDM 2.0
+    section 5.3); a relatedResource list, if present, is checked the same way."""
+
+    def entries(value: Any) -> list[dict[str, Any]]:
+        items = value if isinstance(value, list) else [value] if value else []
+        return [item for item in items if isinstance(item, dict)]
+
+    found: list[tuple[str, Any, str]] = []
+    for name in ("termsOfUse", "evidence", "relatedResource"):
+        for entry in entries(document.get(name)):
+            if isinstance(entry.get("id"), str) and "digestSRI" in entry:
+                found.append((entry["id"], entry["digestSRI"], "/" + name))
+    return found
+
+
 def _related_resources(
     document: dict[str, Any], session: ResourceResolver
 ) -> tuple[RelatedResourceCheck, ...]:
-    references = document.get("relatedResource")
     checks: list[RelatedResourceCheck] = []
-    for reference in references if isinstance(references, list) else []:
-        if not isinstance(reference, dict):
-            continue
-        ref_id = str(reference.get("id"))
+    for ref_id, digest, pointer in pinned_links(document):
         try:
             actual = sha384_sri(session.resolve(ref_id).content)
         except CatalogError as error:
@@ -309,13 +326,17 @@ def _related_resources(
                     ref_id,
                     "not_established",
                     f"Referenced resource unavailable: {error.code}.",
+                    pointer,
                 )
             )
             continue
-        if actual == reference.get("digestSRI"):
+        if actual == digest:
             checks.append(
                 RelatedResourceCheck(
-                    ref_id, "established", "Digest matches the exact referenced bytes."
+                    ref_id,
+                    "established",
+                    "Digest matches the exact referenced bytes.",
+                    pointer,
                 )
             )
         else:
@@ -324,6 +345,7 @@ def _related_resources(
                     ref_id,
                     "contradicted",
                     f"Digest mismatch: referenced bytes hash to {actual}.",
+                    pointer,
                 )
             )
     return tuple(checks)
@@ -743,10 +765,10 @@ def verify_chain(
         )
     # Follow the chain's own references (termsOfUse, evidence) from protected
     # credentials, within maxDepth; supplied-but-unreferenced credentials stay inert.
-    # Every upward link is a termsOfUse entry: an IssuedUnderPolicy
-    # (authorizationCredential) or a RecognitionPolicy (recognitionCredential, the
-    # issuer's recognition). Both are followed the same way; a recognition decides only
-    # for a verifier whose route uses it.
+    # Every upward link is a termsOfUse entry whose id is the credential it names: an
+    # IssuedUnderPolicy (a grant) or a RecognitionPolicy (the issuer's recognition).
+    # Both are followed the same way; a recognition decides only for a verifier whose
+    # route uses it.
     index = 0
     while index < len(artifacts):
         current = artifacts[index]
@@ -756,15 +778,10 @@ def verify_chain(
             continue
         document = read(current.artifact_id)
         references: list[str] = []
-        for policy in document.get("termsOfUse") or []:
-            credential = (
-                policy.get("authorizationCredential")
-                or policy.get("recognitionCredential")
-                if isinstance(policy, dict)
-                else None
-            )
-            if isinstance(credential, dict) and isinstance(credential.get("id"), str):
-                references.append(credential["id"])
+        terms = document.get("termsOfUse")
+        for policy in terms if isinstance(terms, list) else []:
+            if isinstance(policy, dict) and isinstance(policy.get("id"), str):
+                references.append(policy["id"])
         for evidence in document.get("evidence") or []:
             if isinstance(evidence, dict) and isinstance(evidence.get("id"), str):
                 references.append(evidence["id"])
@@ -931,7 +948,7 @@ def verify_chain(
                 state=check.state,
                 execution="executed",
                 reasons=(f"integrity (from {artifact.artifact_id}): {check.reason}",),
-                source_pointers=("/relatedResource",),
+                source_pointers=(check.pointer,),
                 artifact_id=check.id,
             )
             for check in artifact.related_resources
@@ -972,6 +989,7 @@ def verify_chain(
             reason="; ".join(f"{p[0]}: {p[2]}" for p in parts if p[1] != "established")
             or "usable",
             document=read(artifact.artifact_id) if usable == "established" else None,
+            type=artifact.artifact_type,
             suspension=(
                 (
                     suspension[artifact.artifact_id].state,
@@ -1003,11 +1021,11 @@ def verify_chain(
                 TraceEntry(
                     1,
                     use,
-                    "related-resource-integrity",
+                    "link-integrity",
                     related.state,
                     "executed",
                     f"{related.id}: {related.reason}",
-                    ("/relatedResource", related.id),
+                    (related.pointer, related.id),
                 )
             )
         checked_identity = identity[artifact.artifact_id]
