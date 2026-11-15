@@ -113,7 +113,9 @@ class ArtifactBinding:
     """Recognized types, their schemas and exact contexts (mirrors ArtifactBinding)."""
 
     name: str
-    schemas: Mapping[str, str]
+    # Per type, the schema it must declare, or the schemas it may declare (shared
+    # carriers).
+    schemas: Mapping[str, str | tuple[str, ...]]
     contexts: Callable[[Any], list[str]]
 
 
@@ -505,8 +507,15 @@ def verify_rm_artifact(
         and types[0] == "VerifiableCredential"
         else None
     )
-    schema_id = artifact_binding.schemas.get(artifact_type) if artifact_type else None
-    if schema_id is None:
+    accepted = artifact_binding.schemas.get(artifact_type) if artifact_type else None
+    schema_ids: tuple[str, ...] = (
+        ()
+        if accepted is None
+        else (accepted,)
+        if isinstance(accepted, str)
+        else accepted
+    )
+    if not schema_ids:
         return fail(
             "type",
             "not_established",
@@ -522,10 +531,13 @@ def verify_rm_artifact(
             "Multiple credentialSchema declarations have no accepted composition "
             "in this binding.",
         )
-    if not isinstance(declared, dict) or declared.get("id") != schema_id:
+    if not isinstance(declared, dict) or declared.get("id") not in schema_ids:
         return fail(
-            "type", "contradicted", f"{artifact_type} must declare schema {schema_id}."
+            "type",
+            "contradicted",
+            f"{artifact_type} must declare schema {' or '.join(schema_ids)}.",
         )
+    schema_id = str(declared["id"])
     checks.append(
         CheckOutcome("type", "established", f"{artifact_type} with its pinned schema.")
     )

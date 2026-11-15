@@ -22,8 +22,16 @@ from .catalog import StaticResource, StaticResourceCatalog
 from .dsi import DsiUnit, read_expanded_real
 from .manifest import BindingManifest
 from .profile import RelianceProfile
+from .recognized_entities import grant_issuer_standing
 from .rm_scope import format_decimal, parse_decimal
-from .rm_v1 import REPO_ROOT, VC_V2_CONTEXT, read_pinned_resources
+from .rm_v1 import (
+    RECOGNIZED_ENTITIES_DRAFT_CONTEXT,
+    REPO_ROOT,
+    RM_V1_CONTEXT,
+    RM_V1_SCHEMA_BASE,
+    VC_V2_CONTEXT,
+    read_pinned_resources,
+)
 from .rm_v1_artifacts import (
     _MISSING,
     ArtifactBinding,
@@ -83,6 +91,17 @@ CAL_UNITS: dict[str, DsiUnit] = {
 }
 CAL_UNIT_EXPONENTS: dict[str, int] = {unit: u.exponent for unit, u in CAL_UNITS.items()}
 
+
+def _cal_contexts(kind: Any) -> list[str]:
+    if kind == "BitstringStatusListCredential":
+        return [VC_V2_CONTEXT]
+    if kind == "RecognizedEntityCredential":
+        return [VC_V2_CONTEXT, RECOGNIZED_ENTITIES_DRAFT_CONTEXT]
+    if kind == "VerifiableAuthorisationForTrustChain":
+        return [VC_V2_CONTEXT, RM_V1_CONTEXT]
+    return [VC_V2_CONTEXT, CAL_V1_CONTEXT]
+
+
 CAL_V1_ARTIFACT_BINDING = ArtifactBinding(
     "calibration v1",
     {
@@ -91,11 +110,18 @@ CAL_V1_ARTIFACT_BINDING = ArtifactBinding(
         "CalLegalMandate": f"{CAL_V1_SCHEMA_BASE}legal-mandate.json",
         "CalCertificate": f"{CAL_V1_SCHEMA_BASE}certificate.json",
         "CalTestReport": f"{CAL_V1_SCHEMA_BASE}test-report.json",
-        "BitstringStatusListCredential": f"{CAL_V1_SCHEMA_BASE}status-list.json",
+        # Status lists of this binding's issuers, and of the shared roots' issuers
+        # (the state, Global ACI), published with the RM binding's carrier.
+        "BitstringStatusListCredential": (
+            f"{CAL_V1_SCHEMA_BASE}status-list.json",
+            f"{RM_V1_SCHEMA_BASE}status-list.json",
+        ),
+        # The NAB's shared roots, read with the RM binding's carriers: the state's
+        # appointment (APP-NAB) and Global ACI's recognition (REC-NAB).
+        "RecognizedEntityCredential": f"{RM_V1_SCHEMA_BASE}recognized-entity.json",
+        "VerifiableAuthorisationForTrustChain": f"{RM_V1_SCHEMA_BASE}appointment.json",
     },
-    lambda kind: [VC_V2_CONTEXT]
-    if kind == "BitstringStatusListCredential"
-    else [VC_V2_CONTEXT, CAL_V1_CONTEXT],
+    lambda kind: _cal_contexts(kind),
 )
 
 
@@ -386,7 +412,14 @@ def cal_direct_accreditation(
     chain.append(a_node.uri)
     bases.append(_grantee("principal-binding", a, d.get("issuer"), "Accreditation CA"))
     bases.append(_permission("activity-permission", a, activity, what, "CA"))
-    bases.append(_anchor("trust-anchor", a, purpose, profile))
+    # CA's issuer stands as an anchor, or through the appointment or recognition CA
+    # names (the same check as RM); the deciding root joins the route's chain.
+    standing, root = grant_issuer_standing(
+        "trust-anchor", a, purpose, profile, lookup, _subject(d).get("activityTime")
+    )
+    bases.append(standing)
+    if root is not None:
+        chain.append(root)
     bases.append(_in_force_at_activity(d, [("CA", a)]))
     return _route("direct-accreditation", bases, chain, a_node.uri)
 
@@ -613,9 +646,17 @@ def cal_operational_scope(
             projection.sources,
         )
     )
-    bases.append(
-        _anchor("trust-anchor", a, "accredit-calibration-laboratories", profile)
+    standing, root = grant_issuer_standing(
+        "trust-anchor",
+        a,
+        "accredit-calibration-laboratories",
+        profile,
+        lookup,
+        _subject(d).get("activityTime"),
     )
+    bases.append(standing)
+    if root is not None:
+        chain.append(root)
     bases.append(_in_force_at_activity(d, [("O", o), ("CA", a)]))
     return _route("operational-scope", bases, chain, o_node.uri)
 

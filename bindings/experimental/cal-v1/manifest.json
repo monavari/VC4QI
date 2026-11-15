@@ -24,7 +24,9 @@
       "https://vc4qi.example/bindings/cal/1#CalLegalMandate",
       "https://vc4qi.example/bindings/cal/1#CalCertificate",
       "https://vc4qi.example/bindings/cal/1#CalTestReport",
-      "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential"
+      "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential",
+      "https://www.w3.org/ns/credentials/recognized-entities#RecognizedEntityCredential",
+      "https://www.w3.org/ns/credentials/issuer-dependent#VerifiableAuthorisationForTrustChain"
     ],
     "schemaUris": [
       "https://vc4qi.example/schemas/cal/1/accreditation.json",
@@ -32,9 +34,13 @@
       "https://vc4qi.example/schemas/cal/1/legal-mandate.json",
       "https://vc4qi.example/schemas/cal/1/certificate.json",
       "https://vc4qi.example/schemas/cal/1/test-report.json",
-      "https://vc4qi.example/schemas/cal/1/status-list.json"
+      "https://vc4qi.example/schemas/cal/1/status-list.json",
+      "https://vc4qi.example/schemas/rm/1/appointment.json",
+      "https://vc4qi.example/schemas/rm/1/recognized-entity.json",
+      "https://vc4qi.example/schemas/rm/1/status-list.json"
     ],
-    "statusListCarrier": "BitstringStatusListCredential with the VCDM 2.0 context only",
+    "statusListCarrier": "BitstringStatusListCredential with the VCDM 2.0 context only; this binding's issuers declare its status-list schema, the shared roots' issuers (the state, Global ACI) the RM v1 status-list schema",
+    "sharedRootCarriers": "The accreditation body is the RM binding's NAB, with the same two roots, signed once in the RM v1 fixtures and read here with the RM v1 carriers: the state's appointment APP-NAB (VerifiableAuthorisationForTrustChain, VCDM 2.0 and RM v1 contexts, schema rm/1/appointment.json) and Global ACI's recognition REC-NAB (RecognizedEntityCredential, VCDM 2.0 and the Recognized Entities stand-in context, schema rm/1/recognized-entity.json). A CalAccreditation names both in its termsOfUse (IssuedUnderPolicy, RecognitionPolicy) and may mirror the recognition as issuer.recognizedIn",
     "composition": "exact-listed-context-and-schema-combinations-only",
     "pinnedResourceIndex": "bindings/experimental/cal-v1/catalog.json",
     "decimalEncoding": "JSON strings typed xsd:decimal for every value, bound, uncertainty and CMC floor",
@@ -106,10 +112,11 @@
   },
   "routesAndRestrictions": {
     "installedCertificateRoutes": {
-      "direct-accreditation": ["CA-authorizes-certificate", "CA-grantee-is-issuer", "CA-issuer-is-accreditation-anchor", "CA-in-force-at-activity"],
-      "operational-scope": ["O-authorizes-certificate", "O-grantee-is-issuer", "O-self-maintained", "O-cites-CA", "CA-grantee-is-O-issuer", "CA-permits-scope-maintenance", "O-within-CA", "CA-issuer-is-accreditation-anchor", "O-and-CA-in-force-at-activity"],
+      "direct-accreditation": ["CA-authorizes-certificate", "CA-grantee-is-issuer", "CA-issuer-is-accreditation-anchor-appointed-or-recognized-for-main-scope", "CA-in-force-at-activity"],
+      "operational-scope": ["O-authorizes-certificate", "O-grantee-is-issuer", "O-self-maintained", "O-cites-CA", "CA-grantee-is-O-issuer", "CA-permits-scope-maintenance", "O-within-CA", "CA-issuer-is-accreditation-anchor-appointed-or-recognized-for-main-scope", "O-and-CA-in-force-at-activity"],
       "statutory-mandate": ["M-authorizes-certificate", "M-grantee-is-issuer", "M-issuer-is-designation-anchor", "M-in-force-at-activity"]
     },
+    "issuerStanding": "CA's issuer stands behind CA when it is a configured anchor for the route's purpose (accredit-calibration-laboratories, or accredit-testing-laboratories for a test report); else, when the profile accepts appointments, through the usable, unsuspended appointment CA names in an IssuedUnderPolicy, issued by an anchor for the appointer purpose, about CA's issuer, permitting CalAccreditation under its schema in the required jurisdiction and in force at the activity time; else, when the profile accepts recognitions, through the usable, unsuspended recognition CA names in a RecognitionPolicy, issued by an anchor for the recognizer purpose, recognizing CA's issuer to accredit with the purpose's main scope (Calibration or Testing under ISO/IEC 17025:2017) in force at the activity time. The same check as the RM binding (grantIssuerStanding); recognition never establishes authority or QI scope",
     "globalRestrictions": [],
     "routeComposition": "AND-within-route-OR-between-complete-routes"
   },

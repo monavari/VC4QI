@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 (globalThis as { self?: unknown }).self ??= globalThis;
 const bundle = new URL('../../../site/demo/verifier.js', import.meta.url).href;
 type Result = {
-  result: { decision: string };
+  result: { decision: string; authorization: { routeWitnessIds: string[] }[] };
   questions: { id: string; state: string; summary: string }[];
   graph: { nodes: { uri: string; name: string; layer: number; present: boolean }[]; edges: { from: string; to: string; kind: string; policy?: string }[] };
   texts: Record<string, string>;
@@ -47,16 +47,20 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     expect([r520.result.decision, answers(r520).authorized, answers(r520).fit]).toEqual(['reject', 'contradicted', 'not_asked']);
   });
 
-  it('DCC: every issuer case is accepted under its own profile; a direct-only verifier cannot tell for the others', async () => {
-    for (const caseId of ['direct', 'capability', 'nmi', 'report']) {
-      expect((await run('dcc', caseId, { choice: 'own' })).result.decision).toBe('accept');
+  it('DCC: every issuer case is accepted whether the verifier trusts the NAB, the state or Global ACI', async () => {
+    for (const choice of ['nab', 'state', 'gaci']) {
+      for (const caseId of ['direct', 'capability', 'nmi', 'report']) {
+        expect([choice, caseId, (await run('dcc', caseId, { choice })).result.decision]).toEqual([choice, caseId, 'accept']);
+      }
     }
-    const report = await run('dcc', 'report', { choice: 'own' });
+    const report = await run('dcc', 'report', { choice: 'nab' });
     expect(answers(report).supported).toBe('established');
-    expect(answers(await run('dcc', 'direct', { choice: 'own' })).supported).toBe('not_required');
-    for (const caseId of ['capability', 'nmi']) {
-      expect((await run('dcc', caseId, { choice: 'direct-only' })).result.decision).toBe('not_established');
-    }
+    expect(answers(await run('dcc', 'direct', { choice: 'nab' })).supported).toBe('not_required');
+    // The deciding root is on the route: the appointment for the state, the recognition for Global ACI.
+    const witnesses = async (choice: string) => (await run('dcc', 'direct', { choice })).result.authorization[0]!.routeWitnessIds;
+    expect(await witnesses('state')).toContain('https://state.vc4qi.example/credentials/APP-NAB');
+    expect(await witnesses('gaci')).toContain('https://global-aci.vc4qi.example/credentials/REC-NAB');
+    expect(await witnesses('nab')).not.toContain('https://state.vc4qi.example/credentials/APP-NAB');
   });
 
   it('GS: GS-mark credential → certificate → accreditation, ZLS authorization and studies; the toy is outside the ZLS scope', async () => {

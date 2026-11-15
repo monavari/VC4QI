@@ -11,6 +11,11 @@
 //     certificate DCC-N issued under M, with no accreditation root;
 //   - test-report-supported-dcc: a testing accreditation CAL-T from the NAB and test report
 //     REPORT-1 whose measuring instrument is supported by DCC-1.
+// The NAB is the RM binding's NAB, with the same two roots: CAL-A and CAL-T name the
+// state's appointment APP-NAB (IssuedUnderPolicy) and Global ACI's recognition REC-NAB
+// (RecognitionPolicy, mirrored as issuer.recognizedIn), as ACC-RMP and ACC-LAB do. The
+// roots are signed once, by generate-rm-v1-artifacts.ts (run it first); this catalog
+// lists those files where they are, with their digests, and copies nothing.
 //
 //   pnpm -C packages/core-ts exec tsx scripts/generate-cal-v1-artifacts.ts          # write
 //   pnpm -C packages/core-ts exec tsx scripts/generate-cal-v1-artifacts.ts --check  # fail if stale
@@ -52,6 +57,15 @@ const M_ID = 'https://ministry.vc4qi.example/credentials/CAL-M';
 const DCCN_ID = 'https://nmi.vc4qi.example/credentials/DCC-N';
 const T_ID = 'https://nab.vc4qi.example/credentials/CAL-T';
 const REPORT_ID = 'https://testlab.vc4qi.example/credentials/REPORT-1';
+// The shared roots of the NAB and their issuers' controllers and status lists, as signed
+// by the RM generator.
+const RM_SIGNED = join(ROOT, 'bindings', 'experimental', 'rm-v1', 'test-vectors', 'signed');
+const APPOINTMENT = 'https://state.vc4qi.example/credentials/APP-NAB';
+const RECOGNITION = 'https://global-aci.vc4qi.example/credentials/REC-NAB';
+const SHARED_ROOT_FILES = [
+  'credentials/APP-NAB.json', 'credentials/REC-NAB.json', 'controllers/state.json', 'controllers/global-aci.json',
+  'status/state.json', 'status/state-suspension.json', 'status/global-aci.json', 'status/global-aci-suspension.json',
+];
 const STATUS = {
   nab: 'https://nab.vc4qi.example/status/cal/1', lab: 'https://lab.vc4qi.example/status/cal/1',
   ministry: 'https://ministry.vc4qi.example/status/cal/1', nmi: 'https://nmi.vc4qi.example/status/cal/1',
@@ -97,6 +111,27 @@ const envelope = (id: string, type: string, schemaFile: string, issuer: string, 
 });
 
 async function main() {
+  // The shared roots: listed where the RM generator wrote them, never re-signed.
+  const rmIndex = (JSON.parse(readFileSync(join(RM_SIGNED, 'catalog.json'), 'utf8')) as { resources: Record<string, unknown>[] }).resources;
+  const rootText: Record<string, string> = {};
+  for (const file of SHARED_ROOT_FILES) {
+    const path = relative(ROOT, join(RM_SIGNED, file));
+    const entry = rmIndex.find(r => r.path === path);
+    if (entry === undefined) throw new Error(`${path} is not in the RM signed catalog; run generate-rm-v1-artifacts.ts first.`);
+    const text = readFileSync(join(ROOT, path), 'utf8');
+    if (sha384SRI(new TextEncoder().encode(text)) !== entry.digestSRI) throw new Error(`${path} does not match its RM catalog digest.`);
+    rootText[String(entry.uri)] = text;
+    index.push({ ...entry, origin: 'VC4QI experimental RM v1 signed fixture, a shared root of the NAB (fictional parties, insecure keys)' });
+  }
+  const digestOf = (uri: string) => sha384SRI(new TextEncoder().encode(rootText[uri]!));
+  // An accreditation of the NAB stands on the NAB's two roots, as in the RM binding.
+  const nabGrant = {
+    issuer: { id: NAB, recognizedIn: { id: RECOGNITION, type: 'RecognizedEntityCredential' } },
+    termsOfUse: [
+      { id: APPOINTMENT, type: 'IssuedUnderPolicy', digestSRI: digestOf(APPOINTMENT) },
+      { id: RECOGNITION, type: 'RecognitionPolicy', digestSRI: digestOf(RECOGNITION) },
+    ],
+  };
   const nab = await party('nab', NAB);
   const lab = await party('lab', LAB);
   const ministry = await party('ministry', MINISTRY);
@@ -123,6 +158,7 @@ async function main() {
 
   const caText = record(CA_ID, 'credentials/CAL-A.json', 'application/vc', serialize(await sign({
     ...envelope(CA_ID, 'CalAccreditation', 'accreditation.json', NAB, '2025-01-01T00:00:00Z', '2030-01-01T00:00:00Z'),
+    ...nabGrant,
     credentialSubject: {
       id: LAB,
       permittedActivity: [cal('issueCalibrationCertificate'), cal('maintainCalibrationScope')],
@@ -212,6 +248,7 @@ async function main() {
   // pressure transmitter it used.
   const tText = record(T_ID, 'credentials/CAL-T.json', 'application/vc', serialize(await sign({
     ...envelope(T_ID, 'CalAccreditation', 'accreditation.json', NAB, '2025-01-01T00:00:00Z', '2030-01-01T00:00:00Z'),
+    ...nabGrant,
     credentialSubject: {
       id: TLAB,
       permittedActivity: [cal('issueTestReport')],

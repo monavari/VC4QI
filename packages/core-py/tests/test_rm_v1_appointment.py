@@ -134,7 +134,8 @@ def test_e26_no_laboratory_permission_contradicts_support() -> None:
     assert anchor(result).state == "established"
     assert lab_anchor(result).state == "contradicted"
     assert (
-        "to issue RmpAccreditation, not LabAccreditation" in lab_anchor(result).reason
+        "to issue RmpAccreditation, CalAccreditation, not LabAccreditation"
+        in lab_anchor(result).reason
     )
     assert result.decision == "reject"
 
