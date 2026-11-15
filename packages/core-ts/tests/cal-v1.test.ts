@@ -101,7 +101,9 @@ async function reissueChain(steps: [string, ((d: JsonObject) => void)?][]) {
 const subject = (d: JsonObject) => d.credentialSubject as JsonObject;
 const scope0 = (d: JsonObject) => (subject(d).scope as JsonObject[])[0]!;
 const groups = (d: JsonObject) => (d.credentialSubject as JsonObject).measurementGroups as JsonObject[];
-const result0 = (d: JsonObject, group = 0) => (groups(d)[group]!.results as JsonObject[])[0]!;
+/** The first result's PTB D-SI real in a group, and its expanded uncertainty. */
+const result0 = (d: JsonObject, group = 0) => ((groups(d)[group]!.results as JsonObject[])[0]!.real as JsonObject);
+const expanded0 = (d: JsonObject, group = 0) => (result0(d, group).measurementUncertaintyUnivariate as JsonObject).expandedMU as JsonObject;
 function request(overrides: Partial<RelianceRequestInput> = {}) {
   return createRelianceRequest({
     requestId: 'urn:uuid:cal-v1-request', targetId: URI.DCC,
@@ -151,7 +153,7 @@ describe('calibration-direct-accreditation, migrated to the calibration v1 bindi
   });
 
   it('a coverage factor other than 2 is not mapped (gate 4)', async () => {
-    const result = await run(await reissue(undefined, d => { result0(d).coverageFactor = '3'; }));
+    const result = await run(await reissue(undefined, d => { expanded0(d).coverageFactor = '3'; }));
     expect(trace(result, 'claim-mapping:g1')).toMatchObject({ gate: 4, state: 'not_established' });
     expect(result.decision).toBe('not_established');
   });
@@ -181,7 +183,7 @@ describe('S18, S19, S21 under the calibration binding', () => {
   });
 
   it('S21: an uncertainty below the admitted CMC contradicts scope when the profile applies the floor', async () => {
-    const overrides = await reissue(undefined, d => { result0(d).expandedUncertainty = '0.3'; }); // 0.3 kPa < 0.5 kPa
+    const overrides = await reissue(undefined, d => { expanded0(d).valueExpandedMU = '0.3'; }); // 0.3 kPa < 0.5 kPa
     const applied = await run(overrides);
     expect(trace(applied, 'claim-coverage:g1:direct-accreditation')?.reason).toMatch(/U = 0.3 kPa is below the admitted CMC 0.5 kPa/);
     expect(applied.authorization[0]?.state).toBe('contradicted');
@@ -220,7 +222,7 @@ describe('calibration-capability: a bounded operational scope within the accredi
   it('a better capability than admitted widens the scope when the profile applies the CMC floor', async () => {
     const overrides = await reissueChain([
       [URI.O, d => { (scope0(d).cmcFloor as JsonObject).value = '0.3'; }],
-      [URI.DCC2, d => { result0(d).expandedUncertainty = '0.4'; }],
+      [URI.DCC2, d => { expanded0(d).valueExpandedMU = '0.4'; }],
     ]);
     const applied = await runCapability(overrides);
     expect(trace(applied, 'route:operational-scope:bounded-projection')?.reason).toMatch(/CMC 0.3 kPa is below the admitted 0.5 kPa/);

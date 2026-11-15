@@ -40,6 +40,8 @@ import {
   VC_V2_CONTEXT,
 } from '../src/reliance/index.js';
 import { loadRmV1Catalog } from '../src/reliance/rm-v1-node.js';
+import { expandedReal } from '../src/reliance/dsi.js';
+import { MG_PER_KG, PERCENT } from '../src/reliance/rm-scope.js';
 import { encodeStatusList, MIN_STATUS_BITS } from '../src/reliance/status-list.js';
 import type { JsonObject } from '../src/types.js';
 import { toMultibase } from '../src/utils/base58btc.js';
@@ -191,8 +193,8 @@ const scopeRecord = (id: string, methods: string[], properties = ['As'], range =
   formIri: rm(form),
   allowedPropertyIris: properties.map(rm),
   allowedMethodIris: methods.map(rm),
-  quantityKindIri: rm('MassFraction'),
-  range: { ...range, unit: 'mg/kg' },
+  quantityTypeQUDT: 'MassFraction',
+  range: { ...range, unit: MG_PER_KG },
 });
 
 async function main() {
@@ -407,15 +409,12 @@ async function main() {
     termsOfUse: policy(H_ID, hText),
   }, lab, '2026-01-15T00:00:00Z')), FIXTURE);
 
-  const certified = (element: string, value: string, ucumCode: string, expandedUncertainty: string) => ({
+  // Each certified value is a PTB D-SI real (dsi.ts), as in the DRMD: QUDT quantity
+  // kind, D-SI unit identifier and an expanded uncertainty at k = 2.
+  const certified = (element: string, value: string, unit: string, valueExpandedMU: string) => ({
     propertyIri: rm(element),
     methodIri: rm('M1'),
-    data: { quantity: {
-      quantityKind: rm('MassFraction'),
-      value,
-      unit: { ucumCode },
-      uncertainty: { expandedUncertainty, coverageFactor: '2' },
-    } },
+    data: { quantity: { real: expandedReal(element, 'MassFraction', value, unit, valueExpandedMU) } },
   });
   // RM178 is the certificate; RM197 and RM520 are hypothetical reissues by the same
   // fictional producer (fresh valid signatures) for the 197/520 witness cases.
@@ -436,10 +435,10 @@ async function main() {
           // The certified set of the M375a DRMD, as transcribed for the v0.3 example:
           // As first (the selected claim), then Cu, Zn and Pb, all with k = 2.
           results: [
-            certified('As', value, 'mg/kg', '5'),
-            certified('Cu', '57.68', '%', '0.14'),
-            certified('Zn', '38.2', '%', '0.4'),
-            certified('Pb', '3.07', '%', '0.06'),
+            certified('As', value, MG_PER_KG, '5'),
+            certified('Cu', '57.68', PERCENT, '0.14'),
+            certified('Zn', '38.2', PERCENT, '0.4'),
+            certified('Pb', '3.07', PERCENT, '0.06'),
           ],
         }],
       },

@@ -4,6 +4,8 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { expandedReal } from '../src/reliance/dsi.js';
+import { MG_PER_KG } from '../src/reliance/rm-scope.js';
 import { createProof } from '../src/proofs/index.js';
 import {
   catalogDocumentLoader, createRelianceRequest, loadBindingManifest, loadRelianceProfile, sha384SRI,
@@ -117,7 +119,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
     expect(byFact('requiredStudy')).toEqual([{ fact: 'requiredStudy', pointer: '/evidence/0/id', value: URI.S }]);
     const [selected] = byFact('selectedResult');
     expect(selected?.pointer).toBe('/credentialSubject/materialPropertiesList/0/results/0');
-    expect((selected?.value as { data: { quantity: { value: string } } }).data.quantity.value).toBe('178');
+    expect((selected?.value as { data: { quantity: { real: { value: string } } } }).data.quantity.real.value).toBe('178');
   });
 
   it('P01: the signed chain for x = 178 is verified and relied upon, with witnesses', async () => {
@@ -284,7 +286,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
 
       const missing = json(URI.D);
       const q = ((missing.credentialSubject as JsonObject).materialPropertiesList as JsonObject[])[0]!;
-      delete (((q.results as JsonObject[])[0]!.data as JsonObject).quantity as JsonObject).quantityKind;
+      delete ((((q.results as JsonObject[])[0]!.data as JsonObject).quantity as JsonObject).real as JsonObject).quantityTypeQUDT;
       const blocked = await verifyRmArtifact(URI.D, session({ [URI.D]: serialize(missing) }), { manifest, evaluationTime: NOW });
       expect(blocked.checks.at(-1)).toMatchObject({ check: 'schema', state: 'contradicted' });
     });
@@ -346,8 +348,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
       const document = json(URI.D);
       ((document.credentialSubject as JsonObject).materialPropertiesList as JsonObject[])[0]!
         .results = [{ ...(((document.credentialSubject as JsonObject).materialPropertiesList as JsonObject[])[0]!.results as JsonObject[])[0]!,
-          data: { quantity: { quantityKind: 'https://vc4qi.example/bindings/rm/1#MassFraction', value: '150',
-            unit: { ucumCode: 'mg/kg' }, uncertainty: { expandedUncertainty: '5', coverageFactor: '2' } } } }];
+          data: { quantity: { real: expandedReal('As', 'MassFraction', '150', MG_PER_KG, '5') } } }];
       const s = session({ [URI.D]: serialize(document) });
       const artifact = await verifyRmArtifact(URI.D, s, { manifest, evaluationTime: NOW });
       expect(artifact.protection.state).toBe('contradicted');

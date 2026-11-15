@@ -26,9 +26,13 @@ import { createProof } from '../src/proofs/index.js';
 import { catalogDocumentLoader, sha384SRI, VC_V2_CONTEXT } from '../src/reliance/index.js';
 import { CAL_V1_CONTEXT, CAL_V1_SCHEMA_BASE, CAL_V1_VOCAB } from '../src/reliance/cal-v1.js';
 import { loadCalV1Catalog } from '../src/reliance/cal-v1-node.js';
+import { expandedReal } from '../src/reliance/dsi.js';
 import { encodeStatusList, MIN_STATUS_BITS } from '../src/reliance/status-list.js';
 import type { JsonObject } from '../src/types.js';
 import { toMultibase } from '../src/utils/base58btc.js';
+
+// D-SI unit identifiers (PTB D-SI 2.2.1), one spelling each, as the binding accepts them.
+const KPA = '\\kilo\\pascal', MPA = '\\mega\\pascal';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const OUT = join(ROOT, 'bindings', 'experimental', 'cal-v1', 'test-vectors', 'signed');
@@ -124,10 +128,10 @@ async function main() {
       permittedActivity: [cal('issueCalibrationCertificate'), cal('maintainCalibrationScope')],
       scope: [{
         id: `${CA_ID}#scope-pressure`,
-        quantityKindIri: cal('Pressure'),
+        quantityTypeQUDT: 'Pressure',
         allowedMethodIris: [cal('PressureComparison')],
-        range: { from: '0', to: '10', unit: 'MPa' },
-        cmcFloor: { value: '0.5', unit: 'kPa' },
+        range: { from: '0', to: '10', unit: MPA },
+        cmcFloor: { value: '0.5', unit: KPA },
       }],
     },
   }, nab, '2025-01-01T00:00:00Z')));
@@ -138,10 +142,10 @@ async function main() {
       id: 'urn:vc4qi-example:item:pressure-transmitter-1',
       activityTime: '2026-01-14T12:00:00Z',
       measurementGroups: [
-        { id: `${DCC_ID}#g1`, quantityKindIri: cal('Pressure'), methodIris: [cal('PressureComparison')],
-          results: [{ value: '1000', unit: 'kPa', expandedUncertainty: '0.8', coverageFactor: '2' }] },
-        { id: `${DCC_ID}#g2`, quantityKindIri: cal('Pressure'), methodIris: [cal('PressureComparison')],
-          results: [{ value: '5', unit: 'MPa', expandedUncertainty: '0.002', coverageFactor: '2' }] },
+        { id: `${DCC_ID}#g1`, methodIris: [cal('PressureComparison')],
+          results: [{ real: expandedReal('pressure', 'Pressure', '1000', KPA, '0.8') }] },
+        { id: `${DCC_ID}#g2`, methodIris: [cal('PressureComparison')],
+          results: [{ real: expandedReal('pressure', 'Pressure', '5', MPA, '0.002') }] },
       ],
     },
     termsOfUse: [{ id: CA_ID, type: 'IssuedUnderPolicy', digestSRI: sha384SRI(new TextEncoder().encode(caText)) }],
@@ -155,10 +159,10 @@ async function main() {
       permittedActivity: [cal('issueCalibrationCertificate')],
       scope: [{
         id: `${O_ID}#scope-pressure-low`,
-        quantityKindIri: cal('Pressure'),
+        quantityTypeQUDT: 'Pressure',
         allowedMethodIris: [cal('PressureComparison')],
-        range: { from: '0', to: '2', unit: 'MPa' },
-        cmcFloor: { value: '0.8', unit: 'kPa' },
+        range: { from: '0', to: '2', unit: MPA },
+        cmcFloor: { value: '0.8', unit: KPA },
       }],
     },
     termsOfUse: [{ id: CA_ID, type: 'IssuedUnderPolicy', digestSRI: sha384SRI(new TextEncoder().encode(caText)) }],
@@ -169,8 +173,8 @@ async function main() {
       id: 'urn:vc4qi-example:item:pressure-gauge-7',
       activityTime: '2026-03-01T12:00:00Z',
       measurementGroups: [
-        { id: `${DCC2_ID}#g1`, quantityKindIri: cal('Pressure'), methodIris: [cal('PressureComparison')],
-          results: [{ value: '1000', unit: 'kPa', expandedUncertainty: '0.9', coverageFactor: '2' }] },
+        { id: `${DCC2_ID}#g1`, methodIris: [cal('PressureComparison')],
+          results: [{ real: expandedReal('pressure', 'Pressure', '1000', KPA, '0.9') }] },
       ],
     },
     termsOfUse: [{ id: O_ID, type: 'IssuedUnderPolicy', digestSRI: sha384SRI(new TextEncoder().encode(oText)) }],
@@ -184,10 +188,10 @@ async function main() {
       permittedActivity: [cal('issueCalibrationCertificate')],
       scope: [{
         id: `${M_ID}#scope-pressure-primary`,
-        quantityKindIri: cal('Pressure'),
+        quantityTypeQUDT: 'Pressure',
         allowedMethodIris: [cal('PressureBalance')],
-        range: { from: '0', to: '100', unit: 'MPa' },
-        cmcFloor: { value: '0.2', unit: 'kPa' },
+        range: { from: '0', to: '100', unit: MPA },
+        cmcFloor: { value: '0.2', unit: KPA },
       }],
     },
   }, ministry, '2024-01-01T00:00:00Z')));
@@ -197,8 +201,8 @@ async function main() {
       id: 'urn:vc4qi-example:item:transfer-standard-3',
       activityTime: '2026-04-01T12:00:00Z',
       measurementGroups: [
-        { id: `${DCCN_ID}#g1`, quantityKindIri: cal('Pressure'), methodIris: [cal('PressureBalance')],
-          results: [{ value: '20', unit: 'MPa', expandedUncertainty: '0.4', coverageFactor: '2' }] },
+        { id: `${DCCN_ID}#g1`, methodIris: [cal('PressureBalance')],
+          results: [{ real: expandedReal('pressure', 'Pressure', '20', MPA, '0.4') }] },
       ],
     },
     termsOfUse: [{ id: M_ID, type: 'IssuedUnderPolicy', digestSRI: sha384SRI(new TextEncoder().encode(mText)) }],
@@ -213,9 +217,9 @@ async function main() {
       permittedActivity: [cal('issueTestReport')],
       scope: [{
         id: `${T_ID}#scope-pressure-test`,
-        quantityKindIri: cal('Pressure'),
+        quantityTypeQUDT: 'Pressure',
         allowedMethodIris: [cal('HydrostaticPressureTest')],
-        range: { from: '0', to: '25', unit: 'MPa' },
+        range: { from: '0', to: '25', unit: MPA },
       }],
     },
   }, nab, '2025-01-01T00:00:00Z')));
@@ -226,8 +230,8 @@ async function main() {
       activityTime: '2026-06-10T09:00:00Z',
       instrumentIri: 'urn:vc4qi-example:item:pressure-transmitter-1',
       measurementGroups: [
-        { id: `${REPORT_ID}#g1`, quantityKindIri: cal('Pressure'), methodIris: [cal('HydrostaticPressureTest')],
-          results: [{ value: '2', unit: 'MPa', expandedUncertainty: '0.004', coverageFactor: '2' }] },
+        { id: `${REPORT_ID}#g1`, methodIris: [cal('HydrostaticPressureTest')],
+          results: [{ real: expandedReal('pressure', 'Pressure', '2', MPA, '0.004') }] },
       ],
     },
     termsOfUse: [{ id: T_ID, type: 'IssuedUnderPolicy', digestSRI: sha384SRI(new TextEncoder().encode(tText)) }],

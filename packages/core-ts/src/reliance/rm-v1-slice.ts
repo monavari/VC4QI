@@ -109,7 +109,7 @@ export async function evaluateRmSlice(
         + `${request.conformity.decisionRuleId} is not configured in the verifier profile.`]) };
     }
     const applicable = claims.filter(c => c.mapping?.coordinates?.propertyIri === requirement.propertyIri
-      && c.mapping.coordinates.quantityKindIri === requirement.quantityKindIri);
+      && c.mapping.coordinates.quantityTypeQUDT === requirement.quantityTypeQUDT);
     if (applicable.length !== 1) {
       return { ...base, ...predicate('not_established', [`Requirement ${requirement.id} must apply to exactly one selected claim; `
         + `${applicable.length} match.`]) };

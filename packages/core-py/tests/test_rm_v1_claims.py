@@ -8,6 +8,7 @@ from typing import Any
 
 import pytest
 from qi_vc_core.reliance import load_reliance_profile
+from qi_vc_core.reliance.rm_scope import KG_PER_KG, MG_PER_KG
 from qi_vc_core.reliance.rm_v1 import RM_V1_DIRECTORY
 from qi_vc_core.reliance.status_list import MIN_STATUS_BITS, encode_status_list
 from qi_vc_core.reliance.types import ConformityRequest, SelectedClaim
@@ -32,17 +33,21 @@ def first_result(d: dict[str, Any]) -> dict[str, Any]:
     return d["credentialSubject"]["materialPropertiesList"][0]["results"][0]  # type: ignore[no-any-return]
 
 
-def quantity(d: dict[str, Any]) -> dict[str, Any]:
-    return first_result(d)["data"]["quantity"]  # type: ignore[no-any-return]
+def real(d: dict[str, Any]) -> dict[str, Any]:
+    """The selected result's PTB D-SI real."""
+    return first_result(d)["data"]["quantity"]["real"]  # type: ignore[no-any-return]
 
 
-def with_value(value: str, u: str = "5", unit: str = "mg/kg") -> dict[str, str | None]:
+def expanded_mu(d: dict[str, Any]) -> dict[str, Any]:
+    return real(d)["measurementUncertaintyUnivariate"]["expandedMU"]  # type: ignore[no-any-return]
+
+
+def with_value(
+    value: str, u: str = "5", unit: str = MG_PER_KG
+) -> dict[str, str | None]:
     def edit(d: dict[str, Any]) -> None:
-        quantity(d).update(
-            value=value,
-            unit={"ucumCode": unit},
-            uncertainty={"expandedUncertainty": u, "coverageFactor": "2"},
-        )
+        real(d).update(value=value, unit=unit)
+        expanded_mu(d)["valueExpandedMU"] = u
 
     return reissue({}, edit)
 
@@ -174,8 +179,8 @@ def scope_record(rid: str, **over: Any) -> dict[str, Any]:
         "formIri": RM + "Disc",
         "allowedPropertyIris": [RM + "As"],
         "allowedMethodIris": [RM + "M1"],
-        "quantityKindIri": RM + "MassFraction",
-        "range": {"from": "50", "to": "500", "unit": "mg/kg"},
+        "quantityTypeQUDT": "MassFraction",
+        "range": {"from": "50", "to": "500", "unit": MG_PER_KG},
     }
     record.update(over)
     return record
@@ -238,7 +243,9 @@ def test_s11_two_claims_with_their_own_records() -> None:
             {
                 **results[0],
                 "propertyIri": RM + "Pb",
-                "data": {"quantity": {**quantity(d), "value": "120"}},
+                "data": {
+                    "quantity": {"real": {**real(d), "label": "Pb", "value": "120"}}
+                },
             }
         )
 
@@ -262,16 +269,16 @@ def test_s12_adjacent_parent_records_are_not_a_union() -> None:
     a, o = doc(URI["A"]), doc(URI["O"])
     a["credentialSubject"]["scope"] = [
         scope_record(
-            f"{URI['A']}#low", range={"from": "50", "to": "300", "unit": "mg/kg"}
+            f"{URI['A']}#low", range={"from": "50", "to": "300", "unit": MG_PER_KG}
         ),
         scope_record(
-            f"{URI['A']}#high", range={"from": "300", "to": "500", "unit": "mg/kg"}
+            f"{URI['A']}#high", range={"from": "300", "to": "500", "unit": MG_PER_KG}
         ),
     ]
     o["credentialSubject"]["scope"][0]["range"] = {
         "from": "100",
         "to": "400",
-        "unit": "mg/kg",
+        "unit": MG_PER_KG,
     }
     result = run(reissue({URI["A"]: a, URI["O"]: o}))
     assert (
@@ -287,7 +294,7 @@ def test_s13_lower_bound_below_parent_is_rejected() -> None:
     o["credentialSubject"]["scope"][0]["range"] = {
         "from": "0.05",
         "to": "500",
-        "unit": "mg/kg",
+        "unit": MG_PER_KG,
     }
     result = run(reissue({URI["O"]: o}))
     assert (
@@ -298,7 +305,7 @@ def test_s13_lower_bound_below_parent_is_rejected() -> None:
 
 @pytest.mark.parametrize(
     "scope_range",
-    [{"from": "50", "unit": "mg/kg"}, {"from": "", "to": "500", "unit": "mg/kg"}],
+    [{"from": "50", "unit": MG_PER_KG}, {"from": "", "to": "500", "unit": MG_PER_KG}],
 )
 def test_s20_missing_or_empty_endpoint_never_contains(
     scope_range: dict[str, str],
@@ -320,12 +327,14 @@ def test_s20_missing_or_empty_endpoint_never_contains(
 
 
 def test_s14_units_and_coverage_factor() -> None:
-    ppm = run(with_value("178", "5", "ppm"))
-    assert schema_of_d(ppm).state == "contradicted"
-    assert ppm.decision == "reject"
+    # D-SI's \\ppm and its \\per spelling of mg/kg: one spelling per unit, the DRMD's.
+    for unit in ("\\ppm", "\\milli\\gram\\per\\kilogram", "mg/kg"):
+        refused = run(with_value("178", "5", unit))
+        assert schema_of_d(refused).state == "contradicted", unit
+        assert refused.decision == "reject", unit
 
     def k3(d: dict[str, Any]) -> None:
-        quantity(d)["uncertainty"]["coverageFactor"] = "3"
+        expanded_mu(d)["coverageFactor"] = "3"
 
     result = run(reissue({}, k3))
     mapping = entry(result, "claim-mapping:as-mass-fraction")
@@ -336,7 +345,7 @@ def test_s14_units_and_coverage_factor() -> None:
 
 def test_s15_equivalent_encodings_give_the_same_witness() -> None:
     baseline = run()
-    kgkg = run(with_value("0.000178", "0.000005", "kg/kg"))
+    kgkg = run(with_value("0.000178", "0.000005", KG_PER_KG))
     assert kgkg.decision == baseline.decision
     assert (
         kgkg.authorization[0].route_witness_ids
@@ -355,7 +364,7 @@ def test_s16_reversed_scope_interval_is_invalid() -> None:
     o["credentialSubject"]["scope"][0]["range"] = {
         "from": "500",
         "to": "50",
-        "unit": "mg/kg",
+        "unit": MG_PER_KG,
     }
     result = run(reissue({URI["O"]: o}))
     assert (
@@ -394,11 +403,7 @@ def test_s22_no_invented_uncertainty_ceiling() -> None:
 
 def test_s23_asymmetric_uncertainty_is_refused() -> None:
     d = doc(URI["D"])
-    quantity(d)["uncertainty"] = {
-        "expandedUncertainty": "5",
-        "coverageFactor": "2",
-        "lowerExpandedUncertainty": "3",
-    }
+    expanded_mu(d)["lowerValueExpandedMU"] = "3"
     # PyLD has no safe mode, so Python can sign the undefined term (the TS test asserts
     # that signing is refused); verification still refuses it at the closed schema.
     result = run({URI["D"]: sign(d)})

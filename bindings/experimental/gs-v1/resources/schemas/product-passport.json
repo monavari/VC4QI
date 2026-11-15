@@ -112,12 +112,46 @@
         "technicalData": {
           "type": "object",
           "required": [
-            "ratedPowerW"
+            "ratedPower"
           ],
           "properties": {
-            "ratedPowerW": {
-              "type": "string",
-              "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+            "ratedPower": {
+              "type": "object",
+              "required": [
+                "real"
+              ],
+              "properties": {
+                "real": {
+                  "type": "object",
+                  "required": [
+                    "quantityTypeQUDT",
+                    "value",
+                    "unit"
+                  ],
+                  "properties": {
+                    "label": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "quantityTypeQUDT": {
+                      "enum": [
+                        "Power"
+                      ]
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                    },
+                    "unit": {
+                      "enum": [
+                        "\\watt"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false

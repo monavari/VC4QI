@@ -89,15 +89,10 @@
             "type": "object",
             "required": [
               "id",
-              "quantityKindIri",
               "results"
             ],
             "properties": {
               "id": {
-                "type": "string",
-                "format": "uri"
-              },
-              "quantityKindIri": {
                 "type": "string",
                 "format": "uri"
               },
@@ -115,30 +110,75 @@
                 "items": {
                   "type": "object",
                   "required": [
-                    "value",
-                    "unit",
-                    "expandedUncertainty",
-                    "coverageFactor"
+                    "real"
                   ],
                   "properties": {
-                    "value": {
-                      "type": "string",
-                      "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
-                    },
-                    "unit": {
-                      "enum": [
-                        "Pa",
-                        "kPa",
-                        "MPa"
-                      ]
-                    },
-                    "expandedUncertainty": {
-                      "type": "string",
-                      "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
-                    },
-                    "coverageFactor": {
-                      "type": "string",
-                      "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                    "real": {
+                      "type": "object",
+                      "required": [
+                        "quantityTypeQUDT",
+                        "value",
+                        "unit",
+                        "measurementUncertaintyUnivariate"
+                      ],
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "quantityTypeQUDT": {
+                          "enum": [
+                            "Pressure"
+                          ]
+                        },
+                        "value": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                        },
+                        "unit": {
+                          "enum": [
+                            "\\pascal",
+                            "\\kilo\\pascal",
+                            "\\mega\\pascal"
+                          ]
+                        },
+                        "measurementUncertaintyUnivariate": {
+                          "type": "object",
+                          "required": [
+                            "expandedMU"
+                          ],
+                          "properties": {
+                            "expandedMU": {
+                              "type": "object",
+                              "required": [
+                                "valueExpandedMU",
+                                "coverageFactor"
+                              ],
+                              "properties": {
+                                "valueExpandedMU": {
+                                  "type": "string",
+                                  "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                                },
+                                "coverageFactor": {
+                                  "type": "string",
+                                  "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                                },
+                                "coverageProbability": {
+                                  "type": "string",
+                                  "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                                },
+                                "distribution": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "additionalProperties": false
+                            }
+                          },
+                          "additionalProperties": false
+                        }
+                      },
+                      "additionalProperties": false
                     }
                   },
                   "additionalProperties": false

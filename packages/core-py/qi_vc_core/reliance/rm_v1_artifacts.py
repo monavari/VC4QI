@@ -1288,7 +1288,8 @@ def evaluate_rm_slice(
                 if c[1] is not None
                 and c[1].coordinates is not None
                 and c[1].coordinates.property_iri == requirement.property_iri
-                and c[1].coordinates.quantity_kind_iri == requirement.quantity_kind_iri
+                and c[1].coordinates.quantity_type_qudt
+                == requirement.quantity_type_qudt
             ]
             if len(applicable) != 1:
                 conformity_outcome = _predicate(

@@ -37,7 +37,9 @@ and M2, shaped after a flexible-scope annex row), the producer's own flexible sc
 LIST-RMP within it (As, [50, 500] mg/kg, M1 only), the certificate RM178 (CuZn39Pb3 brass,
 arsenic, U = 5 mg/kg, k = 2), the homogeneity study HOM-LOT1 and the laboratory's
 accreditation ACC-LAB. The verifier asks for `x + U <= 200 mg/kg`
-(`guarded-acceptance-expanded-u`).
+(`guarded-acceptance-expanded-u`). As in the DRMD, every certified value is a PTB D-SI
+2.2.1 real (QUDT `MassFraction`, unit `\milli\gram\kilogram\tothe{-1}` or `\percent`,
+expanded uncertainty with k = 2); see [bindings](bindings.md#quantity-values-ptb-d-si).
 
 | Signed certificate | Scope | Conformity | Decision |
 | --- | --- | --- | --- |

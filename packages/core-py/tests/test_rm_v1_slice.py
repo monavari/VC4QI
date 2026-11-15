@@ -217,7 +217,7 @@ def test_extracts_protected_facts_with_source_pointers() -> None:
     assert [p for p, _ in results] == [
         f"/credentialSubject/materialPropertiesList/0/results/{i}" for i in range(4)
     ]
-    assert results[0][1]["data"]["quantity"]["value"] == "178"
+    assert results[0][1]["data"]["quantity"]["real"]["value"] == "178"
 
 
 def test_p01_signed_chain_for_178_is_relied_upon() -> None:
@@ -245,7 +245,7 @@ def test_p01_signed_chain_for_178_is_relied_upon() -> None:
 def test_changed_value_without_resigning_is_rejected() -> None:
     document = doc(URI["D"])
     quantity = document["credentialSubject"]["materialPropertiesList"][0]["results"][0]
-    quantity["data"]["quantity"]["value"] = "150"
+    quantity["data"]["quantity"]["real"]["value"] = "150"
     overrides = {URI["D"]: serialize(document)}
     artifact = verify(URI["D"], overrides)
     assert (artifact.checks[-1].check, artifact.checks[-1].state) == (
@@ -623,7 +623,7 @@ def test_v11_optional_annotation_inert_missing_required_term_blocks() -> None:
     missing = doc(URI["D"])
     del missing["credentialSubject"]["materialPropertiesList"][0]["results"][0]["data"][
         "quantity"
-    ]["quantityKind"]
+    ]["real"]["quantityTypeQUDT"]
     blocked = verify(URI["D"], {URI["D"]: serialize(missing)})
     assert (blocked.checks[-1].check, blocked.checks[-1].state) == (
         "schema",

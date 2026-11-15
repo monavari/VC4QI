@@ -162,9 +162,10 @@ CuZn39Pb3 under copper alloys under non-ferrous metals and alloys, discs under s
 forms, As, Cu, Zn and Pb under element contents). The hierarchy applies to matrix,
 form and property in containment, claim coverage and study scope, never runs
 downward, and without it a set contains nothing but itself; methods and quantity kinds
-stay exact. Validate quantity kind, unit, finite
-ordered bounds and uncertainty before comparing, and use exact decimal arithmetic in
-both languages with no hidden tolerance. Unsupported conversions yield
+stay exact. Values are PTB D-SI 2.2.1 reals ([bindings](bindings.md#quantity-values-ptb-d-si)):
+validate the QUDT quantity kind, the D-SI unit, finite ordered bounds and the expanded
+uncertainty before comparing, and use exact decimal arithmetic in both languages with
+no hidden tolerance. Unsupported units, conversions or uncertainty forms yield
 `not_established`; proven violations are `contradicted`.
 
 Three rules stay separate:

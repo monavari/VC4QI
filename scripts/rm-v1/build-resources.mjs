@@ -41,10 +41,17 @@ const closed = (properties, required = Object.keys(properties)) => ({
 });
 const nonemptySet = items => ({ type: 'array', minItems: 1, uniqueItems: true, items });
 
+// PTB D-SI 2.2.1 (https://www.ptb.de/si/v2.2.1/SI_Format.xsd): unit identifiers the
+// binding accepts, one spelling each (the DRMD's), and QUDT quantity-kind names as D-SI's
+// quantityTypeQUDT carries them. Any other unit or kind is outside the binding.
+const MG_PER_KG = '\\milli\\gram\\kilogram\\tothe{-1}';
+const KG_PER_KG = '\\kilogram\\kilogram\\tothe{-1}';
+const PERCENT = '\\percent';
+const quantityTypeQUDT = { enum: ['MassFraction'] };
 const range = closed({
   from: decimal,
   to: decimal,
-  unit: { enum: ['mg/kg', 'kg/kg'] },
+  unit: { enum: [MG_PER_KG, KG_PER_KG] },
 });
 const scopeRecord = closed({
   id: iri,
@@ -52,7 +59,7 @@ const scopeRecord = closed({
   formIri: iri,
   allowedPropertyIris: nonemptySet(iri),
   allowedMethodIris: nonemptySet(iri),
-  quantityKindIri: iri,
+  quantityTypeQUDT,
   range,
 });
 const labScopeRecord = closed({
@@ -93,12 +100,22 @@ const proof = closed({
   created: dateTime,
   proofValue: { type: 'string', pattern: '^z[1-9A-HJ-NP-Za-km-z]+$' },
 });
-const quantity = closed({
-  quantityKind: iri,
+// One D-SI si:real with an expanded uncertainty (D-SI element names; label optional).
+const real = closed({
+  label: { type: 'string', minLength: 1 },
+  quantityTypeQUDT,
   value: decimal,
-  unit: closed({ ucumCode: { enum: ['mg/kg', 'kg/kg', '%'] } }),
-  uncertainty: closed({ expandedUncertainty: decimal, coverageFactor: decimal }),
-});
+  unit: { enum: [MG_PER_KG, KG_PER_KG, PERCENT] },
+  measurementUncertaintyUnivariate: closed({
+    expandedMU: closed({
+      valueExpandedMU: decimal,
+      coverageFactor: decimal,
+      coverageProbability: decimal,
+      distribution: { type: 'string', minLength: 1 },
+    }, ['valueExpandedMU', 'coverageFactor']),
+  }),
+}, ['quantityTypeQUDT', 'value', 'unit', 'measurementUncertaintyUnivariate']);
+const quantity = closed({ real });
 const statusEntry = closed({
   id: iri,
   type: { const: 'BitstringStatusListEntry' },

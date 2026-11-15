@@ -3,8 +3,10 @@
 //
 // Quantities are decimal strings (xsd:decimal). Comparisons use exact rationals:
 // value × unit factor, with mg/kg = 10^-6 kg/kg, so no floating-point tolerance can
-// move an acceptance boundary (cases S14-S16). Unknown units or malformed
-// numbers are never compared.
+// move an acceptance boundary (cases S14-S16). Units are PTB D-SI 2.2.1 identifiers
+// (see dsi.ts), accepted from an exact list; unknown units or malformed numbers are
+// never compared.
+import { unitSymbol, type DsiUnit } from './dsi.js';
 
 /**
  * The binding's governed concept hierarchy (skos:broader, applied transitively). A
@@ -50,8 +52,23 @@ export function conceptsFrom(scopeAndMapping: Readonly<Record<string, unknown>>)
 export interface Decimal { readonly n: bigint; readonly scale: number }
 
 const DECIMAL = /^(0|[1-9][0-9]*)(\.[0-9]+)?$/;
-/** Supported mass-fraction units as powers of ten relative to kg/kg. */
-export const RM_UNIT_EXPONENTS: Readonly<Record<string, number>> = Object.freeze({ 'kg/kg': 0, 'mg/kg': -6 });
+/**
+ * Supported mass-fraction units: D-SI identifiers as powers of ten relative to kg/kg.
+ * One spelling each, the DRMD's (`\milli\gram\kilogram\tothe{-1}`); D-SI's
+ * `\per` spelling and every other unit stay not established.
+ */
+export const MG_PER_KG = '\\milli\\gram\\kilogram\\tothe{-1}';
+export const KG_PER_KG = '\\kilogram\\kilogram\\tothe{-1}';
+export const PERCENT = '\\percent';
+export const RM_UNITS: Readonly<Record<string, DsiUnit>> = Object.freeze({
+  [KG_PER_KG]: Object.freeze({ exponent: 0, symbol: 'kg/kg' }),
+  [MG_PER_KG]: Object.freeze({ exponent: -6, symbol: 'mg/kg' }),
+  [PERCENT]: Object.freeze({ exponent: -2, symbol: '%' }),
+});
+export const RM_UNIT_EXPONENTS: Readonly<Record<string, number>> = Object.freeze(
+  Object.fromEntries(Object.entries(RM_UNITS).map(([unit, { exponent }]) => [unit, exponent])));
+/** Display symbol of an RM unit (mg/kg for the D-SI identifier). */
+export const rmUnitSymbol = (unit: unknown) => unitSymbol(RM_UNITS, unit);
 
 export function parseDecimal(value: unknown): Decimal | undefined {
   if (typeof value !== 'string' || !DECIMAL.test(value)) return undefined;
@@ -97,7 +114,7 @@ export function recordInterval(record: ScopeRecord): { low: Decimal; high: Decim
   if (range === undefined) return 'Scope record has no range.';
   const low = toKgPerKg(range.from, range.unit);
   const high = toKgPerKg(range.to, range.unit);
-  if (low === undefined || high === undefined) return `Unsupported or malformed range ${String(range.from)}–${String(range.to)} ${String(range.unit)}.`;
+  if (low === undefined || high === undefined) return `Unsupported or malformed range ${String(range.from)}–${String(range.to)} ${rmUnitSymbol(range.unit)}.`;
   if (compareDecimal(low, high) > 0) return 'Scope record range is reversed.';
   return { low, high };
 }
@@ -129,14 +146,14 @@ export function containedIn(
     }
     const properties = list(child.allowedPropertyIris), methods = list(child.allowedMethodIris);
     if (properties.length === 0 || methods.length === 0 || typeof child.matrixIri !== 'string' ||
-        typeof child.formIri !== 'string' || typeof child.quantityKindIri !== 'string') {
+        typeof child.formIri !== 'string' || typeof child.quantityTypeQUDT !== 'string') {
       return { state: 'not_established', reason: `${String(child.id)}: a restricted dimension is missing or empty.`, witnesses };
     }
     const parent = parents.find(p => {
       const parentRange = recordInterval(p);
       return typeof parentRange !== 'string'
         && concepts.within(child.matrixIri, p.matrixIri) && concepts.within(child.formIri, p.formIri)
-        && p.quantityKindIri === child.quantityKindIri
+        && p.quantityTypeQUDT === child.quantityTypeQUDT
         && covers(properties, list(p.allowedPropertyIris), concepts) && subset(methods, list(p.allowedMethodIris))
         && compareDecimal(childRange.low, parentRange.low) >= 0 && compareDecimal(childRange.high, parentRange.high) <= 0;
     });

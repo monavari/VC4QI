@@ -3,9 +3,21 @@
 // the vertical lanes with an explainer (index.html, the default). board.js documents every field.
 import { short } from '../board.js';
 
+// Values are PTB D-SI 2.2.1 reals; their unit identifiers are shown by symbol.
+const UNIT_SYMBOL = { '\\milli\\gram\\kilogram\\tothe{-1}': 'mg/kg', '\\kilogram\\kilogram\\tothe{-1}': 'kg/kg', '\\percent': '%' };
+const sym = unit => UNIT_SYMBOL[unit] ?? String(unit ?? '');
+/** A result's D-SI real, flattened for display: value, U, k, unit symbol and identifier, QUDT kind. */
+const dsiValue = quantity => {
+  const r = quantity?.real ?? {}, e = r.measurementUncertaintyUnivariate?.expandedMU ?? {};
+  return { value: r.value, U: e.valueExpandedMU, k: e.coverageFactor, unit: sym(r.unit), unitId: r.unit, kind: r.quantityTypeQUDT };
+};
 // 997000 mg/kg reads as 997 g/kg, the way an annex writes it.
 const amount = (v, unit) => unit === 'mg/kg' && Number(v) >= 1000 ? Number(v) / 1000 + ' g/kg' : v + ' ' + unit;
-const range = r => !r ? '' : Number(r.to) >= 1000 && r.unit === 'mg/kg' ? amount(r.from, r.unit) + ' – ' + amount(r.to, r.unit) : r.from + '–' + r.to + ' ' + r.unit;
+const range = r => {
+  if (!r) return '';
+  const unit = sym(r.unit);
+  return Number(r.to) >= 1000 && unit === 'mg/kg' ? amount(r.from, unit) + ' – ' + amount(r.to, unit) : r.from + '–' + r.to + ' ' + unit;
+};
 const matrix = r => short(r.matrixIri) + (r.formIri ? ' ' + short(r.formIri).toLowerCase() + 's' : '');
 const list = a => (a ?? []).map(short).join(', ');
 // The sets an accreditation names (the binding's governed concepts), in words.
@@ -25,8 +37,8 @@ function facts(code, d) {
   if (code === 'H') return [list(r.studyTypeIris) + ' studies of ' + (r.allowedPropertyIris ?? []).map(words).join(', '), cap(words(r.matrixIri))];
   if (code === 'O') return [list(r.allowedPropertyIris) + ' in ' + matrix(r) + ' · ' + range(r.range), 'Method ' + list(r.allowedMethodIris) + ' only'];
   if (code === 'S') return ['Disc lot 1: ' + short(s.outcomeIri).toLowerCase(), short(s.studyTypeIri) + ' of ' + short(s.propertyIri)];
-  const res = s.materialPropertiesList?.[0]?.results?.[0] ?? {}, q = res.data?.quantity ?? {};
-  return [short(res.propertyIri) + ' = ' + q.value + ' ± ' + q.uncertainty?.expandedUncertainty + ' ' + (q.unit?.ucumCode ?? ''), 'k = ' + q.uncertainty?.coverageFactor + ' · method ' + short(res.methodIri)];
+  const res = s.materialPropertiesList?.[0]?.results?.[0] ?? {}, q = dsiValue(res.data?.quantity);
+  return [short(res.propertyIri) + ' = ' + q.value + ' ± ' + q.U + ' ' + q.unit, 'k = ' + q.k + ' · method ' + short(res.methodIri)];
 }
 
 // ---------------------------------------------------------------- what a credential says
@@ -41,9 +53,9 @@ function content(code, d, { esc }) {
   if (type === 'RmCertificate') {
     const m = (s.materials ?? [])[0] ?? {};
     const rows = (s.materialPropertiesList ?? []).flatMap(set => set.results ?? []).map((r, i) => {
-      const q = r.data?.quantity ?? {};
+      const q = dsiValue(r.data?.quantity);
       return "<tr class='" + (i === 0 ? 'sel' : '') + "'><td>" + esc(short(r.propertyIri)) + (i === 0 ? ' · checked' : '') + "</td><td class='num'>" + esc(q.value) + "</td><td class='num'>"
-        + esc(q.uncertainty?.expandedUncertainty) + ' (k = ' + esc(q.uncertainty?.coverageFactor) + ')</td><td>' + esc(q.unit?.ucumCode) + '</td><td>' + esc(short(r.methodIri)) + '</td></tr>';
+        + esc(q.U) + ' (k = ' + esc(q.k) + ')</td><td>' + esc(q.unit) + "<br><code style='font-size:.78em;word-break:break-all'>" + esc(q.unitId) + '</code></td><td>' + esc(short(r.methodIri)) + '</td></tr>';
     }).join('');
     return "<div class='says'>" + kv([['Material', esc(m.name ?? '') + ' (' + esc(short(m.matrixIri)) + ', ' + esc(short(m.formIri).toLowerCase()) + ')'],
       ['Batch', esc(short(s.id))], ['Certified on', esc(day(s.activityTime))]])
@@ -107,7 +119,7 @@ function whole({ R, esc }) {
   const D = doc('D'), A = doc('A'), H = doc('H'), O = doc('O'), S = doc('S'), REC = doc('R'), APP = doc('APP');
   // The digest a link carries: on the termsOfUse or evidence entry that names the credential.
   const pin = (d, to) => ([...[d.termsOfUse ?? []].flat(), ...(d.evidence ?? [])].find(e => e?.id === to)?.digestSRI ?? '').slice(0, 11) + '…';
-  const res = D.credentialSubject.materialPropertiesList[0].results[0], q = res.data.quantity;
+  const res = D.credentialSubject.materialPropertiesList[0].results[0], q = dsiValue(res.data.quantity);
   const status = [D.credentialStatus].flat()[0];
   const T = (x, y, text, cls = '', anchor = 'start') => "<text x='" + x + "' y='" + y + "' class='" + cls + "' text-anchor='" + anchor + "'>" + esc(text) + '</text>';
   const mk = (x, y, n) => "<g class='mk r" + n + "'><circle cx='" + x + "' cy='" + y + "' r='11'/>" + T(x, y + 4.5, String(n), 'mkn', 'middle') + '</g>';
@@ -156,7 +168,7 @@ function whole({ R, esc }) {
     + node(120, 410, 300, 100, O, 'grant', 'actor', who('O'))
     + node(1180, 410, 300, 100, S, 'result', 'actor', who('S'))
     + node(620, 570, 360, 140, D, 'claim', 'actor', who('D'),
-      [short(res.propertyIri) + ' = ' + q.value + ' ± ' + q.uncertainty.expandedUncertainty + ' ' + q.unit.ucumCode + ' · ' + short(res.methodIri) + ' · k = ' + q.uncertainty.coverageFactor,
+      [short(res.propertyIri) + ' = ' + q.value + ' ± ' + q.U + ' ' + q.unit + ' · ' + short(res.methodIri) + ' · k = ' + q.k,
         '◆ ' + D.proof.cryptosuite + ' · valid ' + String(D.validFrom).slice(0, 10) + ' – ' + String(D.validUntil).slice(0, 10)])
     + "<g class='node'><rect x='196' y='612' width='208' height='56' rx='8' class='nb plain'/>" + T(300, 636, 'Status list', 'b', 'middle') + T(300, 656, "producer's, dated", 's', 'middle') + '</g>'
     + "<g class='node'><rect x='1196' y='612' width='208' height='56' rx='8' class='nb plain'/>" + T(1300, 636, 'Disc lot 1', 'b', 'middle') + T(1300, 656, 'CuZn39Pb3, the material', 's', 'middle') + '</g>'
@@ -199,7 +211,7 @@ const monoOf = id => ACTORS.find(a => a.id === id)?.mono ?? id;
  */
 function taxonomy({ R, esc }) {
   const D = JSON.parse(R.texts[R.uris.D]), APP = JSON.parse(R.texts[R.uris.APP]);
-  const res = D.credentialSubject.materialPropertiesList[0].results[0], q = res.data.quantity;
+  const res = D.credentialSubject.materialPropertiesList[0].results[0], q = dsiValue(res.data.quantity);
   const status = [D.credentialStatus].flat()[0], tou = [D.termsOfUse].flat()[0], ev = [D.evidence].flat()[0];
   const c = t => '<code>' + esc(t) + '</code>';
   const T = (x, y, text, cls = '', anchor = 'start') => "<text x='" + x + "' y='" + y + "' class='" + cls + "' text-anchor='" + anchor + "'>" + esc(text) + '</text>';
@@ -216,7 +228,7 @@ function taxonomy({ R, esc }) {
     ['type', typeOf(D), 'VC4QI'], ['issuer', 'the RM producer', 'W3C'], ['validFrom, validUntil', day(D.validFrom) + ' – ' + day(D.validUntil), 'W3C'],
     ['evidence', ev.type + ' → ' + codeOf(ev.id), 'W3C · VC4QI type', 'digestSRI ' + String(ev.digestSRI).slice(0, 20) + '…'], ['credentialStatus', status.statusPurpose + ', bit ' + status.statusListIndex, 'W3C'],
     ['proof', D.proof.cryptosuite, 'W3C'],
-    ['credentialSubject', 'disc lot 1: ' + short(res.propertyIri) + ' = ' + q.value + ' ± ' + q.uncertainty.expandedUncertainty + ' ' + q.unit.ucumCode, 'W3C · DRMD shape'],
+    ['credentialSubject', 'disc lot 1: ' + short(res.propertyIri) + ' = ' + q.value + ' ± ' + q.U + ' ' + q.unit, 'W3C · DRMD · D-SI'],
   ];
   // A row is a field and its value; a link's row adds the digest it carries.
   const rowYs = fields.reduce((ys, f, i) => [...ys, i === 0 ? row0 : ys[i - 1] + (fields[i - 1][3] ? step + 15 : step)], []);
@@ -240,7 +252,7 @@ function taxonomy({ R, esc }) {
       + T(X + 16, rowY(i) + 16, v, 'rv') + (fields[i][3] ? T(X + 16, rowY(i) + 31, fields[i][3], 'lm') : '')).join('')
     + '</g></svg>';
   const anat = "<figure class='credfig anat'>" + svgA
-    + "<figcaption>Every field is W3C’s (VC Data Model 2.0, Data Integrity); the types in two of them are VC4QI’s. Four fields link out: up to the grant, down to the subject, beside to evidence and status.</figcaption></figure>";
+    + "<figcaption>Every field is W3C’s (VC Data Model 2.0, Data Integrity); the types in two of them are VC4QI’s, and the subject follows the DRMD, its values written as PTB D-SI reals. Four fields link out: up to the grant, down to the subject, beside to evidence and status.</figcaption></figure>";
   const linkOrigin = { TrustFrameworkPolicy: 'ebsi', IssuedUnderPolicy: 'ours', RecognitionPolicy: 'ours', evidence: 'w3c' };
   const typeOrigin = t => t === 'VerifiableAuthorisationForTrustChain' ? 'ebsi' : t === 'RecognizedEntityCredential' ? 'w3c' : 'ours';
   const who = a => "<span class='pair'><span class='mono-badge sm'>" + esc(monoOf(a.actor)) + "</span> → " + (a.about === 'object' ? esc(a.aboutLabel) : "<span class='mono-badge sm'>" + esc(monoOf(a.about)) + '</span>') + '</span>';
@@ -350,13 +362,13 @@ function anatomyParts({ R, esc }) {
   const c = t => '<code>' + esc(t) + '</code>';
   const group = t => "<tr class='group'><th colspan='4'>" + esc(t) + '</th></tr>';
   const row = (prop, sec, says, here, board, star) => '<tr' + (star ? " class='star'" : '') + "><th scope='row'>" + c(prop) + '<small>§' + sec + '</small></th><td>' + says + '</td><td>' + here + '</td><td>' + board + '</td></tr>';
-  const res = d.credentialSubject.materialPropertiesList[0].results[0], qty = res.data.quantity;
+  const res = d.credentialSubject.materialPropertiesList[0].results[0], qty = dsiValue(res.data.quantity);
   const status = [d.credentialStatus].flat()[0], tou = [d.termsOfUse].flat()[0], ev = [d.evidence].flat()[0];
   const table = "<table class='taxonomy'><thead><tr><th>Property</th><th>What W3C says it is for</th><th>In certificate RM178</th><th>On the board</th></tr></thead><tbody>"
     + group('Who, about what, what kind')
     + row('type', '4.5', 'What kind of credential it is; each type is to be documented in a specification.', c(typeOf(d)), 'The mono line on every card')
     + row('issuer', '4.7', 'Who issued it: a URL, recommended to lead to the issuer’s keys.', 'The RM producer', 'The column it sits in; “signed by”')
-    + row('credentialSubject', '4.8', 'The claims, about one or more subjects.', 'Disc lot 1: ' + esc(short(res.propertyIri)) + ' = ' + esc(qty.value + ' ± ' + qty.uncertainty.expandedUncertainty + ' ' + qty.unit.ucumCode), 'What the card says; “about”')
+    + row('credentialSubject', '4.8', 'The claims, about one or more subjects.', 'Disc lot 1: ' + esc(short(res.propertyIri)) + ' = ' + esc(qty.value + ' ± ' + qty.U + ' ' + qty.unit), 'What the card says; “about”')
     + group('When, and whether it still holds')
     + row('validFrom, validUntil', '4.9', 'When the credential is valid.', esc(String(d.validFrom).slice(0, 10) + ' – ' + String(d.validUntil).slice(0, 10)), 'Checked at the time asked about')
     + row('credentialStatus', '4.10', 'Where to learn whether it is still in force, such as a status list.', esc(status.statusPurpose) + ', bit ' + esc(status.statusListIndex) + ' of the producer’s list', 'The lists in each column head; suspend and revoke re-sign them')

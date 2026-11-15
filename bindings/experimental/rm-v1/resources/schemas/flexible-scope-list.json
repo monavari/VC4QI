@@ -94,7 +94,7 @@
               "formIri",
               "allowedPropertyIris",
               "allowedMethodIris",
-              "quantityKindIri",
+              "quantityTypeQUDT",
               "range"
             ],
             "properties": {
@@ -128,9 +128,10 @@
                   "format": "uri"
                 }
               },
-              "quantityKindIri": {
-                "type": "string",
-                "format": "uri"
+              "quantityTypeQUDT": {
+                "enum": [
+                  "MassFraction"
+                ]
               },
               "range": {
                 "type": "object",
@@ -150,8 +151,8 @@
                   },
                   "unit": {
                     "enum": [
-                      "mg/kg",
-                      "kg/kg"
+                      "\\milli\\gram\\kilogram\\tothe{-1}",
+                      "\\kilogram\\kilogram\\tothe{-1}"
                     ]
                   }
                 },

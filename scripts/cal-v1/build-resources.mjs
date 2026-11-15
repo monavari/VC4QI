@@ -32,17 +32,36 @@ const closed = (properties, required = Object.keys(properties)) => ({
   type: 'object', required, properties, additionalProperties: false,
 });
 const nonemptySet = items => ({ type: 'array', minItems: 1, uniqueItems: true, items });
-const pressureUnit = { enum: ['Pa', 'kPa', 'MPa'] };
+// PTB D-SI 2.2.1 (https://www.ptb.de/si/v2.2.1/SI_Format.xsd): the pressure unit
+// identifiers the binding accepts, one spelling each, and QUDT quantity-kind names as
+// D-SI's quantityTypeQUDT carries them.
+const pressureUnit = { enum: ['\\pascal', '\\kilo\\pascal', '\\mega\\pascal'] };
+const quantityTypeQUDT = { enum: ['Pressure'] };
+// One D-SI si:real with an expanded uncertainty (D-SI element names; label optional).
+const real = closed({
+  label: { type: 'string', minLength: 1 },
+  quantityTypeQUDT,
+  value: decimal,
+  unit: pressureUnit,
+  measurementUncertaintyUnivariate: closed({
+    expandedMU: closed({
+      valueExpandedMU: decimal,
+      coverageFactor: decimal,
+      coverageProbability: decimal,
+      distribution: { type: 'string', minLength: 1 },
+    }, ['valueExpandedMU', 'coverageFactor']),
+  }),
+}, ['quantityTypeQUDT', 'value', 'unit', 'measurementUncertaintyUnivariate']);
 
 const scopeRecord = closed({
   id: iri,
-  quantityKindIri: iri,
+  quantityTypeQUDT,
   allowedMethodIris: nonemptySet(iri),
   range: closed({ from: decimal, to: decimal, unit: pressureUnit }),
   // Optional: the admitted calibration and measurement capability (smallest expanded
   // uncertainty). Whether it applies is a verifier-profile rule.
   cmcFloor: closed({ value: decimal, unit: pressureUnit }),
-}, ['id', 'quantityKindIri', 'allowedMethodIris', 'range']);
+}, ['id', 'quantityTypeQUDT', 'allowedMethodIris', 'range']);
 const statusEntry = closed({
   id: iri,
   type: { const: 'BitstringStatusListEntry' },
@@ -63,15 +82,12 @@ const proof = closed({
   proofValue: { type: 'string', pattern: '^z[1-9A-HJ-NP-Za-km-z]+$' },
 });
 // Methods may be absent or empty so that the evaluator, not the schema, decides S18.
+// Each result is one D-SI real; the group's quantity kind is the one its results name.
 const measurementGroup = closed({
   id: iri,
-  quantityKindIri: iri,
   methodIris: { type: 'array', uniqueItems: true, items: iri },
-  results: {
-    type: 'array', minItems: 1,
-    items: closed({ value: decimal, unit: pressureUnit, expandedUncertainty: decimal, coverageFactor: decimal }),
-  },
-}, ['id', 'quantityKindIri', 'results']);
+  results: { type: 'array', minItems: 1, items: closed({ real }) },
+}, ['id', 'results']);
 
 function credentialSchema(file, type, title, subject, extra = {}, requiredExtra = []) {
   const id = `${SCHEMA_BASE}${file}`;

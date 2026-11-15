@@ -67,9 +67,10 @@ manifest version and regression tests.
   the issuer's controller document and authorized for `assertionMethod`.
 - **Status**: every credential names a W3C Bitstring Status List signed by its own
   issuer; freshness comes from the profile.
-- **Quantities** are decimal strings compared with exact arithmetic. Ordered
-  collections (`results`, `measurementGroups`) are JSON-LD lists, so their order, and
-  therefore every index pointer in a witness, is covered by the signature.
+- **Quantities** are PTB D-SI 2.2.1 reals (see [Quantity values](#quantity-values-ptb-d-si)):
+  decimal strings compared with exact arithmetic. Ordered collections (`results`,
+  `measurementGroups`) are JSON-LD lists, so their order, and therefore every index
+  pointer in a witness, is covered by the signature.
 - **Discovery**: only credentials reached through the chain's own references count.
   Independently discovered grants are declared unsupported.
 
@@ -102,15 +103,74 @@ calibration and GS, and the protected contexts can be combined. The appointment 
 (`VerifiableAuthorisationForTrustChain`, `TrustFrameworkPolicy`, `trustFramework`,
 `policyId`, `legalBasis`, `permissionFor`, `schemaId`, `types`, `jurisdiction`) expand to
 the issuer-dependent IRIs that EBSI's examples and VCDM 2.0 Example 28 expand to, so the
-appointment's triples equal EBSI's; EBSI publishes no vocabulary of its own. Units are
-exactly `mg/kg` and `kg/kg` (1 mg/kg = 10⁻⁶ kg/kg), bounds are inclusive, and U must be
-symmetric with k = 2. The only baseline route for D runs through O, which must lie
+appointment's triples equal EBSI's; EBSI publishes no vocabulary of its own. Each
+certified value is a D-SI real at `data/quantity/real` with `quantityTypeQUDT`
+`MassFraction`. Units are exactly the D-SI identifiers `\milli\gram\kilogram\tothe{-1}`,
+`\kilogram\kilogram\tothe{-1}` and `\percent` (mg/kg = 10⁻⁶ kg/kg, % = 10⁻² kg/kg),
+bounds are inclusive, and U must be a symmetric `expandedMU` with k = 2. The only baseline route for D runs through O, which must lie
 within A; A admitting M2 does not bypass O's M1 restriction.
+
+## Quantity values (PTB D-SI)
+
+Every measured value in the three bindings is one `si:real` of **PTB D-SI 2.2.1**, the
+XML schema the DCC and the DRMD use for numbers, units and uncertainties. D-SI is the
+single reference for values; the manifests pin it by URL and SHA-384
+(`https://www.ptb.de/si/v2.2.1/SI_Format.xsd`; source tag `2.2.1` of
+`gitlab1.ptb.de/d-ptb/d-si/xsd-d-si`, identical apart from line endings). A value is
+written in JSON with D-SI's element names:
+
+```json
+"real": {
+  "label": "As",
+  "quantityTypeQUDT": "MassFraction",
+  "value": "178",
+  "unit": "\\milli\\gram\\kilogram\\tothe{-1}",
+  "measurementUncertaintyUnivariate": { "expandedMU": {
+    "valueExpandedMU": "5", "coverageFactor": "2",
+    "coverageProbability": "0.95", "distribution": "normal" } }
+}
+```
+
+| D-SI element | Read by the evaluators | Rule |
+| --- | --- | --- |
+| `quantityTypeQUDT` | yes | A QUDT quantity-kind name (`MassFraction`, `Pressure`, `Power`), compared exactly |
+| `value`, `valueExpandedMU` | yes | `xsd:decimal` strings: the subset of D-SI's `si:decimalType` without sign, exponent or `NaN` |
+| `unit` | yes | One exact D-SI identifier per unit, from the manifest's `units`; D-SI's unit grammar is not parsed, so `\milli\gram\per\kilogram`, UCUM codes and every unlisted unit are refused |
+| `coverageFactor` | yes | Must be 2 |
+| `label`, `coverageProbability`, `distribution` | no | Recorded, never interpreted |
+| `standardMU`, `coverageIntervalMU`, multivariate forms | no | Not established |
+
+The JSON-LD terms carry D-SI's names but expand in each binding's own `vc4qi.example`
+namespace: D-SI is an XML schema with no RDF vocabulary, and terms are never minted
+under PTB's namespace. Values stay exact decimals because D-SI's `si:decimalType`
+restricts `xs:double`, a binary type in which, for example, 0.7 % is not exactly
+0.007 kg/kg. For the same reason the bindings do not use PTB's SIS ontology
+(`https://ptb.de/sis/`, v0.2.0), which types values as `xsd:double`. The BIPM SI
+Reference Point (`https://si-digital-framework.org/SI`) identifies SI units but has no
+mass fraction and no percent, so it is not used either. Scope ranges (`range`) and CMC
+floors (`cmcFloor`) keep their local structure, since D-SI 2.2.1 has no range type;
+their `unit` is a D-SI identifier.
+
+## Where the terms come from
+
+| Source | Version | Terms in the bindings |
+| --- | --- | --- |
+| W3C Verifiable Credentials Data Model 2.0 | Recommendation, 15 May 2025 | `issuer`, `credentialSubject`, `validFrom`, `validUntil`, `termsOfUse`, `evidence`, `credentialStatus`, `credentialSchema`, `digestSRI`, `name`, `description` |
+| W3C Data Integrity, `eddsa-rdfc-2022`; Bitstring Status List | Recommendations | `proof`; `BitstringStatusListEntry` and status list credentials |
+| W3C Recognized Entities | Working Draft, 12 November 2026 (stand-in context) | `RecognizedEntityCredential`, `recognizedIn` (RM) |
+| EBSI trust chain, issuer-dependent IRIs (VCDM 2.0 Example 28) | as published in EBSI's examples | `VerifiableAuthorisationForTrustChain`, `TrustFrameworkPolicy`, `permissionFor`, `schemaId`, `types`, `jurisdiction`, `legalBasis` (RM) |
+| **PTB D-SI** | **2.2.1** | Every value: `real`, `label`, `quantityTypeQUDT`, `value`, `unit`, `measurementUncertaintyUnivariate`, `expandedMU`, `valueExpandedMU`, `coverageFactor`, `coverageProbability`, `distribution` (all bindings) |
+| QUDT quantity kinds, through D-SI | names as D-SI's `quantityTypeQUDT` carries them | `MassFraction` (RM), `Pressure` (calibration), `Power` (GS passport) |
+| BAM DRMD (digital reference material document) | 0.3.0 | Structure of the RM certificate: `materials`, `materialPropertiesList`, `isCertified`, `results`, `data`, `quantity` |
+| PTB DCC (digital calibration certificate) | structure only, simplified | Measurement groups of results, each a D-SI real (calibration); not native DCC XML |
+| EU Digital Product Passport (ESPR) | list of passport information | Passport sections: unique product identifier, GTIN, commodity code, economic operator, facility, technical data, sustainability, compliance information (GS) |
+| ISO 17034, ISO/IEC 17025, ILAC and IAF main scope | wording only | Accreditation and scope wording, `mainScope` (RM) |
+| VC4QI, `https://vc4qi.example/…` | binding version 1 | Credential types, link types (`IssuedUnderPolicy`, `RecognitionPolicy`), scope records, method, matrix and property identifiers, and the local names of the terms above |
 
 ## Adding a binding term
 
-Use an exact, validated external term where one exists, with its version and source.
-Keep native DCC/D-SI XML, and claim SIS or SIRP support only after a pinned mapping is
-validated. Otherwise define the term in a local `.example` namespace with a safe context
-and witness-bearing tests. Never mint identifiers under a real institution's namespace
-or invent plausible external terms.
+Use an exact, validated external term where one exists, with its version and source,
+and add it to the table above. Values follow D-SI 2.2.1 as described above; keep native
+DCC or DRMD XML out of the bindings. Otherwise define the term in a local `.example`
+namespace with a safe context and witness-bearing tests. Never mint identifiers under a
+real institution's namespace or invent plausible external terms.

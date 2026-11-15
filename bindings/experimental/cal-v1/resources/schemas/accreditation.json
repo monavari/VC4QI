@@ -92,7 +92,7 @@
             "type": "object",
             "required": [
               "id",
-              "quantityKindIri",
+              "quantityTypeQUDT",
               "allowedMethodIris",
               "range"
             ],
@@ -101,9 +101,10 @@
                 "type": "string",
                 "format": "uri"
               },
-              "quantityKindIri": {
-                "type": "string",
-                "format": "uri"
+              "quantityTypeQUDT": {
+                "enum": [
+                  "Pressure"
+                ]
               },
               "allowedMethodIris": {
                 "type": "array",
@@ -132,9 +133,9 @@
                   },
                   "unit": {
                     "enum": [
-                      "Pa",
-                      "kPa",
-                      "MPa"
+                      "\\pascal",
+                      "\\kilo\\pascal",
+                      "\\mega\\pascal"
                     ]
                   }
                 },
@@ -153,9 +154,9 @@
                   },
                   "unit": {
                     "enum": [
-                      "Pa",
-                      "kPa",
-                      "MPa"
+                      "\\pascal",
+                      "\\kilo\\pascal",
+                      "\\mega\\pascal"
                     ]
                   }
                 },

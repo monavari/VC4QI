@@ -101,10 +101,11 @@
     ]
   },
   "scopeAndMapping": {
-    "mappingVersion": "gs-experimental-mapping-1",
+    "mappingVersion": "gs-experimental-mapping-2",
     "dimensions": ["productCategoryIri", "standardIris"],
     "standardRule": "one competence record must cover the category and every certified standard; a record listing standards against a certification naming none is not_established (no empty-array bypass)",
     "schemeRule": "one scheme record must cover the category",
+    "passportValues": {"reference": "PTB D-SI 2.2.1", "schema": "https://www.ptb.de/si/v2.2.1/SI_Format.xsd", "digestSRI": "sha384-FK8DweUwpgaSM7YHkndHPFs5ZcQM8b1ug4gJpNme+quQUFdLWEjyEi512P5i3Nd0", "rule": "passport technical data (rated power) is one si:real without uncertainty: quantityTypeQUDT Power (QUDT), unit \\watt; recorded, never interpreted"},
     "unsupported": ["display-label-equality", "standard-edition-succession", "product-variant-inheritance"]
   },
   "routesAndRestrictions": {

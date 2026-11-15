@@ -11,6 +11,7 @@ from qi_vc_core.reliance import (
     load_reliance_profile,
     sha384_sri,
 )
+from qi_vc_core.reliance.rm_scope import KG_PER_KG
 from qi_vc_core.reliance.rm_v1 import RM_V1_DIRECTORY
 from qi_vc_core.reliance.rm_v1_artifacts import evaluate_rm_slice
 from qi_vc_core.reliance.rm_v1_authority import (
@@ -207,7 +208,7 @@ def test_bounded_projection_is_exact_across_units() -> None:
     o["credentialSubject"]["scope"][0]["range"] = {
         "from": "0.0000001",
         "to": "0.997",
-        "unit": "kg/kg",
+        "unit": KG_PER_KG,
     }
     assert (
         basis(run(reissue({URI["O"]: o})), "bounded-projection").state == "established"

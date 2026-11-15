@@ -231,7 +231,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-Md4i2LGCFv61Kd99NhKKaQzVQkM9IxFyg/YOChLvs4RASfv8MjPXoWsuwHHFuo1Q"
+      "digestSRI": "sha384-VMbUi9Q4WLckVPVEygdPlzvRc9jH40iZ+YAX+hoFV+Zcb9jOKmPTjjCTwil1l2Hl"
     },
     {
       "uri": "https://maker.vc4qi.example/credentials/DPP-2",
@@ -239,7 +239,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-BgT8ghJFBNP2vvTNwRdk2MGih19kdPeJsU1KmopKXJJubiGk2m4JCe/6Xy1RXlXD"
+      "digestSRI": "sha384-cBy5VA2Lmm1N8P5zBRfc97UDIbcZ5zLAdyMLCZTWLPaQNHzlWLzNNdhOiVAMWjPT"
     },
     {
       "uri": "https://maker.vc4qi.example/credentials/DPP-3",
@@ -247,7 +247,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental GS certification v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-MX2XJncyk5nwdI+Mhp8VH2oqHWY6vk3i5nAmqf71bED93kDuaZLYWC8Dij+2MvCF"
+      "digestSRI": "sha384-mmHgKPtpJ1Z5XcPe3xAdsTdY9NAbbQCCOtgRNQgfbztGI/bU82KDbwDWAPn9Yyni"
     }
   ]
 }
