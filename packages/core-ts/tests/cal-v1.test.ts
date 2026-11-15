@@ -44,8 +44,13 @@ const URI = {
   LAB: 'https://lab.vc4qi.example/controller',
   MINISTRY: 'https://ministry.vc4qi.example/controller',
   NMI: 'https://nmi.vc4qi.example/controller',
+  APP: 'https://state.vc4qi.example/credentials/APP-NAB',
+  REC: 'https://global-aci.vc4qi.example/credentials/REC-NAB',
+  STATE: 'https://state.vc4qi.example/controller',
+  GACI: 'https://global-aci.vc4qi.example/controller',
 } as const;
-const KEY: Record<string, string> = { [URI.NAB]: 'nab', [URI.LAB]: 'lab', [URI.MINISTRY]: 'ministry', [URI.NMI]: 'nmi', [URI.TLAB]: 'tlab' };
+const KEY: Record<string, string> = { [URI.NAB]: 'nab', [URI.LAB]: 'lab', [URI.MINISTRY]: 'ministry', [URI.NMI]: 'nmi', [URI.TLAB]: 'tlab',
+  [URI.STATE]: 'state', [URI.GACI]: 'global-aci' };
 const G1 = '/credentialSubject/measurementGroups/0';
 const G2 = '/credentialSubject/measurementGroups/1';
 
@@ -61,7 +66,7 @@ function catalogWith(overrides: Record<string, string | null> = {}) {
 }
 async function resign(document: JsonObject): Promise<string> {
   const { proof: _proof, ...unsigned } = document;
-  const issuer = String(document.issuer);
+  const issuer = String(typeof document.issuer === 'object' && document.issuer !== null ? (document.issuer as JsonObject).id : document.issuer);
   const seed = createHash('sha256').update(`vc4qi-rm-v1-insecure-fixture-key:${KEY[issuer]}`).digest();
   const proof = await createProof(unsigned, { id: `${issuer}#key-1`, controller: issuer, privateKey: seed,
     publicKey: await ed.getPublicKeyAsync(seed) }, { created: '2026-02-01T00:00:00Z', safe: true,
@@ -391,5 +396,83 @@ describe('test-report-supported-dcc: a test report supported by its instrument c
 
   it('certificates carry no support obligation', async () => {
     expect((await run()).support).toEqual([]);
+  });
+});
+
+describe('the NAB\'s shared roots: a verifier that trusts the state, or Global ACI, not the NAB', () => {
+  const stateProfile = loadRelianceProfile(profileJson('cal-verifier-state-1.json'));
+  const gaciProfile = loadRelianceProfile(profileJson('cal-verifier-global-aci-1.json'));
+  const certificate = (p: typeof profile, targetId: string = URI.DCC, suppliedEvidence: string[] = [URI.CA]) =>
+    request({ targetId, suppliedEvidence, selectedClaims: [{ id: 'g1', sourcePointer: G1 }], ...selects(p) });
+  const anchorOf = (r: Awaited<ReturnType<typeof run>>, route = 'direct-accreditation') => trace(r, `route:${route}:trust-anchor`);
+
+  it('CAL-A and CAL-T name the same APP-NAB and REC-NAB as the RM accreditations, by digest', () => {
+    const rm = readPinnedResources(new URL('../rm-v1/test-vectors/signed/catalog.json', dir).pathname);
+    for (const grant of [URI.CA, URI.T]) {
+      const links = json(grant).termsOfUse as JsonObject[];
+      expect(links.map(l => [l.type, l.id])).toEqual([['IssuedUnderPolicy', URI.APP], ['RecognitionPolicy', URI.REC]]);
+      for (const link of links) expect(link.digestSRI).toBe(rm.find(r => r.uri === link.id)!.digestSRI);
+      expect(json(grant).issuer).toEqual({ id: URI.NAB, recognizedIn: { id: URI.REC, type: 'RecognizedEntityCredential' } });
+    }
+  });
+
+  it('the state\'s verifier accepts DCC-1 through the appointment, which joins the route', async () => {
+    const result = await run({}, certificate(stateProfile), stateProfile);
+    expect(anchorOf(result)).toMatchObject({ state: 'established',
+      reason: expect.stringMatching(/appointed by https:\/\/state\.vc4qi\.example\/controller .* to issue CalAccreditation in https:\/\/publications/) });
+    expect(result.authorization[0]?.routeWitnessIds).toEqual(['route:direct-accreditation', URI.DCC, URI.CA, URI.APP, `record:${URI.CA}#scope-pressure`]);
+    expect(result.decision).toBe('accept');
+  });
+
+  it('Global ACI\'s verifier accepts DCC-1 and DCC-2 through the recognition for Calibration', async () => {
+    const direct = await run({}, certificate(gaciProfile), gaciProfile);
+    expect(anchorOf(direct)?.reason).toMatch(/recognized by https:\/\/global-aci\.vc4qi\.example\/controller .* for Calibration under ISO\/IEC 17025:2017/);
+    expect(direct.authorization[0]?.routeWitnessIds).toContain(URI.REC);
+    expect(direct.decision).toBe('accept');
+    const scoped = await run({}, certificate(gaciProfile, URI.DCC2, [URI.O, URI.CA]), gaciProfile);
+    expect(anchorOf(scoped, 'operational-scope')).toMatchObject({ state: 'established' });
+    expect(scoped.decision).toBe('accept');
+  });
+
+  it('a verifier that trusts the NAB never relies on either root', async () => {
+    const result = await run();
+    expect(anchorOf(result)?.reason).toMatch(/is a configured anchor for accredit-calibration-laboratories/);
+    expect(result.authorization[0]?.routeWitnessIds).not.toContain(URI.APP);
+    expect(result.authorization[0]?.routeWitnessIds).not.toContain(URI.REC);
+  });
+
+  it('Global ACI\'s verifier accepts REPORT-1: Testing for the report, Calibration for the instrument\'s DCC-1', async () => {
+    const result = await run({}, request({ requestId: 'urn:uuid:cal-v1-report', targetId: URI.REPORT,
+      selectedClaims: [{ id: 'g1', sourcePointer: G1 }], suppliedEvidence: [URI.T], ...selects(gaciProfile) }), gaciProfile);
+    expect(anchorOf(result)?.reason).toMatch(/for Testing under ISO\/IEC 17025:2017/);
+    expect(result.support[0]).toMatchObject({ state: 'established' });
+    expect(result.decision).toBe('accept');
+  });
+
+  it('a recognition without Calibration contradicts; the same NAB stays recognized for RM production and testing', async () => {
+    const overrides = await reissueChain([
+      [URI.REC, d => { subject(d).registration = (subject(d).registration as JsonObject[])
+        .filter(e => (e.mainScope as JsonObject).activity !== 'Calibration'); }],
+      [URI.CA], [URI.DCC],
+    ]);
+    const result = await run(overrides, certificate(gaciProfile), gaciProfile);
+    expect(anchorOf(result)).toMatchObject({ state: 'contradicted',
+      reason: expect.stringMatching(/registers https:\/\/nab\.vc4qi\.example\/controller for Reference material production .*Testing .*, not for Calibration under urn:iso:std:iso-iec:17025:ed-3/) });
+    // The profile's other route (operational scope) has no reference here: the OR is not established.
+    expect(trace(result, 'route:direct-accreditation')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('not_established');
+  });
+
+  it('an appointment that does not permit CalAccreditation contradicts', async () => {
+    const overrides = await reissueChain([
+      [URI.APP, d => { subject(d).permissionFor = (subject(d).permissionFor as JsonObject[])
+        .filter(p => !(p.types as string[]).includes('CalAccreditation')); }],
+      [URI.CA], [URI.DCC],
+    ]);
+    const result = await run(overrides, certificate(stateProfile), stateProfile);
+    expect(anchorOf(result)).toMatchObject({ state: 'contradicted',
+      reason: expect.stringMatching(/permits https:\/\/nab\.vc4qi\.example\/controller to issue RmpAccreditation, LabAccreditation, not CalAccreditation/) });
+    expect(trace(result, 'route:direct-accreditation')).toMatchObject({ state: 'contradicted' });
+    expect(result.decision).toBe('not_established');
   });
 });

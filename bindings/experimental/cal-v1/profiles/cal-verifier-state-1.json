@@ -1,0 +1,47 @@
+{
+  "id": "https://vc4qi.example/profiles/cal-verifier-state",
+  "version": "1",
+  "status": "experimental",
+  "description": "Fictional verifier whose only trust anchor for accreditation is a fictional state, not the accreditation body. It accepts the accreditation body when the laboratory's accreditation names, in a termsOfUse IssuedUnderPolicy, the state's appointment of its issuer (a VerifiableAuthorisationForTrustChain in the shape EBSI uses, the same APP-NAB the RM binding uses) that is about that issuer, permits CalAccreditation under its schema in the required jurisdiction, and was in force at the activity time. Direct accreditation and operational scopes, with the CMC floor; not an external standard.",
+  "binding": {
+    "id": "https://vc4qi.example/bindings/cal/1",
+    "version": "1"
+  },
+  "trustAnchors": [
+    {
+      "id": "https://state.vc4qi.example/controller",
+      "purposes": [
+        "appoint-accreditation-bodies"
+      ]
+    }
+  ],
+  "authority": {
+    "certificateRoutes": [
+      "direct-accreditation",
+      "operational-scope"
+    ],
+    "globalRestrictions": [],
+    "maxRoutes": 4
+  },
+  "credentialStatus": {
+    "required": true,
+    "purposes": [
+      "revocation"
+    ],
+    "maxAgeSeconds": 2592000
+  },
+  "mapping": {
+    "methodSuccession": "none"
+  },
+  "conformity": {
+    "requirements": [],
+    "decisionRules": []
+  },
+  "bindingRules": {
+    "applyCmcFloor": true,
+    "appointment": {
+      "appointerPurpose": "appoint-accreditation-bodies",
+      "jurisdiction": "https://publications.europa.eu/resource/authority/atu/DEU"
+    }
+  }
+}

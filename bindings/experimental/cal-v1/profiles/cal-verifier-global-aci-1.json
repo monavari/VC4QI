@@ -1,0 +1,57 @@
+{
+  "id": "https://vc4qi.example/profiles/cal-verifier-global-aci",
+  "version": "1",
+  "status": "experimental",
+  "description": "Fictional verifier abroad: its only trust anchor for accreditation is a fictional stand-in for an arrangement anchor (Global ACI role), not the accreditation body. It accepts the accreditation body when the laboratory's accreditation points up (termsOfUse RecognitionPolicy) to that anchor's recognition of its issuer (the same REC-NAB the RM binding uses), for Calibration under ISO/IEC 17025:2017, or Testing for a test report. Recognition grants no authority. Direct accreditation and operational scopes, with the CMC floor; not an external standard.",
+  "binding": {
+    "id": "https://vc4qi.example/bindings/cal/1",
+    "version": "1"
+  },
+  "trustAnchors": [
+    {
+      "id": "https://global-aci.vc4qi.example/controller",
+      "purposes": [
+        "recognize-accreditation-bodies"
+      ]
+    }
+  ],
+  "authority": {
+    "certificateRoutes": [
+      "direct-accreditation",
+      "operational-scope"
+    ],
+    "globalRestrictions": [],
+    "maxRoutes": 4
+  },
+  "credentialStatus": {
+    "required": true,
+    "purposes": [
+      "revocation"
+    ],
+    "maxAgeSeconds": 2592000
+  },
+  "mapping": {
+    "methodSuccession": "none"
+  },
+  "conformity": {
+    "requirements": [],
+    "decisionRules": []
+  },
+  "bindingRules": {
+    "applyCmcFloor": true,
+    "recognition": {
+      "recognizerPurpose": "recognize-accreditation-bodies",
+      "action": "accredit",
+      "purposes": {
+        "accredit-calibration-laboratories": {
+          "activity": "Calibration",
+          "standardId": "urn:iso:std:iso-iec:17025:ed-3"
+        },
+        "accredit-testing-laboratories": {
+          "activity": "Testing",
+          "standardId": "urn:iso:std:iso-iec:17025:ed-3"
+        }
+      }
+    }
+  }
+}

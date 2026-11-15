@@ -111,7 +111,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-zOmnWH58YOaMONYcWZnWYVkEXVAeU/wypwLZ50XGnzcHKSbo1oZi8z08UT1j0Vt0"
+      "digestSRI": "sha384-unsleqYQN/5Y4Gry8m2Af/c2EBWLV5yD7QJklPJT2lISNh9JU6aJa4BDEb2VjnNy"
     },
     {
       "uri": "https://state.vc4qi.example/credentials/APP-NAB",
@@ -119,7 +119,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-l1TYJtmfNtYNSNgTChMSKAjcIJcAVyxx707JV6ACJV7qz1xyk0eGjP0GE/90onbI"
+      "digestSRI": "sha384-7Zpt54ReU533MOiLDlWjGho19jSK5qlgw1LZPFLcZSLE4Z8sc8YpVKzwi3JQDtDh"
     },
     {
       "uri": "https://nab.vc4qi.example/credentials/ACC-RMP",
@@ -127,7 +127,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-N+9o2J98Pox7hD6JX+eCgSQTfGrlIJqGCLFHoUcjkUSSszMUwDxCnRIfzUYF9Cap"
+      "digestSRI": "sha384-7kpfCF4Cv5hI0FlqPGqZjbD5FAKVsy/8t3bgj0bZH65qZ/uJsQVRWtQHr2suyCp1"
     },
     {
       "uri": "https://nab.vc4qi.example/credentials/ACC-RMP-2",
@@ -135,7 +135,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-etIgIMulo9yCeBSsSRiZmJn4mIrm1YfjUOCEm9nTqppJWmRtBLDaeFOIqP+wKkrl"
+      "digestSRI": "sha384-4gCCOUecPdl4XOA5KNDQ2gErcpkXqTVKBkmcpqPyGYgeuAMdcufH9n7GmKtTOicE"
     },
     {
       "uri": "https://nab.vc4qi.example/credentials/ACC-LAB",
@@ -143,7 +143,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-pFbUml3XxJ7OB/UprbyTgoaaN3OpDEt8tJ7HQxboytHu9ZWEGTmdZ7xsk+xwbF0+"
+      "digestSRI": "sha384-2FZQ0i80bNCf8XU4LQWqOJj52og9XQ7h+vMB2w1DqZvYntOA/mRRK6BYpj3la8A+"
     },
     {
       "uri": "https://producer.vc4qi.example/credentials/LIST-RMP",
@@ -151,7 +151,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-jzuFhw/Uc/P36VP61KjKUoSyP9gUFVS2R9b7e7bixeLNG3bbjCM//8/wELZRQiSp"
+      "digestSRI": "sha384-T26bT4FCGpuXJE79XMSTZYLauVEZ8SNuOfYlAACJQuPks/TzsO2QTEwmncPf6p0G"
     },
     {
       "uri": "https://lab.vc4qi.example/credentials/HOM-LOT1",
@@ -159,7 +159,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-KOwe5BFXgI3l1Ws0DIh79cADnnQa4zuVUEL/3vaWj4ldr45GkL807jEbUp2Av+gQ"
+      "digestSRI": "sha384-R3463wHNAn+cxGWMVn4H97a9TjXxbO8tkG9cRE3jNKSM+SL3toTObYDcy2fjphr+"
     },
     {
       "uri": "https://producer.vc4qi.example/credentials/RM178",
@@ -167,7 +167,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-U88EU559s2MFOXKEsFhotolKnpVsD4/iRF8dmnHv2E9tw+CJZ8iOEDpIQJTKBxru"
+      "digestSRI": "sha384-OAP180xS/DBuao24ieH4+xXEavOwtazuA8b6vX85TgjEyUMr04hqLBwwN09hFbR4"
     },
     {
       "uri": "https://producer.vc4qi.example/credentials/RM197",
@@ -175,7 +175,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-8dv35RabH4INWj96QlBYjeKImnLWG/SmW/tlsbZlKiU9wKTVLcZgmg+SXNAuvdYa"
+      "digestSRI": "sha384-LSmTkFZGXDUrz8DTfQxz4hEueIgDZKVqaOp6PigDFB3Mn7w9yxztKo8rLCBwis93"
     },
     {
       "uri": "https://producer.vc4qi.example/credentials/RM520",
@@ -183,7 +183,7 @@
       "mediaType": "application/vc",
       "origin": "VC4QI experimental RM v1 signed fixture (fictional parties, insecure keys)",
       "version": "1",
-      "digestSRI": "sha384-yLzvV2G8LyLiTQMOigoCoUsfdBN47l9C3S0uq4TudOBkbcFCKDw5FXBMUfc+oCtw"
+      "digestSRI": "sha384-Ev7ENPKieCEK0dHBpM0KwMggSiUgFCeY37nbzn1xkGFB234EgOMUFwnlRZzYrr71"
     }
   ]
 }

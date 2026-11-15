@@ -56,7 +56,8 @@ function expectedContexts(type: unknown): readonly string[] {
  */
 export interface ArtifactBinding {
   readonly name: string;
-  readonly schemas: Readonly<Record<string, string>>;
+  /** Per type, the schema it must declare, or the schemas it may declare (shared carriers). */
+  readonly schemas: Readonly<Record<string, string | readonly string[]>>;
   readonly contexts: (type: unknown) => readonly string[];
 }
 
@@ -288,8 +289,9 @@ export async function verifyRmArtifact(
 
   const types = Array.isArray(document.type) ? document.type : [];
   const artifactType = types.length === 2 && types[0] === 'VerifiableCredential' ? String(types[1]) : undefined;
-  const schemaId = artifactType === undefined ? undefined : binding.schemas[artifactType];
-  if (schemaId === undefined) {
+  const accepted = artifactType === undefined ? undefined : binding.schemas[artifactType];
+  const schemaIds = accepted === undefined ? [] : typeof accepted === 'string' ? [accepted] : [...accepted];
+  if (schemaIds.length === 0) {
     return fail('type', 'not_established', `Credential type is not a recognized ${binding.name} artifact type.`, { digestSRI });
   }
   if (Array.isArray(document.credentialSchema)) {
@@ -297,9 +299,10 @@ export async function verifyRmArtifact(
       'Multiple credentialSchema declarations have no accepted composition in this binding.', { digestSRI, artifactType });
   }
   const declared = isObject(document.credentialSchema) ? document.credentialSchema.id : undefined;
-  if (declared !== schemaId) {
-    return fail('type', 'contradicted', `${artifactType} must declare schema ${schemaId}.`, { digestSRI, artifactType });
+  if (typeof declared !== 'string' || !schemaIds.includes(declared)) {
+    return fail('type', 'contradicted', `${artifactType} must declare schema ${schemaIds.join(' or ')}.`, { digestSRI, artifactType });
   }
+  const schemaId = declared;
   checks.push({ check: 'type', state: 'established', reason: `${artifactType} with its pinned schema.` });
 
   try {

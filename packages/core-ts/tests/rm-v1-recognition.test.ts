@@ -73,7 +73,7 @@ describe('E01-E03: the verifier abroad follows A and H up to the recognition of 
     });
     const result = await run(overrides);
     expect(anchorBasis(result)).toMatchObject({ state: 'contradicted' });
-    expect(anchorBasis(result)?.reason).toMatch(/registers https:\/\/nab\.vc4qi\.example\/controller for Testing under ISO\/IEC 17025:2017, not for Reference material production/);
+    expect(anchorBasis(result)?.reason).toMatch(/registers https:\/\/nab\.vc4qi\.example\/controller for Testing under ISO\/IEC 17025:2017, Calibration under ISO\/IEC 17025:2017, not for Reference material production/);
     expect(labAnchor(result)).toMatchObject({ state: 'established' });
     expect(result.decision).toBe('reject');
   });

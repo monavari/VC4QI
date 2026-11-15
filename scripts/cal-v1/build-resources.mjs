@@ -73,6 +73,16 @@ const statusEntry = closed({
 // (VCDM 2.0 §5.3); the entry's type says what the link means.
 const digestSRI = { type: 'string', pattern: '^sha384-[A-Za-z0-9+/]{64}$' };
 const authorizationPolicy = closed({ id: iri, type: { const: 'IssuedUnderPolicy' }, digestSRI });
+// An accreditation names the grants its issuer stands on, as the RM binding's do: the
+// state's appointment of the accreditation body (IssuedUnderPolicy) and its recognition
+// by an arrangement anchor (RecognitionPolicy, no authority). The issuer object may mirror
+// the recognition as issuer.recognizedIn (W3C Recognized Entities discovery). The two
+// root credentials are the RM binding's APP-NAB and REC-NAB, shared, not copied.
+const recognitionPolicy = closed({ id: iri, type: { const: 'RecognitionPolicy' }, digestSRI });
+const recognizedIssuer = {
+  oneOf: [iri, closed({ id: iri, recognizedIn: closed({ id: iri, type: { const: 'RecognizedEntityCredential' } }) }, ['id'])],
+};
+const standsOn = { termsOfUse: { type: 'array', minItems: 1, maxItems: 2, items: { oneOf: [authorizationPolicy, recognitionPolicy] } } };
 const proof = closed({
   type: { const: 'DataIntegrityProof' },
   cryptosuite: { const: 'eddsa-rdfc-2022' },
@@ -89,7 +99,7 @@ const measurementGroup = closed({
   results: { type: 'array', minItems: 1, items: closed({ real }) },
 }, ['id', 'results']);
 
-function credentialSchema(file, type, title, subject, extra = {}, requiredExtra = []) {
+function credentialSchema(file, type, title, subject, extra = {}, requiredExtra = [], issuer = iri) {
   const id = `${SCHEMA_BASE}${file}`;
   return {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -100,7 +110,7 @@ function credentialSchema(file, type, title, subject, extra = {}, requiredExtra 
       '@context': { const: [VC_V2, CAL_CONTEXT] },
       id: iri,
       type: { const: ['VerifiableCredential', type] },
-      issuer: iri,
+      issuer,
       validFrom: dateTime,
       validUntil: dateTime,
       credentialSchema: closed({ id: { const: id }, type: { const: 'JsonSchema' } }),
@@ -124,7 +134,7 @@ const authorizedBy = { termsOfUse: { type: 'array', minItems: 1, maxItems: 2, it
 
 const schemas = {
   'accreditation.json': credentialSchema('accreditation.json', 'CalAccreditation', 'Calibration or testing laboratory accreditation',
-    grantSubject(['issueCalibrationCertificate', 'maintainCalibrationScope', 'issueTestReport'])),
+    grantSubject(['issueCalibrationCertificate', 'maintainCalibrationScope', 'issueTestReport']), standsOn, [], recognizedIssuer),
   // A laboratory's own bounded operational (capability) scope, projected within its accreditation.
   'operational-scope.json': credentialSchema('operational-scope.json', 'CalOperationalScope', 'Calibration operational scope',
     grantSubject(['issueCalibrationCertificate']), authorizedBy, ['termsOfUse']),
@@ -195,6 +205,22 @@ const entries = [
     origin: 'VC4QI experimental calibration binding (repository-owned fictional fixture)',
     version: '1',
   },
+  // The shared roots (the state's appointment and Global ACI's recognition of the
+  // accreditation body) are issued once, with the RM binding's carriers; this binding
+  // installs those carriers to read them.
+  ...[
+    ['https://vc4qi.example/contexts/rm/1', 'contexts/rm-1.jsonld', 'application/ld+json'],
+    ['https://vc4qi.example/contexts/recognized-entities/draft-20261112', 'contexts/recognized-entities-draft-20261112.jsonld', 'application/ld+json'],
+    ['https://vc4qi.example/schemas/rm/1/appointment.json', 'schemas/appointment.json', 'application/schema+json'],
+    ['https://vc4qi.example/schemas/rm/1/recognized-entity.json', 'schemas/recognized-entity.json', 'application/schema+json'],
+    ['https://vc4qi.example/schemas/rm/1/status-list.json', 'schemas/status-list.json', 'application/schema+json'],
+  ].map(([uri, file, mediaType]) => ({
+    uri,
+    path: `bindings/experimental/rm-v1/resources/${file}`,
+    mediaType,
+    origin: 'VC4QI experimental RM binding: carrier of the shared root credentials (appointment and recognition of the accreditation body)',
+    version: '1',
+  })),
   ...Object.keys(schemas).map(file => ({
     uri: `${SCHEMA_BASE}${file}`,
     path: `bindings/experimental/cal-v1/resources/schemas/${file}`,
