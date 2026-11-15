@@ -18,7 +18,8 @@ type Api = {
   evaluateScenario: (o: Record<string, unknown>) => Promise<Result>;
   RM_STORY: { id: string; part: string; issues?: string[]; state?: Record<string, unknown>; expect?: string; panel?: string;
     scenarios?: { id: string; state: Record<string, unknown>; expect: string }[] }[];
-  RM_ASSETS: { code: string }[];
+  RM_ASSETS: { code: string; actor: string; about: string; heldBy: string }[];
+  RM_ACTORS: { id: string; publishes: { label: string; uri?: string }[] }[];
   evaluateRmBoard: (o?: Record<string, unknown>) => Promise<Board>;
   GS_STORY: { id: string; part: string; issues?: string[]; state?: Record<string, unknown>; expect?: string }[];
   GS_ASSETS: { code: string }[];
@@ -121,6 +122,20 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     }
     // A step without an expected decision is a page, a build step, a group of scenarios or "Your turn".
     expect(api.RM_STORY.filter(s => s.expect === undefined && !s.panel && !s.scenarios && s.part !== 'build' && s.part !== 'play').map(s => s.id)).toEqual([]);
+  });
+
+  it('RM board: what a card says about who signs it and whom it is about agrees with the signed credential', async () => {
+    // The board places a card by its asset entry (hand-written); the signed credential
+    // decides. Each issuer and each subject must match the actor the entry names.
+    const r = await api.evaluateRmBoard();
+    const key = (id: string) => api.RM_ACTORS.find(a => a.id === id)!.publishes.find(p => p.label === 'Key')!.uri;
+    for (const a of api.RM_ASSETS) {
+      const d = JSON.parse(r.texts[r.uris[a.code]!]!) as { issuer: string | { id: string }; credentialSubject: { id: string } };
+      const issuer = typeof d.issuer === 'string' ? d.issuer : d.issuer.id;
+      expect([a.code, issuer]).toEqual([a.code, key(a.actor)]);
+      if (a.about !== 'object') expect([a.code, d.credentialSubject.id]).toEqual([a.code, key(a.about)]);
+      else expect([a.code, d.credentialSubject.id]).toEqual([a.code, 'urn:vc4qi-example:batch:cuzn39pb3-disc-lot-1']);
+    }
   });
 
   it('RM board: documents signed in the browser verify like the generated fixtures', async () => {

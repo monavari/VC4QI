@@ -266,16 +266,20 @@ body[data-mode="build"] .col.dim > .slot{ opacity:.42; }
 .why{ margin:0 var(--s3) var(--s2); font-size:.9rem; overflow-wrap:anywhere; }
 
 /* lines: solid = authority, dotted = evidence, dashed grey = handed over */
-.edge{ fill:none; stroke-width:2.5; }
-.edge.support{ stroke-dasharray:2 5; stroke-linecap:round; stroke-width:3; }
+.edge{ fill:none; stroke-width:3; }
+.edge.support{ stroke-dasharray:2 6; stroke-linecap:round; stroke-width:4; }
 /* A recognition (RecognitionPolicy) grants no authority: dash-dot, never solid. */
-.edge.recognition{ stroke-dasharray:12 4 2 4; stroke-width:2.5; }
+.edge.recognition{ stroke-dasharray:14 5 3 5; }
 .edge.handover{ stroke:var(--soft); stroke-dasharray:8 6; stroke-width:2; }
-.e-established, .e-not_required{ stroke:var(--ok); } .e-unused{ stroke:var(--soft); } .e-contradicted{ stroke:var(--bad); stroke-width:3.5; } .e-not_established{ stroke:var(--unk); stroke-width:3; }
-.e-plain{ stroke:var(--soft); }
+/* An evaluated line is thicker than a grey one, so its colour reads at a glance. */
+.edge.e-established, .edge.e-not_required{ stroke:var(--ok); stroke-width:4.5; } .edge.e-unused{ stroke:var(--soft); stroke-width:2.5; }
+.edge.e-contradicted{ stroke:var(--bad); stroke-width:4.5; } .edge.e-not_established{ stroke:var(--unk); stroke-width:4.5; }
+.edge.support.e-established, .edge.support.e-contradicted, .edge.support.e-not_established{ stroke-width:5; }
+.edge.e-plain{ stroke:var(--soft); }
 /* The click target of a line that can leave its credential out: wide, invisible. */
 /* In a build step, a new line names its field (termsOfUse, evidence). */
 .edge-label{ font:600 .74rem var(--mono); fill:var(--petrol); text-anchor:middle; dominant-baseline:middle; paint-order:stroke; stroke:var(--paper); stroke-width:5px; stroke-linejoin:round; }
+.edge-label .f{ font-weight:500; fill:var(--muted); }
 .edge-hit{ fill:none; stroke:transparent; stroke-width:18; pointer-events:stroke; cursor:pointer; }
 .edge-hit:hover{ stroke:rgba(0,85,110,.14); }
 /* The key sits under the board (beside it in the vertical layout): the board starts higher. */
@@ -617,32 +621,16 @@ body[data-mode="build"] .lane.dim .cells{ opacity:.42; }
 /* The opening page: one credential with its links, and what each link names. */
 .taxo{ display:grid; gap:var(--s4); }
 .taxocols{ display:grid; gap:var(--s4); align-items:start; }
-@media (min-width:64rem){ .taxocols{ grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr); } }
+@media (min-width:64rem){ .taxocols{ grid-template-columns:minmax(0, 1.1fr) minmax(0, 1fr); } }
 .org{ display:inline-block; font-size:.68rem; font-weight:800; letter-spacing:.04em; padding:0 .35rem; border-radius:4px; vertical-align:1px; border:1px solid currentColor; }
 .org.o-w3c{ color:var(--ok); } .org.o-ebsi{ color:var(--g-auth); } .org.o-ours{ color:var(--unk); }
 .orgs{ display:flex; gap:.25rem; flex-wrap:wrap; }
-.anat{ margin:0; display:grid; gap:var(--s2); grid-template-columns:minmax(0, 1fr); }
-@media (min-width:40rem){
-  .anat{ grid-template-columns:minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr); grid-template-areas:". up ." "left vc right" ". down ."; }
-  .anat .up{ grid-area:up; } .anat .down{ grid-area:down; } .anat .left{ grid-area:left; } .anat .right{ grid-area:right; } .anat .vc{ grid-area:vc; }
-}
-.arm{ display:grid; gap:.2rem; align-content:start; border:1px dashed var(--soft); border-radius:var(--radius); padding:var(--s2) var(--s3); background:var(--paper); font-size:.88rem; line-height:1.35; }
-.arm .fld{ font-weight:700; }
-.arm .fld code{ font:700 .86rem var(--mono); color:var(--petrol); }
-.arm b{ font-size:.95rem; }
-.arm .val{ color:var(--muted); }
-.arm .val code{ font:600 .82rem var(--mono); color:var(--ink); }
-.arm.up .fld::after{ content:" ▲"; } .arm.down .fld::after{ content:" ▼"; }
-.arm.right .fld::after{ content:" ▶"; } .arm.left .fld::after{ content:" ◀"; }
-.anat .vc{ border:3px solid var(--ink); border-radius:var(--radius); background:var(--raise); padding:var(--s3); display:grid; gap:var(--s2); align-content:start; }
-.vchead{ display:flex; align-items:center; gap:var(--s2); }
-.vchead .code{ font:700 .9rem var(--mono); background:var(--wash); border:1px solid var(--line); border-radius:5px; padding:.1rem .4rem; }
-.anat .vc dl{ margin:0; display:grid; grid-template-columns:minmax(0, 1fr); gap:0; font-size:.86rem; }
-.anat .vc dt{ margin-top:.35rem; }
-.anat .vc dt code{ font:600 .8rem var(--mono); color:var(--petrol); }
-.anat .vc dd{ margin:0; overflow-wrap:anywhere; }
-.anat .vc dd code{ font:600 .8rem var(--mono); }
-.anat .vc .orgs{ margin:0; font-size:.8rem; color:var(--muted); align-items:center; }
+.anat svg{ max-height:none; }
+.anat text.rv{ font-size:15px; fill:var(--ink); }
+.anat text.lf{ font-size:14.5px; }
+.anat text.lm{ font-size:14px; }
+.anat text.org{ font:800 11.5px var(--sans); fill:var(--ok); letter-spacing:.04em; }
+.anat text.org.o-vc4qi{ fill:var(--unk); }
 .linkset h3, .rulesrow h3{ margin:0 0 var(--s2); font-size:1.05rem; }
 .links{ margin:0; font-size:.88rem; }
 .links th{ text-align:left; font-size:.8rem; color:var(--muted); font-weight:650; padding:0 var(--s2) var(--s1); border-bottom:1px solid var(--line); }

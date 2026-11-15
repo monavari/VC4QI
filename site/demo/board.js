@@ -186,17 +186,20 @@ export async function mountBoard(api, cfg) {
   /** What a credential points to: its termsOfUse grants and recognitions, then its evidence. */
   // termsOfUse is one object or an array (VCDM 2.0): an appointment's single
   // TrustFrameworkPolicy names law, not a credential.
+  // Each link keeps the field it sits in (termsOfUse, evidence) and its entry's type, so
+  // a term of use and an evidence entry are never shown as if at one level.
   const linksOf = d => [
-    ...[d?.termsOfUse ?? []].flat().filter(t => t?.authorizationCredential?.id).map(t => ({ to: t.authorizationCredential.id, kind: 'authority', policy: t.type })),
-    ...[d?.termsOfUse ?? []].flat().filter(t => t?.recognitionCredential?.id).map(t => ({ to: t.recognitionCredential.id, kind: 'recognition', policy: t.type })),
-    ...(d?.evidence ?? []).map(e => e.id).filter(Boolean).map(to => ({ to, kind: 'support', policy: 'evidence' })),
+    ...[d?.termsOfUse ?? []].flat().filter(t => t?.authorizationCredential?.id).map(t => ({ to: t.authorizationCredential.id, kind: 'authority', field: 'termsOfUse', policy: t.type })),
+    ...[d?.termsOfUse ?? []].flat().filter(t => t?.recognitionCredential?.id).map(t => ({ to: t.recognitionCredential.id, kind: 'recognition', field: 'termsOfUse', policy: t.type })),
+    ...[d?.evidence ?? []].flat().filter(e => e?.id).map(e => ({ to: e.id, kind: 'support', field: 'evidence', policy: [e.type].flat().filter(Boolean).at(-1) })),
   ];
+  /** A link's name: its field, then its entry's type (termsOfUse · IssuedUnderPolicy). */
+  const linkName = l => [l.field ?? LINK[l.kind].field, l.policy].filter(Boolean).join(' · ');
   /** A credential by its full name and the paper's code: “Producer accreditation A”. */
   const nameOf = (R, uri) => { const a = assetOf(R, uri); return a ? a.label + ' ' + codeOfUri(uri) : codeOfUri(uri); };
   const cites = d => linksOf(d).map(l => codeOfUri(l.to) + (l.kind === 'support' ? ' (evidence)' : ''));
-  // The link's own name: its policy type (IssuedUnderPolicy, RecognitionPolicy, a binding's
-  // policy) or evidence.
-  const linkWords = (from, l) => '<b>' + esc(codeOfUri(from)) + '</b> ' + LINK[l.kind].verb + ' <b>' + esc(codeOfUri(l.to)) + "</b> <code>" + esc(l.policy ?? LINK[l.kind].field) + '</code>';
+  // The link in words, with its name: field, then type.
+  const linkWords = (from, l) => '<b>' + esc(codeOfUri(from)) + '</b> ' + LINK[l.kind].verb + ' <b>' + esc(codeOfUri(l.to)) + "</b> <code>" + esc(linkName(l)) + '</code>';
   const noneAbove = code => code + ' names no authority above it: only a verifier that trusts its issuer relies on it.';
   const stateMark = s => s === 'unused' ? "<span class='state st-not_required'>not relied on</span>"
     : "<span class='state st-" + s + "'>" + (LABEL[s] ?? s) + '</span>';
@@ -595,7 +598,7 @@ export async function mountBoard(api, cfg) {
     const a = lerp(p0, p1, t), b = lerp(p1, p2, t), c = lerp(p2, p3, t), ab = lerp(a, b, t), bc = lerp(b, c, t), m = lerp(ab, bc, t);
     return { d: 'M' + p0.join(' ') + ' C' + a.join(' ') + ' ' + ab.join(' ') + ' ' + m.join(' '), at: m };
   }
-  const HEAD = 11, HALF = 5.5;
+  const HEAD = 14, HALF = 7;
   function lineSVG(curve, cls, fill) {
     const end = curve[3];
     let t = 1, cut;
@@ -648,8 +651,8 @@ export async function mountBoard(api, cfg) {
     const cards = [...host.querySelectorAll('.card:not(.pending)')].map(rel);
     const placed = [];
     const overlaps = (r, q) => r.left < q.right && q.left < r.right && r.top < q.bottom && q.top < r.bottom;
-    const spot = (curve, text, preferred) => {
-      const w = text.length * .74 * em * .6 + 8, h = .74 * em + 6;
+    const spot = (curve, text, preferred, lines = 1) => {
+      const w = text.length * .74 * em * .6 + 8, h = lines * .74 * em * 1.15 + 6;
       for (const t of [preferred, .5, .4, .6, .25, .75, .2, .8, .35, .65]) {
         const [x, y] = splitAt(curve, t).at;
         const r = { left: x - w / 2, right: x + w / 2, top: y - h / 2, bottom: y + h / 2 };
@@ -662,9 +665,13 @@ export async function mountBoard(api, cfg) {
       const curve = routeLine(a, b, sides, fOut, fIn);
       const line = lineSVG(curve, e.kind + ' e-' + state, colour(state));
       if (fresh.has(e.from) || vertical) {
-        const policy = linksOf(docOf(R, e.from)).find(l => l.to === e.to && l.kind === e.kind)?.policy ?? LINK[e.kind].field;
-        const [x, y] = spot(curve, policy, vertical && into.get(e.to) > 1 ? 0.3 : 0.5);
-        labels.push("<text class='edge-label' x='" + x.toFixed(1) + "' y='" + y.toFixed(1) + "'>" + esc(policy) + '</text>');
+        // Two lines: the field (termsOfUse, evidence) over its entry's type, so a name fits
+        // the gap between two cards of one lane.
+        const found = linksOf(docOf(R, e.from)).find(l => l.to === e.to && l.kind === e.kind);
+        const field = found?.field ?? LINK[e.kind].field, type = found?.policy ?? '';
+        const [x, y] = spot(curve, type.length > field.length ? type : field, vertical && into.get(e.to) > 1 ? 0.3 : 0.5, type ? 2 : 1);
+        labels.push("<text class='edge-label' x='" + x.toFixed(1) + "' y='" + y.toFixed(1) + "'>"
+          + (type ? "<tspan class='f' x='" + x.toFixed(1) + "' dy='-.55em'>" + esc(field) + "</tspan><tspan x='" + x.toFixed(1) + "' dy='1.15em'>" + esc(type) + '</tspan>' : esc(field)) + '</text>');
       }
       const code = codeOf(e.to), leaving = leave && code && code !== 'D';
       const left = leaving && stateOf(STORY[step])[cfg.leaveOut.key] === code;
