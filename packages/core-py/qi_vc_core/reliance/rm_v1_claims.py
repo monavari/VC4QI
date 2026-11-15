@@ -12,13 +12,16 @@ from dataclasses import dataclass
 from fractions import Fraction
 from typing import Any, Literal
 
+from .dsi import read_expanded_real
 from .rm_scope import (
     EXACT_CONCEPTS,
+    MG_PER_KG,
     RM_UNIT_EXPONENTS,
     Concepts,
     format_decimal,
     parse_decimal,
     record_interval,
+    rm_unit_symbol,
     to_kg_per_kg,
 )
 from .types import SemanticState, semantic_or
@@ -41,7 +44,7 @@ class ClaimCoordinates:
     form_iri: str
     property_iri: str
     method_iri: str
-    quantity_kind_iri: str
+    quantity_type_qudt: str  # QUDT quantity-kind name (D-SI quantityTypeQUDT)
     value: Fraction  # kg/kg
     uncertainty: Fraction  # kg/kg
 
@@ -59,7 +62,7 @@ class Outcome:
 class ConformityRequirement:
     id: str
     property_iri: str
-    quantity_kind_iri: str
+    quantity_type_qudt: str
     upper_limit_value: str
     upper_limit_unit: str
 
@@ -104,38 +107,42 @@ def map_claim(d: dict[str, Any], pointer: str, result: Any) -> Outcome:
     quantity = data.get("quantity") if isinstance(data, dict) else None
     if not isinstance(quantity, dict):
         return Outcome("not_established", "The result has no quantity.", (pointer,))
-    unit_obj = quantity.get("unit")
-    unit = unit_obj.get("ucumCode") if isinstance(unit_obj, dict) else None
+    real_pointer = f"{pointer}/data/quantity/real"
+    real = read_expanded_real(quantity.get("real"))
+    if not real.ok:
+        return Outcome(
+            "not_established",
+            f"The result's quantity has {real.reason}.",
+            (f"{real_pointer}{real.path}",),
+        )
+    unit = real.unit
     if not isinstance(unit, str) or unit not in RM_UNIT_EXPONENTS:
         return Outcome(
             "not_established",
-            f"Unit {unit} has no supported mapping (mg/kg, kg/kg).",
-            (f"{pointer}/data/quantity/unit",),
+            f"Unit {unit} has no supported D-SI mapping (mg/kg, kg/kg, %).",
+            (f"{real_pointer}/unit",),
         )
-    uncertainty = quantity.get("uncertainty")
-    uncertainty = uncertainty if isinstance(uncertainty, dict) else {}
-    k = parse_decimal(uncertainty.get("coverageFactor"))
+    k = parse_decimal(real.coverage_factor)
     if k is None or k != 2:
         return Outcome(
             "not_established",
-            f"Coverage factor {uncertainty.get('coverageFactor')} is not the "
-            "binding's k = 2.",
-            (f"{pointer}/data/quantity/uncertainty",),
+            f"Coverage factor {real.coverage_factor} is not the binding's k = 2.",
+            (f"{real_pointer}/measurementUncertaintyUnivariate/expandedMU",),
         )
-    value = to_kg_per_kg(quantity.get("value"), unit)
-    expanded = to_kg_per_kg(uncertainty.get("expandedUncertainty"), unit)
+    value = to_kg_per_kg(real.value, unit)
+    expanded = to_kg_per_kg(real.value_expanded_mu, unit)
     if value is None or expanded is None:
         return Outcome(
             "not_established",
             "Value or expanded uncertainty is not a supported decimal.",
-            (f"{pointer}/data/quantity",),
+            (real_pointer,),
         )
     dims = {
         "matrixIri": material.get("matrixIri"),
         "formIri": material.get("formIri"),
         "propertyIri": result.get("propertyIri"),
         "methodIri": result.get("methodIri"),
-        "quantityKindIri": quantity.get("quantityKind"),
+        "quantityTypeQUDT": real.quantity_type_qudt,
     }
     missing = [key for key, v in dims.items() if not isinstance(v, str)]
     if missing:
@@ -147,15 +154,15 @@ def map_claim(d: dict[str, Any], pointer: str, result: Any) -> Outcome:
     return Outcome(
         "established",
         f"Mapped {_short(dims['propertyIri'])} by {_short(dims['methodIri'])} in "
-        f"{_short(dims['matrixIri'])}: {quantity.get('value')} ± "
-        f"{uncertainty.get('expandedUncertainty')} {unit} (k = 2).",
+        f"{_short(dims['matrixIri'])}: {real.value} ± "
+        f"{real.value_expanded_mu} {rm_unit_symbol(unit)} (k = 2).",
         (pointer,),
         coordinates=ClaimCoordinates(
             str(dims["matrixIri"]),
             str(dims["formIri"]),
             str(dims["propertyIri"]),
             str(dims["methodIri"]),
-            str(dims["quantityKindIri"]),
+            str(dims["quantityTypeQUDT"]),
             value,
             expanded,
         ),
@@ -217,10 +224,10 @@ def claim_coverage(
             failures.append(
                 f"form {_short(claim.form_iri)} ≠ {_short(record.get('formIri'))}"
             )
-        if record.get("quantityKindIri") != claim.quantity_kind_iri:
+        if record.get("quantityTypeQUDT") != claim.quantity_type_qudt:
             failures.append(
-                f"quantity kind {_short(claim.quantity_kind_iri)} ≠ "
-                f"{_short(record.get('quantityKindIri'))}"
+                f"quantity kind {claim.quantity_type_qudt} ≠ "
+                f"{record.get('quantityTypeQUDT')}"
             )
         if not any(
             concepts.within(claim.property_iri, s)
@@ -245,9 +252,9 @@ def claim_coverage(
         elif method_state == "not_established":
             outcomes.append((rid, "not_established", f"{_short(rid)}: {method_reason}"))
         else:
-            value = format_decimal(in_unit(claim.value, "mg/kg"))
-            lo = format_decimal(in_unit(low, "mg/kg"))
-            hi = format_decimal(in_unit(high, "mg/kg"))
+            value = format_decimal(in_unit(claim.value, MG_PER_KG))
+            lo = format_decimal(in_unit(low, MG_PER_KG))
+            hi = format_decimal(in_unit(high, MG_PER_KG))
             outcomes.append(
                 (
                     rid,
@@ -273,7 +280,7 @@ def evaluate_conformity(
     """Gate 6: exact conformity with an upper limit, shown in the limit's unit."""
     if (
         claim.property_iri != requirement.property_iri
-        or claim.quantity_kind_iri != requirement.quantity_kind_iri
+        or claim.quantity_type_qudt != requirement.quantity_type_qudt
     ):
         return Outcome(
             "not_established",
@@ -298,7 +305,8 @@ def evaluate_conformity(
         if guarded
         else show(claim.value)
     )
-    arithmetic = f"{lhs} {'≤' if conforms else '>'} {show(limit)} {unit}"
+    relation = "≤" if conforms else ">"
+    arithmetic = f"{lhs} {relation} {show(limit)} {rm_unit_symbol(unit)}"
     verdict = "Conforms" if conforms else "Does not conform"
     return Outcome(
         "established" if conforms else "contradicted",

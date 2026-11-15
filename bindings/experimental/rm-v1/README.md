@@ -26,7 +26,10 @@ SRI over exact bytes). Signed controller documents, credentials and status lists
   like units and method revisions, not something a credential can assert.
 - [`resources/contexts/rm-1.jsonld`](resources/contexts/rm-1.jsonld) is hand-authored,
   `@protected`, uses the `rm:` prefix (the VCDM 2.0 context already protects `exp`),
-  types every quantity, bound and uncertainty as an `xsd:decimal` string, and makes
+  writes every certified value as a PTB D-SI 2.2.1 real (`data/quantity/real`: QUDT
+  `quantityTypeQUDT`, D-SI `unit`, `expandedMU`; terms named after the D-SI elements, see
+  [bindings](../../../docs/bindings.md#quantity-values-ptb-d-si)), types every quantity,
+  bound and uncertainty as an `xsd:decimal` string, and makes
   `materials`, `materialPropertiesList` and `results` ordered lists so that result
   order, and therefore native index pointers, is covered by the signature.
 - [`resources/contexts/recognized-entities-draft-20261112.jsonld`](resources/contexts/recognized-entities-draft-20261112.jsonld)

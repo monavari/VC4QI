@@ -234,6 +234,13 @@ footer p{ margin:var(--s1) 0; max-width:60rem; }
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const short = iri => String(iri ?? '').split('#').pop().split(/[/:]/).pop();
+// PTB D-SI 2.2.1 unit identifiers the bindings accept, shown by their symbols.
+const UNIT_SYMBOL = { '\\milli\\gram\\kilogram\\tothe{-1}': 'mg/kg', '\\kilogram\\kilogram\\tothe{-1}': 'kg/kg', '\\percent': '%',
+  '\\pascal': 'Pa', '\\kilo\\pascal': 'kPa', '\\mega\\pascal': 'MPa', '\\watt': 'W' };
+const sym = unit => UNIT_SYMBOL[unit] ?? String(unit ?? '');
+const mu = real => real?.measurementUncertaintyUnivariate?.expandedMU ?? {};
+// The D-SI identifier under its symbol, small and wrapping (identifiers are long).
+const dsiId = unit => "<br><code style='font-size:.78em;word-break:break-all'>" + esc(unit) + '</code>';
 const LABEL = { established: '✓ yes', contradicted: '✕ no', not_established: '? cannot tell', not_asked: 'not asked', not_required: 'not required' };
 const LEGEND = '<span><i></i>grant <code>IssuedUnderPolicy</code></span><span><i class="rec"></i>recognition <code>RecognitionPolicy</code>, no authority</span>'
   + '<span><i class="dot"></i><code>evidence</code></span><span><span class="g"></span>signed by an authority</span><span><span class="g ga"></span>signed by an actor</span>'
@@ -346,21 +353,22 @@ function claimHTML(D, selected) {
   if (type === 'RmCertificate') {
     const m = s.materials?.[0] ?? {};
     h += kv('Material', esc(m.name ?? '') + ' (' + esc(short(m.matrixIri)) + ', ' + esc(short(m.formIri)) + ')') + kv('Batch', esc(short(s.id))) + kv('Certified on', date(s.activityTime));
-    h += '<table><thead><tr><th>Certified property</th><th class="num">Value</th><th class="num">U (k)</th><th>Unit</th><th>Method</th></tr></thead><tbody>';
+    h += '<table><thead><tr><th>Certified property</th><th>Quantity (QUDT)</th><th class="num">Value</th><th class="num">U (k)</th><th>Unit (D-SI)</th><th>Method</th></tr></thead><tbody>';
     (s.materialPropertiesList ?? []).forEach((set, i) => (set.results ?? []).forEach((r, j) => {
-      const q = r.data?.quantity ?? {}, p = '/credentialSubject/materialPropertiesList/' + i + '/results/' + j;
-      h += "<tr class='" + (selected.includes(p) ? 'sel' : '') + "'><td>" + esc(short(r.propertyIri)) + (selected.includes(p) ? ' · selected' : '') + "</td><td class='num'>" + esc(q.value) + "</td><td class='num'>"
-        + esc(q.uncertainty?.expandedUncertainty) + ' (' + esc(q.uncertainty?.coverageFactor) + ')</td><td>' + esc(q.unit?.ucumCode) + '</td><td>' + esc(short(r.methodIri)) + '</td></tr>';
+      const q = r.data?.quantity?.real ?? {}, u = mu(q), p = '/credentialSubject/materialPropertiesList/' + i + '/results/' + j;
+      h += "<tr class='" + (selected.includes(p) ? 'sel' : '') + "'><td>" + esc(short(r.propertyIri)) + (selected.includes(p) ? ' · selected' : '') + '</td><td>' + esc(q.quantityTypeQUDT) + "</td><td class='num'>" + esc(q.value) + "</td><td class='num'>"
+        + esc(u.valueExpandedMU) + ' (' + esc(u.coverageFactor) + ')</td><td>' + esc(sym(q.unit)) + dsiId(q.unit) + '</td><td>' + esc(short(r.methodIri)) + '</td></tr>';
     }));
     return h + '</tbody></table>';
   }
   if (Array.isArray(s.measurementGroups)) {
     h += kv('Item', esc(short(s.id))) + (s.instrumentIri ? kv('Instrument', esc(short(s.instrumentIri))) : '') + kv('Measured on', date(s.activityTime));
-    h += '<table><thead><tr><th>Group</th><th>Quantity</th><th class="num">Value</th><th class="num">U (k)</th><th>Method</th></tr></thead><tbody>';
+    h += '<table><thead><tr><th>Group</th><th>Quantity (QUDT)</th><th class="num">Value</th><th class="num">U (k)</th><th>Method</th></tr></thead><tbody>';
     s.measurementGroups.forEach((g, i) => (g.results ?? []).forEach(r => {
       const p = '/credentialSubject/measurementGroups/' + i;
-      h += "<tr class='" + (selected.includes(p) ? 'sel' : '') + "'><td>g" + (i + 1) + '</td><td>' + esc(short(g.quantityKindIri)) + "</td><td class='num'>" + esc(r.value) + ' ' + esc(r.unit)
-        + "</td><td class='num'>" + esc(r.expandedUncertainty) + ' ' + esc(r.unit) + ' (' + esc(r.coverageFactor) + ')</td><td>' + esc(iris(g.methodIris)) + '</td></tr>';
+      const q = r.real ?? {}, u = mu(q);
+      h += "<tr class='" + (selected.includes(p) ? 'sel' : '') + "'><td>g" + (i + 1) + '</td><td>' + esc(q.quantityTypeQUDT) + "</td><td class='num'>" + esc(q.value) + ' ' + esc(sym(q.unit))
+        + "</td><td class='num'>" + esc(u.valueExpandedMU) + ' ' + esc(sym(q.unit)) + ' (' + esc(u.coverageFactor) + ')</td><td>' + esc(iris(g.methodIris)) + '</td></tr>';
     }));
     return h + '</tbody></table>';
   }
@@ -376,7 +384,8 @@ function claimHTML(D, selected) {
       + kv('GTIN', esc(s.gtin ?? '')) + kv('Commodity code', esc(s.commodityCode ?? '')) + kv('Economic operator', esc(s.economicOperatorIri ?? ''))
       + kv('Facility', esc(short(s.facilityIri))) + kv('Placed on market', date(s.activityTime));
     h += '<table><thead><tr><th>Passport section</th><th>Content</th><th>Evaluated</th></tr></thead><tbody>';
-    h += '<tr><td>Technical data</td><td>Rated power ' + esc(s.technicalData?.ratedPowerW) + ' W</td><td>no</td></tr>';
+    const power = s.technicalData?.ratedPower?.real ?? {};
+    h += '<tr><td>Technical data</td><td>Rated power ' + esc(power.value) + ' ' + esc(sym(power.unit)) + ' (D-SI real, QUDT ' + esc(power.quantityTypeQUDT) + ')' + dsiId(power.unit) + '</td><td>no</td></tr>';
     h += '<tr><td>Sustainability</td><td>Spare parts for ' + esc(s.sustainability?.sparePartsAvailabilityYears) + ' years</td><td>no</td></tr>';
     h += "<tr class='" + (evaluated ? 'sel' : '') + "'><td>Compliance: GS mark</td><td>" + esc(short(mark?.markIri)) + ' for model ' + esc(short(mark?.productModelIri))
       + ' · GS-mark credential ' + esc((D.evidence ?? []).map(e => short(e.id)).join(', ')) + '</td><td>' + (evaluated ? 'yes' : 'no') + '</td></tr>';

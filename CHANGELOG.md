@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- **Every value is a PTB D-SI 2.2.1 real (all bindings).** Certified RM values,
+  calibration results and the passport's rated power are written as D-SI's `si:real`,
+  in JSON with D-SI's element names: `label`, `quantityTypeQUDT` (a QUDT quantity kind:
+  `MassFraction`, `Pressure`, `Power`), `value`, `unit` (a D-SI identifier such as
+  `\milli\gram\kilogram\tothe{-1}`, the DRMD's spelling, or `\kilo\pascal`) and
+  `measurementUncertaintyUnivariate.expandedMU` (`valueExpandedMU`, `coverageFactor`,
+  `coverageProbability`, `distribution`). This replaces the UCUM codes, the local
+  `quantityKind` IRIs, `expandedUncertainty` and `ratedPowerW`. Scope records and
+  profiles name the quantity kind as `quantityTypeQUDT` and their units as D-SI
+  identifiers. The manifests pin D-SI 2.2.1 by URL and SHA-384, map each unit to its
+  factor and display symbol, and record which elements are interpreted; RM also accepts
+  `\percent`. Values stay exact decimals, the subset of D-SI's `si:decimalType` without
+  sign, exponent or `NaN`; a D-SI standard or coverage-interval uncertainty, another unit
+  spelling or a missing quantity kind is not established. In calibration every result of
+  a group names one quantity kind, which is the group's. Contexts, schemas, manifests,
+  profiles, generators, both evaluators, their tests and the demonstrator follow, all
+  three bindings' fixtures are re-signed, and [bindings](docs/bindings.md) gains a table
+  of where every term comes from. Every example verdict is unchanged.
 - **A link is one entry, with its digest on it (all bindings).** Every upward link is a
   `termsOfUse` entry whose `id` is the credential it names, whose `type` says what it
   means (`IssuedUnderPolicy`, `RecognitionPolicy`) and whose `digestSRI` pins that

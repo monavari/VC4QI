@@ -10,7 +10,7 @@ accreditation or external endorsement is claimed.
 | Area | State |
 | --- | --- |
 | Reliance evaluator (gates 0–6) | Implemented for the RM, calibration and GS bindings in both languages, with a committed RM parity vector |
-| Signed fixtures | Generated for RM (APP-NAB, REC-NAB, ACC-RMP, ACC-RMP-2, ACC-LAB, LIST-RMP, HOM-LOT1, RM178/197/520; every credential named, every link carrying its digest), calibration (CAL-A, CAL-O, CAL-M, CAL-T, DCC-1, DCC-2, DCC-N, REPORT-1) and GS (GS-A, GS-S, GSC-1–3, TR-1–3, FI-1, TL-A, GSM-1–6, DPP-1–3), with controller documents and status lists |
+| Signed fixtures | Generated for RM (APP-NAB, REC-NAB, ACC-RMP, ACC-RMP-2, ACC-LAB, LIST-RMP, HOM-LOT1, RM178/197/520; every credential named, every link carrying its digest), calibration (CAL-A, CAL-O, CAL-M, CAL-T, DCC-1, DCC-2, DCC-N, REPORT-1) and GS (GS-A, GS-S, GSC-1–3, TR-1–3, FI-1, TL-A, GSM-1–6, DPP-1–3), with controller documents and status lists; every value is a PTB D-SI 2.2.1 real with a QUDT quantity kind |
 | Protection and time | `eddsa-rdfc-2022` over JSON-LD safe mode, keys authorized by signed controller documents, exact-byte integrity, Bitstring status with freshness, validity at the activity time |
 | Resolution | Offline, from a pinned catalog per binding; no network access and no trust registry (anchors are profile configuration) |
 | Recognition (RM, experimental) | One recognition credential per body: A and H name R in a `termsOfUse` `RecognitionPolicy` (pinned by digest, mirrored in `issuer.recognizedIn`); R is a single-subject W3C Recognized Entities credential (Working Draft of 12 November 2026) from a fictional Global ACI stand-in, with the main scopes in `registration`. Recognition grants no authority: a verifier that anchors the recognizer (`rm-verifier-global-aci-1`) accepts the accreditation body for the main scope each grant requires; one that anchors the body never relies on R. Discovery through `issuer.recognizedIn` alone or identifiers is not implemented |
@@ -44,16 +44,17 @@ is at commit
 
 ## Latest checks
 
-On 5 November 2026, for the 0.4.0 tree:
+On 15 November 2026, for the D-SI values change (branch `DSI`):
 
 | Check | Result |
 | --- | --- |
 | `pnpm -r build` and `pnpm -r --if-present lint` | Pass |
-| `pnpm -C packages/core-ts test` | 286 passed (19 files) |
-| `uv run --locked --all-packages --extra dev pytest packages/core-py/tests` | 267 passed |
+| `pnpm -C packages/core-ts test` | 345 passed (22 files) |
+| `uv run --locked --all-packages --extra dev pytest packages/core-py/tests` | 314 passed |
 | `pnpm check:generated` | All resources, signed fixtures and the parity vector up to date |
 | `pnpm docs:check` | All links valid |
-| Python Ruff / mypy | 23 / 30 recorded findings, all in pre-existing proof, canonicalization and utility code (down from 204 / 198 before the cleanup) |
+| Python Ruff / mypy | 23 / 30 recorded findings, unchanged, all in pre-existing proof, canonicalization and utility code |
+| markdownlint | 5 pre-existing list-numbering findings in `apps/demonstrator/DESIGN.md` |
 
 ## Open issues
 

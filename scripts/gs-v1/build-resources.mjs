@@ -144,7 +144,13 @@ const schemas = {
       commodityCode: { type: 'string', pattern: '^[0-9]{8}$' },
       economicOperatorIri: iri,
       facilityIri: iri,
-      technicalData: closed({ ratedPowerW: decimal }),
+      // Rated power as a PTB D-SI 2.2.1 real (QUDT kind, D-SI unit), without uncertainty.
+      technicalData: closed({ ratedPower: closed({ real: closed({
+        label: { type: 'string', minLength: 1 },
+        quantityTypeQUDT: { enum: ['Power'] },
+        value: decimal,
+        unit: { enum: ['\\watt'] },
+      }, ['quantityTypeQUDT', 'value', 'unit']) }) }),
       sustainability: closed({ sparePartsAvailabilityYears: decimal }),
       complianceInformation: closed({ gsMark: closed({ markIri: iri, productModelIri: iri }) }),
     }),

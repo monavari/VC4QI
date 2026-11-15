@@ -280,7 +280,9 @@ async function main() {
         commodityCode: '85163100',
         economicOperatorIri: MAKER,
         facilityIri: PLANT,
-        technicalData: { ratedPowerW },
+        // Rated power as a PTB D-SI real (QUDT quantity kind, D-SI unit); a nameplate
+        // value carries no uncertainty, which D-SI allows. Not interpreted by the binding.
+        technicalData: { ratedPower: { real: { label: 'rated power', quantityTypeQUDT: 'Power', value: ratedPowerW, unit: '\\watt' } } },
         sustainability: { sparePartsAvailabilityYears },
         complianceInformation: { gsMark: { markIri: gs('GsMark'), productModelIri: model } },
       },

@@ -2,8 +2,9 @@
 """Exact scope arithmetic for the experimental RM v1 binding (mirrors rm-scope.ts).
 
 Quantities are decimal strings compared as exact rationals in kg/kg (mg/kg = 10^-6),
-so no floating-point tolerance can move an acceptance boundary. Unknown units or
-malformed numbers are never compared.
+so no floating-point tolerance can move an acceptance boundary. Units are PTB D-SI 2.2.1
+identifiers (see ``dsi.py``), accepted from an exact list; unknown units or malformed
+numbers are never compared.
 """
 
 from __future__ import annotations
@@ -14,8 +15,26 @@ from dataclasses import dataclass
 from fractions import Fraction
 from typing import Any, Literal
 
+from .dsi import DsiUnit, unit_symbol
+
 _DECIMAL = re.compile(r"^(0|[1-9][0-9]*)(\.[0-9]+)?$")
-RM_UNIT_EXPONENTS: dict[str, int] = {"kg/kg": 0, "mg/kg": -6}
+# Supported mass-fraction units: D-SI identifiers as powers of ten relative to kg/kg,
+# one spelling each (the DRMD's); D-SI's \per spelling and every other unit stay
+# not established.
+MG_PER_KG = "\\milli\\gram\\kilogram\\tothe{-1}"
+KG_PER_KG = "\\kilogram\\kilogram\\tothe{-1}"
+PERCENT = "\\percent"
+RM_UNITS: dict[str, DsiUnit] = {
+    KG_PER_KG: DsiUnit(0, "kg/kg"),
+    MG_PER_KG: DsiUnit(-6, "mg/kg"),
+    PERCENT: DsiUnit(-2, "%"),
+}
+RM_UNIT_EXPONENTS: dict[str, int] = {unit: u.exponent for unit, u in RM_UNITS.items()}
+
+
+def rm_unit_symbol(unit: Any) -> str:
+    """Display symbol of an RM unit (mg/kg for the D-SI identifier)."""
+    return unit_symbol(RM_UNITS, unit)
 
 
 def parse_decimal(value: Any) -> Fraction | None:
@@ -55,7 +74,7 @@ def record_interval(record: dict[str, Any]) -> tuple[Fraction, Fraction] | str:
     if low is None or high is None:
         return (
             f"Unsupported or malformed range {scope_range.get('from')}–"
-            f"{scope_range.get('to')} {scope_range.get('unit')}."
+            f"{scope_range.get('to')} {rm_unit_symbol(scope_range.get('unit'))}."
         )
     if low > high:
         return "Scope record range is reversed."
@@ -169,7 +188,7 @@ def contained_in(
             or not methods
             or not all(
                 isinstance(child.get(k), str)
-                for k in ("matrixIri", "formIri", "quantityKindIri")
+                for k in ("matrixIri", "formIri", "quantityTypeQUDT")
             )
         ):
             return Containment(
@@ -184,7 +203,7 @@ def contained_in(
                 not isinstance(parent_range, str)
                 and concepts.within(child.get("matrixIri"), parent.get("matrixIri"))
                 and concepts.within(child.get("formIri"), parent.get("formIri"))
-                and parent.get("quantityKindIri") == child.get("quantityKindIri")
+                and parent.get("quantityTypeQUDT") == child.get("quantityTypeQUDT")
                 and _covers(
                     properties, _strings(parent.get("allowedPropertyIris")), concepts
                 )

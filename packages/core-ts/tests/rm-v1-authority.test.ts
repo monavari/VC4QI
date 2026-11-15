@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
+import { KG_PER_KG } from '../src/reliance/rm-scope.js';
 import { readFileSync } from 'node:fs';
 import { loadRelianceProfile } from '../src/reliance/index.js';
 import { loadBindingManifest } from '../src/reliance/manifest.js';
@@ -76,10 +77,10 @@ describe('I3 authority routes on the signed RM chain', () => {
   it('bounded projection compares exact quantities across mg/kg and kg/kg', async () => {
     const O = json(URI.O);
     // A's record is 0.1–997000 mg/kg, that is 0.0000001–0.997 kg/kg.
-    (subject(O).scope as JsonObject[])[0]!.range = { from: '0.0000001', to: '0.997', unit: 'kg/kg' };
+    (subject(O).scope as JsonObject[])[0]!.range = { from: '0.0000001', to: '0.997', unit: KG_PER_KG };
     const result = await run(await reissue({ [URI.O]: O }));
     expect(basis(result, 'bounded-projection')).toMatchObject({ state: 'established' });
-    (subject(O).scope as JsonObject[])[0]!.range = { from: '0.0000001', to: '0.9970000001', unit: 'kg/kg' };
+    (subject(O).scope as JsonObject[])[0]!.range = { from: '0.0000001', to: '0.9970000001', unit: KG_PER_KG };
     const wider = await run(await reissue({ [URI.O]: O }));
     expect(basis(wider, 'bounded-projection')).toMatchObject({ state: 'contradicted' });
   });

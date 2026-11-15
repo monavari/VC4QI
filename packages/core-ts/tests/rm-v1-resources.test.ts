@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormatsModule from 'ajv-formats';
 import { describe, expect, it } from 'vitest';
+import { expandedReal } from '../src/reliance/dsi.js';
+import { MG_PER_KG } from '../src/reliance/rm-scope.js';
 import { canonicalize } from '../src/canonicalize/index.js';
 import {
   catalogDocumentLoader, RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, RM_V1_VOCAB, VC_V2_CONTEXT,
@@ -40,17 +42,11 @@ function sampleCertificate(): JsonObject {
         results: [
           {
             propertyIri: rm('As'), methodIri: rm('M1'),
-            data: { quantity: {
-              quantityKind: rm('MassFraction'), value: '178', unit: { ucumCode: 'mg/kg' },
-              uncertainty: { expandedUncertainty: '5', coverageFactor: '2' },
-            } },
+            data: { quantity: { real: expandedReal('As', 'MassFraction', '178', MG_PER_KG, '5') } },
           },
           {
             propertyIri: rm('Pb'), methodIri: rm('M1'),
-            data: { quantity: {
-              quantityKind: rm('MassFraction'), value: '30000', unit: { ucumCode: 'mg/kg' },
-              uncertainty: { expandedUncertainty: '400', coverageFactor: '2' },
-            } },
+            data: { quantity: { real: expandedReal('Pb', 'MassFraction', '30000', MG_PER_KG, '400') } },
           },
         ],
       }],

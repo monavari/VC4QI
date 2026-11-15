@@ -115,11 +115,13 @@
     ]
   },
   "scopeAndMapping": {
-    "mappingVersion": "rm-experimental-mapping-1",
+    "mappingVersion": "rm-experimental-mapping-2",
     "recordEvaluator": "https://vc4qi.example/evaluators/rm-complete-record/1",
     "quantityEvaluator": "https://vc4qi.example/evaluators/exact-mass-fraction/1",
-    "dimensions": ["matrixIri", "formIri", "propertyIri", "methodIri", "quantityKindIri", "range"],
-    "units": {"mg/kg": "1e-6", "kg/kg": "1"},
+    "dimensions": ["matrixIri", "formIri", "propertyIri", "methodIri", "quantityTypeQUDT", "range"],
+    "units": {"\\milli\\gram\\kilogram\\tothe{-1}": {"factor": "1e-6", "symbol": "mg/kg"}, "\\kilogram\\kilogram\\tothe{-1}": {"factor": "1", "symbol": "kg/kg"}, "\\percent": {"factor": "1e-2", "symbol": "%"}},
+    "quantityValues": {"reference": "PTB D-SI 2.2.1", "schema": "https://www.ptb.de/si/v2.2.1/SI_Format.xsd", "digestSRI": "sha384-FK8DweUwpgaSM7YHkndHPFs5ZcQM8b1ug4gJpNme+quQUFdLWEjyEi512P5i3Nd0", "source": "https://gitlab1.ptb.de/d-ptb/d-si/xsd-d-si/-/tree/2.2.1", "mapping": "each value is one si:real; every JSON-LD term named after a D-SI element (real, label, quantityTypeQUDT, value, unit, measurementUncertaintyUnivariate, expandedMU, valueExpandedMU, coverageFactor, coverageProbability, distribution) expands in this binding's vc4qi.example namespace and carries that element's meaning; numbers are xsd:decimal strings, the subset of si:decimalType without sign, exponent or NaN", "interpreted": ["quantityTypeQUDT", "value", "unit", "valueExpandedMU", "coverageFactor"], "recordedNotInterpreted": ["label", "coverageProbability", "distribution"], "unsupportedUncertaintyForms": ["standardMU", "coverageIntervalMU", "multivariate"]},
+    "quantityKinds": {"reference": "QUDT quantity kinds by local name, as D-SI's quantityTypeQUDT carries them", "namespace": "http://qudt.org/vocab/quantitykind/", "names": ["MassFraction"]},
     "boundaries": "inclusive",
     "missingOrEmptyRestrictedDimension": "not_established",
     "recordCombination": "one-complete-record-per-claim-no-splicing",

@@ -145,50 +145,72 @@
                         "quantity": {
                           "type": "object",
                           "required": [
-                            "quantityKind",
-                            "value",
-                            "unit",
-                            "uncertainty"
+                            "real"
                           ],
                           "properties": {
-                            "quantityKind": {
-                              "type": "string",
-                              "format": "uri"
-                            },
-                            "value": {
-                              "type": "string",
-                              "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
-                            },
-                            "unit": {
+                            "real": {
                               "type": "object",
                               "required": [
-                                "ucumCode"
+                                "quantityTypeQUDT",
+                                "value",
+                                "unit",
+                                "measurementUncertaintyUnivariate"
                               ],
                               "properties": {
-                                "ucumCode": {
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "quantityTypeQUDT": {
                                   "enum": [
-                                    "mg/kg",
-                                    "kg/kg",
-                                    "%"
+                                    "MassFraction"
                                   ]
-                                }
-                              },
-                              "additionalProperties": false
-                            },
-                            "uncertainty": {
-                              "type": "object",
-                              "required": [
-                                "expandedUncertainty",
-                                "coverageFactor"
-                              ],
-                              "properties": {
-                                "expandedUncertainty": {
+                                },
+                                "value": {
                                   "type": "string",
                                   "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
                                 },
-                                "coverageFactor": {
-                                  "type": "string",
-                                  "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                                "unit": {
+                                  "enum": [
+                                    "\\milli\\gram\\kilogram\\tothe{-1}",
+                                    "\\kilogram\\kilogram\\tothe{-1}",
+                                    "\\percent"
+                                  ]
+                                },
+                                "measurementUncertaintyUnivariate": {
+                                  "type": "object",
+                                  "required": [
+                                    "expandedMU"
+                                  ],
+                                  "properties": {
+                                    "expandedMU": {
+                                      "type": "object",
+                                      "required": [
+                                        "valueExpandedMU",
+                                        "coverageFactor"
+                                      ],
+                                      "properties": {
+                                        "valueExpandedMU": {
+                                          "type": "string",
+                                          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                                        },
+                                        "coverageFactor": {
+                                          "type": "string",
+                                          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                                        },
+                                        "coverageProbability": {
+                                          "type": "string",
+                                          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                                        },
+                                        "distribution": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "additionalProperties": false
                                 }
                               },
                               "additionalProperties": false

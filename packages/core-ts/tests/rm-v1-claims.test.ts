@@ -11,6 +11,7 @@ import { encodeStatusList, MIN_STATUS_BITS } from '../src/reliance/status-list.j
 import {
   catalogWith, json, manifest, profile, profileJson, reissue, request, resign, serialize, statusListWith, URI,
 } from './rm-v1-helpers.js';
+import { KG_PER_KG, MG_PER_KG } from '../src/reliance/rm-scope.js';
 
 type Result = Awaited<ReturnType<typeof evaluateRmSlice>>['result'];
 const RM = 'https://vc4qi.example/bindings/rm/1#';
@@ -24,10 +25,13 @@ const trace = (result: Result, predicate: string) => result.trace.find(t => t.pr
 const subject = (d: JsonObject) => d.credentialSubject as JsonObject;
 const firstResult = (d: JsonObject) =>
   ((subject(d).materialPropertiesList as JsonObject[])[0]!.results as JsonObject[])[0]!;
-const quantity = (d: JsonObject) => (firstResult(d).data as JsonObject).quantity as JsonObject;
-/** D re-issued with its selected result's value (and optionally U and unit) changed. */
-const withValue = (value: string, U = '5', unit = 'mg/kg') => reissue({}, d => {
-  Object.assign(quantity(d), { value, unit: { ucumCode: unit }, uncertainty: { expandedUncertainty: U, coverageFactor: '2' } });
+/** The selected result's PTB D-SI real. */
+const real = (d: JsonObject) => ((firstResult(d).data as JsonObject).quantity as JsonObject).real as JsonObject;
+const expandedMU = (d: JsonObject) => (real(d).measurementUncertaintyUnivariate as JsonObject).expandedMU as JsonObject;
+/** D re-issued with its selected result's value (and optionally U and D-SI unit) changed. */
+const withValue = (value: string, U = '5', unit = MG_PER_KG) => reissue({}, d => {
+  Object.assign(real(d), { value, unit });
+  expandedMU(d).valueExpandedMU = U;
 });
 const withoutConformity = (overrides = {}) => {
   const { conformity: _unused, ...plain } = request(overrides);
@@ -35,8 +39,8 @@ const withoutConformity = (overrides = {}) => {
 };
 const scopeRecord = (id: string, over: JsonObject = {}): JsonObject => ({
   id, matrixIri: `${RM}CuZn39Pb3`, formIri: `${RM}Disc`, allowedPropertyIris: [`${RM}As`],
-  allowedMethodIris: [`${RM}M1`], quantityKindIri: `${RM}MassFraction`,
-  range: { from: '50', to: '500', unit: 'mg/kg' }, ...over,
+  allowedMethodIris: [`${RM}M1`], quantityTypeQUDT: 'MassFraction',
+  range: { from: '50', to: '500', unit: MG_PER_KG }, ...over,
 });
 /** Re-issue A and O with the given scope records (A's are O's, so the projection holds), D edited. */
 function withScopes(records: JsonObject[], editD?: (d: JsonObject) => void) {
@@ -153,7 +157,7 @@ describe('I4 complete records, identifiers and units (S09-S17, S22-S24)', () => 
     const overrides = await withScopes([scopeRecord('as'), scopeRecord('pb', { allowedPropertyIris: [`${RM}Pb`] })], d => {
       const results = (subject(d).materialPropertiesList as JsonObject[])[0]!.results as JsonObject[];
       results.push({ ...results[0]!, propertyIri: `${RM}Pb`,
-        data: { quantity: { ...quantity(d), value: '120' } } });
+        data: { quantity: { real: { ...real(d), label: 'Pb', value: '120' } } } });
     });
     const result = await run(overrides, request({ selectedClaims: [
       { id: 'as', sourcePointer: RESULT },
@@ -168,9 +172,9 @@ describe('I4 complete records, identifiers and units (S09-S17, S22-S24)', () => 
 
   it('S12: an operational range spanning two adjacent accreditation records is not a union', async () => {
     const A = json(URI.A), O = json(URI.O);
-    subject(A).scope = [scopeRecord(`${URI.A}#low`, { allowedMethodIris: [`${RM}M1`], range: { from: '50', to: '300', unit: 'mg/kg' } }),
-      scopeRecord(`${URI.A}#high`, { range: { from: '300', to: '500', unit: 'mg/kg' } })];
-    (subject(O).scope as JsonObject[])[0]!.range = { from: '100', to: '400', unit: 'mg/kg' };
+    subject(A).scope = [scopeRecord(`${URI.A}#low`, { allowedMethodIris: [`${RM}M1`], range: { from: '50', to: '300', unit: MG_PER_KG } }),
+      scopeRecord(`${URI.A}#high`, { range: { from: '300', to: '500', unit: MG_PER_KG } })];
+    (subject(O).scope as JsonObject[])[0]!.range = { from: '100', to: '400', unit: MG_PER_KG };
     const result = await run(await reissue({ [URI.A]: A, [URI.O]: O }));
     expect(trace(result, 'route:operational-scope:bounded-projection')).toMatchObject({ state: 'contradicted' });
     expect(result.decision).toBe('reject');
@@ -179,13 +183,13 @@ describe('I4 complete records, identifiers and units (S09-S17, S22-S24)', () => 
   it('S13: a projected lower bound below the parent is rejected although the upper bound fits', async () => {
     const O = json(URI.O);
     // A's record starts at 0.1 mg/kg.
-    (subject(O).scope as JsonObject[])[0]!.range = { from: '0.05', to: '500', unit: 'mg/kg' };
+    (subject(O).scope as JsonObject[])[0]!.range = { from: '0.05', to: '500', unit: MG_PER_KG };
     const result = await run(await reissue({ [URI.O]: O }));
     expect(trace(result, 'route:operational-scope:bounded-projection')).toMatchObject({ state: 'contradicted' });
   });
 
   it('S20: a missing or empty scope endpoint never yields a successful containment', async () => {
-    for (const range of [{ from: '50', unit: 'mg/kg' }, { from: '', to: '500', unit: 'mg/kg' }]) {
+    for (const range of [{ from: '50', unit: MG_PER_KG }, { from: '', to: '500', unit: MG_PER_KG }]) {
       const O = json(URI.O);
       (subject(O).scope as JsonObject[])[0]!.range = range;
       const result = await run(await reissue({ [URI.O]: O }));
@@ -195,10 +199,13 @@ describe('I4 complete records, identifiers and units (S09-S17, S22-S24)', () => 
   });
 
   it('S14: an unsupported unit is refused by the binding; a non-binding coverage factor is not mapped', async () => {
-    const ppm = await run(await withValue('178', '5', 'ppm'));
-    expect(ppm.trace.find(t => t.nodeUse.startsWith(`${URI.D} |`) && t.predicate === 'schema')).toMatchObject({ state: 'contradicted' });
-    expect(ppm.decision).toBe('reject');
-    const k3 = await run(await reissue({}, d => { (quantity(d).uncertainty as JsonObject).coverageFactor = '3'; }));
+    // D-SI's \\ppm, and D-SI's \\per spelling of mg/kg: one spelling per unit, the DRMD's.
+    for (const unit of ['\\ppm', '\\milli\\gram\\per\\kilogram', 'mg/kg']) {
+      const refused = await run(await withValue('178', '5', unit));
+      expect(refused.trace.find(t => t.nodeUse.startsWith(`${URI.D} |`) && t.predicate === 'schema'), unit).toMatchObject({ state: 'contradicted' });
+      expect(refused.decision, unit).toBe('reject');
+    }
+    const k3 = await run(await reissue({}, d => { expandedMU(d).coverageFactor = '3'; }));
     expect(trace(k3, 'claim-mapping:as-mass-fraction'))
       .toMatchObject({ gate: 4, state: 'not_established', reason: expect.stringMatching(/k = 2/) });
     expect(k3.decision).toBe('not_established');
@@ -206,7 +213,7 @@ describe('I4 complete records, identifiers and units (S09-S17, S22-S24)', () => 
 
   it('S15: mg/kg and kg/kg encodings give the same outcome, record and arithmetic witness', async () => {
     const baseline = await run();
-    const kgkg = await run(await withValue('0.000178', '0.000005', 'kg/kg'));
+    const kgkg = await run(await withValue('0.000178', '0.000005', KG_PER_KG));
     expect(kgkg.decision).toBe(baseline.decision);
     expect(kgkg.authorization[0]?.routeWitnessIds).toEqual(baseline.authorization[0]?.routeWitnessIds);
     expect(kgkg.conformity.requested && kgkg.conformity.reasons).toEqual(baseline.conformity.requested && baseline.conformity.reasons);
@@ -218,7 +225,7 @@ describe('I4 complete records, identifiers and units (S09-S17, S22-S24)', () => 
       expect(result.decision, bad).toBe('reject');
     }
     const O = json(URI.O);
-    (subject(O).scope as JsonObject[])[0]!.range = { from: '500', to: '50', unit: 'mg/kg' };
+    (subject(O).scope as JsonObject[])[0]!.range = { from: '500', to: '50', unit: MG_PER_KG };
     const reversed = await run(await reissue({ [URI.O]: O }));
     expect(trace(reversed, 'route:operational-scope:bounded-projection')).toMatchObject({ state: 'contradicted' });
     expect(reversed.decision).toBe('reject');
@@ -246,7 +253,7 @@ describe('I4 complete records, identifiers and units (S09-S17, S22-S24)', () => 
 
   it('S23: an asymmetric uncertainty is refused, never symmetrized', async () => {
     const D = json(URI.D);
-    quantity(D).uncertainty = { expandedUncertainty: '5', coverageFactor: '2', lowerExpandedUncertainty: '3' };
+    expandedMU(D).lowerValueExpandedMU = '3';
     await expect(reissue({}, d => { d.credentialSubject = D.credentialSubject; })).rejects.toThrow(); // undefined term, safe mode
     const result = await run({ [URI.D]: serialize(D) });
     expect(result.trace.find(t => t.nodeUse.startsWith(`${URI.D} |`) && t.predicate === 'schema')).toMatchObject({ state: 'contradicted' });

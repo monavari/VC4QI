@@ -134,7 +134,7 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     choice: { label: 'The verifier asks', options: [
       { id: 'authorized', label: 'Authorized?', sublabel: 'no limit' },
       { id: 'fit', label: 'Fit for use?', sublabel: 'As + U ≤ 200' }] },
-    note: 'Certified values and material from the M375a DRMD. Accreditation body, producer, laboratory, scopes, methods and keys are fictional; no real institution issues these credentials. 197 and 520 are hypothetical reissues.' },
+    note: 'Certified values and material from the M375a DRMD, each value a PTB D-SI 2.2.1 real (QUDT quantity kind, D-SI unit, expanded uncertainty). Accreditation body, producer, laboratory, scopes, methods and keys are fictional; no real institution issues these credentials. 197 and 520 are hypothetical reissues.' },
   { id: 'dcc', tab: 'DCC', title: 'Calibration certificate',
     intro: 'May I rely on each measurement group of this calibration?',
     caseLabel: 'Issuer',
@@ -142,7 +142,7 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     choice: { label: 'The verifier accepts', options: [
       { id: 'own', label: 'This route', sublabel: 'own profile' },
       { id: 'direct-only', label: 'Direct accreditation only', sublabel: 'cal-verifier-1' }] },
-    note: 'A JSON-LD simplification of DCC results, not native DCC XML. All parties and keys are fictional.' },
+    note: 'A JSON-LD simplification of a DCC: each result is a PTB D-SI 2.2.1 real, as in the DCC, but not native DCC XML. All parties and keys are fictional.' },
   { id: 'gs', tab: 'GS', title: 'GS mark',
     intro: 'May I rely on the GS mark on this product?',
     caseLabel: 'Product',
@@ -165,7 +165,7 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     choice: { label: 'The verifier trusts', options: [
       { id: 'both', label: 'Accreditation body and scheme owner', sublabel: 'gs-verifier-dpp-1' },
       { id: 'accreditation-only', label: 'Accreditation body only', sublabel: 'no scheme-owner anchor' }] },
-    note: 'An experimental product passport shaped after the EU Digital Product Passport (ESPR): unique product identifier, GTIN, commodity code, economic operator and facility, technical and sustainability data, and compliance information. Its GS-mark entry is supported by the unit\'s GS-mark credential, which keeps its own authority route. The GS binding evaluates only that entry. Not ESPR conformance; identifiers are fictional, and today\'s GS scheme has no per-unit credential. All parties and keys are fictional.' },
+    note: 'An experimental product passport shaped after the EU Digital Product Passport (ESPR): unique product identifier, GTIN, commodity code, economic operator and facility, technical data (rated power as a PTB D-SI real) and sustainability data, and compliance information. Its GS-mark entry is supported by the unit\'s GS-mark credential, which keeps its own authority route. The GS binding evaluates only that entry. Not ESPR conformance; identifiers are fictional, and today\'s GS scheme has no per-unit credential. All parties and keys are fictional.' },
 ];
 
 // ---------------------------------------------------------------- the credential graph
@@ -669,7 +669,7 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
     title: 'The laboratory studies the batch',
     text: 'HOM-LOT1, 10 January 2026: disc lot 1 is homogeneous for As. Issued under ACC-LAB.' },
   { id: 'certify', part: 'build', acts: ['rmp', 'holder'], joins: ['holder'], issues: ['D'], rules: [2, 4, 5],
-    maps: 'RM certificate (ISO 17034, shaped after the DRMD) → RmCertificate, RMP → disc lot 1',
+    maps: 'RM certificate (ISO 17034, shaped after the DRMD, values in PTB D-SI) → RmCertificate, RMP → disc lot 1',
     title: 'The producer certifies and ships',
     text: 'RM178, 20 January 2026: As = 178 ± 5 mg/kg. Issued under LIST-RMP, with HOM-LOT1 beside it as evidence and a bit in the producer’s status list.' },
 
@@ -793,8 +793,9 @@ function liveCertificate(state: RmBoardState) {
     const subject = structuredClone(d178.credentialSubject);
     const as = subject.materialPropertiesList[0].results[0];
     as.methodIri = as.methodIri.replace(/M1$/, state.method);
-    as.data.quantity.value = state.value;
-    as.data.quantity.uncertainty.expandedUncertainty = state.uncertainty;
+    // The certified value is a PTB D-SI real: value and expandedMU.valueExpandedMU.
+    as.data.quantity.real.value = state.value;
+    as.data.quantity.real.measurementUncertaintyUnivariate.expandedMU.valueExpandedMU = state.uncertainty;
     const status = { ...d178.credentialStatus, id: `${RM_URI.PRODUCER_STATUS}#4`, statusListIndex: '4' };
     return signAs({ ...d178, id: RM_URI.LIVE, name: 'Reference material certificate, CuZn39Pb3 disc lot 1 (signed in this browser)',
       credentialSubject: subject, credentialStatus: status } as JsonObject,
@@ -832,7 +833,7 @@ export async function evaluateRmBoard(over: Partial<RmBoardState> = {}): Promise
   if (state.tamper) {
     // Change the As value in the bytes the holder shows, without re-signing.
     const text = texts[target] ?? rmText(target);
-    const shown = (JSON.parse(text) as any).credentialSubject.materialPropertiesList[0].results[0].data.quantity.value as string;
+    const shown = (JSON.parse(text) as any).credentialSubject.materialPropertiesList[0].results[0].data.quantity.real.value as string;
     texts[target] = edited(text, `"value": "${shown}"`, `"value": "${shown === '150' ? '151' : '150'}"`);
   }
   const uris = { APP: RM_URI.APP, R: RM_URI.R, A: RM_URI.A, H: RM_URI.H, O: RM_URI.O, S: RM_URI.S, D: target };

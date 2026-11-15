@@ -179,7 +179,12 @@ def groups(d: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def result0(d: dict[str, Any], group: int = 0) -> dict[str, Any]:
-    return groups(d)[group]["results"][0]  # type: ignore[no-any-return]
+    """The first result's PTB D-SI real in a group."""
+    return groups(d)[group]["results"][0]["real"]  # type: ignore[no-any-return]
+
+
+def expanded0(d: dict[str, Any], group: int = 0) -> dict[str, Any]:
+    return result0(d, group)["measurementUncertaintyUnivariate"]["expandedMU"]  # type: ignore[no-any-return]
 
 
 def request(**overrides: Any) -> RelianceRequest:
@@ -255,7 +260,7 @@ def test_method_outside_record_contradicts() -> None:
 
 def test_coverage_factor_other_than_two_is_not_mapped() -> None:
     def edit(d: dict[str, Any]) -> None:
-        result0(d)["coverageFactor"] = "3"
+        expanded0(d)["coverageFactor"] = "3"
 
     result = run(reissue(None, edit))
     mapping = entry(result, "claim-mapping:g1")
@@ -299,7 +304,7 @@ def test_s19_failed_first_group_is_not_erased() -> None:
 
 def test_s21_uncertainty_below_cmc_contradicts_scope() -> None:
     def edit(d: dict[str, Any]) -> None:
-        result0(d)["expandedUncertainty"] = "0.3"
+        expanded0(d)["valueExpandedMU"] = "0.3"
 
     overrides = reissue(None, edit)
     applied = run(overrides)
@@ -365,7 +370,7 @@ def test_capability_better_than_admitted_widens_when_floor_applies() -> None:
         scope0(d)["cmcFloor"]["value"] = "0.3"
 
     def edit_dcc(d: dict[str, Any]) -> None:
-        result0(d)["expandedUncertainty"] = "0.4"
+        expanded0(d)["valueExpandedMU"] = "0.4"
 
     overrides = reissue_chain([(OPS, edit_o), (DCC2, edit_dcc)])
     applied = run_capability(overrides)
