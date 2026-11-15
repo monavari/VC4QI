@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Front page uses the screen width, and its QR code opens the demonstrator.** The
+  site's front page widens to 72rem on laptops: the title beside a QR card, three tiles
+  for the examples and the RM and GS stories, the six questions in one row, status and
+  links side by side; phones keep one column. The QR code (`site/assets/qr-demo.svg`,
+  made with segno 1.6.6) encodes `https://monavari.github.io/VC4QI/demo/`. The poster
+  QR code and its `site/m375a/` redirect stay. The status text drops the stale API
+  switch.
 - **Every value is a PTB D-SI 2.2.1 real (all bindings).** Certified RM values,
   calibration results and the passport's rated power are written as D-SI's `si:real`,
   in JSON with D-SI's element names: `label`, `quantityTypeQUDT` (a QUDT quantity kind:

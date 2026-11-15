@@ -63,7 +63,7 @@ browser: `pnpm -C apps/demonstrator build` bundles the repository's RM, calibrat
 GS slice evaluators (all seven gates) with the pinned resources, signed fixtures and
 verifier profiles of all three bindings into `site/demo/verifier.js`, and CI checks the
 bundle is current. `site/m375a/` redirects to the RM tab so the poster QR code stays
-valid. Node's `crypto` and `zlib` are replaced by browser shims
+valid; the front page's QR code (`site/assets/qr-demo.svg`) opens `site/demo/`. Node's `crypto` and `zlib` are replaced by browser shims
 (`apps/demonstrator/crypto-browser.ts`, and a bounded gunzip in `zlib-browser.ts` using
 `fflate`), so status lists are verified in the browser too. Nothing is fetched and no
 server is needed; `packages/core-ts/tests/demonstrator.test.ts` runs the shipped bundle
