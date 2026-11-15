@@ -9,8 +9,8 @@
 // VCDM 2.0 Example 28): the subject is the appointed body, permissionFor names per
 // credential type the schema and jurisdiction it may issue under, and its own termsOfUse
 // is a TrustFrameworkPolicy naming the legal basis. The body's grants name it as the
-// grant they were issued under: termsOfUse IssuedUnderPolicy, authorizationCredential of
-// type VerifiableAuthorisationForTrustChain, pinned by digest like every other link.
+// grant they were issued under: a termsOfUse IssuedUnderPolicy entry whose id is the
+// appointment, with its digest, like every other link.
 // Where EBSI points to a registry entry by URL, this binding pins the exact bytes.
 //
 // A verifier that anchors the state for the appointer purpose accepts the grant's issuer
@@ -57,13 +57,17 @@ export function appointmentRules(profile: RelianceProfile): AppointmentRules | '
   return { appointerPurpose: raw.appointerPurpose, ...(nonempty(raw.jurisdiction) ? { jurisdiction: raw.jurisdiction } : {}) };
 }
 
-/** Appointments a grant names: termsOfUse IssuedUnderPolicy entries of type VerifiableAuthorisationForTrustChain. */
-export function appointmentReferences(grant: Doc): string[] {
-  return list(grant.termsOfUse).filter(isObject)
-    .filter(policy => policy.type === 'IssuedUnderPolicy' && isObject(policy.authorizationCredential)
-      && policy.authorizationCredential.type === APPOINTMENT_TYPE)
-    .map(policy => (policy.authorizationCredential as Doc).id)
-    .filter(nonempty);
+/**
+ * Appointments a grant names: termsOfUse IssuedUnderPolicy entries whose credential is a
+ * VerifiableAuthorisationForTrustChain, or could not be read (it may be one: the check
+ * then says it is unavailable, never that there is none).
+ */
+export function appointmentReferences(grant: Doc, lookup: NodeLookup): string[] {
+  return list(grant.termsOfUse).filter(isObject).filter(p => p.type === 'IssuedUnderPolicy').map(p => p.id).filter(nonempty).filter(uri => {
+    const node = lookup(uri);
+    const type = node?.document ? (Array.isArray(node.document.type) ? String(node.document.type[1]) : undefined) : node?.type;
+    return type === undefined || type === APPOINTMENT_TYPE;
+  });
 }
 
 /** The named appointment's answer for `entity` (the grant's issuer) and the grant's type and schema. */
@@ -134,7 +138,7 @@ export function appointmentStanding(
   if (rules === undefined) return undefined;
   if (rules === 'invalid') return { basis: basis(id, 'not_established', `${direct} The profile's appointment rules are malformed.`, ['/issuer']) };
   const issuer = issuerOf(grant.issuer);
-  const references = appointmentReferences(grant);
+  const references = appointmentReferences(grant, lookup);
   if (references.length === 0 || issuer === undefined) {
     return { basis: basis(id, 'not_established',
       `${direct} The grant names no ${APPOINTMENT_TYPE} in an IssuedUnderPolicy of its termsOfUse.`, ['/issuer', '/termsOfUse']) };

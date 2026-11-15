@@ -22,10 +22,10 @@ const typeOf = d => [d?.type].flat().filter(Boolean).at(-1) ?? '';
  * is a termsOfUse entry; its type says whether it is a grant or a recognition. */
 const LINK = {
   authority: {
-    verb: 'is issued under', field: 'termsOfUse', path: 'termsOfUse[].authorizationCredential',
+    verb: 'is issued under', field: 'termsOfUse', path: 'termsOfUse[] · IssuedUnderPolicy · id, digestSRI',
     lede: (f, t) => f + ' names ' + t + ' as the grant it was issued under. ' + t + ' grants; ' + f + ' uses that grant, and may not go beyond it.',
     checks: (f, t) => [
-      t + ' is signed by its issuer, and its bytes match the digest ' + f + ' pins for it in relatedResource.',
+      t + ' is signed by its issuer, and its bytes match the digest ' + f + ' carries for it on the link.',
       t + ' is about the issuer of ' + f + ': the parent names the child\'s issuer as its subject.',
       t + ' permits what ' + f + ' does, and what ' + f + ' covers lies within ' + t + '.',
       t + ' was in force, neither suspended nor revoked, at the time asked about.',
@@ -33,10 +33,10 @@ const LINK = {
     ],
   },
   recognition: {
-    verb: 'is recognized in', field: 'termsOfUse', path: 'termsOfUse[].recognitionCredential · RecognitionPolicy',
+    verb: 'is recognized in', field: 'termsOfUse', path: 'termsOfUse[] · RecognitionPolicy · id, digestSRI',
     lede: (f, t) => f + ' names ' + t + ': its issuer issued it while recognized there. A recognition grants no authority; it tells a verifier that trusts the recognizer to accept this issuer.',
     checks: (f, t) => [
-      t + ' is signed by its issuer, and its bytes match the digest ' + f + ' pins for it in relatedResource.',
+      t + ' is signed by its issuer, and its bytes match the digest ' + f + ' carries for it on the link.',
       t + ' is about the issuer of ' + f + ', and recognizes it for the action and main scope that ' + f + ' needs.',
       t + ' was in force, neither suspended nor revoked, at the time asked about.',
       'It counts only for a verifier that trusts the issuer of ' + t + '; a verifier that trusts the body directly never needs it.',
@@ -44,10 +44,10 @@ const LINK = {
     ],
   },
   support: {
-    verb: 'is backed by', field: 'evidence', path: 'evidence[]',
+    verb: 'is backed by', field: 'evidence', path: 'evidence[] · id, digestSRI',
     lede: (f, t) => f + ' lists ' + t + ' as evidence for its claim. Evidence supports a claim; it grants no authority.',
     checks: (f, t) => [
-      t + ' is signed by its issuer, and its bytes match the digest ' + f + ' pins for it in relatedResource.',
+      t + ' is signed by its issuer, and its bytes match the digest ' + f + ' carries for it on the link.',
       t + ' concerns the same material, property and matrix, and reports the outcome required.',
       'The issuer of ' + t + ' is itself authorized for such work: ' + t + ' has an authority link of its own.',
       'The verifier\'s profile says whether this evidence is required.',
@@ -59,9 +59,9 @@ const GLOSSARY = [
   ['Verifiable credential', 'A signed statement: an issuer says something about a subject. Anyone can check the signature, offline.'],
   ['issuer', 'Who signs the credential.'],
   ['credentialSubject', 'Whom or what the credential is about: a body, a laboratory, a batch of material.'],
-  ['type', 'What kind of credential it is, for example RmAccreditation; the type fixes the schema and the rules that apply.'],
+  ['type', 'What kind of credential it is, for example RmpAccreditation; the type fixes the schema and the rules that apply.'],
   ['termsOfUse', 'The terms under which a credential was issued. Here every upward link is one, and its type says what it means. Drawn as lines.'],
-  ['relatedResource', 'The digests of the credentials it points to. A verifier refuses a parent whose bytes do not match.'],
+  ['digestSRI', 'On each link: the digest of the credential it names. A verifier refuses a parent whose bytes do not match (VCDM §5.3).'],
   ['evidence', 'Supporting documents, such as a study. Evidence supports a claim and grants nothing. Drawn dotted: “is backed by”.'],
   ['credentialStatus', 'A bit in the issuer\'s status list. Set, it means revoked or suspended.'],
   ['validFrom, validUntil', 'When the credential holds. Authority and status must hold when the activity happened.'],
@@ -95,7 +95,7 @@ export function fail(message) {
  *   objectAt(ctx) -> actorId           the column the physical object sits in,
  *   band(st) -> bool                   show the international-recognition note,
  *   panels: { name: ctx -> html }      pages drawn instead of the board (a step's `panel`),
- *   codes: { A: 'PA1' }                the code a credential shows, by its identifier's last part
+ *   codes: { A: 'ACC-RMP' }                the code a credential shows, by its identifier's last part
  *                                       (display only; the signed credentials keep theirs),
  *   hideLocked: bool                   in guided steps, hide a locked control unless its value
  *                                       differs from the default or the spec says `always`,
@@ -189,14 +189,15 @@ export async function mountBoard(api, cfg) {
   // Each link keeps the field it sits in (termsOfUse, evidence) and its entry's type, so
   // a term of use and an evidence entry are never shown as if at one level.
   const linksOf = d => [
-    ...[d?.termsOfUse ?? []].flat().filter(t => t?.authorizationCredential?.id).map(t => ({ to: t.authorizationCredential.id, kind: 'authority', field: 'termsOfUse', policy: t.type })),
-    ...[d?.termsOfUse ?? []].flat().filter(t => t?.recognitionCredential?.id).map(t => ({ to: t.recognitionCredential.id, kind: 'recognition', field: 'termsOfUse', policy: t.type })),
+    ...[d?.termsOfUse ?? []].flat().filter(t => t?.id).map(t => ({ to: t.id, kind: t.type === 'RecognitionPolicy' ? 'recognition' : 'authority', field: 'termsOfUse', policy: t.type })),
     ...[d?.evidence ?? []].flat().filter(e => e?.id).map(e => ({ to: e.id, kind: 'support', field: 'evidence', policy: [e.type].flat().filter(Boolean).at(-1) })),
   ];
   /** A link's name: its field, then its entry's type (termsOfUse · IssuedUnderPolicy). */
   const linkName = l => [l.field ?? LINK[l.kind].field, l.policy].filter(Boolean).join(' · ');
-  /** A credential by its full name and the paper's code: “Producer accreditation A”. */
-  const nameOf = (R, uri) => { const a = assetOf(R, uri); return a ? a.label + ' ' + codeOfUri(uri) : codeOfUri(uri); };
+  /** A card's name: the credential's own `name` (VCDM), else the asset's label. */
+  const labelOf = (a, d) => (typeof d?.name === 'string' ? d.name : a?.label) ?? '';
+  /** A credential by its name and code: “Accreditation of the RM producer ACC-RMP”. */
+  const nameOf = (R, uri) => { const a = assetOf(R, uri); return a ? labelOf(a, docOf(R, uri)) + ' ' + codeOfUri(uri) : codeOfUri(uri); };
   const cites = d => linksOf(d).map(l => codeOfUri(l.to) + (l.kind === 'support' ? ' (evidence)' : ''));
   // The link in words, with its name: field, then type.
   const linkWords = (from, l) => '<b>' + esc(codeOfUri(from)) + '</b> ' + LINK[l.kind].verb + ' <b>' + esc(codeOfUri(l.to)) + "</b> <code>" + esc(linkName(l)) + '</code>';
@@ -311,7 +312,7 @@ export async function mountBoard(api, cfg) {
     return "<button type='button' class='card " + a.kind + (group ? ' by-' + group : '') + (state ? ' s-' + state : '') + (missing ? ' missing' : '') + (fresh ? ' fresh' : '')
       + (fresh && a.kind === 'claim' ? ' handover' : '') + (selected ? ' selected' : '') + (pending ? " pending' aria-hidden='true' tabindex='-1" : '')
       + "' data-code='" + esc(a.code) + "' data-uri='" + esc(uri) + "'>"
-      + "<span class='top'><span class='code'>" + esc(uri ? codeOfUri(uri) : disp(a.code)) + "</span><span class='kind'>" + esc(a.label)
+      + "<span class='top'><span class='code'>" + esc(uri ? codeOfUri(uri) : disp(a.code)) + "</span><span class='kind'>" + esc(labelOf(a, d))
       + (a.kind === 'evidence' ? " <span class='tag'>evidence</span>" : '') + (a.tag ? " <span class='tag'>" + esc(a.tag) + '</span>' : '') + '</span>'
       + (state ? "<span class='icon' aria-label='" + esc(LABEL[state]) + "'>" + ICON[state] + '</span>' : '') + '</span>'
       + "<span class='type'>" + esc(typeOf(d)).replace(/([a-z])([A-Z])/g, '$1<wbr>$2') + '</span>'
@@ -500,7 +501,7 @@ export async function mountBoard(api, cfg) {
     const a = ASSETS.find(x => x.code === code), uri = R.uris[code], d = docOf(R, uri), type = typeOf(d);
     const node = R.graph.nodes.find(n => n.uri === uri);
     const missing = mode === 'evaluate' && cfg.withheld(stateOf(STORY[step])) === code;
-    let h = "<article class='detail'><header class='dhead'><span class='code'>" + esc(codeOfUri(uri)) + '</span><b>' + esc(a.label) + "</b><code class='type'>" + esc(type) + '</code>'
+    let h = "<article class='detail'><header class='dhead'><span class='code'>" + esc(codeOfUri(uri)) + '</span><b>' + esc(labelOf(a, d)) + "</b><code class='type'>" + esc(type) + '</code>'
       + (mode === 'evaluate' ? stateMark(missing ? 'not_established' : node?.state ?? 'not_established') : '') + '</header>';
     if (cfg.types?.[type]) h += "<p class='lede'>" + esc(cfg.types[type]) + '</p>';
     if (missing) h += "<p class='lede'>The holder left it out: the verifier never saw it.</p>";
@@ -522,20 +523,18 @@ export async function mountBoard(api, cfg) {
     const L = LINK[sel.linkKind], f = codeOfUri(sel.from), t = codeOfUri(sel.to);
     const fa = assetOf(R, sel.from), ta = assetOf(R, sel.to), fd = docOf(R, sel.from), td = docOf(R, sel.to);
     const e = R.graph.edges.find(x => x.from === sel.from && x.to === sel.to);
-    const pin = (fd?.relatedResource ?? []).find(r => r.id === sel.to);
-    const entry = sel.linkKind === 'authority' ? (fd?.termsOfUse ?? []).find(x => x.authorizationCredential?.id === sel.to)
-      : sel.linkKind === 'recognition' ? (fd?.termsOfUse ?? []).find(x => x.recognitionCredential?.id === sel.to)
-      : (fd?.evidence ?? []).find(x => x.id === sel.to);
+    // The link is one entry: its id names the credential, its digestSRI pins it.
+    const entry = (sel.linkKind === 'support' ? fd?.evidence ?? [] : [fd?.termsOfUse ?? []].flat()).find(x => x?.id === sel.to);
     const card = (code, x) => "<button type='button' class='code' data-card='" + esc(code) + "'>" + esc(x) + '</button>';
     let h = "<article class='detail'><header class='dhead'>" + card(fa?.code, f) + "<span class='verb'>" + L.verb + '</span>' + card(ta?.code, t)
       + (mode === 'evaluate' && e ? stateMark(e.state) : '') + '</header>'
       + "<p class='lede'>" + esc(L.lede(nameOf(R, sel.from), nameOf(R, sel.to))) + '</p>'
-      + "<dl class='map'><dt>In</dt><dd>" + esc(f + ' · ' + (fa?.label ?? '') + ' (' + typeOf(fd) + ')') + '</dd>'
+      + "<dl class='map'><dt>In</dt><dd>" + esc(f + ' · ' + labelOf(fa, fd) + ' (' + typeOf(fd) + ')') + '</dd>'
       + '<dt>Field</dt><dd><code>' + L.path + '</code></dd>'
-      + '<dt>Points to</dt><dd>' + esc(t + ' · ' + (ta?.label ?? '') + ' (' + typeOf(td) + ')') + '</dd>'
-      + (pin ? '<dt>Pinned by</dt><dd><code>relatedResource</code> ' + esc(pin.digestSRI.slice(0, 20)) + '…</dd>' : '')
+      + '<dt>Points to</dt><dd>' + esc(t + ' · ' + labelOf(ta, td) + ' (' + typeOf(td) + ')') + '</dd>'
+      + (entry?.digestSRI ? '<dt>Pinned by</dt><dd><code>digestSRI</code> ' + esc(String(entry.digestSRI).slice(0, 20)) + '… on the entry</dd>' : '')
       + (mode === 'evaluate' ? '<dt>Here</dt><dd>' + esc(edgeWords(e, t)) + '</dd>' : '') + '</dl>'
-      + sec('json', 'The link as signed', '<pre>' + esc(JSON.stringify({ [L.field]: [entry], ...(pin ? { relatedResource: [pin] } : {}) }, null, 2)) + '</pre>')
+      + sec('json', 'The link as signed', '<pre>' + esc(JSON.stringify({ [L.field]: [entry] }, null, 2)) + '</pre>')
       + sec('linkchecks', 'What a verifier checks on it', '<ul class="checks">' + L.checks(nameOf(R, sel.from), nameOf(R, sel.to)).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>');
     if (mode === 'evaluate') {
       const rows = checksFor(sel.to, R).flatMap(g => g.rows).filter(x => x.gate >= 1);

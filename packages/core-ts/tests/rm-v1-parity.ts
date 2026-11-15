@@ -17,7 +17,7 @@ export interface ParityScenario {
 }
 
 const GUARDED = { requirementId: 'as-mass-fraction-max-200-mg-per-kg', decisionRuleId: 'guarded-acceptance-expanded-u' };
-const D = (value: string) => `https://producer.vc4qi.example/credentials/D${value}`;
+const D = (value: string) => `https://producer.vc4qi.example/credentials/RM${value}`;
 export const PARITY_SCENARIOS: readonly ParityScenario[] = [
   { id: 'x178-guarded', targetId: URI.D, profile: 'rm-verifier-1.json', conformity: GUARDED },
   { id: 'x197-guarded', targetId: D('197'), profile: 'rm-verifier-1.json', conformity: GUARDED },

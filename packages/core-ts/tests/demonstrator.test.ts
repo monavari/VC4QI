@@ -91,7 +91,7 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
 
   it('RM: the credential graph marks a withheld study as not present', async () => {
     const r = await run('rm', '178', { choice: 'fit', withhold: true });
-    expect(r.graph.nodes.find(n => n.name === 'S')?.present).toBe(false);
+    expect(r.graph.nodes.find(n => n.name === 'HOM-LOT1')?.present).toBe(false);
   });
 
   it('every example: tampering fails protection, withholding a credential is never accepted', async () => {
@@ -108,7 +108,7 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     const issued = api.RM_STORY.filter(s => s.part === 'build').flatMap(s => s.issues ?? []);
     expect([...issued].sort()).toEqual(api.RM_ASSETS.map(a => a.code).sort());
     const accepted = await api.evaluateRmBoard();
-    const uri = (code: string) => code === 'D' ? accepted.certificate : accepted.graph.nodes.find(n => n.name === code)!.uri;
+    const uri = (code: string) => accepted.uris[code]!;
     const validFrom = issued.map(code => (JSON.parse(accepted.texts[uri(code)]!) as { validFrom: string }).validFrom);
     expect(validFrom).toEqual([...validFrom].sort());
     for (const s of api.RM_STORY.filter(x => x.expect !== undefined)) {
@@ -141,7 +141,7 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
   it('RM board: documents signed in the browser verify like the generated fixtures', async () => {
     // The same value, signed live, is accepted exactly as D178 is.
     const own = await api.evaluateRmBoard({ certificate: 'custom', value: '178', uncertainty: '5' });
-    expect([own.result.decision, own.signedLive]).toEqual(['accept', ['https://producer.vc4qi.example/credentials/D-live']]);
+    expect([own.result.decision, own.signedLive]).toEqual(['accept', ['https://producer.vc4qi.example/credentials/RM-own']]);
     expect(answers(own)).toEqual(answers(await api.evaluateRmBoard()));
     // Method M2 is accredited but outside the producer's operational scope (M1 only).
     expect(answers(await api.evaluateRmBoard({ certificate: 'custom', value: '178', uncertainty: '5', method: 'M2' })).authorized).toBe('not_established');
@@ -160,12 +160,12 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     expect((await api.evaluateRmBoard({ trust: 'global-aci', suspendGaci: true })).signedLive)
       .toEqual(['https://global-aci.vc4qi.example/status/suspension/1']);
     // R is on the chain the graph reads: A and H point up to it.
-    expect((await api.evaluateRmBoard()).graph.edges.filter(e => e.to.endsWith('/credentials/R')).map(e => e.from.split('/').pop()).sort()).toEqual(['A', 'H']);
+    expect((await api.evaluateRmBoard()).graph.edges.filter(e => e.to.endsWith('/credentials/REC-NAB')).map(e => e.from.split('/').pop()).sort()).toEqual(['ACC-LAB', 'ACC-RMP']);
     // The state that appointed the body: A and H were issued under APP; suspending APP stops
     // a verifier that trusts the state, not one that trusts the body or Global ACI.
     expect(answers(await api.evaluateRmBoard({ trust: 'state' }))).toEqual(answers(await api.evaluateRmBoard()));
-    expect((await api.evaluateRmBoard()).graph.edges.filter(e => e.to.endsWith('/credentials/APP'))
-      .map(e => `${e.from.split('/').pop()}:${e.policy}`).sort()).toEqual(['A:IssuedUnderPolicy', 'H:IssuedUnderPolicy']);
+    expect((await api.evaluateRmBoard()).graph.edges.filter(e => e.to.endsWith('/credentials/APP-NAB'))
+      .map(e => `${e.from.split('/').pop()}:${e.policy}`).sort()).toEqual(['ACC-LAB:IssuedUnderPolicy', 'ACC-RMP:IssuedUnderPolicy']);
     expect((await api.evaluateRmBoard({ trust: 'state', withhold: 'APP' })).result.decision).toBe('not_established');
     // Any credential of the chain left out: cannot tell, never accepted.
     for (const code of ['O', 'A', 'S', 'H']) {

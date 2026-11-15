@@ -34,24 +34,24 @@ describe('E21-E22: the verifier that anchors the state follows A and H up to the
     expect(anchorBasis(result)).toMatchObject({ state: 'established' });
     // Identical to the Python mirror's reason.
     expect(anchorBasis(result)?.reason).toBe(`${URI.NAB} is appointed by ${URI.STATE} (a configured anchor for `
-      + 'appoint-accreditation-bodies) to issue RmAccreditation in https://publications.europa.eu/resource/authority/atu/DEU, '
+      + 'appoint-accreditation-bodies) to issue RmpAccreditation in https://publications.europa.eu/resource/authority/atu/DEU, '
       + `in force at 2026-01-20T00:00:00Z, in ${URI.APP}.`);
     expect(labAnchor(result)).toMatchObject({ state: 'established' });
-    expect(labAnchor(result)?.reason).toMatch(/to issue RmLabAuthority/);
+    expect(labAnchor(result)?.reason).toMatch(/to issue LabAccreditation/);
     expect(result.authorization[0]?.routeWitnessIds).toContain(URI.APP);
     expect(result.authorization[0]?.routeWitnessIds).not.toContain(URI.R);
     expect(result.support[0]?.witnessIds).toContain(URI.APP);
     expect(result.trace.find(t => t.predicate === 'restriction:accreditation-suspension')).toMatchObject({ state: 'established' });
-    expect(result.trace.some(t => t.predicate === 'related-resource-integrity' && t.nodeUse.startsWith(`${URI.A} |`)
+    expect(result.trace.some(t => t.predicate === 'link-integrity' && t.nodeUse.startsWith(`${URI.A} |`)
       && t.reason.startsWith(URI.APP) && t.state === 'established')).toBe(true);
     expect(result.decision).toBe('accept');
   });
 
   it('E22: D520 is appointed through and still outside the producer\'s scope; D197 fails only the guarded rule', async () => {
-    const r520 = await run({}, stateProfile, 'https://producer.vc4qi.example/credentials/D520');
+    const r520 = await run({}, stateProfile, 'https://producer.vc4qi.example/credentials/RM520');
     expect(anchorBasis(r520)).toMatchObject({ state: 'established' });
     expect(r520.decision).toBe('reject');
-    const r197 = await run({}, stateProfile, 'https://producer.vc4qi.example/credentials/D197');
+    const r197 = await run({}, stateProfile, 'https://producer.vc4qi.example/credentials/RM197');
     expect(r197.authorization[0]?.state).toBe('established');
     expect(r197.conformity).toMatchObject({ state: 'contradicted' });
   });
@@ -61,14 +61,14 @@ describe('E23-E28: what an appointment decides, and for whom', () => {
   it('E23: the state suspends its appointment, and reliance through it is contradicted', async () => {
     const result = await run({ [URI.STATE_SUSPENSION]: await statusListWith(URI.STATE_SUSPENSION, [0]) });
     expect(anchorBasis(result)).toMatchObject({ state: 'contradicted' });
-    expect(anchorBasis(result)?.reason).toMatch(/has suspended its appointment https:\/\/state\.vc4qi\.example\/credentials\/APP/);
+    expect(anchorBasis(result)?.reason).toMatch(/has suspended its appointment https:\/\/state\.vc4qi\.example\/credentials\/APP-NAB/);
     expect(result.decision).toBe('reject');
   });
 
   it('E23: the state revokes its appointment, and reliance through it is contradicted', async () => {
     const result = await run({ [URI.STATE_STATUS]: await statusListWith(URI.STATE_STATUS, [0]) });
     expect(anchorBasis(result)).toMatchObject({ state: 'contradicted' });
-    expect(anchorBasis(result)?.reason).toMatch(/Appointment https:\/\/state\.vc4qi\.example\/credentials\/APP is not usable/);
+    expect(anchorBasis(result)?.reason).toMatch(/Appointment https:\/\/state\.vc4qi\.example\/credentials\/APP-NAB is not usable/);
     expect(result.decision).toBe('reject');
   });
 
@@ -92,11 +92,11 @@ describe('E23-E28: what an appointment decides, and for whom', () => {
 
   it('E26: an appointment that does not permit laboratory authorities contradicts required support', async () => {
     const result = await run(await appointmentWith(app => {
-      subject(app).permissionFor = permissions(app).filter(p => !(p.types as string[]).includes('RmLabAuthority'));
+      subject(app).permissionFor = permissions(app).filter(p => !(p.types as string[]).includes('LabAccreditation'));
     }));
     expect(anchorBasis(result)).toMatchObject({ state: 'established' });
     expect(labAnchor(result)).toMatchObject({ state: 'contradicted' });
-    expect(labAnchor(result)?.reason).toMatch(/permits https:\/\/nab\.vc4qi\.example\/controller to issue RmAccreditation, not RmLabAuthority/);
+    expect(labAnchor(result)?.reason).toMatch(/permits https:\/\/nab\.vc4qi\.example\/controller to issue RmpAccreditation, not LabAccreditation/);
     expect(result.decision).toBe('reject');
   });
 
@@ -105,7 +105,7 @@ describe('E23-E28: what an appointment decides, and for whom', () => {
     ((json.bindingRules as JsonObject).appointment as JsonObject).jurisdiction = 'https://publications.europa.eu/resource/authority/atu/FRA';
     const result = await run({}, loadRelianceProfile(json));
     expect(anchorBasis(result)).toMatchObject({ state: 'contradicted' });
-    expect(anchorBasis(result)?.reason).toMatch(/permits RmAccreditation for .*atu\/DEU, not for .*atu\/FRA/);
+    expect(anchorBasis(result)?.reason).toMatch(/permits RmpAccreditation for .*atu\/DEU, not for .*atu\/FRA/);
   });
 
   it('E27: an appointment that begins after the activity cannot authorize it', async () => {
@@ -125,7 +125,6 @@ describe('E23-E28: what an appointment decides, and for whom', () => {
   it('a grant that names no appointment establishes nothing for the state verifier', async () => {
     const A = json(URI.A);
     A.termsOfUse = (A.termsOfUse as JsonObject[]).filter(t => t.type !== 'IssuedUnderPolicy');
-    A.relatedResource = (A.relatedResource as JsonObject[]).filter(r => r.id !== URI.APP);
     const result = await run(await reissue({ [URI.A]: A }));
     expect(anchorBasis(result)).toMatchObject({ state: 'not_established' });
     expect(anchorBasis(result)?.reason).toMatch(/names no VerifiableAuthorisationForTrustChain in an IssuedUnderPolicy/);

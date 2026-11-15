@@ -30,11 +30,11 @@ const addFormats = addFormatsModule as unknown as (ajv: InstanceType<typeof Ajv>
 
 /** Recognized RM v1 credential types and the schema each must declare. */
 export const RM_V1_ARTIFACT_SCHEMAS: Readonly<Record<string, string>> = Object.freeze({
-  RmAccreditation: `${RM_V1_SCHEMA_BASE}accreditation.json`,
-  RmOperationalScope: `${RM_V1_SCHEMA_BASE}operational-scope.json`,
+  RmpAccreditation: `${RM_V1_SCHEMA_BASE}rmp-accreditation.json`,
+  FlexibleScopeList: `${RM_V1_SCHEMA_BASE}flexible-scope-list.json`,
   RmCertificate: `${RM_V1_SCHEMA_BASE}certificate.json`,
-  RmStudy: `${RM_V1_SCHEMA_BASE}study.json`,
-  RmLabAuthority: `${RM_V1_SCHEMA_BASE}lab-authority.json`,
+  HomogeneityStudy: `${RM_V1_SCHEMA_BASE}homogeneity-study.json`,
+  LabAccreditation: `${RM_V1_SCHEMA_BASE}lab-accreditation.json`,
   BitstringStatusListCredential: `${RM_V1_SCHEMA_BASE}status-list.json`,
   RecognizedEntityCredential: `${RM_V1_SCHEMA_BASE}recognized-entity.json`,
   VerifiableAuthorisationForTrustChain: `${RM_V1_SCHEMA_BASE}appointment.json`,
@@ -96,10 +96,13 @@ export interface ProtectedFact {
   readonly value: unknown;
 }
 
+/** The integrity of one link: the digest on a termsOfUse or evidence entry (VCDM 2.0 §5.3). */
 export interface RelatedResourceCheck {
   readonly id: string;
   readonly state: SemanticState;
   readonly reason: string;
+  /** Where the digest sits: /termsOfUse, /evidence (or /relatedResource). */
+  readonly pointer: string;
 }
 
 export interface RmArtifactVerification {
@@ -112,7 +115,7 @@ export interface RmArtifactVerification {
   readonly keyAuthorization?: KeyAuthorization;
   /** Executed only after protection is established. */
   readonly validity: PredicateResult;
-  /** Integrity of relatedResource references; empty unless protection is established. */
+  /** Integrity of each link's digest; empty unless protection is established. */
   readonly relatedResources: readonly RelatedResourceCheck[];
   /** Empty unless protection is established. */
   readonly facts: readonly ProtectedFact[];
@@ -195,18 +198,31 @@ function validity(document: JsonObject, evaluationTime: string): PredicateResult
   return predicate('established', [`Valid at ${evaluationTime}.`], pointers);
 }
 
+/**
+ * The links a credential pins: every termsOfUse and evidence entry with an id carries the
+ * digest of the credential it names (VCDM 2.0 §5.3: any object with an id MAY carry
+ * digestSRI). A relatedResource list, if present, is checked the same way.
+ */
+export function pinnedLinks(document: JsonObject): { id: string; digestSRI: unknown; pointer: string }[] {
+  const entries = (value: unknown) => (Array.isArray(value) ? value : isObject(value) ? [value] : []).filter(isObject);
+  return [
+    ...entries(document.termsOfUse).map(e => ({ e, pointer: '/termsOfUse' })),
+    ...entries(document.evidence).map(e => ({ e, pointer: '/evidence' })),
+    ...entries(document.relatedResource).map(e => ({ e, pointer: '/relatedResource' })),
+  ].filter(({ e }) => typeof e.id === 'string' && e.digestSRI !== undefined)
+    .map(({ e, pointer }) => ({ id: e.id as string, digestSRI: e.digestSRI, pointer }));
+}
+
 function relatedResourceChecks(document: JsonObject, session: ResourceResolver): RelatedResourceCheck[] {
-  const references = Array.isArray(document.relatedResource) ? document.relatedResource : [];
-  return references.filter(isObject).map(reference => {
-    const id = String(reference.id);
+  return pinnedLinks(document).map(({ id, digestSRI, pointer }) => {
     try {
       const actual = sha384SRI(session.resolve(id).bytes);
-      return actual === reference.digestSRI
-        ? { id, state: 'established' as const, reason: 'Digest matches the exact referenced bytes.' }
-        : { id, state: 'contradicted' as const, reason: `Digest mismatch: referenced bytes hash to ${actual}.` };
+      return actual === digestSRI
+        ? { id, pointer, state: 'established' as const, reason: 'Digest matches the exact referenced bytes.' }
+        : { id, pointer, state: 'contradicted' as const, reason: `Digest mismatch: referenced bytes hash to ${actual}.` };
     } catch (error) {
       const code = error instanceof CatalogError ? error.code : 'UNAVAILABLE';
-      return { id, state: 'not_established' as const, reason: `Referenced resource unavailable: ${code}.` };
+      return { id, pointer, state: 'not_established' as const, reason: `Referenced resource unavailable: ${code}.` };
     }
   });
 }

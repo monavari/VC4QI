@@ -4,29 +4,21 @@
   "title": "RecognitionPolicy entry in termsOfUse: issued while recognized in the named recognition (no authority)",
   "type": "object",
   "required": [
+    "id",
     "type",
-    "recognitionCredential"
+    "digestSRI"
   ],
   "properties": {
+    "id": {
+      "type": "string",
+      "format": "uri"
+    },
     "type": {
       "const": "RecognitionPolicy"
     },
-    "recognitionCredential": {
-      "type": "object",
-      "required": [
-        "id",
-        "type"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uri"
-        },
-        "type": {
-          "const": "RecognizedEntityCredential"
-        }
-      },
-      "additionalProperties": false
+    "digestSRI": {
+      "type": "string",
+      "pattern": "^sha384-[A-Za-z0-9+/]{64}$"
     }
   },
   "additionalProperties": false

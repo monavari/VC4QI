@@ -4,41 +4,48 @@
 [`packages/core-ts/scripts/generate-rm-v1-artifacts.ts`](../../../../packages/core-ts/scripts/generate-rm-v1-artifacts.ts)
 (`--check` detects stale output; never edit the files by hand):
 
-- `controllers/{nab,producer,lab,global-aci}.json`: fictional controller documents, each with one
-  Ed25519 Multikey referenced from `assertionMethod`.
-- `credentials/A.json` (NAB accredits the producer for the element contents of the brass,
-  As, Cu, Zn and Pb, M1/M2, 0.1 mg/kg to 997 g/kg, written as 997000 mg/kg; shaped after
-  a flexible-scope annex row),
-  `A2.json` (NAB accredits the producer to certify directly, M1; the second route,
-  not referenced by D178),
-  `H.json` (NAB accredits the laboratory for homogeneity studies),
-  `O.json` (producer's operational scope, M1 only, bound to A),
-  `S.json` (laboratory homogeneity study of the batch, bound to H) and
-  `D178.json` (certificate, As = 178 mg/kg, U = 5, k = 2, bound to O, citing S),
-  plus `D197.json` and `D520.json`, hypothetical reissues with identical inputs except
-  the value (fresh valid signatures) for the 197/520 witness cases.
-- `credentials/R.json`: a fictional Global ACI stand-in's recognition of the NAB, a W3C
-  Recognized Entities credential (Working Draft of 12 November 2026) with one subject,
-  recognizing the NAB to `accredit` (`recognizedTo`), registered for Reference material
-  production (ISO 17034:2016) and Testing (ISO/IEC 17025:2017) (`registration`), from
-  2024 to 2028. A, A2 and H name it in a `termsOfUse` `RecognitionPolicy`, mirror it as
-  `issuer.recognizedIn` and pin it in `relatedResource`; it grants no authority, and
-  only a verifier that anchors Global ACI (profile `rm-verifier-global-aci-1`) relies on
-  it. O, S and D carry `IssuedUnderPolicy` links to their grants.
-- `credentials/APP.json`: a fictional state's appointment of the NAB (Regulation (EC)
-  No 765/2008, Art. 4(1)) in the shape of EBSI's `VerifiableAuthorisationForTrustChain`:
-  `permissionFor` lets the NAB issue `RmAccreditation` and `RmLabAuthority` under their
-  schemas in `atu/DEU`; its `termsOfUse` is a `TrustFrameworkPolicy` naming the legal
-  basis. A, A2 and H name it in a `termsOfUse` `IssuedUnderPolicy` and pin it; only a
-  verifier that anchors the state (profile `rm-verifier-state-1`) relies on it.
-  `status/state.json` and `status/state-suspension.json` cover it.
+- `controllers/{nab,producer,lab,global-aci,state}.json`: fictional controller documents, each
+  with one Ed25519 Multikey referenced from `assertionMethod`.
+- `credentials/`: one file per credential, named by its code, which is also the last part of
+  its id and says what it is and of whom (the paper's letter in brackets). Every credential
+  carries a `name` and a `description`.
+  - `ACC-RMP.json` (A): the NAB's accreditation of the RM producer to ISO 17034
+    (`RmpAccreditation`), for the element contents of the brass, M1/M2, 0.1 mg/kg to
+    997 g/kg (written as 997000 mg/kg), shaped after a flexible-scope annex row.
+  - `ACC-RMP-2.json` (A2): a second accreditation letting the producer certify directly, M1;
+    the second route, not referenced by RM178.
+  - `ACC-LAB.json` (H): the NAB's accreditation of the testing laboratory to ISO/IEC 17025
+    (`LabAccreditation`), for homogeneity studies.
+  - `LIST-RMP.json` (O): the producer's list of activities under its flexible scope
+    (`FlexibleScopeList`, ISO/IEC 17011 and EA-2/15), M1 only, issued under ACC-RMP.
+  - `HOM-LOT1.json` (S): the laboratory's homogeneity study of the batch (`HomogeneityStudy`),
+    issued under ACC-LAB.
+  - `RM178.json` (D178): the RM certificate, As = 178 mg/kg, U = 5, k = 2, issued under
+    LIST-RMP, citing HOM-LOT1 as evidence; `RM197.json` and `RM520.json`, hypothetical
+    reissues with identical inputs except the value, for the 197/520 witness cases.
+  - `REC-NAB.json` (R): a fictional Global ACI stand-in's recognition of the NAB, a W3C
+    Recognized Entities credential (Working Draft of 12 November 2026) with one subject,
+    recognizing the NAB to `accredit`, registered for Reference material production
+    (ISO 17034:2016) and Testing (ISO/IEC 17025:2017), from 2024 to 2029. ACC-RMP, ACC-RMP-2
+    and ACC-LAB name it in a `termsOfUse` `RecognitionPolicy` entry and mirror it as
+    `issuer.recognizedIn`; it grants no authority, and only a verifier that anchors Global
+    ACI (profile `rm-verifier-global-aci-1`) relies on it.
+  - `APP-NAB.json` (APP): a fictional state's appointment of the NAB (Regulation (EC)
+    No 765/2008, Art. 4(1)) in the shape of EBSI's `VerifiableAuthorisationForTrustChain`:
+    `permissionFor` lets the NAB issue `RmpAccreditation` and `LabAccreditation` under their
+    schemas in `atu/DEU`; its `termsOfUse` is a `TrustFrameworkPolicy` naming the legal
+    basis. The NAB's accreditations name it in a `termsOfUse` `IssuedUnderPolicy` entry; only
+    a verifier that anchors the state (profile `rm-verifier-state-1`) relies on it.
+- Every link is one entry: a `termsOfUse` entry (`IssuedUnderPolicy` for a grant,
+  `RecognitionPolicy` for a recognition) or an `evidence` entry, whose `id` is the credential
+  it names and whose `digestSRI` is the SHA-384 digest of that credential's exact signed bytes
+  (VCDM 2.0 section 5.3). There is no separate `relatedResource` list.
 - `status/{nab,producer,lab}.json`: one signed W3C Bitstring Status List per issuer
   (revocation, all bits clear); every credential above names its list and index.
-  `status/nab-suspension.json` is the NAB's suspension list; A and A2 carry both a
-  revocation and a suspension entry, read by the `accreditation-suspension` restriction.
-  `status/global-aci.json` and `status/global-aci-suspension.json` cover `R`.
-- Authorization references in `termsOfUse` are typed (`authorizationCredential`
-  `{id, type}`).
+  `status/nab-suspension.json` is the NAB's suspension list; ACC-RMP, ACC-RMP-2 and ACC-LAB
+  carry both a revocation and a suspension entry, read by the `accreditation-suspension`
+  restriction. `status/global-aci.json` and `status/global-aci-suspension.json` cover
+  REC-NAB; `status/state.json` and `status/state-suspension.json` cover APP-NAB.
 - `catalog.json`: URI, path, media type and SHA-384 SRI over the exact bytes.
 - `../parity/i4-outcomes.json`: the cross-language parity vector, generated by
   `packages/core-ts/scripts/generate-rm-v1-parity.ts` (`--check` detects staleness).
@@ -46,7 +53,7 @@
   arithmetic and gate 4–6 trace exactly.
 
 All keys are **insecure fixtures derived from public seeds**. The parties are fictional.
-`relatedResource` digests are SHA-384 over the exact bytes of the referenced signed file.
+Link digests (`digestSRI` on each `termsOfUse` and `evidence` entry) are SHA-384 over the exact bytes of the signed file named.
 Proofs are `eddsa-rdfc-2022` over JSON-LD safe-mode canonicalization with the pinned
 catalog only.
 

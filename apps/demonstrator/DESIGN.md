@@ -105,7 +105,7 @@ story, the evaluated note that a verifier abroad reaches the NAB through
 R, Global ACI's recognition of it (a fictional stand-in, W3C Recognized Entities draft).
 For the RM story: Global ACI (GACI), State (GOV), National accreditation body (NAB), Laboratory
 (LAB), RM producer (RMP), Customer lab (CUST), Verifier (VER). The state sits next to the
-NAB, so the grant lines from PA1 and LA1 to APP1 are short; REC1 sits in
+NAB, so the grant lines from ACC-RMP and ACC-LAB to APP-NAB are short; REC-NAB sits in
 the lower row of Global ACI's column, so the recognition lines cross no card. Monograms are pills, so three or
 four letters fit. With more than four actor columns the
 verifier's column narrows and a name may drop below its monogram; it never truncates. For the GS story: National accreditation body (NAB), Scheme owner (SO), GS body
@@ -163,13 +163,14 @@ is the accreditation body). Handover lines are always grey.
 
 ### What a card shows
 
-A code of three or four letters and a number (APP1, REC1, PA1, LA1, OS1, HS1, RM178; the paper's
-R, A, H, O, S, D178, which the signed identifiers keep) and a full name that leads
-(“Producer accreditation”), under it the credential's own type in mono (the last entry
-of `type`, for example `RmAccreditation`) and, in the lanes, the signer's monogram, then
+A code read from the credential's id, kind first, then whom it is about (APP-NAB, REC-NAB,
+ACC-RMP, ACC-LAB, LIST-RMP, HOM-LOT1, RM178; the paper's APP, R, A, H, O, S, D), and the
+credential's own `name` (“Accreditation of the RM producer”), so neither is written in the
+page; under it the credential's own type in mono (the last entry
+of `type`, for example `RmpAccreditation`) and, in the lanes, the signer's monogram, then
 what it says, its tags and who signed it about whom. A stripe in the signer's colour runs
 down the card's left edge. Explanations name a credential by full name and code
-(“Producer’s operational scope OS1”). Column heads carry the actor's name and published
+(“Producer’s operational scope LIST-RMP”). Column heads carry the actor's name and published
 lists only; the descriptions are gone, as are other texts the board does not need.
 
 ### Explaining a credential or a link
@@ -193,13 +194,13 @@ own: the step (title and sentence), then in evaluated steps the verifier's polic
 step, each under its monogram; the key at the bottom. The chain takes the rest of the
 width, top to bottom, one lane per actor (appoints and recognizes, accredits, studies the
 batch, declares its scope and certifies, holds and shows), with open space between the
-lanes. The two roots share the top row, side by side: the state with APP1 (authority) on
-the left, Global ACI with REC1 (no authority) on the right; on narrow screens they stack.
+lanes. The two roots share the top row, side by side: the state with APP-NAB (authority) on
+the left, Global ACI with REC-NAB (no authority) on the right; on narrow screens they stack.
 Cards look as on the opening graph: code, name, type, who signs it about whom (the signer
 in its group colour), tags, in smaller type, all of one width, either side of a wide
 middle gap, a lone card in the middle. Every line carries its name in the space it crosses, on two
 lines: the field (`termsOfUse`, `evidence`) over its entry's type (`IssuedUnderPolicy`,
-`RmStudyReference`), so a term of use and an evidence entry never look like one level; lines that meet at one card are named near where they
+`HomogeneityStudyReference`), so a term of use and an evidence entry never look like one level; lines that meet at one card are named near where they
 start, and a name moves along its line until it overlaps neither a card nor another name
 (two lines that cross are named apart). Hovering a card tags the lanes that sign it, that it is about and that hold it,
 as on the board. Lanes hold no controls, so a lane never changes height. Clicking a credential or a
@@ -242,8 +243,8 @@ time, stop after the first two groups.
 
 A step may draw a page instead of the board, at full width in both layouts. The RM story
 opens with one credential, RM178, drawn as a card listing its fields; the four that link
-out leave the card as arrows to what they name: the term of use up to OS1 (who let me
-issue this), the subject down to the disc, evidence and status beside to HS1 and the
+out leave the card as arrows to what they name: the term of use up to LIST-RMP (who let me
+issue this), the subject down to the disc, evidence and status beside to HOM-LOT1 and the
 status list. Each field is tagged **W3C** (a standard or draft used as written), **EBSI**
 (reused) or **VC4QI** (new here). Beside it, every link the chain uses, read from the signed credentials:
 the field and type, what it names (and that credential's type), who signs that about

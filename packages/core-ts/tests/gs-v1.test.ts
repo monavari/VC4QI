@@ -72,25 +72,26 @@ async function resign(document: JsonObject): Promise<string> {
     documentLoader: catalogDocumentLoader(catalogWith().openSession({ maxResources: 64, maxBytes: 5_000_000 })) });
   return serialize({ ...unsigned, proof });
 }
-/** Re-issue bottom-up, updating relatedResource digests of already re-issued credentials. */
+/** Re-issue bottom-up, updating the link digests of already re-issued credentials. */
 async function reissueChain(steps: [string, ((d: JsonObject) => void)?][]) {
   const overrides: Record<string, string> = {};
   for (const [uri, edit] of steps) {
     const doc = json(uri);
     edit?.(doc);
-    doc.relatedResource = (doc.relatedResource as JsonObject[] | undefined)?.map(r => (overrides[String(r.id)]
-      ? { id: r.id, digestSRI: sha384SRI(new TextEncoder().encode(overrides[String(r.id)])) } : r));
-    if (doc.relatedResource === undefined) delete doc.relatedResource;
+    for (const field of ['termsOfUse', 'evidence'] as const) {
+      if (Array.isArray(doc[field])) doc[field] = (doc[field] as JsonObject[]).map(r => (overrides[String(r.id)]
+        ? { ...r, digestSRI: sha384SRI(new TextEncoder().encode(overrides[String(r.id)]!)) } : r));
+    }
     overrides[uri] = await resign(doc);
   }
   return overrides;
 }
 const subject = (d: JsonObject) => d.credentialSubject as JsonObject;
 const certification = (d: JsonObject) => subject(d).certification as JsonObject;
+// The link to the credential of `type`: entries name credentials by id only, so the type
+// is read from the credential each names.
 const withoutReference = (type: string) => (d: JsonObject) => {
-  const removed = (d.termsOfUse as JsonObject[]).find(p => (p.authorizationCredential as JsonObject).type === type)!;
-  d.termsOfUse = (d.termsOfUse as JsonObject[]).filter(p => p !== removed);
-  d.relatedResource = (d.relatedResource as JsonObject[]).filter(r => r.id !== (removed.authorizationCredential as JsonObject).id);
+  d.termsOfUse = (d.termsOfUse as JsonObject[]).filter(p => (json(String(p.id)).type as string[])[1] !== type);
 };
 function request(overrides: Partial<RelianceRequestInput> = {}) {
   return createRelianceRequest({

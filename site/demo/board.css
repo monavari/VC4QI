@@ -654,3 +654,4 @@ body[data-mode="build"] .lane.dim .cells{ opacity:.42; }
 .vpanel .four{ list-style:none; padding:0; display:grid; gap:var(--s1) var(--s4); grid-template-columns:repeat(auto-fill, minmax(20rem, 1fr)); }
 .vpanel .four code{ font:600 .8rem var(--mono); color:var(--muted); }
 .vpanel .notes{ margin:0; padding-left:1.1rem; display:grid; gap:var(--s1); font-size:.92rem; color:var(--muted); }
+.links td:last-child, .links .pair{ white-space:nowrap; }

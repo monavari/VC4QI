@@ -61,44 +61,29 @@ const labScopeRecord = closed({
   allowedPropertyIris: nonemptySet(iri),
   studyTypeIris: nonemptySet(iri),
 });
-const relatedResource = nonemptySet(closed({
-  id: iri,
-  digestSRI: { type: 'string', pattern: '^sha384-[A-Za-z0-9+/]{64}$' },
-}));
-// Every upward link is a termsOfUse entry, followed and pinned the same way; its type
-// says what it means (VCDM 2.0 section 5.5: the type definition determines the contents).
-// IssuedUnderPolicy: this credential was issued exercising the grant it names. A typed
-// reference: routes select it by its declared type, and the resolved credential must
-// have that type.
-const issuedUnderPolicy = closed({
-  type: { const: 'IssuedUnderPolicy' },
-  authorizationCredential: closed({
-    id: iri,
-    type: { enum: ['RmAccreditation', 'RmOperationalScope', 'RmLabAuthority', APPOINTMENT_TYPE] },
-  }),
-});
-// The grant below an appointment: a credential issued by the accreditation body
-// exercising the authority a state appointed it with (Regulation (EC) No 765/2008,
-// Art. 4(1)). Only the accreditation body's grants (A, A2, H) name it.
-const issuedUnderAppointment = closed({
-  type: { const: 'IssuedUnderPolicy' },
-  authorizationCredential: closed({ id: iri, type: { const: APPOINTMENT_TYPE } }),
-});
+// The digest of the credential a link names, on the link itself (VCDM 2.0 §5.3: any
+// object with an id MAY carry digestSRI). SHA-384 over the exact bytes.
+const digestSRI = { type: 'string', pattern: '^sha384-[A-Za-z0-9+/]{64}$' };
+// Every upward link is a termsOfUse entry whose id is the credential it names, with that
+// credential's digest; its type says what it means (VCDM 2.0 section 5.5: the type
+// definition determines the contents).
+// IssuedUnderPolicy: this credential was issued exercising the grant it names. Routes
+// select it by the type of the credential it resolves to.
+const issuedUnderPolicy = closed({ id: iri, type: { const: 'IssuedUnderPolicy' }, digestSRI });
 // RecognitionPolicy: this credential was issued while its issuer is recognized in the
 // credential it names (a W3C Recognized Entities credential). It confers no authority:
 // it lets a verifier that anchors the recognizer accept the issuer.
-const recognitionPolicy = closed({
-  type: { const: 'RecognitionPolicy' },
-  recognitionCredential: closed({ id: iri, type: { const: RECOGNITION_TYPE } }),
-});
+const recognitionPolicy = closed({ id: iri, type: { const: 'RecognitionPolicy' }, digestSRI });
 // The issuer of a recognized grant may mirror its recognition as issuer.recognizedIn
 // (W3C Recognized Entities discovery); when present it must name the same credential.
 const recognizedIssuer = {
   oneOf: [iri, closed({ id: iri, recognizedIn: closed({ id: iri, type: { const: RECOGNITION_TYPE } }) }, ['id'])],
 };
+// Evidence: the study the certificate rests on, with its digest.
 const studyReference = closed({
   id: iri,
-  type: { const: 'RmStudyReference' },
+  type: { const: 'HomogeneityStudyReference' },
+  digestSRI,
 });
 const proof = closed({
   type: { const: 'DataIntegrityProof' },
@@ -169,33 +154,31 @@ const grantSubject = (records, activities) => closed({
   scope: nonemptySet(records),
 });
 const ACT = 'https://vc4qi.example/bindings/rm/1#';
-// An accreditation body's grant may name the body's recognition (termsOfUse →
-// RecognitionPolicy → a Recognized Entities credential), pinned by digest. Optional: a
-// verifier that anchors the accreditation body directly never follows it.
-// It may also name the state's appointment it was issued under (IssuedUnderPolicy →
-// VerifiableAuthorisationForTrustChain), pinned the same way; a verifier that anchors the
-// state follows it, one that anchors the body does not.
+// A grant of the NAB names the state's appointment it was issued under (IssuedUnderPolicy)
+// and the NAB's recognition (RecognitionPolicy), each pinned by digest. A verifier that
+// anchors the state follows the first, one that anchors Global ACI the second, and one
+// that anchors the NAB neither.
 const upToRecognition = {
-  termsOfUse: { type: 'array', minItems: 1, maxItems: 4, items: { oneOf: [issuedUnderAppointment, recognitionPolicy] } },
-  relatedResource,
+  termsOfUse: { type: 'array', minItems: 1, maxItems: 4, items: { oneOf: [issuedUnderPolicy, recognitionPolicy] } },
 };
 const issuedUnder = { type: 'array', minItems: 1, maxItems: 4, items: issuedUnderPolicy };
-const pinnedIfReferenced = { termsOfUse: ['relatedResource'] };
 
 const schemas = {
-  'accreditation.json': credentialSchema(
-    'accreditation.json', 'RmAccreditation', 'RM producer accreditation (A)',
+  // ISO/IEC 17011: the accreditation of a reference material producer to ISO 17034.
+  'rmp-accreditation.json': credentialSchema(
+    'rmp-accreditation.json', 'RmpAccreditation', 'Accreditation of a reference material producer (ISO 17034)',
     grantSubject(scopeRecord, [`${ACT}issueRmCertificate`, `${ACT}maintainRmScope`]),
-    upToRecognition, [], pinnedIfReferenced, recognizedIssuer,
+    upToRecognition, [], undefined, recognizedIssuer,
   ),
-  'operational-scope.json': credentialSchema(
-    'operational-scope.json', 'RmOperationalScope', 'RM operational scope (O)',
+  // The producer's own list of activities under its flexible scope of accreditation
+  // (ISO/IEC 17011, EA-2/15): maintained and published by the producer, within the grant.
+  'flexible-scope-list.json': credentialSchema(
+    'flexible-scope-list.json', 'FlexibleScopeList', 'List of activities under a flexible scope of accreditation',
     grantSubject(scopeRecord, [`${ACT}issueRmCertificate`]),
-    { termsOfUse: issuedUnder, relatedResource },
-    ['relatedResource'],
+    { termsOfUse: issuedUnder },
   ),
   'certificate.json': credentialSchema(
-    'certificate.json', 'RmCertificate', 'RM certificate (D)',
+    'certificate.json', 'RmCertificate', 'Reference material certificate (ISO 17034, ISO Guide 31)',
     closed({
       id: iri,
       activityTime: dateTime,
@@ -213,12 +196,11 @@ const schemas = {
       // 5-6 (not established), not rejected as a structural error.
       termsOfUse: issuedUnder,
       evidence: nonemptySet(studyReference),
-      relatedResource,
     },
-    ['relatedResource'],
   ),
-  'study.json': credentialSchema(
-    'study.json', 'RmStudy', 'RM homogeneity/stability study (S)',
+  // A homogeneity study (ISO 17034, ISO Guide 35), reported by an accredited laboratory.
+  'homogeneity-study.json': credentialSchema(
+    'homogeneity-study.json', 'HomogeneityStudy', 'Homogeneity study of a reference material batch',
     closed({
       id: iri,
       activityTime: dateTime,
@@ -227,13 +209,13 @@ const schemas = {
       matrixIri: iri,
       outcomeIri: iri,
     }),
-    { termsOfUse: issuedUnder, relatedResource },
-    ['relatedResource'],
+    { termsOfUse: issuedUnder },
   ),
-  'lab-authority.json': credentialSchema(
-    'lab-authority.json', 'RmLabAuthority', 'Study laboratory authority (H)',
+  // ISO/IEC 17011: the accreditation of a testing laboratory to ISO/IEC 17025.
+  'lab-accreditation.json': credentialSchema(
+    'lab-accreditation.json', 'LabAccreditation', 'Accreditation of a testing laboratory (ISO/IEC 17025)',
     grantSubject(labScopeRecord, [`${ACT}issueRmStudy`]),
-    upToRecognition, [], pinnedIfReferenced, recognizedIssuer,
+    upToRecognition, [], undefined, recognizedIssuer,
   ),
   'status-list.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -361,10 +343,10 @@ const schemas = {
     title: 'RecognitionPolicy entry in termsOfUse: issued while recognized in the named recognition (no authority)',
     ...recognitionPolicy,
   },
-  'study-reference.json': {
+  'homogeneity-study-reference.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
-    $id: `${SCHEMA_BASE}study-reference.json`,
-    title: 'RM required-study reference entry in evidence',
+    $id: `${SCHEMA_BASE}homogeneity-study-reference.json`,
+    title: 'Homogeneity study reference entry in evidence, with its digest',
     ...studyReference,
   },
 };

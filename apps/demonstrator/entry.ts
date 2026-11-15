@@ -79,10 +79,10 @@ export interface ExampleSpec {
 
 const rmCase = (x: '178' | '197' | '520', sublabel: string): CaseSpec => ({
   id: x, label: `As ${x}`, sublabel, binding: 'rm', profile: 'rm-verifier-1',
-  target: `https://producer.vc4qi.example/credentials/D${x}`,
+  target: `https://producer.vc4qi.example/credentials/RM${x}`,
   claims: [{ id: 'as', sourcePointer: '/credentialSubject/materialPropertiesList/0/results/0' }],
   supplied: [], tamper: [`"value": "${x}"`, '"value": "150"'],
-  withhold: { uri: 'https://lab.vc4qi.example/credentials/S', label: 'Withhold the homogeneity study' },
+  withhold: { uri: 'https://lab.vc4qi.example/credentials/HOM-LOT1', label: 'Withhold the homogeneity study' },
 });
 
 const CAL_URI = {
@@ -192,8 +192,8 @@ const groupOf = (value: unknown) => {
   return GROUP[/^https:\/\/([^./]+)\./.exec(String(iri))?.[1] ?? ''];
 };
 const ROLE: Record<string, string> = {
-  RmAccreditation: 'Producer accreditation', RmLabAuthority: 'Laboratory accreditation', RmOperationalScope: 'Operational scope',
-  RmStudy: 'Homogeneity study', RmCertificate: 'RM certificate (DRMD)', RecognizedEntityCredential: 'Recognition of the NAB',
+  RmpAccreditation: 'Producer accreditation', LabAccreditation: 'Laboratory accreditation', FlexibleScopeList: 'Operational scope',
+  HomogeneityStudy: 'Homogeneity study', RmCertificate: 'RM certificate (DRMD)', RecognizedEntityCredential: 'Recognition of the NAB',
   VerifiableAuthorisationForTrustChain: 'Appointment of the NAB',
   CalAccreditation: 'Accreditation', CalOperationalScope: 'Operational scope', CalLegalMandate: 'Statutory mandate',
   CalCertificate: 'Calibration certificate', CalTestReport: 'Test report',
@@ -201,7 +201,7 @@ const ROLE: Record<string, string> = {
   GsTestReport: 'Type examination', GsInspectionReport: 'Factory inspection', GsMarkCredential: 'GS-mark credential', ProductPassport: 'Product passport (DPP)',
 };
 export interface GraphNode {
-  /** `name`: the identifier's last part (A); `code`: what the page shows (PA1). */
+  /** `name`: the identifier's last part (A); `code`: what the page shows (ACC-RMP). */
   readonly uri: string; readonly name: string; readonly code: string; readonly role: string; readonly parties: string;
   /** The credential's own type, and the signer's group. */
   readonly type: string; readonly group: 'authority' | 'actor' | undefined;
@@ -215,8 +215,8 @@ export interface Graph { readonly nodes: readonly GraphNode[]; readonly edges: r
 
 /**
  * The graph is read from the credentials themselves: from the target, every
- * termsOfUse authorizationCredential (authority), recognitionCredential (recognition) and evidence entry (support) is
- * followed. Layers are the longest reference path from the target. Node states are the
+ * termsOfUse entry (its id is the credential it names: IssuedUnderPolicy for authority,
+ * RecognitionPolicy for recognition) and every evidence entry (support) is followed. Layers are the longest reference path from the target. Node states are the
  * evaluator's per-artifact verification. The target's own authority links take the
  * answer to "authorized", its evidence links the answer to "supported", and deeper links
  * the verification of the credential they point to, so a wrong link shows on that link
@@ -230,14 +230,12 @@ function buildGraph(target: string, texts: Record<string, string>, result: Relia
   // termsOfUse is one object or an array (VCDM 2.0); APP's single TrustFrameworkPolicy names law, not a credential.
   const terms = (d: Record<string, unknown> | undefined) =>
     (Array.isArray(d?.termsOfUse) ? d.termsOfUse : d?.termsOfUse ? [d.termsOfUse] : []) as
-      { type?: string; authorizationCredential?: { id?: string }; recognitionCredential?: { id?: string } }[];
+      { id?: string; type?: string }[];
   const refs = (d: Record<string, unknown> | undefined) => [
-    ...terms(d).filter(t => typeof t.authorizationCredential?.id === 'string')
-      .map(t => ({ to: t.authorizationCredential!.id!, kind: 'authority' as const, policy: String(t.type ?? 'termsOfUse') })),
-    ...terms(d).filter(t => typeof t.recognitionCredential?.id === 'string')
-      .map(t => ({ to: t.recognitionCredential!.id!, kind: 'recognition' as const, policy: String(t.type ?? 'termsOfUse') })),
-    ...((d?.evidence ?? []) as { id?: string }[]).map(e => e.id).filter((x): x is string => typeof x === 'string')
-      .map(to => ({ to, kind: 'support' as const, policy: 'evidence' })),
+    ...terms(d).filter(t => typeof t.id === 'string')
+      .map(t => ({ to: t.id!, kind: t.type === 'RecognitionPolicy' ? 'recognition' as const : 'authority' as const, policy: String(t.type ?? 'termsOfUse') })),
+    ...((d?.evidence ?? []) as { id?: string; type?: string }[]).filter(e => typeof e.id === 'string')
+      .map(e => ({ to: e.id!, kind: 'support' as const, policy: String(e.type ?? 'evidence') })),
   ];
   // An artifact is verified once per use (as the target, as a parent, as evidence); its
   // node shows all of them together, so a failed use is never hidden by a later one.
@@ -275,8 +273,8 @@ function buildGraph(target: string, texts: Record<string, string>, result: Relia
     const d = docs.get(uri);
     const type = Array.isArray(d?.type) ? String((d.type as unknown[])[1]) : '';
     const subject = (d?.credentialSubject ?? {}) as Record<string, unknown>;
-    // RM credentials show a code (PA1 for A); the other bindings' names already are codes.
-    return { uri, name: short(uri), code: RM_CODES[short(uri)] ?? short(uri), role: ROLE[type] ?? (type || 'not supplied'), type, group: d === undefined ? undefined : groupOf(d.issuer),
+    // A credential's code is the last part of its id; its role is its own name, if it has one.
+    return { uri, name: short(uri), code: short(uri), role: typeof d?.name === 'string' ? d.name : ROLE[type] ?? (type || 'not supplied'), type, group: d === undefined ? undefined : groupOf(d.issuer),
       layer: l, present: d !== undefined, target: uri === target,
       parties: d === undefined ? 'withheld' : `${party(d.issuer)} → ${party(subject.id)}`,
       state: verification.get(uri) ?? 'not_established' };
@@ -470,7 +468,8 @@ export interface BoardActor {
 export interface BoardAsset {
   /** The code on the card; the board result maps it to the credential shown. */
   readonly code: string;
-  readonly label: string;
+  /** The card's name, when the credential carries none of its own (VCDM `name`). */
+  readonly label?: string;
   readonly kind: 'grant' | 'evidence' | 'claim';
   /** The issuer's column, and the row the card sits in. */
   readonly actor: string; readonly row: 1 | 2 | 3;
@@ -574,15 +573,15 @@ export const RM_PARTS: readonly { readonly id: BoardPart; readonly label: string
 ];
 const RM_URI = {
   NAB: 'https://nab.vc4qi.example/controller', PRODUCER: 'https://producer.vc4qi.example/controller', LAB: 'https://lab.vc4qi.example/controller',
-  A: 'https://nab.vc4qi.example/credentials/A', H: 'https://nab.vc4qi.example/credentials/H',
-  O: 'https://producer.vc4qi.example/credentials/O', S: 'https://lab.vc4qi.example/credentials/S',
-  LIVE: 'https://producer.vc4qi.example/credentials/D-live',
+  A: 'https://nab.vc4qi.example/credentials/ACC-RMP', H: 'https://nab.vc4qi.example/credentials/ACC-LAB',
+  O: 'https://producer.vc4qi.example/credentials/LIST-RMP', S: 'https://lab.vc4qi.example/credentials/HOM-LOT1',
+  LIVE: 'https://producer.vc4qi.example/credentials/RM-own',
   NAB_STATUS: 'https://nab.vc4qi.example/status/1', SUSPENSION: 'https://nab.vc4qi.example/status/suspension/1',
   LAB_STATUS: 'https://lab.vc4qi.example/status/1', PRODUCER_STATUS: 'https://producer.vc4qi.example/status/1',
   GACI: 'https://global-aci.vc4qi.example/controller', GACI_SUSPENSION: 'https://global-aci.vc4qi.example/status/suspension/1',
-  GACI_STATUS: 'https://global-aci.vc4qi.example/status/1', R: 'https://global-aci.vc4qi.example/credentials/R',
+  GACI_STATUS: 'https://global-aci.vc4qi.example/status/1', R: 'https://global-aci.vc4qi.example/credentials/REC-NAB',
   STATE: 'https://state.vc4qi.example/controller', STATE_STATUS: 'https://state.vc4qi.example/status/1',
-  STATE_SUSPENSION: 'https://state.vc4qi.example/status/suspension/1', APP: 'https://state.vc4qi.example/credentials/APP',
+  STATE_SUSPENSION: 'https://state.vc4qi.example/status/suspension/1', APP: 'https://state.vc4qi.example/credentials/APP-NAB',
 } as const;
 export const RM_ACTORS: readonly BoardActor[] = [
   { id: 'gaci', mono: 'GACI', group: 'authority', name: 'Global ACI', does: 'Recognizes national accreditation bodies after peer evaluation. Can suspend a recognition (rare). A fictional stand-in.',
@@ -601,22 +600,21 @@ export const RM_ACTORS: readonly BoardActor[] = [
     publishes: [{ label: 'Profile' }] },
 ];
 /**
- * The code each RM credential shows: three or four letters and a number. The signed test
- * credentials keep the paper's letters in their identifiers (credentials/A); these codes
- * are display only.
+ * The code each RM credential shows, by its asset key: the last part of its signed id, which
+ * says what it is and of whom (ACC-RMP: the accreditation of the RM producer). Nothing is
+ * mapped by hand: change an id in the generator and the code follows.
  */
-export const RM_CODES: Readonly<Record<string, string>> = {
-  APP: 'APP1', R: 'REC1', A: 'PA1', A2: 'PA2', H: 'LA1', O: 'OS1', S: 'HS1', D178: 'RM178', D197: 'RM197', D520: 'RM520', 'D-live': 'RM-own',
-};
+export const RM_CODES: Readonly<Record<string, string>> = Object.fromEntries(
+  (['APP', 'R', 'A', 'H', 'O', 'S'] as const).map(key => [key, short(RM_URI[key])]));
 /** D is the certificate shown: RM178, RM197, RM520 or the one signed live. */
 export const RM_ASSETS: readonly BoardAsset[] = [
-  { code: 'APP', label: 'Appointment of the NAB', tag: 'EBSI shape', kind: 'grant', actor: 'state', row: 1, about: 'ab', heldBy: 'ab' },
-  { code: 'R', label: 'Recognition of the NAB', tag: 'proposal', kind: 'grant', actor: 'gaci', row: 2, about: 'ab', heldBy: 'ab' },
-  { code: 'A', label: 'Producer accreditation', kind: 'grant', actor: 'ab', row: 1, about: 'rmp', heldBy: 'rmp' },
-  { code: 'H', label: 'Laboratory accreditation', kind: 'grant', actor: 'ab', row: 2, about: 'lab', heldBy: 'lab' },
-  { code: 'O', label: 'Producer’s operational scope', kind: 'grant', actor: 'rmp', row: 1, about: 'rmp', heldBy: 'rmp' },
-  { code: 'S', label: 'Homogeneity study', kind: 'evidence', actor: 'lab', row: 2, about: 'object', aboutLabel: 'disc lot 1', heldBy: 'rmp' },
-  { code: 'D', label: 'RM certificate', kind: 'claim', actor: 'rmp', row: 2, about: 'object', aboutLabel: 'disc lot 1', heldBy: 'holder' },
+  { code: 'APP', tag: 'EBSI shape', kind: 'grant', actor: 'state', row: 1, about: 'ab', heldBy: 'ab' },
+  { code: 'R', tag: 'proposal', kind: 'grant', actor: 'gaci', row: 2, about: 'ab', heldBy: 'ab' },
+  { code: 'A', kind: 'grant', actor: 'ab', row: 1, about: 'rmp', heldBy: 'rmp' },
+  { code: 'H', kind: 'grant', actor: 'ab', row: 2, about: 'lab', heldBy: 'lab' },
+  { code: 'O', kind: 'grant', actor: 'rmp', row: 1, about: 'rmp', heldBy: 'rmp' },
+  { code: 'S', kind: 'evidence', actor: 'lab', row: 2, about: 'object', aboutLabel: 'disc lot 1', heldBy: 'rmp' },
+  { code: 'D', kind: 'claim', actor: 'rmp', row: 2, about: 'object', aboutLabel: 'disc lot 1', heldBy: 'holder' },
 ];
 
 export interface RmBoardState {
@@ -649,31 +647,31 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
   { id: 'appoint', part: 'build', acts: ['state', 'ab'], joins: ['state', 'ab'], issues: ['APP'], rules: [1],
     maps: 'National appointment (Regulation (EC) No 765/2008, Art. 4) → VerifiableAuthorisationForTrustChain, GOV → NAB',
     title: 'The state appoints the national accreditation body',
-    text: 'By law, one NAB per state. APP1 has the shape EBSI uses for the root of a trust chain: its term of use names the law, not another credential.' },
+    text: 'By law, one NAB per state. APP-NAB has the shape EBSI uses for the root of a trust chain: its term of use names the law, not another credential.' },
   { id: 'recognize', part: 'build', acts: ['gaci', 'ab'], joins: ['gaci'], issues: ['R'], rules: [1],
     maps: 'Signatory status after peer evaluation → RecognizedEntityCredential, GACI → NAB',
     title: 'Global ACI recognizes the NAB',
     text: 'After peer evaluation, for RM production (ISO 17034) and testing (ISO/IEC 17025). Recognition makes its accreditations accepted abroad; it grants no authority.' },
   { id: 'accredit-producer', part: 'build', acts: ['ab', 'rmp'], joins: ['rmp'], issues: ['A'], rules: [2, 3],
-    maps: 'Accreditation to ISO 17034, with its annex → RmAccreditation, NAB → RMP',
+    maps: 'Accreditation to ISO 17034, with its annex → RmpAccreditation, NAB → RMP',
     title: 'The NAB accredits the producer',
-    text: 'PA1 names what the producer may certify. It points up to APP1 (IssuedUnderPolicy) and REC1 (RecognitionPolicy), pinned by digest; both are about the NAB, PA1’s issuer.' },
+    text: 'ACC-RMP names what the producer may certify. It points up to APP-NAB (IssuedUnderPolicy) and REC-NAB (RecognitionPolicy), pinned by digest; both are about the NAB, ACC-RMP’s issuer.' },
   { id: 'accredit-lab', part: 'build', acts: ['ab', 'lab'], joins: ['lab'], issues: ['H'], rules: [2, 3],
-    maps: 'Accreditation to ISO/IEC 17025 → RmLabAuthority, NAB → LAB',
+    maps: 'Accreditation to ISO/IEC 17025 → LabAccreditation, NAB → LAB',
     title: 'The NAB accredits the laboratory',
-    text: 'LA1 names which studies the laboratory may carry out. It points up the same way as PA1.' },
+    text: 'ACC-LAB names which studies the laboratory may carry out. It points up the same way as ACC-RMP.' },
   { id: 'scope', part: 'build', acts: ['rmp'], issues: ['O'], rules: [2],
-    maps: 'The producer’s own scope within its accreditation → RmOperationalScope, RMP → RMP',
+    maps: 'The producer’s own scope within its accreditation → FlexibleScopeList, RMP → RMP',
     title: 'The producer declares its operational scope',
-    text: 'OS1 is issued under PA1 and must lie within it: As in CuZn39Pb3 discs, method M1.' },
+    text: 'LIST-RMP is issued under ACC-RMP and must lie within it: As in CuZn39Pb3 discs, method M1.' },
   { id: 'study', part: 'build', acts: ['lab'], issues: ['S'], rules: [2],
-    maps: 'Homogeneity study report → RmStudy, LAB → disc lot 1',
+    maps: 'Homogeneity study report → HomogeneityStudy, LAB → disc lot 1',
     title: 'The laboratory studies the batch',
-    text: 'HS1, 10 January 2026: disc lot 1 is homogeneous for As. Issued under LA1.' },
+    text: 'HOM-LOT1, 10 January 2026: disc lot 1 is homogeneous for As. Issued under ACC-LAB.' },
   { id: 'certify', part: 'build', acts: ['rmp', 'holder'], joins: ['holder'], issues: ['D'], rules: [2, 4, 5],
     maps: 'RM certificate (ISO 17034, shaped after the DRMD) → RmCertificate, RMP → disc lot 1',
     title: 'The producer certifies and ships',
-    text: 'RM178, 20 January 2026: As = 178 ± 5 mg/kg. Issued under OS1, with HS1 beside it as evidence and a bit in the producer’s status list.' },
+    text: 'RM178, 20 January 2026: As = 178 ± 5 mg/kg. Issued under LIST-RMP, with HOM-LOT1 beside it as evidence and a bit in the producer’s status list.' },
 
   { id: 'profile', part: 'verifier', acts: ['verifier'], panel: 'profile',
     title: 'The verifier decides, with its own profile',
@@ -690,8 +688,8 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
     text: 'The same RM178, checked by verifiers with different roots. Each root has its own path up the chain; then a change at the top.',
     scenarios: [
       { id: 'nab', who: 'verifier', label: 'A verifier that trusts the NAB', note: 'A customer lab in the same country', likely: 'everyday', state: {}, expect: 'accept' },
-      { id: 'state', who: 'verifier', label: 'A verifier that trusts the state', note: 'A market-surveillance authority: it climbs on to APP1', likely: 'everyday', state: { trust: 'state' }, expect: 'accept' },
-      { id: 'abroad', who: 'verifier', label: 'A verifier abroad that trusts Global ACI', note: 'REC1 tells it to accept the NAB', likely: 'everyday', state: { trust: 'global-aci' }, expect: 'accept' },
+      { id: 'state', who: 'verifier', label: 'A verifier that trusts the state', note: 'A market-surveillance authority: it climbs on to APP-NAB', likely: 'everyday', state: { trust: 'state' }, expect: 'accept' },
+      { id: 'abroad', who: 'verifier', label: 'A verifier abroad that trusts Global ACI', note: 'REC-NAB tells it to accept the NAB', likely: 'everyday', state: { trust: 'global-aci' }, expect: 'accept' },
       { id: 'other', who: 'verifier', label: 'A verifier that trusts another NAB', note: 'No path reaches its root', likely: 'everyday', state: { trust: 'other' }, expect: 'not_established' },
       { id: 'recognition-suspended', who: 'gaci', label: 'Global ACI suspends its recognition of the NAB', when: '20 Sep 2026', note: 'Checked by the verifier abroad', likely: 'rare',
         state: { trust: 'global-aci', suspendGaci: true }, expect: 'reject' },
@@ -700,9 +698,9 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
     title: 'Was it valid at that time?',
     text: 'Expiry is written in the credential; suspension must be asked of its issuer, for a date. Each issuer keeps its own dated status lists.',
     scenarios: [
-      { id: 'suspended-today', who: 'ab', label: 'The NAB suspends PA1 after a surveillance assessment', when: '20 Sep 2026', note: 'Asked today', likely: 'occasional',
+      { id: 'suspended-today', who: 'ab', label: 'The NAB suspends ACC-RMP after a surveillance assessment', when: '20 Sep 2026', note: 'Asked today', likely: 'occasional',
         state: { suspendA: true }, expect: 'reject' },
-      { id: 'suspended-january', who: 'ab', label: 'The same suspension, asked about 20 January', when: '20 Sep 2026', note: 'With the NAB’s list from January: RM178 was issued while PA1 held', likely: 'occasional',
+      { id: 'suspended-january', who: 'ab', label: 'The same suspension, asked about 20 January', when: '20 Sep 2026', note: 'With the NAB’s list from January: RM178 was issued while ACC-RMP held', likely: 'occasional',
         state: { suspendA: true, asOf: 'issuance', archive: true }, expect: 'accept' },
       { id: 'no-old-list', who: 'ab', label: 'The same question, with only today’s list', when: '20 Sep 2026', note: 'A list signed in September cannot say what held in January', likely: 'occasional',
         state: { suspendA: true, asOf: 'issuance' }, expect: 'not_established' },
@@ -713,11 +711,11 @@ export const RM_STORY: readonly BoardStep<RmBoardState>[] = [
     title: 'Is the chain complete and within scope?',
     text: 'Every link must be shown, pinned and within the grant above it; required evidence must hold.',
     scenarios: [
-      { id: 'scope-missing', who: 'holder', label: 'The customer lab forgets to send OS1', note: 'The verifier cannot see the producer’s scope', likely: 'everyday',
+      { id: 'scope-missing', who: 'holder', label: 'The customer lab forgets to send LIST-RMP', note: 'The verifier cannot see the producer’s scope', likely: 'everyday',
         state: { withhold: 'O' }, expect: 'not_established' },
-      { id: 'outside-scope', who: 'rmp', label: 'The producer certifies a lot at 520 mg/kg', note: 'Outside the range in OS1', likely: 'occasional',
+      { id: 'outside-scope', who: 'rmp', label: 'The producer certifies a lot at 520 mg/kg', note: 'Outside the range in LIST-RMP', likely: 'occasional',
         state: { certificate: '520' }, expect: 'reject' },
-      { id: 'study-withdrawn', who: 'lab', label: 'The laboratory withdraws HS1 to replace it', when: '20 Sep 2026', note: 'An error found in the study; RM178 must be reissued', likely: 'occasional',
+      { id: 'study-withdrawn', who: 'lab', label: 'The laboratory withdraws HOM-LOT1 to replace it', when: '20 Sep 2026', note: 'An error found in the study; RM178 must be reissued', likely: 'occasional',
         state: { revokeS: true }, expect: 'reject' },
     ] },
   { id: 'genuine', part: 'genuine', acts: ['verifier', 'holder'],
@@ -786,12 +784,12 @@ function rmProfileWithLimit(name: string, limit: string): string {
 }
 const rmText = (uri: string) => textOf('rm', uri);
 const certificateUri = (state: RmBoardState) =>
-  state.certificate === 'custom' ? RM_URI.LIVE : `https://producer.vc4qi.example/credentials/D${state.certificate}`;
+  state.certificate === 'custom' ? RM_URI.LIVE : `https://producer.vc4qi.example/credentials/RM${state.certificate}`;
 
 /** The certificate the producer signs live: D178 with the typed As result, at status index 4. */
 function liveCertificate(state: RmBoardState) {
   return liveOnce(`rm:D:${state.value}:${state.uncertainty}:${state.method}`, () => {
-    const { proof: _proof, ...d178 } = JSON.parse(rmText('https://producer.vc4qi.example/credentials/D178')) as Record<string, any>;
+    const { proof: _proof, ...d178 } = JSON.parse(rmText('https://producer.vc4qi.example/credentials/RM178')) as Record<string, any>;
     const subject = structuredClone(d178.credentialSubject);
     const as = subject.materialPropertiesList[0].results[0];
     as.methodIri = as.methodIri.replace(/M1$/, state.method);

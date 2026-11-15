@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://vc4qi.example/schemas/rm/1/lab-authority.json",
-  "title": "Study laboratory authority (H)",
+  "$id": "https://vc4qi.example/schemas/rm/1/flexible-scope-list.json",
+  "title": "List of activities under a flexible scope of accreditation",
   "description": "Experimental VC4QI RM binding v1 fixture schema. Not an external standard.",
   "type": "object",
   "required": [
@@ -29,46 +29,12 @@
     "type": {
       "const": [
         "VerifiableCredential",
-        "RmLabAuthority"
+        "FlexibleScopeList"
       ]
     },
     "issuer": {
-      "oneOf": [
-        {
-          "type": "string",
-          "format": "uri"
-        },
-        {
-          "type": "object",
-          "required": [
-            "id"
-          ],
-          "properties": {
-            "id": {
-              "type": "string",
-              "format": "uri"
-            },
-            "recognizedIn": {
-              "type": "object",
-              "required": [
-                "id",
-                "type"
-              ],
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "format": "uri"
-                },
-                "type": {
-                  "const": "RecognizedEntityCredential"
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "additionalProperties": false
-        }
-      ]
+      "type": "string",
+      "format": "uri"
     },
     "validFrom": {
       "type": "string",
@@ -86,7 +52,7 @@
       ],
       "properties": {
         "id": {
-          "const": "https://vc4qi.example/schemas/rm/1/lab-authority.json"
+          "const": "https://vc4qi.example/schemas/rm/1/flexible-scope-list.json"
         },
         "type": {
           "const": "JsonSchema"
@@ -112,7 +78,7 @@
           "uniqueItems": true,
           "items": {
             "enum": [
-              "https://vc4qi.example/bindings/rm/1#issueRmStudy"
+              "https://vc4qi.example/bindings/rm/1#issueRmCertificate"
             ]
           }
         },
@@ -125,8 +91,11 @@
             "required": [
               "id",
               "matrixIri",
+              "formIri",
               "allowedPropertyIris",
-              "studyTypeIris"
+              "allowedMethodIris",
+              "quantityKindIri",
+              "range"
             ],
             "properties": {
               "id": {
@@ -134,6 +103,10 @@
                 "format": "uri"
               },
               "matrixIri": {
+                "type": "string",
+                "format": "uri"
+              },
+              "formIri": {
                 "type": "string",
                 "format": "uri"
               },
@@ -146,7 +119,7 @@
                   "format": "uri"
                 }
               },
-              "studyTypeIris": {
+              "allowedMethodIris": {
                 "type": "array",
                 "minItems": 1,
                 "uniqueItems": true,
@@ -154,6 +127,35 @@
                   "type": "string",
                   "format": "uri"
                 }
+              },
+              "quantityKindIri": {
+                "type": "string",
+                "format": "uri"
+              },
+              "range": {
+                "type": "object",
+                "required": [
+                  "from",
+                  "to",
+                  "unit"
+                ],
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                  },
+                  "to": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                  },
+                  "unit": {
+                    "enum": [
+                      "mg/kg",
+                      "kg/kg"
+                    ]
+                  }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -167,84 +169,19 @@
       "minItems": 1,
       "maxItems": 4,
       "items": {
-        "oneOf": [
-          {
-            "type": "object",
-            "required": [
-              "type",
-              "authorizationCredential"
-            ],
-            "properties": {
-              "type": {
-                "const": "IssuedUnderPolicy"
-              },
-              "authorizationCredential": {
-                "type": "object",
-                "required": [
-                  "id",
-                  "type"
-                ],
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "format": "uri"
-                  },
-                  "type": {
-                    "const": "VerifiableAuthorisationForTrustChain"
-                  }
-                },
-                "additionalProperties": false
-              }
-            },
-            "additionalProperties": false
-          },
-          {
-            "type": "object",
-            "required": [
-              "type",
-              "recognitionCredential"
-            ],
-            "properties": {
-              "type": {
-                "const": "RecognitionPolicy"
-              },
-              "recognitionCredential": {
-                "type": "object",
-                "required": [
-                  "id",
-                  "type"
-                ],
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "format": "uri"
-                  },
-                  "type": {
-                    "const": "RecognizedEntityCredential"
-                  }
-                },
-                "additionalProperties": false
-              }
-            },
-            "additionalProperties": false
-          }
-        ]
-      }
-    },
-    "relatedResource": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
         "type": "object",
         "required": [
           "id",
+          "type",
           "digestSRI"
         ],
         "properties": {
           "id": {
             "type": "string",
             "format": "uri"
+          },
+          "type": {
+            "const": "IssuedUnderPolicy"
           },
           "digestSRI": {
             "type": "string",
@@ -375,10 +312,5 @@
       "additionalProperties": false
     }
   },
-  "additionalProperties": false,
-  "dependentRequired": {
-    "termsOfUse": [
-      "relatedResource"
-    ]
-  }
+  "additionalProperties": false
 }

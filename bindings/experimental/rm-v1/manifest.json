@@ -22,24 +22,24 @@
     ],
     "credentialTypes": [
       "https://www.w3.org/2018/credentials#VerifiableCredential",
-      "https://vc4qi.example/bindings/rm/1#RmAccreditation",
-      "https://vc4qi.example/bindings/rm/1#RmOperationalScope",
+      "https://vc4qi.example/bindings/rm/1#RmpAccreditation",
+      "https://vc4qi.example/bindings/rm/1#FlexibleScopeList",
       "https://vc4qi.example/bindings/rm/1#RmCertificate",
-      "https://vc4qi.example/bindings/rm/1#RmStudy",
-      "https://vc4qi.example/bindings/rm/1#RmLabAuthority",
+      "https://vc4qi.example/bindings/rm/1#HomogeneityStudy",
+      "https://vc4qi.example/bindings/rm/1#LabAccreditation",
       "https://www.w3.org/ns/credentials/status#BitstringStatusListCredential",
       "https://www.w3.org/ns/credentials/recognized-entities#RecognizedEntityCredential",
       "https://www.w3.org/ns/credentials/issuer-dependent#VerifiableAuthorisationForTrustChain"
     ],
     "schemaUris": [
-      "https://vc4qi.example/schemas/rm/1/accreditation.json",
-      "https://vc4qi.example/schemas/rm/1/operational-scope.json",
+      "https://vc4qi.example/schemas/rm/1/rmp-accreditation.json",
+      "https://vc4qi.example/schemas/rm/1/flexible-scope-list.json",
       "https://vc4qi.example/schemas/rm/1/certificate.json",
-      "https://vc4qi.example/schemas/rm/1/study.json",
-      "https://vc4qi.example/schemas/rm/1/lab-authority.json",
+      "https://vc4qi.example/schemas/rm/1/homogeneity-study.json",
+      "https://vc4qi.example/schemas/rm/1/lab-accreditation.json",
       "https://vc4qi.example/schemas/rm/1/issued-under-policy.json",
       "https://vc4qi.example/schemas/rm/1/recognition-policy.json",
-      "https://vc4qi.example/schemas/rm/1/study-reference.json",
+      "https://vc4qi.example/schemas/rm/1/homogeneity-study-reference.json",
       "https://vc4qi.example/schemas/rm/1/status-list.json",
       "https://vc4qi.example/schemas/rm/1/recognized-entity.json",
       "https://vc4qi.example/schemas/rm/1/appointment.json"
@@ -57,9 +57,9 @@
     {"fact": "grantee", "nativePath": "/credentialSubject/id", "expandedIri": "@id"},
     {"fact": "permittedActivity", "nativePath": "/credentialSubject/permittedActivity", "expandedIri": "https://vc4qi.example/bindings/rm/1#permittedActivity"},
     {"fact": "scopeRecords", "nativePath": "/credentialSubject/scope", "expandedIri": "https://vc4qi.example/bindings/rm/1#scope"},
-    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/ns/chain#authorizationCredential"},
+    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/id", "expandedIri": "https://www.w3.org/2018/credentials#termsOfUse"},
     {"fact": "appointmentPermission", "nativePath": "/credentialSubject/permissionFor", "expandedIri": "https://www.w3.org/ns/credentials/issuer-dependent#permissionFor"},
-    {"fact": "recognitionReference", "nativePath": "/termsOfUse/*/recognitionCredential/id", "expandedIri": "https://vc4qi.example/ns/chain#recognitionCredential"},
+    {"fact": "recognitionReference", "nativePath": "/termsOfUse/*/id", "expandedIri": "https://www.w3.org/2018/credentials#termsOfUse"},
     {"fact": "requiredStudy", "nativePath": "/evidence/*/id", "expandedIri": "https://www.w3.org/2018/credentials#evidence"},
     {"fact": "validFrom", "nativePath": "/validFrom", "expandedIri": "https://www.w3.org/2018/credentials#validFrom"},
     {"fact": "validUntil", "nativePath": "/validUntil", "expandedIri": "https://www.w3.org/2018/credentials#validUntil"},
@@ -71,29 +71,30 @@
     "material": {"minimum": 1, "maximum": 1},
     "scopeRecords": {"minimum": 1},
     "selectedAuthorizingPoliciesPerUse": {"minimum": 1, "maximum": 1},
-    "authorizingReferenceSelection": "by-declared-reference-type-per-route; resolved credential type must match (else contradicted); several of one type not_established",
+    "authorizingReferenceSelection": "by-the-type-each-named-credential-resolves-to, per route; a named credential that cannot be read leaves it not_established; several of one type not_established",
     "supportReferences": {"minimum": 1},
     "multipleRecognizedDeclarations": "unsupported-unless-exact-deterministic-composition-is-listed",
     "ambiguousSelection": "not_established"
   },
   "discoveryAndIntegrity": {
-    "referenceCarriers": ["termsOfUse", "evidence", "relatedResource", "credentialSchema"],
+    "referenceCarriers": ["termsOfUse", "evidence", "credentialSchema"],
     "discovery": "supplied-or-installed-static-catalog-only",
     "unknownUri": "not_established",
     "immutableRepresentation": "original-secured-bytes",
     "digestAlgorithm": "sha384",
     "digestEncoding": "SRI",
     "digestInput": "exact-original-secured-bytes",
-    "recognitionReferences": "only a RecognizedEntityCredential that a grant references from its own termsOfUse (a RecognitionPolicy recognitionCredential, pinned by digest); issuer.recognizedIn may mirror it and must then name the same credential; recognitions supplied by the holder but not referenced, discovery through issuer.recognizedIn alone and identifier-based discovery are unsupported",
-    "appointmentReferences": "only a VerifiableAuthorisationForTrustChain that a grant references from its own termsOfUse (an IssuedUnderPolicy authorizationCredential of that type, pinned by digest), followed only by a verifier whose profile anchors the appointer for bindingRules.appointment.appointerPurpose; EBSI's registry lookup (parentAccreditation and rootAuthorisation URLs into the Trusted Issuers Registry) is unsupported",
-    "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse IssuedUnderPolicy authorizationCredential references on the credential chain; an authenticated grant found by other means establishes nothing (not_established); a RecognitionPolicy reference never establishes authority"
+    "digestCarrier": "digestSRI on the termsOfUse or evidence entry that names the credential (VCDM 2.0 section 5.3)",
+    "recognitionReferences": "only a RecognizedEntityCredential that a grant references from its own termsOfUse (a RecognitionPolicy entry whose id is the recognition, with its digest); issuer.recognizedIn may mirror it and must then name the same credential; recognitions supplied by the holder but not referenced, discovery through issuer.recognizedIn alone and identifier-based discovery are unsupported",
+    "appointmentReferences": "only a VerifiableAuthorisationForTrustChain that a grant references from its own termsOfUse (an IssuedUnderPolicy entry whose id resolves to that type, with its digest), followed only by a verifier whose profile anchors the appointer for bindingRules.appointment.appointerPurpose; EBSI's registry lookup (parentAccreditation and rootAuthorisation URLs into the Trusted Issuers Registry) is unsupported",
+    "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse IssuedUnderPolicy entries on the credential chain (the entry's id is the grant); an authenticated grant found by other means establishes nothing (not_established); a RecognitionPolicy reference never establishes authority"
   },
   "recognizedTypes": {
     "authorizationPolicy": "https://vc4qi.example/ns/chain#IssuedUnderPolicy",
     "authorizationPolicyEstablishes": ["authorizing-reference-candidate"],
     "recognitionPolicy": "https://vc4qi.example/ns/chain#RecognitionPolicy",
     "recognitionPolicyEstablishes": ["recognition-reference-candidate"],
-    "supportEvidence": "https://vc4qi.example/bindings/rm/1#RmStudyReference",
+    "supportEvidence": "https://vc4qi.example/bindings/rm/1#HomogeneityStudyReference",
     "supportEvidenceEstablishes": ["support-reference-candidate"],
     "nonEstablishingByItself": ["authority", "scope", "support-applicability", "conformity"]
   },
@@ -152,7 +153,7 @@
     "requiredSupport": ["S", "H"],
     "globalRestrictions": ["applicable-suspension", "request-time-policy"],
     "installedGlobalRestrictions": {
-      "accreditation-suspension": "every usable anchor-issued RmAccreditation of the certificate issuer reached through the target's termsOfUse references, on any route, must carry a fresh issuer suspension status (Bitstring Status List, statusPurpose suspension) with its bit clear; missing or unreadable suspension status is not_established; unusable or unreferenced credentials are not restrictions"
+      "accreditation-suspension": "every usable anchor-issued RmpAccreditation of the certificate issuer reached through the target's termsOfUse references, on any route, must carry a fresh issuer suspension status (Bitstring Status List, statusPurpose suspension) with its bit clear; missing or unreadable suspension status is not_established; unusable or unreferenced credentials are not restrictions"
     },
     "unusedAlternativeFailures": "diagnostic-only: only the target and the credentials on the selected route and support chains decide the request",
     "routeComposition": "AND-within-route-OR-between-complete-routes",
@@ -180,7 +181,7 @@
     "supportSubjectNeedNotEqualTargetIssuer": true,
     "mandatoryDisclosure": [
       "issuer", "credentialSubject/id", "activityTime", "selectedResult",
-      "restrictions", "authorizingReference", "requiredStudy", "relatedResource", "proof"
+      "restrictions", "authorizingReference", "requiredStudy", "proof"
     ],
     "missingMandatoryDisclosure": "not_established",
     "presentationProtection": "separate-from-reliance",

@@ -50,14 +50,10 @@ const statusEntry = closed({
   statusListIndex: { type: 'string', pattern: '^(0|[1-9][0-9]*)$' },
   statusListCredential: iri,
 });
-const authorizationPolicy = closed({
-  type: { const: 'IssuedUnderPolicy' },
-  authorizationCredential: closed({ id: iri, type: { enum: ['CalAccreditation', 'CalOperationalScope', 'CalLegalMandate'] } }),
-});
-const relatedResource = nonemptySet(closed({
-  id: iri,
-  digestSRI: { type: 'string', pattern: '^sha384-[A-Za-z0-9+/]{64}$' },
-}));
+// A link names a credential by its id and carries the digest of its exact bytes
+// (VCDM 2.0 §5.3); the entry's type says what the link means.
+const digestSRI = { type: 'string', pattern: '^sha384-[A-Za-z0-9+/]{64}$' };
+const authorizationPolicy = closed({ id: iri, type: { const: 'IssuedUnderPolicy' }, digestSRI });
 const proof = closed({
   type: { const: 'DataIntegrityProof' },
   cryptosuite: { const: 'eddsa-rdfc-2022' },
@@ -108,20 +104,20 @@ const grantSubject = activities => closed({
   permittedActivity: { ...nonemptySet(iri), items: { enum: activities.map(a => `${ACT}${a}`) } },
   scope: nonemptySet(scopeRecord),
 });
-const authorizedBy = { termsOfUse: { type: 'array', minItems: 1, maxItems: 2, items: authorizationPolicy }, relatedResource };
+const authorizedBy = { termsOfUse: { type: 'array', minItems: 1, maxItems: 2, items: authorizationPolicy } };
 
 const schemas = {
   'accreditation.json': credentialSchema('accreditation.json', 'CalAccreditation', 'Calibration or testing laboratory accreditation',
     grantSubject(['issueCalibrationCertificate', 'maintainCalibrationScope', 'issueTestReport'])),
   // A laboratory's own bounded operational (capability) scope, projected within its accreditation.
   'operational-scope.json': credentialSchema('operational-scope.json', 'CalOperationalScope', 'Calibration operational scope',
-    grantSubject(['issueCalibrationCertificate']), authorizedBy, ['termsOfUse', 'relatedResource']),
+    grantSubject(['issueCalibrationCertificate']), authorizedBy, ['termsOfUse']),
   // A statutory designation of a national metrology institute; fictional, with no legal effect.
   'legal-mandate.json': credentialSchema('legal-mandate.json', 'CalLegalMandate', 'Statutory metrology mandate',
     grantSubject(['issueCalibrationCertificate'])),
   'certificate.json': credentialSchema('certificate.json', 'CalCertificate', 'Calibration certificate (DCC)',
     closed({ id: iri, activityTime: dateTime, measurementGroups: { type: 'array', minItems: 1, items: measurementGroup } }),
-    authorizedBy, ['relatedResource']),
+    authorizedBy),
   // A test report whose measuring instrument must be supported by its own calibration.
   'test-report.json': credentialSchema('test-report.json', 'CalTestReport', 'Test report supported by a calibration',
     closed({
@@ -130,10 +126,10 @@ const schemas = {
     }),
     {
       ...authorizedBy,
-      evidence: { type: 'array', minItems: 1, items: closed({ id: iri, type: { const: 'CalCalibrationReference' } }) },
+      evidence: { type: 'array', minItems: 1, items: closed({ id: iri, type: { const: 'CalCalibrationReference' }, digestSRI }) },
     },
     // Evidence is optional here so that the evaluator, not the schema, decides missing support.
-    ['termsOfUse', 'relatedResource']),
+    ['termsOfUse']),
   'status-list.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     $id: `${SCHEMA_BASE}status-list.json`,

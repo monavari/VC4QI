@@ -19,7 +19,7 @@ from qi_vc_core.reliance.rm_v1_artifacts import evaluate_rm_slice
 from qi_vc_core.reliance.status_list import MIN_STATUS_BITS, encode_status_list
 from qi_vc_core.reliance.types import VersionedIdentifier
 
-from .test_rm_v1_authority import reissue
+from .test_rm_v1_authority import link, reissue
 from .test_rm_v1_slice import (
     MANIFEST,
     PROFILE,
@@ -30,8 +30,8 @@ from .test_rm_v1_slice import (
     resign,
 )
 
-D197 = "https://producer.vc4qi.example/credentials/D197"
-D520 = "https://producer.vc4qi.example/credentials/D520"
+D197 = "https://producer.vc4qi.example/credentials/RM197"
+D520 = "https://producer.vc4qi.example/credentials/RM520"
 NAB = "https://nab.vc4qi.example/controller"
 RM_PRODUCTION = "Reference material production"
 
@@ -117,7 +117,7 @@ def test_e01_d178_is_relied_upon_through_the_recognition() -> None:
     assert URI["R"] in result.authorization[0].route_witness_ids
     assert URI["R"] in result.support[0].witness_ids
     assert any(
-        t.predicate == "related-resource-integrity"
+        t.predicate == "link-integrity"
         and t.node_use.startswith(f"{URI['A']} |")
         and t.reason.startswith(URI["R"])
         and t.state == "established"
@@ -297,7 +297,6 @@ def test_malformed_recognition_rules_are_never_defaulted() -> None:
 def test_unreferenced_recognition_confers_nothing_even_when_supplied() -> None:
     accreditation = doc(URI["A"])
     del accreditation["termsOfUse"]
-    del accreditation["relatedResource"]
     overrides = reissue({URI["A"]: accreditation})
     req = _request(
         GLOBAL_ACI,
@@ -322,7 +321,7 @@ def test_reasons_match_typescript_for_the_accepted_case() -> None:
         "https://global-aci.vc4qi.example/controller (a configured anchor for "
         "recognize-accreditation-bodies) to accredit for Reference material production "
         "under ISO 17034:2016, in force at 2026-01-20T00:00:00Z, in "
-        "https://global-aci.vc4qi.example/credentials/R. Recognition grants no "
+        "https://global-aci.vc4qi.example/credentials/REC-NAB. Recognition grants no "
         "authority; it accepts the body for this verifier."
     )
 
@@ -343,23 +342,13 @@ def test_recognized_in_naming_another_credential_contradicts() -> None:
 
 
 def test_recognition_named_as_a_grant_is_no_recognition() -> None:
-    # A's schema admits only a RecognitionPolicy in its termsOfUse: the grant fails at
-    # gate 0 and the route never reaches a recognition.
+    # Only a RecognitionPolicy entry names a recognition: an IssuedUnderPolicy naming R
+    # is read as a grant, and R is no appointment either, so the issuer stands on
+    # nothing.
     accreditation = doc(URI["A"])
-    accreditation["termsOfUse"] = [
-        {
-            "type": "IssuedUnderPolicy",
-            "authorizationCredential": {"id": URI["R"], "type": "RmAccreditation"},
-        }
-    ]
+    accreditation["termsOfUse"] = [link(URI["R"])]
     del accreditation["issuer"]["recognizedIn"]
     result = run(reissue({URI["A"]: accreditation}))
-    assert any(
-        t.predicate == "schema"
-        and t.node_use.startswith(f"{URI['A']} |")
-        and t.state != "established"
-        for t in result.trace
-    )
     assert not any(
         t.predicate == "route:operational-scope:trust-anchor"
         and t.state == "established"

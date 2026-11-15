@@ -46,7 +46,7 @@
     {"fact": "grantee", "nativePath": "/credentialSubject/id", "expandedIri": "@id"},
     {"fact": "permittedActivity", "nativePath": "/credentialSubject/permittedActivity", "expandedIri": "https://vc4qi.example/bindings/cal/1#permittedActivity"},
     {"fact": "scopeRecords", "nativePath": "/credentialSubject/scope", "expandedIri": "https://vc4qi.example/bindings/cal/1#scope"},
-    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/ns/chain#authorizationCredential"},
+    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/id", "expandedIri": "https://www.w3.org/2018/credentials#termsOfUse"},
     {"fact": "activityTime", "nativePath": "/credentialSubject/activityTime", "expandedIri": "https://vc4qi.example/bindings/cal/1#activityTime"},
     {"fact": "measurementGroup", "nativePath": "/credentialSubject/measurementGroups/*", "expandedIri": "https://vc4qi.example/bindings/cal/1#measurementGroups"}
   ],
@@ -55,19 +55,20 @@
     "scopeRecords": {"minimum": 1},
     "measurementGroups": {"minimum": 1},
     "selectedAuthorizingPoliciesPerUse": {"minimum": 1, "maximum": 1},
-    "authorizingReferenceSelection": "by-declared-reference-type-per-route; resolved credential type must match (else contradicted); several of one type not_established",
+    "authorizingReferenceSelection": "by-the-type-each-named-credential-resolves-to, per route; a named credential that cannot be read leaves it not_established; several of one type not_established",
     "selectedGroups": "every selected measurement group is a separate required claim; the request is a conjunction over them",
     "ambiguousSelection": "not_established"
   },
   "discoveryAndIntegrity": {
-    "referenceCarriers": ["termsOfUse", "relatedResource", "credentialSchema"],
+    "referenceCarriers": ["termsOfUse", "evidence", "credentialSchema"],
     "discovery": "supplied-or-installed-static-catalog-only",
     "unknownUri": "not_established",
     "immutableRepresentation": "original-secured-bytes",
     "digestAlgorithm": "sha384",
     "digestEncoding": "SRI",
     "digestInput": "exact-original-secured-bytes",
-    "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse authorizationCredential references on the credential chain"
+    "digestCarrier": "digestSRI on the termsOfUse or evidence entry that names the credential (VCDM 2.0 section 5.3)",
+    "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse IssuedUnderPolicy entries on the credential chain (the entry's id is the grant)"
   },
   "recognizedTypes": {
     "authorizationPolicy": "https://vc4qi.example/ns/chain#IssuedUnderPolicy",

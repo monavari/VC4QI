@@ -16,8 +16,8 @@ from .test_rm_v1_authority import PROFILE_JSON, reissue, run, sign
 from .test_rm_v1_slice import URI, doc, request
 
 RM = "https://vc4qi.example/bindings/rm/1#"
-D197 = "https://producer.vc4qi.example/credentials/D197"
-D520 = "https://producer.vc4qi.example/credentials/D520"
+D197 = "https://producer.vc4qi.example/credentials/RM197"
+D520 = "https://producer.vc4qi.example/credentials/RM520"
 
 
 def entry(result: Any, predicate: str) -> Any:

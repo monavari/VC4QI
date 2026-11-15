@@ -14,8 +14,7 @@
     "credentialSchema",
     "credentialSubject",
     "credentialStatus",
-    "evidence",
-    "relatedResource"
+    "evidence"
   ],
   "properties": {
     "@context": {
@@ -174,7 +173,8 @@
         "type": "object",
         "required": [
           "id",
-          "type"
+          "type",
+          "digestSRI"
         ],
         "properties": {
           "id": {
@@ -183,25 +183,6 @@
           },
           "type": {
             "const": "GsMarkCredentialReference"
-          }
-        },
-        "additionalProperties": false
-      }
-    },
-    "relatedResource": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "type": "object",
-        "required": [
-          "id",
-          "digestSRI"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uri"
           },
           "digestSRI": {
             "type": "string",

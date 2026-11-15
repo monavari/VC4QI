@@ -50,25 +50,25 @@ MANIFEST = load_binding_manifest(
 PINNED = read_pinned_resources(RM_V1_DIRECTORY / "catalog.json")
 SIGNED = read_pinned_resources(RM_V1_DIRECTORY / "test-vectors/signed/catalog.json")
 URI = {
-    "A": "https://nab.vc4qi.example/credentials/A",
-    "H": "https://nab.vc4qi.example/credentials/H",
-    "O": "https://producer.vc4qi.example/credentials/O",
-    "S": "https://lab.vc4qi.example/credentials/S",
-    "D": "https://producer.vc4qi.example/credentials/D178",
-    "D197": "https://producer.vc4qi.example/credentials/D197",
-    "D520": "https://producer.vc4qi.example/credentials/D520",
+    "A": "https://nab.vc4qi.example/credentials/ACC-RMP",
+    "H": "https://nab.vc4qi.example/credentials/ACC-LAB",
+    "O": "https://producer.vc4qi.example/credentials/LIST-RMP",
+    "S": "https://lab.vc4qi.example/credentials/HOM-LOT1",
+    "D": "https://producer.vc4qi.example/credentials/RM178",
+    "D197": "https://producer.vc4qi.example/credentials/RM197",
+    "D520": "https://producer.vc4qi.example/credentials/RM520",
     "PRODUCER": "https://producer.vc4qi.example/controller",
     "LAB": "https://lab.vc4qi.example/controller",
     "PRODUCER_STATUS": "https://producer.vc4qi.example/status/1",
-    "A2": "https://nab.vc4qi.example/credentials/A2",
+    "A2": "https://nab.vc4qi.example/credentials/ACC-RMP-2",
     "NAB_STATUS": "https://nab.vc4qi.example/status/1",
     "NAB_SUSPENSION": "https://nab.vc4qi.example/status/suspension/1",
-    "R": "https://global-aci.vc4qi.example/credentials/R",
+    "R": "https://global-aci.vc4qi.example/credentials/REC-NAB",
     "GACI": "https://global-aci.vc4qi.example/controller",
     "GACI_STATUS": "https://global-aci.vc4qi.example/status/1",
     "GACI_SUSPENSION": "https://global-aci.vc4qi.example/status/suspension/1",
     "STATE": "https://state.vc4qi.example/controller",
-    "APP": "https://state.vc4qi.example/credentials/APP",
+    "APP": "https://state.vc4qi.example/credentials/APP-NAB",
     "STATE_STATUS": "https://state.vc4qi.example/status/1",
     "STATE_SUSPENSION": "https://state.vc4qi.example/status/suspension/1",
 }
@@ -210,9 +210,7 @@ def test_extracts_protected_facts_with_source_pointers() -> None:
         f.fact: [(x.pointer, x.value) for x in facts if x.fact == f.fact] for f in facts
     }
     assert by_fact["grantorOrActor"] == [("/issuer", URI["PRODUCER"])]
-    assert by_fact["authorizingReference"] == [
-        ("/termsOfUse/0/authorizationCredential/id", URI["O"])
-    ]
+    assert by_fact["authorizingReference"] == [("/termsOfUse/0/id", URI["O"])]
     assert by_fact["requiredStudy"] == [("/evidence/0/id", URI["S"])]
     # Every certified result (As, Cu, Zn, Pb) is a candidate; As is the first.
     results = by_fact["selectedResult"]
@@ -437,7 +435,7 @@ def test_gate_numbered_trace_and_resources() -> None:
     assert all("| target |" in t.node_use for t in target)
     by = {t.predicate: t for t in target}
     assert (by["schema"].gate, by["schema"].state) == (0, "established")
-    assert (by["related-resource-integrity"].gate, by["signature"].gate) == (1, 2)
+    assert (by["link-integrity"].gate, by["signature"].gate) == (1, 2)
     assert (by["validity-period"].gate, by["validity-period"].state) == (
         3,
         "established",
@@ -594,7 +592,7 @@ def test_v09_other_profile_is_refused_at_gate_0() -> None:
 def test_v09_credential_cannot_declare_another_schema() -> None:
     document = doc(URI["D"])
     document["credentialSchema"] = {
-        "id": "https://vc4qi.example/schemas/rm/1/accreditation.json",
+        "id": "https://vc4qi.example/schemas/rm/1/rmp-accreditation.json",
         "type": "JsonSchema",
     }
     forged = resign(document, "producer", f"{URI['PRODUCER']}#key-1")

@@ -8,7 +8,7 @@
 // appointment, which a verifier that anchors the body trusts directly; recognition
 // tells a verifier that anchors the recognizer to accept the body for a main scope.
 // The grant names its issuer's recognition in termsOfUse, as a RecognitionPolicy whose
-// recognitionCredential is a RecognizedEntityCredential, pinned by digest like every
+// entry's id is a RecognizedEntityCredential, pinned by digest like every
 // other link (one rule for every upward link; the policy type says what it means). The
 // issuer object may mirror it as issuer.recognizedIn (W3C Recognized Entities
 // discovery); when present it must name the same credential. The verifier's profile
@@ -71,12 +71,11 @@ export function recognitionRules(profile: RelianceProfile): RecognitionRules | '
 }
 
 export const RECOGNITION_POLICY = 'RecognitionPolicy';
-/** Recognitions a grant names: termsOfUse RecognitionPolicy entries referencing a RecognizedEntityCredential. */
+/** Recognitions a grant names: termsOfUse RecognitionPolicy entries; the entry's id is the recognition. */
 export function recognitionReferences(grant: Doc): string[] {
   return list(grant.termsOfUse).filter(isObject)
-    .filter(policy => policy.type === RECOGNITION_POLICY && isObject(policy.recognitionCredential)
-      && policy.recognitionCredential.type === RECOGNITION_TYPE)
-    .map(policy => (policy.recognitionCredential as Doc).id)
+    .filter(policy => policy.type === RECOGNITION_POLICY)
+    .map(policy => policy.id)
     .filter(nonempty);
 }
 /** The issuer object's issuer.recognizedIn mirror, when present. */

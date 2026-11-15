@@ -132,8 +132,11 @@ def reissue(
         edit_dcc(dcc)
     ca_text = overrides.get(CA)
     if isinstance(ca_text, str):
-        dcc["relatedResource"] = [
-            {"id": CA, "digestSRI": sha384_sri(ca_text.encode("utf-8"))}
+        dcc["termsOfUse"] = [
+            {**p, "digestSRI": sha384_sri(ca_text.encode("utf-8"))}
+            if p["id"] == CA
+            else p
+            for p in dcc["termsOfUse"]
         ]
     overrides[DCC] = sign(dcc)
     return overrides
@@ -142,22 +145,23 @@ def reissue(
 def reissue_chain(
     steps: list[tuple[str, Callable[[dict[str, Any]], None] | None]],
 ) -> dict[str, str | None]:
-    """Re-issue bottom-up, updating relatedResource digests of re-issued credentials."""
+    """Re-issue bottom-up, updating the link digests of re-issued credentials."""
     overrides: dict[str, str | None] = {}
     for uri, edit in steps:
         d = doc(uri)
         if edit is not None:
             edit(d)
-        if isinstance(d.get("relatedResource"), list):
-            related = []
-            for r in d["relatedResource"]:
-                text = overrides.get(r["id"])
-                related.append(
-                    {"id": r["id"], "digestSRI": sha384_sri(text.encode("utf-8"))}
-                    if isinstance(text, str)
-                    else r
-                )
-            d["relatedResource"] = related
+        for field in ("termsOfUse", "evidence"):
+            if isinstance(d.get(field), list):
+                updated = []
+                for r in d[field]:
+                    text = overrides.get(r.get("id"))
+                    updated.append(
+                        {**r, "digestSRI": sha384_sri(text.encode("utf-8"))}
+                        if isinstance(text, str)
+                        else r
+                    )
+                d[field] = updated
         overrides[uri] = sign(d)
     return overrides
 
@@ -613,7 +617,6 @@ def test_test_before_calibration_contradicts_support() -> None:
 def test_report_citing_no_calibration_is_not_established() -> None:
     def edit(d: dict[str, Any]) -> None:
         del d["evidence"]
-        d["relatedResource"] = [r for r in d["relatedResource"] if r["id"] != DCC]
 
     result = run_report(reissue_chain([(REPORT, edit)]))
     assert result.support[0].state == "not_established"

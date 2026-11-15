@@ -22,17 +22,17 @@ const profile = loadRelianceProfile(JSON.parse(readFileSync(new URL('profiles/rm
 const signed = readPinnedResources(new URL('test-vectors/signed/catalog.json', rmDir).pathname);
 
 const URI = {
-  A: 'https://nab.vc4qi.example/credentials/A',
-  H: 'https://nab.vc4qi.example/credentials/H',
-  O: 'https://producer.vc4qi.example/credentials/O',
-  S: 'https://lab.vc4qi.example/credentials/S',
-  D: 'https://producer.vc4qi.example/credentials/D178',
-  D197: 'https://producer.vc4qi.example/credentials/D197',
-  D520: 'https://producer.vc4qi.example/credentials/D520',
+  A: 'https://nab.vc4qi.example/credentials/ACC-RMP',
+  H: 'https://nab.vc4qi.example/credentials/ACC-LAB',
+  O: 'https://producer.vc4qi.example/credentials/LIST-RMP',
+  S: 'https://lab.vc4qi.example/credentials/HOM-LOT1',
+  D: 'https://producer.vc4qi.example/credentials/RM178',
+  D197: 'https://producer.vc4qi.example/credentials/RM197',
+  D520: 'https://producer.vc4qi.example/credentials/RM520',
   PRODUCER: 'https://producer.vc4qi.example/controller',
   PRODUCER_STATUS: 'https://producer.vc4qi.example/status/1',
   LAB: 'https://lab.vc4qi.example/controller',
-  R: 'https://global-aci.vc4qi.example/credentials/R',
+  R: 'https://global-aci.vc4qi.example/credentials/REC-NAB',
   GACI_STATUS: 'https://global-aci.vc4qi.example/status/1',
   GACI_SUSPENSION: 'https://global-aci.vc4qi.example/status/suspension/1',
 };
@@ -113,7 +113,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
     const byFact = (fact: string) => result.facts.filter(f => f.fact === fact);
     expect(byFact('grantorOrActor')).toEqual([{ fact: 'grantorOrActor', pointer: '/issuer', value: URI.PRODUCER }]);
     expect(byFact('authorizingReference')).toEqual([
-      { fact: 'authorizingReference', pointer: '/termsOfUse/0/authorizationCredential/id', value: URI.O }]);
+      { fact: 'authorizingReference', pointer: '/termsOfUse/0/id', value: URI.O }]);
     expect(byFact('requiredStudy')).toEqual([{ fact: 'requiredStudy', pointer: '/evidence/0/id', value: URI.S }]);
     const [selected] = byFact('selectedResult');
     expect(selected?.pointer).toBe('/credentialSubject/materialPropertiesList/0/results/0');
@@ -142,7 +142,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
     expect(target.every(t => t.nodeUse.includes('| target |'))).toBe(true);
     const byPredicate = (p: string) => target.find(t => t.predicate === p);
     expect(byPredicate('schema')).toMatchObject({ gate: 0, state: 'established' });
-    expect(byPredicate('related-resource-integrity')).toMatchObject({ gate: 1, state: 'established' });
+    expect(byPredicate('link-integrity')).toMatchObject({ gate: 1, state: 'established' });
     expect(byPredicate('signature')).toMatchObject({ gate: 2, state: 'established' });
     expect(byPredicate('validity-period')).toMatchObject({ gate: 3, state: 'established' });
     expect(byPredicate('claim-authorization:as-mass-fraction')).toMatchObject({ gate: 5, execution: 'executed' });
@@ -155,7 +155,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
     // both for every verifier; each decides only for a verifier whose route uses it
     // (rm-v1-recognition.test.ts, rm-v1-appointment.test.ts).
     expect(result.resources.filter(r => r.kind === 'artifact').map(r => r.uri).sort())
-      .toEqual([URI.A, URI.D, URI.H, URI.O, URI.R, URI.S, 'https://state.vc4qi.example/credentials/APP'].sort());
+      .toEqual([URI.A, URI.D, URI.H, URI.O, URI.R, URI.S, 'https://state.vc4qi.example/credentials/APP-NAB'].sort());
     expect(result.resources.every(r => r.digestSRI.startsWith('sha384-'))).toBe(true);
   });
 
@@ -260,7 +260,7 @@ describe('RM v1 signed vertical slice (I1)', () => {
 
     it('V09: a credential cannot declare a different schema for itself', async () => {
       const document = json(URI.D);
-      document.credentialSchema = { id: 'https://vc4qi.example/schemas/rm/1/accreditation.json', type: 'JsonSchema' };
+      document.credentialSchema = { id: 'https://vc4qi.example/schemas/rm/1/rmp-accreditation.json', type: 'JsonSchema' };
       const forged = await resign(document, 'producer', `${URI.PRODUCER}#key-1`);
       const artifact = await verifyRmArtifact(URI.D, session({ [URI.D]: forged }), { manifest, evaluationTime: NOW });
       expect(artifact.checks.at(-1)).toMatchObject({ check: 'type', state: 'contradicted' });

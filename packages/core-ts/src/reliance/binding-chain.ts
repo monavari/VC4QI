@@ -91,9 +91,9 @@ export async function verifyChain(
   }
   // Follow the chain's own references (termsOfUse, evidence) from protected
   // credentials, within maxDepth; supplied-but-unreferenced credentials stay inert.
-  // Every upward link is a termsOfUse entry: an IssuedUnderPolicy (authorizationCredential)
-  // or a RecognitionPolicy (recognitionCredential, the issuer's recognition). Both are
-  // followed the same way; a recognition decides only for a verifier whose route uses it.
+  // Every upward link is a termsOfUse entry whose id is the credential it names: an
+  // IssuedUnderPolicy (a grant) or a RecognitionPolicy (the issuer's recognition). Both
+  // are followed the same way; a recognition decides only for a verifier whose route uses it.
   for (let index = 0; index < artifacts.length; index++) {
     const artifact = artifacts[index]!;
     const at = depth.get(artifact.artifactId)!;
@@ -101,8 +101,7 @@ export async function verifyChain(
     const document = read(artifact.artifactId);
     const references = [
       ...(Array.isArray(document.termsOfUse) ? document.termsOfUse : [])
-        .map(p => p as { authorizationCredential?: { id?: unknown }; recognitionCredential?: { id?: unknown } })
-        .map(p => p?.authorizationCredential?.id ?? p?.recognitionCredential?.id),
+        .map(p => (p as { id?: unknown } | null)?.id),
       ...(Array.isArray(document.evidence) ? document.evidence : []).map(e => (e as { id?: unknown })?.id),
     ].filter((uri): uri is string => typeof uri === 'string');
     for (const uri of references) {
@@ -185,7 +184,7 @@ export async function verifyChain(
         ...notRun('status: Not evaluated because protection is not established.') }]),
     ...artifact.relatedResources.map(check => ({
       artifactId: check.id,
-      ...predicate(check.state, [`integrity (from ${artifact.artifactId}): ${check.reason}`], ['/relatedResource']),
+      ...predicate(check.state, [`integrity (from ${artifact.artifactId}): ${check.reason}`], [check.pointer]),
     })),
   ];
 
@@ -203,6 +202,7 @@ export async function verifyChain(
     facts.set(artifact.artifactId, {
       uri: artifact.artifactId,
       usable,
+      ...(artifact.artifactType !== undefined ? { type: artifact.artifactType } : {}),
       reason: parts.filter(p => p[1] !== 'established').map(p => `${p[0]}: ${p[2]}`).join('; ') || 'usable',
       ...(usable === 'established' ? { document: read(artifact.artifactId) } : {}),
       ...(suspended ? { suspension: { state: suspended.state, reason: suspended.reason } } : {}),
@@ -219,8 +219,8 @@ export async function verifyChain(
         state: check.state, execution: 'executed', reason: check.reason, sources: [artifact.artifactId] });
     }
     for (const related of artifact.relatedResources) {
-      trace.push({ gate: 1, nodeUse, predicate: 'related-resource-integrity', state: related.state,
-        execution: 'executed', reason: `${related.id}: ${related.reason}`, sources: ['/relatedResource', related.id] });
+      trace.push({ gate: 1, nodeUse, predicate: 'link-integrity', state: related.state,
+        execution: 'executed', reason: `${related.id}: ${related.reason}`, sources: [related.pointer, related.id] });
     }
     const id = identity.get(artifact.artifactId);
     trace.push(id

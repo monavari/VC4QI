@@ -81,7 +81,7 @@ def test_e21_d178_is_relied_upon_through_the_appointment() -> None:
     # Identical to the TypeScript reason.
     assert anchor(result).reason == (
         f"{NAB} is appointed by {URI['STATE']} (a configured anchor for "
-        f"appoint-accreditation-bodies) to issue RmAccreditation in {DEU}, in force "
+        f"appoint-accreditation-bodies) to issue RmpAccreditation in {DEU}, in force "
         f"at 2026-01-20T00:00:00Z, in {URI['APP']}."
     )
     assert lab_anchor(result).state == "established"
@@ -127,13 +127,15 @@ def test_e26_no_laboratory_permission_contradicts_support() -> None:
     def edit(app: dict[str, Any]) -> None:
         subject = app["credentialSubject"]
         subject["permissionFor"] = [
-            p for p in subject["permissionFor"] if "RmLabAuthority" not in p["types"]
+            p for p in subject["permissionFor"] if "LabAccreditation" not in p["types"]
         ]
 
     result = run(appointment_with(edit))
     assert anchor(result).state == "established"
     assert lab_anchor(result).state == "contradicted"
-    assert "to issue RmAccreditation, not RmLabAuthority" in lab_anchor(result).reason
+    assert (
+        "to issue RmpAccreditation, not LabAccreditation" in lab_anchor(result).reason
+    )
     assert result.decision == "reject"
 
 
@@ -143,7 +145,7 @@ def test_e26_other_jurisdiction_contradicts() -> None:
     result = run(profile=load_reliance_profile(raw))
     assert anchor(result).state == "contradicted"
     assert re.search(
-        r"permits RmAccreditation for .*atu/DEU, not for .*atu/FRA",
+        r"permits RmpAccreditation for .*atu/DEU, not for .*atu/FRA",
         anchor(result).reason,
     )
 
@@ -173,7 +175,6 @@ def test_e28_unanchored_appointer_establishes_nothing() -> None:
 def test_grant_without_appointment_and_malformed_rules() -> None:
     a = doc(URI["A"])
     a["termsOfUse"] = [t for t in a["termsOfUse"] if t["type"] != "IssuedUnderPolicy"]
-    a["relatedResource"] = [r for r in a["relatedResource"] if r["id"] != URI["APP"]]
     result = run(reissue({URI["A"]: a}))
     assert anchor(result).state == "not_established"
     assert "names no VerifiableAuthorisationForTrustChain" in anchor(result).reason

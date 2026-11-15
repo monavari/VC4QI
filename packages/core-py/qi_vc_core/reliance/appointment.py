@@ -6,8 +6,8 @@ State appoints a single national accreditation body). The appointment has the sh
 EBSI's root trust-chain credential, VerifiableAuthorisationForTrustChain: the subject is
 the appointed body, permissionFor names per credential type the schema and jurisdiction
 it may issue under, and its own termsOfUse is a TrustFrameworkPolicy naming the legal
-basis. The body's grants name it in termsOfUse as an IssuedUnderPolicy whose
-authorizationCredential has that type, pinned by digest like every other link.
+basis. The body's grants name it in termsOfUse as an IssuedUnderPolicy entry whose id
+is the appointment, with its digest, like every other link.
 
 A verifier that anchors the state for the appointer purpose accepts the grant's issuer
 only when the named appointment is usable and not suspended, is issued by a configured
@@ -55,16 +55,27 @@ def appointment_rules(
     return AppointmentRules(str(raw["appointerPurpose"]), jurisdiction)
 
 
-def appointment_references(grant: Doc) -> list[str]:
-    """Appointments a grant names: IssuedUnderPolicy entries of the appointment type."""
+def appointment_references(grant: Doc, lookup: NodeLookup) -> list[str]:
+    """Appointments a grant names: IssuedUnderPolicy entries whose credential is a
+    VerifiableAuthorisationForTrustChain, or could not be read (it may be one)."""
     found: list[str] = []
     for policy in _list(grant.get("termsOfUse")):
         if not isinstance(policy, dict) or policy.get("type") != "IssuedUnderPolicy":
             continue
-        ref = policy.get("authorizationCredential")
-        if isinstance(ref, dict) and ref.get("type") == APPOINTMENT_TYPE:
-            if _nonempty(ref.get("id")):
-                found.append(str(ref["id"]))
+        uri = policy.get("id")
+        if not _nonempty(uri):
+            continue
+        node = lookup(str(uri))
+        kind = None
+        if node is not None:
+            if node.document is not None:
+                types = node.document.get("type")
+                if isinstance(types, list) and len(types) > 1:
+                    kind = str(types[1])
+            else:
+                kind = node.type
+        if kind is None or kind == APPOINTMENT_TYPE:
+            found.append(str(uri))
     return found
 
 
@@ -225,7 +236,7 @@ def appointment_standing(
             None,
         )
     issuer = issuer_id(grant.get("issuer"))
-    references = appointment_references(grant)
+    references = appointment_references(grant, lookup)
     if not references or issuer is None:
         return (
             _basis(
