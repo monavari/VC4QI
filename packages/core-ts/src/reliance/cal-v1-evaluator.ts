@@ -2,7 +2,7 @@
 // Pure gate 4-5 predicates for the experimental calibration (DCC) v1 binding (I5).
 //
 // A selected measurement group is one claim. Gate 4 maps its results into exact
-// pascal quantities (Pa, kPa, MPa; k = 2 only). Gate 5 requires ONE complete record of
+// pascal quantities from PTB D-SI reals (Pa, kPa, MPa; k = 2 only). Gate 5 requires ONE complete record of
 // the route's scope credential to cover the group's quantity kind, every method the
 // group names and every result, including the admitted CMC floor when the verifier
 // profile applies it. Groups never combine, so a later group cannot erase an earlier
@@ -10,6 +10,7 @@
 // not established, never an empty-array bypass (S18).
 import { semanticAnd, semanticOr } from './index.js';
 import { CAL_V1_VOCAB } from './cal-v1.js';
+import { readExpandedReal, type DsiUnit } from './dsi.js';
 import { compareDecimal, formatDecimal, parseDecimal, type Decimal } from './rm-scope.js';
 import {
   anchor, authorizingReference, claimAuthority, composeAuthority, grantee, inForceAtActivity, permits, route,
@@ -23,8 +24,17 @@ const isObject = (value: unknown): value is Doc => value !== null && typeof valu
 const list = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
 const short = (iri: unknown) => String(iri).split(/[#/]/).pop();
 
-/** Supported pressure units as powers of ten relative to Pa. */
-export const CAL_UNIT_EXPONENTS: Readonly<Record<string, number>> = Object.freeze({ Pa: 0, kPa: 3, MPa: 6 });
+/**
+ * Supported pressure units: D-SI identifiers as powers of ten relative to Pa, one
+ * spelling each (dsi.ts); every other unit stays not established.
+ */
+export const CAL_UNITS: Readonly<Record<string, DsiUnit>> = Object.freeze({
+  '\\pascal': Object.freeze({ exponent: 0, symbol: 'Pa' }),
+  '\\kilo\\pascal': Object.freeze({ exponent: 3, symbol: 'kPa' }),
+  '\\mega\\pascal': Object.freeze({ exponent: 6, symbol: 'MPa' }),
+});
+export const CAL_UNIT_EXPONENTS: Readonly<Record<string, number>> = Object.freeze(
+  Object.fromEntries(Object.entries(CAL_UNITS).map(([unit, { exponent }]) => [unit, exponent])));
 
 /** Exact quantity in Pa, or undefined for an unsupported unit or malformed decimal. */
 export function toPascal(value: unknown, unit: unknown): Decimal | undefined {
@@ -41,7 +51,8 @@ const kPa = (value: Decimal) => formatDecimal({ n: value.n, scale: value.scale +
 export interface MappedResult { readonly value: Decimal; readonly uncertainty: Decimal }
 export interface MappedGroup {
   readonly id: string;
-  readonly quantityKindIri: string;
+  /** QUDT quantity-kind name shared by every result's D-SI real (for example Pressure). */
+  readonly quantityTypeQUDT: string;
   readonly methodIris: readonly string[];
   readonly results: readonly MappedResult[];
 }
@@ -53,33 +64,52 @@ export interface CalOutcome {
   readonly record?: string;
 }
 
-/** Gate 4: exact pascal quantities for every result of the group, k = 2 only. */
+/**
+ * Gate 4: exact pascal quantities for every result of the group, each a PTB D-SI real with
+ * an expanded uncertainty at k = 2. Every result names the same QUDT quantity kind, which
+ * is the group's.
+ */
 export function mapGroup(group: unknown, pointer: string): CalOutcome {
   const sources = [pointer];
-  if (!isObject(group) || typeof group.id !== 'string' || typeof group.quantityKindIri !== 'string') {
-    return { state: 'not_established', reason: 'The selected measurement group has no identifier or quantity kind.', sources };
+  if (!isObject(group) || typeof group.id !== 'string') {
+    return { state: 'not_established', reason: 'The selected measurement group has no identifier.', sources };
   }
   const results: MappedResult[] = [];
+  const kinds = new Set<unknown>();
   for (const [index, result] of list(group.results).entries()) {
-    const r = isObject(result) ? result : {};
-    const k = parseDecimal(r.coverageFactor);
+    const real = readExpandedReal(isObject(result) ? result.real : undefined);
+    if (!real.ok) return { state: 'not_established', reason: `Result ${index} has ${real.reason}.`, sources };
+    kinds.add(real.quantityTypeQUDT);
+    const k = parseDecimal(real.coverageFactor);
     if (k === undefined || compareDecimal(k, { n: 2n, scale: 0 }) !== 0) {
-      return { state: 'not_established', reason: `Result ${index}: coverage factor ${String(r.coverageFactor)} is not the binding's k = 2.`, sources };
+      return { state: 'not_established', reason: `Result ${index}: coverage factor ${String(real.coverageFactor)} is not the binding's k = 2.`, sources };
     }
-    const value = toPascal(r.value, r.unit), uncertainty = toPascal(r.expandedUncertainty, r.unit);
+    const value = toPascal(real.value, real.unit), uncertainty = toPascal(real.valueExpandedMU, real.unit);
     if (value === undefined || uncertainty === undefined) {
-      return { state: 'not_established', reason: `Result ${index}: unit ${String(r.unit)} or a number has no supported mapping (Pa, kPa, MPa).`, sources };
+      return { state: 'not_established', reason: `Result ${index}: unit ${String(real.unit)} or a number has no supported D-SI mapping (Pa, kPa, MPa).`, sources };
     }
     results.push({ value, uncertainty });
   }
   if (results.length === 0) return { state: 'not_established', reason: 'The measurement group has no results.', sources };
+  const [kind] = [...kinds];
+  if (kinds.size !== 1 || typeof kind !== 'string') {
+    return { state: 'not_established', reason: 'The results of the group do not name one quantity kind (quantityTypeQUDT).', sources };
+  }
   const methodIris = list(group.methodIris).filter((m): m is string => typeof m === 'string');
   return {
     state: 'established',
-    reason: `Mapped ${short(group.id)}: ${short(group.quantityKindIri)}, ${results.length} result(s) in Pa, methods [${methodIris.map(short).join(', ')}].`,
+    reason: `Mapped ${short(group.id)}: ${kind}, ${results.length} result(s) in Pa, methods [${methodIris.map(short).join(', ')}].`,
     sources,
-    group: { id: group.id, quantityKindIri: group.quantityKindIri, methodIris, results },
+    group: { id: group.id, quantityTypeQUDT: kind, methodIris, results },
   };
+}
+
+/** The one QUDT quantity kind every result of a measurement group names, if there is one. */
+export function groupQuantityType(group: unknown): string | undefined {
+  const kinds = new Set(list(isObject(group) ? group.results : undefined)
+    .map(result => (isObject(result) && isObject(result.real) ? result.real.quantityTypeQUDT : undefined)));
+  const [kind] = [...kinds];
+  return kinds.size === 1 && typeof kind === 'string' ? kind : undefined;
 }
 
 /**
@@ -99,7 +129,7 @@ export function groupCoverage(group: MappedGroup, records: readonly Doc[], apply
     const floor = floorSpec === undefined ? undefined : toPascal(floorSpec.value, floorSpec.unit);
     if (floorSpec !== undefined && floor === undefined) return { id, state: 'not_established' as SemanticState, reason: `${short(id)}: unsupported CMC floor.` };
     const failures: string[] = [];
-    if (record.quantityKindIri !== group.quantityKindIri) failures.push(`quantity kind ${short(group.quantityKindIri)} ≠ ${short(record.quantityKindIri)}`);
+    if (record.quantityTypeQUDT !== group.quantityTypeQUDT) failures.push(`quantity kind ${group.quantityTypeQUDT} ≠ ${String(record.quantityTypeQUDT)}`);
     const allowed = list(record.allowedMethodIris).filter((m): m is string => typeof m === 'string');
     const outside = group.methodIris.filter(m => !allowed.includes(m));
     if (outside.length > 0) failures.push(`method ${outside.map(short).join(', ')} is not allowed`);
@@ -117,7 +147,7 @@ export function groupCoverage(group: MappedGroup, records: readonly Doc[], apply
         reason: `${short(id)} restricts methods to [${allowed.map(short).join(', ')}], but the group names no governed method.` };
     }
     return { id, state: 'established' as SemanticState,
-      reason: `${short(id)} covers ${short(group.id)}: ${short(group.quantityKindIri)}, methods [${group.methodIris.map(short).join(', ')}], `
+      reason: `${short(id)} covers ${short(group.id)}: ${group.quantityTypeQUDT}, methods [${group.methodIris.map(short).join(', ')}], `
         + `${group.results.length} result(s) within ${kPa(low)}–${kPa(high)} kPa${applyCmcFloor && floor !== undefined ? ` and not below the CMC ${kPa(floor)} kPa` : ''}` };
   });
   const state = semanticOr(outcomes.map(o => o.state));
@@ -155,7 +185,7 @@ export function calContainedIn(child: readonly Doc[], parent: readonly Doc[], ap
         return { state: 'not_established' as SemanticState, reason: `${short(p.id)}: unsupported or malformed range or CMC floor.` };
       }
       const failures: string[] = [];
-      if (c.quantityKindIri !== p.quantityKindIri) failures.push(`quantity kind ${short(c.quantityKindIri)} ≠ ${short(p.quantityKindIri)}`);
+      if (c.quantityTypeQUDT !== p.quantityTypeQUDT) failures.push(`quantity kind ${String(c.quantityTypeQUDT)} ≠ ${String(p.quantityTypeQUDT)}`);
       const allowed = list(p.allowedMethodIris);
       const wider = methods.filter(m => !allowed.includes(m));
       if (methods.length === 0 && allowed.length > 0) failures.push('the parent restricts methods, the child does not');
@@ -206,7 +236,7 @@ export function calDirectAccreditation(target: NodeFacts & { document: Doc }, lo
     return route('direct-accreditation', [{ id: 'target-type', state: 'not_established',
       reason: `No accreditation activity is installed for ${String(targetType(D))}.`, sources: ['/type'] }], chain);
   }
-  const ref = authorizingReference('authorizing-reference', D, 'CalAccreditation', lookup, [target.uri], 'CalAuthorizationPolicy');
+  const ref = authorizingReference('authorizing-reference', D, 'CalAccreditation', lookup, [target.uri], 'IssuedUnderPolicy');
   bases.push(ref.basis);
   if (!ref.node) return route('direct-accreditation', bases, chain);
   const A = ref.node.document;
@@ -228,7 +258,7 @@ export function calOperationalScope(target: NodeFacts & { document: Doc }, looku
   const D = target.document;
   const bases: BasisResult[] = [];
   const chain = [target.uri];
-  const ref = authorizingReference('authorizing-reference', D, 'CalOperationalScope', lookup, [target.uri], 'CalAuthorizationPolicy');
+  const ref = authorizingReference('authorizing-reference', D, 'CalOperationalScope', lookup, [target.uri], 'IssuedUnderPolicy');
   bases.push(ref.basis);
   if (!ref.node) return route('operational-scope', bases, chain);
   const O = ref.node.document;
@@ -238,7 +268,7 @@ export function calOperationalScope(target: NodeFacts & { document: Doc }, looku
     ? { id: 'self-maintained-scope', state: 'established', reason: 'O is issued by its own grantee.', sources: ['/issuer'] }
     : { id: 'self-maintained-scope', state: 'contradicted', reason: 'O is not issued by its own grantee.', sources: ['/issuer'] });
   bases.push(permission('activity-permission', O, 'issueCalibrationCertificate', 'issuing calibration certificates', 'O'));
-  const grant = authorizingReference('maintenance-grant', O, 'CalAccreditation', lookup, [target.uri, ref.node.uri], 'CalAuthorizationPolicy');
+  const grant = authorizingReference('maintenance-grant', O, 'CalAccreditation', lookup, [target.uri, ref.node.uri], 'IssuedUnderPolicy');
   bases.push(grant.basis);
   if (!grant.node) return route('operational-scope', bases, chain);
   const A = grant.node.document;
@@ -264,7 +294,7 @@ export function calStatutoryMandate(target: NodeFacts & { document: Doc }, looku
   const D = target.document;
   const bases: BasisResult[] = [];
   const chain = [target.uri];
-  const ref = authorizingReference('authorizing-reference', D, 'CalLegalMandate', lookup, [target.uri], 'CalAuthorizationPolicy');
+  const ref = authorizingReference('authorizing-reference', D, 'CalLegalMandate', lookup, [target.uri], 'IssuedUnderPolicy');
   bases.push(ref.basis);
   if (!ref.node) return route('statutory-mandate', bases, chain);
   const M = ref.node.document;
@@ -370,10 +400,12 @@ export function instrumentCalibrationSupport(
     : c.id === r.instrumentIri
       ? { id: 'same-instrument', state: 'established', reason: `The calibration concerns instrument ${String(r.instrumentIri)}.`, sources: ['/credentialSubject/instrumentIri'] }
       : { id: 'same-instrument', state: 'contradicted', reason: `The calibration concerns ${String(c.id)}, not instrument ${String(r.instrumentIri)}.`, sources: ['/credentialSubject/instrumentIri'] });
-  const used = list(r.measurementGroups).filter(isObject).map(g => g.quantityKindIri);
-  const calibrated = list(c.measurementGroups).filter(isObject).map(g => g.quantityKindIri);
+  const used = list(r.measurementGroups).filter(isObject).map(groupQuantityType);
+  const calibrated = list(c.measurementGroups).filter(isObject).map(groupQuantityType);
   const uncovered = used.filter(q => !calibrated.includes(q));
-  bases.push(used.length > 0 && uncovered.length === 0
+  bases.push(used.some(q => q === undefined)
+    ? { id: 'same-quantity', state: 'not_established', reason: 'A report group does not name one quantity kind (quantityTypeQUDT).', sources: ['/credentialSubject/measurementGroups'] }
+    : used.length > 0 && uncovered.length === 0
     ? { id: 'same-quantity', state: 'established', reason: `The calibration covers ${[...new Set(used.map(short))].join(', ')}.`, sources: ['/credentialSubject/measurementGroups'] }
     : { id: 'same-quantity', state: used.length === 0 ? 'not_established' : 'contradicted',
       reason: used.length === 0 ? 'The report has no measurement groups.' : `The calibration does not cover ${uncovered.map(short).join(', ')}.`, sources: ['/credentialSubject/measurementGroups'] });

@@ -2,19 +2,24 @@
 """Recognition of an accreditation body (mirrors recognized-entities.ts).
 
 One credential per recognized body: a W3C Recognized Entities credential (Working
-Draft of 4 November 2026) with a single subject. The grant points up: its termsOfUse
-references the recognition of its own issuer (an RmAuthorizationPolicy whose
-authorizationCredential has type RecognizedEntityCredential), pinned by digest like
-every other link. The verifier's profile names no recognition; it names the
-recognizer as an anchor for the recognizer purpose and the action and main scope it
-requires. A recognition that nothing in the chain references confers nothing.
+Draft of 12 November 2026) with a single subject. Recognition is not authority: an
+accreditation body's authority is its national appointment, which a verifier that
+anchors the body trusts directly; recognition tells a verifier that anchors the
+recognizer to accept the body for a main scope. The grant names its issuer's
+recognition in termsOfUse, as a RecognitionPolicy entry whose id is a
+RecognizedEntityCredential, pinned by digest like every other link (one rule for every
+upward link; the policy type says what it means). The issuer object may mirror it as
+issuer.recognizedIn; when present it must name the same credential. The verifier's
+profile names no recognition; it names the recognizer as an anchor for the recognizer
+purpose and the action and main scope it requires. A recognition that nothing in the
+chain names confers nothing.
 
-A referenced recognition establishes that the grant's issuer is recognized only when
-it is usable and not suspended, its issuer is a configured anchor for the recognizer
-purpose, its subject is the grant's issuer with stated actions, one action is the
-required action for the required main scope recognized by its issuer, and that
-action was in force at the activity time. A recognition of another body, or for
-another main scope, contradicts; a missing recognition, entry or time is not
+A named recognition establishes that the grant's issuer is recognized only when it is
+usable and not suspended, its issuer is a configured anchor for the recognizer purpose,
+its subject is the grant's issuer with stated actions, one action is the required
+action recognized by its issuer and in force at the activity time, and its
+registration carries the required main scope. A recognition of another body, or
+without that main scope, contradicts; a missing recognition, entry or time is not
 established.
 """
 
@@ -34,6 +39,7 @@ if TYPE_CHECKING:
 Doc = dict[str, Any]
 
 RECOGNITION_TYPE = "RecognizedEntityCredential"
+RECOGNITION_POLICY = "RecognitionPolicy"
 
 
 @dataclass(frozen=True)
@@ -95,23 +101,23 @@ def recognition_rules(
 
 
 def recognition_references(grant: Doc) -> list[str]:
-    """Recognitions a grant points up to: termsOfUse policies referencing a
-    RecognizedEntityCredential."""
-    references: list[str] = []
-    for policy in _list(grant.get("termsOfUse")):
-        if (
-            not isinstance(policy, dict)
-            or policy.get("type") != "RmAuthorizationPolicy"
-        ):
-            continue
-        ref = policy.get("authorizationCredential")
-        if (
-            isinstance(ref, dict)
-            and ref.get("type") == RECOGNITION_TYPE
-            and _nonempty(ref.get("id"))
-        ):
-            references.append(str(ref["id"]))
-    return references
+    """Recognitions a grant names: termsOfUse RecognitionPolicy entries; the entry's
+    id is the recognition."""
+    return [
+        str(policy["id"])
+        for policy in _list(grant.get("termsOfUse"))
+        if isinstance(policy, dict)
+        and policy.get("type") == RECOGNITION_POLICY
+        and _nonempty(policy.get("id"))
+    ]
+
+
+def recognized_in(issuer: Any) -> str | None:
+    """The issuer object's issuer.recognizedIn mirror, when present."""
+    if isinstance(issuer, dict) and isinstance(issuer.get("recognizedIn"), dict):
+        ref = issuer["recognizedIn"].get("id")
+        return str(ref) if _nonempty(ref) else None
+    return None
 
 
 def _basis(
@@ -220,27 +226,41 @@ def _from_recognition(
             sources,
         )
     wanted_label = f"{wanted.activity} under {wanted.standard_id}"
-
-    def matches(a: Doc) -> bool:
-        scope = a.get("mainScope")
-        return (
-            a.get("action") == rules.action
-            and isinstance(scope, dict)
-            and scope.get("activity") == wanted.activity
-            and isinstance(scope.get("standard"), dict)
-            and scope["standard"].get("id") == wanted.standard_id
+    matching = [a for a in actions if a.get("action") == rules.action]
+    if not matching:
+        named = ", ".join(_js(a.get("action")) for a in actions)
+        return _basis(
+            basis_id,
+            "contradicted",
+            f"{uri} recognizes {entity} to {named}, not to {rules.action}.",
+            sources,
         )
 
-    matching = [a for a in actions if matches(a)]
-    if not matching:
-        offered = ", ".join(
-            f"{_js(a.get('action'))} ({_label(a.get('mainScope'))})" for a in actions
+    def registered_scope(entry: Any) -> Doc | None:
+        scope = entry.get("mainScope") if isinstance(entry, dict) else None
+        return scope if isinstance(scope, dict) else None
+
+    registered = [e for e in _list(subject.get("registration")) if isinstance(e, dict)]
+    scope = next(
+        (
+            m
+            for m in (registered_scope(e) for e in registered)
+            if m is not None
+            and m.get("activity") == wanted.activity
+            and isinstance(m.get("standard"), dict)
+            and m["standard"].get("id") == wanted.standard_id
+        ),
+        None,
+    )
+    if scope is None:
+        offered = (
+            ", ".join(_label(registered_scope(e)) for e in registered)
+            or "no main scope"
         )
         return _basis(
             basis_id,
             "contradicted",
-            f"{uri} recognizes {entity} for {offered}, not to {rules.action} for "
-            f"{wanted_label}.",
+            f"{uri} registers {entity} for {offered}, not for {wanted_label}.",
             sources,
         )
     by_issuer = [
@@ -285,7 +305,8 @@ def _from_recognition(
         "established",
         f"{entity} is recognized by {_js(recognizer)} (a configured anchor for "
         f"{rules.recognizer_purpose}) to {rules.action} for "
-        f"{_label(chosen.get('mainScope'))}, in force at {at}, in {uri}.",
+        f"{_label(scope)}, in force at {at}, in {uri}. Recognition grants no "
+        "authority; it accepts the body for this verifier.",
         sources,
     )
 
@@ -298,11 +319,16 @@ def grant_issuer_standing(
     lookup: NodeLookup,
     at: Any,
 ) -> tuple[BasisResult, str | None]:
-    """Configured anchor for `purpose`, or recognized through a recognition the grant
-    itself points up to.
+    """Configured anchor for `purpose`; else appointed by a configured state anchor
+    through the appointment the grant was issued under (appointment.py), when the
+    profile accepts appointments; else recognized through a recognition the grant points
+    up to, when the profile accepts recognitions.
 
-    Returns the basis and the deciding recognition, so routes can name it as a witness.
+    Returns the basis and the deciding appointment or recognition, so routes can name
+    it as a witness.
     """
+    from .appointment import appointment_standing
+
     issuer = issuer_id(grant.get("issuer"))
     configured = next((a for a in profile.trust_anchors if a.id == issuer), None)
     if configured is not None and purpose in configured.purposes:
@@ -320,9 +346,49 @@ def grant_issuer_standing(
         if configured is None
         else f"{_js(issuer)} is an anchor, but not for {purpose}."
     )
+    appointed = appointment_standing(basis_id, grant, profile, lookup, at, direct)
+    if appointed is not None and appointed[0].state == "established":
+        return appointed
+    recognized = _recognition_standing(
+        basis_id, grant, purpose, profile, lookup, at, issuer, direct
+    )
+    if appointed is None:
+        if recognized is None:
+            return _basis(basis_id, "not_established", direct, ("/issuer",)), None
+        return recognized
+    if recognized is None:
+        return appointed
+    if recognized[0].state == "established":
+        return recognized
+    sources = list(appointed[0].sources)
+    for source in recognized[0].sources:
+        if source not in sources:
+            sources.append(source)
+    return (
+        _basis(
+            basis_id,
+            semantic_or((appointed[0].state, recognized[0].state)),
+            f"{appointed[0].reason} {recognized[0].reason[len(direct) + 1 :]}",
+            tuple(sources),
+        ),
+        None,
+    )
+
+
+def _recognition_standing(
+    basis_id: str,
+    grant: Doc,
+    purpose: str,
+    profile: RelianceProfile,
+    lookup: NodeLookup,
+    at: Any,
+    issuer: str | None,
+    direct: str,
+) -> tuple[BasisResult, str | None] | None:
+    """Standing through recognition; None when the profile accepts no recognition."""
     rules = recognition_rules(profile)
     if rules is None:
-        return _basis(basis_id, "not_established", direct, ("/issuer",)), None
+        return None
     if rules == "invalid":
         return (
             _basis(
@@ -350,9 +416,21 @@ def grant_issuer_standing(
             _basis(
                 basis_id,
                 "not_established",
-                f"{direct} The grant points up to no {RECOGNITION_TYPE} in its "
-                "termsOfUse.",
+                f"{direct} The grant names no {RECOGNITION_TYPE} in a "
+                f"{RECOGNITION_POLICY} of its termsOfUse.",
                 ("/issuer", "/termsOfUse"),
+            ),
+            None,
+        )
+    mirror = recognized_in(grant.get("issuer"))
+    if mirror is not None and mirror not in references:
+        return (
+            _basis(
+                basis_id,
+                "contradicted",
+                f"{direct} The issuer's recognizedIn names {mirror}, but the grant's "
+                f"{RECOGNITION_POLICY} names {', '.join(references)}.",
+                ("/issuer/recognizedIn", "/termsOfUse"),
             ),
             None,
         )

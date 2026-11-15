@@ -46,7 +46,7 @@
     {"fact": "grantee", "nativePath": "/credentialSubject/id", "expandedIri": "@id"},
     {"fact": "permittedActivity", "nativePath": "/credentialSubject/permittedActivity", "expandedIri": "https://vc4qi.example/bindings/cal/1#permittedActivity"},
     {"fact": "scopeRecords", "nativePath": "/credentialSubject/scope", "expandedIri": "https://vc4qi.example/bindings/cal/1#scope"},
-    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/bindings/cal/1#authorizationCredential"},
+    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/id", "expandedIri": "https://www.w3.org/2018/credentials#termsOfUse"},
     {"fact": "activityTime", "nativePath": "/credentialSubject/activityTime", "expandedIri": "https://vc4qi.example/bindings/cal/1#activityTime"},
     {"fact": "measurementGroup", "nativePath": "/credentialSubject/measurementGroups/*", "expandedIri": "https://vc4qi.example/bindings/cal/1#measurementGroups"}
   ],
@@ -55,22 +55,23 @@
     "scopeRecords": {"minimum": 1},
     "measurementGroups": {"minimum": 1},
     "selectedAuthorizingPoliciesPerUse": {"minimum": 1, "maximum": 1},
-    "authorizingReferenceSelection": "by-declared-reference-type-per-route; resolved credential type must match (else contradicted); several of one type not_established",
+    "authorizingReferenceSelection": "by-the-type-each-named-credential-resolves-to, per route; a named credential that cannot be read leaves it not_established; several of one type not_established",
     "selectedGroups": "every selected measurement group is a separate required claim; the request is a conjunction over them",
     "ambiguousSelection": "not_established"
   },
   "discoveryAndIntegrity": {
-    "referenceCarriers": ["termsOfUse", "relatedResource", "credentialSchema"],
+    "referenceCarriers": ["termsOfUse", "evidence", "credentialSchema"],
     "discovery": "supplied-or-installed-static-catalog-only",
     "unknownUri": "not_established",
     "immutableRepresentation": "original-secured-bytes",
     "digestAlgorithm": "sha384",
     "digestEncoding": "SRI",
     "digestInput": "exact-original-secured-bytes",
-    "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse authorizationCredential references on the credential chain"
+    "digestCarrier": "digestSRI on the termsOfUse or evidence entry that names the credential (VCDM 2.0 section 5.3)",
+    "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse IssuedUnderPolicy entries on the credential chain (the entry's id is the grant)"
   },
   "recognizedTypes": {
-    "authorizationPolicy": "https://vc4qi.example/bindings/cal/1#CalAuthorizationPolicy",
+    "authorizationPolicy": "https://vc4qi.example/ns/chain#IssuedUnderPolicy",
     "authorizationPolicyEstablishes": ["authorizing-reference-candidate"],
     "nonEstablishingByItself": ["authority", "scope", "conformity"]
   },
@@ -90,13 +91,15 @@
     ]
   },
   "scopeAndMapping": {
-    "mappingVersion": "cal-experimental-mapping-1",
-    "dimensions": ["quantityKindIri", "methodIris", "range", "cmcFloor"],
-    "units": {"Pa": "1", "kPa": "1e3", "MPa": "1e6"},
+    "mappingVersion": "cal-experimental-mapping-2",
+    "dimensions": ["quantityTypeQUDT", "methodIris", "range", "cmcFloor"],
+    "units": {"\\pascal": {"factor": "1", "symbol": "Pa"}, "\\kilo\\pascal": {"factor": "1e3", "symbol": "kPa"}, "\\mega\\pascal": {"factor": "1e6", "symbol": "MPa"}},
+    "quantityValues": {"reference": "PTB D-SI 2.2.1", "schema": "https://www.ptb.de/si/v2.2.1/SI_Format.xsd", "digestSRI": "sha384-FK8DweUwpgaSM7YHkndHPFs5ZcQM8b1ug4gJpNme+quQUFdLWEjyEi512P5i3Nd0", "source": "https://gitlab1.ptb.de/d-ptb/d-si/xsd-d-si/-/tree/2.2.1", "mapping": "each value is one si:real; every JSON-LD term named after a D-SI element (real, label, quantityTypeQUDT, value, unit, measurementUncertaintyUnivariate, expandedMU, valueExpandedMU, coverageFactor, coverageProbability, distribution) expands in this binding's vc4qi.example namespace and carries that element's meaning; numbers are xsd:decimal strings, the subset of si:decimalType without sign, exponent or NaN", "interpreted": ["quantityTypeQUDT", "value", "unit", "valueExpandedMU", "coverageFactor"], "recordedNotInterpreted": ["label", "coverageProbability", "distribution"], "unsupportedUncertaintyForms": ["standardMU", "coverageIntervalMU", "multivariate"]},
+    "quantityKinds": {"reference": "QUDT quantity kinds by local name, as D-SI's quantityTypeQUDT carries them", "namespace": "http://qudt.org/vocab/quantitykind/", "names": ["Pressure"]},
     "boundaries": "inclusive",
     "coverageFactor": "2",
     "methodRule": "every method a group names must be allowed by the same record; a record restricting methods against a group naming none is not_established (no empty-array bypass)",
-    "groupRule": "one complete record must cover the group's quantity kind, methods and every result; groups never combine and a later group cannot erase an earlier failure",
+    "groupRule": "every result of a group names the same quantity kind (quantityTypeQUDT), which is the group's; one complete record must cover the group's quantity kind, methods and every result; groups never combine and a later group cannot erase an earlier failure",
     "cmcFloor": "when the verifier profile applies it, an expanded uncertainty below the record's admitted CMC contradicts scope; independent of conformity",
     "boundedProjection": "every operational-scope record lies within one accreditation record: same quantity kind, a subset of its methods, a range inside its range and, when the profile applies the CMC floor, a stated floor not below the accreditation's; claims are covered by the operational scope only",
     "unsupported": ["asymmetric-uncertainty", "display-label-equality", "implicit-method-succession", "customer-uncertainty-limits"]

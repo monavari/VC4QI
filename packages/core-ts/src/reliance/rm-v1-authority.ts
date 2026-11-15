@@ -7,14 +7,15 @@
 //   route      = AND(required bases)
 //
 // Authority is derived only by following the credential chain's own references
-// (termsOfUse → authorizationCredential). An authentic credential that nothing in
+// (a termsOfUse IssuedUnderPolicy entry whose id is the grant). An authentic credential that nothing in
 // the chain references confers nothing (V07); a grant discovered by other means is
 // unsupported in this binding (V08). Provenance never establishes permission (V06).
-// The issuer of the top grant must be a configured anchor, or be recognized by one
-// through a recognition credential the grant points up to (recognized-entities.ts, E01-E03).
+// The issuer of the top grant must be a configured anchor, be appointed by one through the
+// appointment the grant was issued under (appointment.ts), or be recognized by one through
+// a recognition credential the grant points up to (recognized-entities.ts, E01-E03).
 import { semanticAnd, semanticOr } from './index.js';
 import type { RelianceProfile } from './profile.js';
-import { grantIssuerStanding } from './recognized-entities.js';
+import { grantIssuerStanding, issuerId } from './recognized-entities.js';
 import { containedIn, EXACT_CONCEPTS, type Concepts } from './rm-scope.js';
 import type { SemanticState } from './types.js';
 
@@ -33,6 +34,8 @@ export interface NodeFacts {
   readonly usable: SemanticState;
   readonly reason: string;
   readonly document?: Doc;
+  /** The credential's own type, read when its bytes parsed; known even when it is not usable. */
+  readonly type?: string;
   /** The issuer's suspension status, if the credential names one; read only by global restrictions. */
   readonly suspension?: { readonly state: SemanticState; readonly reason: string };
 }
@@ -70,29 +73,35 @@ const subjectOf = (doc: Doc): Doc => (isObject(doc.credentialSubject) ? doc.cred
 const typeOf = (doc: Doc): string | undefined => (Array.isArray(doc.type) ? String(doc.type[1]) : undefined);
 export const permits = (doc: Doc, activity: string) => list(subjectOf(doc).permittedActivity).includes(activity);
 
-/** Credentials referenced by recognized authorization policies in `doc.termsOfUse`, with their declared types. */
-function policyReferences(doc: Doc, policyType = 'RmAuthorizationPolicy'): { id: string; type: unknown }[] {
+/** Credentials named by `policyType` entries in `doc.termsOfUse`: the entry's id is the credential. */
+export function policyReferences(doc: Doc, policyType = 'IssuedUnderPolicy'): { id: string }[] {
   return list(doc.termsOfUse)
     .filter(isObject)
-    .filter(policy => policy.type === policyType && isObject(policy.authorizationCredential))
-    .map(policy => policy.authorizationCredential as Doc)
-    .filter(ref => typeof ref.id === 'string')
-    .map(ref => ({ id: ref.id as string, type: ref.type }));
+    .filter(policy => policy.type === policyType && typeof policy.id === 'string')
+    .map(policy => ({ id: policy.id as string }));
 }
 
 /**
- * The single authorizing credential of `wantedType` referenced from `doc.termsOfUse`
- * by a recognized policy. References are typed, so a route selects its reference by
- * the declared type even when the credential is unavailable; the resolved credential
- * must have that type. Unrecognized policy types establish nothing (V04); several
- * references of the same type are ambiguous, never "take the first".
+ * The single authorizing credential of `wantedType` named from `doc.termsOfUse` by a
+ * recognized policy. An entry names a credential by its id only (with its digest), so a
+ * route selects its reference by the type of the credential it resolves to. A named
+ * credential that cannot be read leaves the selection open: not established, never a
+ * guess. Unrecognized policy types establish nothing (V04); several references of the
+ * same type are ambiguous, never "take the first".
  */
 export function authorizingReference(
   id: string, doc: Doc, wantedType: string, lookup: NodeLookup, stack: readonly string[],
-  policyType = 'RmAuthorizationPolicy',
+  policyType = 'IssuedUnderPolicy',
 ): { basis: BasisResult; node?: NodeFacts & { document: Doc } } {
-  const candidates = policyReferences(doc, policyType).filter(ref => ref.type === wantedType).map(ref => ref.id);
+  const named = policyReferences(doc, policyType).map(ref => ref.id);
+  const typeOfNamed = (uri: string) => { const node = lookup(uri); return node?.document ? typeOf(node.document) : node?.type; };
+  const candidates = named.filter(uri => typeOfNamed(uri) === wantedType);
   if (candidates.length === 0) {
+    // A named credential that could not be read might be the one wanted: cannot tell.
+    const unread = named.find(uri => typeOfNamed(uri) === undefined);
+    if (unread !== undefined) {
+      return { basis: unknown(id, `No ${wantedType} could be read among the credentials named: ${unread} is unavailable.`, ['/termsOfUse', unread]) };
+    }
     return { basis: unknown(id, `No recognized authorization policy references a ${wantedType}.`, ['/termsOfUse']) };
   }
   if (candidates.length > 1) {
@@ -107,9 +116,6 @@ export function authorizingReference(
   if (node.usable !== 'established' || node.document === undefined) {
     return { basis: { id, state: node.usable === 'contradicted' ? 'contradicted' : 'not_established',
       reason: `Referenced ${wantedType} ${uri} is not usable: ${node.reason}`, sources: ['/termsOfUse', uri] } };
-  }
-  if (typeOf(node.document) !== wantedType) {
-    return { basis: no(id, `Reference declares ${wantedType}, but ${uri} is a ${String(typeOf(node.document))}.`, ['/termsOfUse', uri]) };
   }
   return { basis: ok(id, `References ${wantedType} ${uri}.`, ['/termsOfUse', uri]), node: node as NodeFacts & { document: Doc } };
 }
@@ -126,11 +132,12 @@ export function grantee(id: string, grant: Doc, actor: unknown, what: string): B
 }
 
 export function anchor(id: string, doc: Doc, purpose: string, profile: RelianceProfile): BasisResult {
-  const configured = profile.trustAnchors.find(a => a.id === doc.issuer);
-  if (configured === undefined) return unknown(id, `${String(doc.issuer)} is not a configured trust anchor.`, ['/issuer']);
+  const issuer = issuerId(doc.issuer);
+  const configured = profile.trustAnchors.find(a => a.id === issuer);
+  if (configured === undefined) return unknown(id, `${String(issuer)} is not a configured trust anchor.`, ['/issuer']);
   return configured.purposes.includes(purpose)
-    ? ok(id, `${String(doc.issuer)} is a configured anchor for ${purpose}.`, ['/issuer'])
-    : unknown(id, `${String(doc.issuer)} is an anchor, but not for ${purpose}.`, ['/issuer']);
+    ? ok(id, `${String(issuer)} is a configured anchor for ${purpose}.`, ['/issuer'])
+    : unknown(id, `${String(issuer)} is an anchor, but not for ${purpose}.`, ['/issuer']);
 }
 
 /**
@@ -167,24 +174,24 @@ function operationalScopeRoute(
   const D = target.document;
   const bases: BasisResult[] = [];
   const chain = [target.uri];
-  const ref = authorizingReference('authorizing-reference', D, 'RmOperationalScope', lookup, stack);
+  const ref = authorizingReference('authorizing-reference', D, 'FlexibleScopeList', lookup, stack);
   bases.push(ref.basis);
   if (!ref.node) return route('operational-scope', bases, chain);
   const O = ref.node.document;
   chain.push(ref.node.uri);
-  bases.push(grantee('principal-binding', O, D.issuer, 'Operational scope O'));
-  bases.push(O.issuer === subjectOf(O).id
+  bases.push(grantee('principal-binding', O, issuerId(D.issuer), 'Operational scope O'));
+  bases.push(issuerId(O.issuer) === subjectOf(O).id
     ? ok('self-maintained-scope', 'O is issued by its own grantee.', ['/issuer'])
     : no('self-maintained-scope', 'O is not issued by its own grantee.', ['/issuer']));
   bases.push(permits(O, RM_ACTIVITIES.issueRmCertificate)
     ? ok('activity-permission', 'O permits issuing RM certificates.', ['/credentialSubject/permittedActivity'])
     : no('activity-permission', 'O does not permit issuing RM certificates.', ['/credentialSubject/permittedActivity']));
-  const grant = authorizingReference('maintenance-grant', O, 'RmAccreditation', lookup, [...stack, ref.node.uri]);
+  const grant = authorizingReference('maintenance-grant', O, 'RmpAccreditation', lookup, [...stack, ref.node.uri]);
   bases.push(grant.basis);
   if (!grant.node) return route('operational-scope', bases, chain);
   const A = grant.node.document;
   chain.push(grant.node.uri);
-  bases.push(grantee('accreditation-grantee', A, O.issuer, 'Accreditation A'));
+  bases.push(grantee('accreditation-grantee', A, issuerId(O.issuer), 'Accreditation A'));
   bases.push(permits(A, RM_ACTIVITIES.maintainRmScope) && permits(A, RM_ACTIVITIES.issueRmCertificate)
     ? ok('projection-permission', 'A permits maintaining an operational scope for RM certification.', ['/credentialSubject/permittedActivity'])
     : no('projection-permission', 'A does not permit maintaining an operational scope for RM certification.', ['/credentialSubject/permittedActivity']));
@@ -192,7 +199,7 @@ function operationalScopeRoute(
   bases.push({ id: 'bounded-projection', state: projection.state, reason: projection.reason, sources: ['/credentialSubject/scope'] });
   const standing = grantIssuerStanding('trust-anchor', A, 'accredit-rm-producers', profile, lookup, subjectOf(D).activityTime);
   bases.push(standing.basis);
-  if (standing.recognition) chain.push(standing.recognition);
+  if (standing.via) chain.push(standing.via);
   bases.push(inForceAtActivity(D, [['O', O], ['A', A]]));
   return route('operational-scope', bases, chain, ref.node.uri);
 }
@@ -204,18 +211,18 @@ function directAccreditationRoute(
   const D = target.document;
   const bases: BasisResult[] = [];
   const chain = [target.uri];
-  const ref = authorizingReference('authorizing-reference', D, 'RmAccreditation', lookup, stack);
+  const ref = authorizingReference('authorizing-reference', D, 'RmpAccreditation', lookup, stack);
   bases.push(ref.basis);
   if (!ref.node) return route('direct-accreditation', bases, chain);
   const A = ref.node.document;
   chain.push(ref.node.uri);
-  bases.push(grantee('principal-binding', A, D.issuer, 'Accreditation A'));
+  bases.push(grantee('principal-binding', A, issuerId(D.issuer), 'Accreditation A'));
   bases.push(permits(A, RM_ACTIVITIES.issueRmCertificate)
     ? ok('activity-permission', 'A permits issuing RM certificates.', ['/credentialSubject/permittedActivity'])
     : no('activity-permission', 'A does not permit issuing RM certificates.', ['/credentialSubject/permittedActivity']));
   const standing = grantIssuerStanding('trust-anchor', A, 'accredit-rm-producers', profile, lookup, subjectOf(D).activityTime);
   bases.push(standing.basis);
-  if (standing.recognition) chain.push(standing.recognition);
+  if (standing.via) chain.push(standing.via);
   bases.push(inForceAtActivity(D, [['A', A]]));
   return route('direct-accreditation', bases, chain, ref.node.uri);
 }
@@ -230,7 +237,7 @@ export const CERTIFICATE_ROUTES = Object.freeze({
  * actor's accreditation governs the whole certification activity, so it applies to
  * every route, including routes that do not use that accreditation (C06).
  *
- * Applicability (the profile's rule, not a guess): every usable RmAccreditation that
+ * Applicability (the profile's rule, not a guess): every usable RmpAccreditation that
  * a configured accreditation anchor issued to the target's issuer and that the
  * target's authorization references reach, on any route, whether or not that route
  * succeeds. Each must carry the issuer's suspension status with the bit clear; a
@@ -240,7 +247,7 @@ export const CERTIFICATE_ROUTES = Object.freeze({
  */
 function accreditationSuspension(target: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile): BasisResult {
   const id = 'restriction:accreditation-suspension';
-  const actor = target.document.issuer;
+  const actor = issuerId(target.document.issuer);
   const seen = new Set<string>([target.uri]);
   const queue: Doc[] = [target.document];
   const applicable: NodeFacts[] = [];
@@ -254,7 +261,7 @@ function accreditationSuspension(target: NodeFacts & { document: Doc }, lookup: 
       const doc = node.document;
       // Anchor-issued: by a configured accreditation anchor, or by an accreditation
       // body recognized by one through the recognition the accreditation points up to.
-      const anchored = typeOf(doc) === 'RmAccreditation' && subjectOf(doc).id === actor
+      const anchored = typeOf(doc) === 'RmpAccreditation' && subjectOf(doc).id === actor
         && grantIssuerStanding('anchor', doc, 'accredit-rm-producers', profile, lookup,
           subjectOf(target.document).activityTime).basis.state === 'established';
       if (anchored) applicable.push(node);
@@ -358,12 +365,12 @@ export function studyAuthority(
   const S = study.document;
   const bases: BasisResult[] = [];
   const chain = [study.uri];
-  const ref = authorizingReference('laboratory-authority-reference', S, 'RmLabAuthority', lookup, stack);
+  const ref = authorizingReference('laboratory-authority-reference', S, 'LabAccreditation', lookup, stack);
   bases.push(ref.basis);
   if (!ref.node) return route('laboratory-authority', bases, chain);
   const H = ref.node.document;
   chain.push(ref.node.uri);
-  bases.push(grantee('laboratory-binding', H, S.issuer, 'Laboratory authority H'));
+  bases.push(grantee('laboratory-binding', H, issuerId(S.issuer), 'Laboratory authority H'));
   bases.push(permits(H, RM_ACTIVITIES.issueRmStudy)
     ? ok('study-permission', 'H permits issuing RM studies.', ['/credentialSubject/permittedActivity'])
     : no('study-permission', 'H does not permit issuing RM studies.', ['/credentialSubject/permittedActivity']));
@@ -376,7 +383,7 @@ export function studyAuthority(
     : no('study-scope', 'H does not cover this matrix, property and study type.', ['/credentialSubject/scope']));
   const standing = grantIssuerStanding('laboratory-anchor', H, 'accredit-rm-laboratories', profile, lookup, s.activityTime);
   bases.push(standing.basis);
-  if (standing.recognition) chain.push(standing.recognition);
+  if (standing.via) chain.push(standing.via);
   return route('laboratory-authority', bases, chain);
 }
 
@@ -400,9 +407,9 @@ export function certificateSupport(
     return { state: 'not_established', reason: 'The target is not usable, so its support is not evaluated.', bases: [], chain: [] };
   }
   const D = target.document;
-  const references = list(D.evidence).filter(isObject).filter(e => e.type === 'RmStudyReference').map(e => String(e.id));
+  const references = list(D.evidence).filter(isObject).filter(e => e.type === 'HomogeneityStudyReference').map(e => String(e.id));
   if (references.length === 0) {
-    return { state: 'not_established', reason: 'D cites no required study.', bases: [unknown('study-reference', 'No RmStudyReference in evidence.', ['/evidence'])], chain: [target.uri] };
+    return { state: 'not_established', reason: 'D cites no required study.', bases: [unknown('study-reference', 'No HomogeneityStudyReference in evidence.', ['/evidence'])], chain: [target.uri] };
   }
   if (references.length > 1) {
     return { state: 'not_established', reason: 'Several study references; this binding has no composition for them.', bases: [unknown('study-reference', 'Ambiguous study references.', ['/evidence'])], chain: [target.uri] };

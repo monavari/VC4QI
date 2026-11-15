@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>GS story · VC4QI demonstrator</title>
-<meta name="description" content="A GS certification chain on an actor board: an accreditation body, a scheme owner, a GS body, a manufacturer and a verifier. Build the chain up to a product passport, verify it, manipulate it, and see how the verifier's own profile decides. Evaluated in the browser on signed test credentials.">
+<meta name="description" content="A GS certification chain on an actor board: a national accreditation body, a scheme owner, a GS body, a manufacturer and a verifier. Build the chain up to a product passport, verify it, manipulate it, and see how the verifier's own profile decides. Evaluated in the browser on signed test credentials.">
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="../board.css">
 </head>
@@ -18,9 +18,7 @@
 <main>
   <nav class="storynav" id="storynav" aria-label="Story"></nav>
   <div class="stephead">
-    <p class="kicker" id="kicker"></p>
     <h1 id="title">GS certification on an actor board</h1>
-    <p class="acts" id="acts"></p>
     <p class="lead" id="lead"></p>
   </div>
 
@@ -29,14 +27,13 @@
     <p>Nothing in this step is evaluated. The table sketches what the manufacturer could reveal, and keep back, when it presents the product passport to the verifier.</p>
     <table id="presentTable"></table>
   </section>
-
   <div class="board" id="board" aria-live="polite"></div>
+  <p class="legend" id="legend"><span><i></i>grant <code>IssuedUnderPolicy</code></span><span><i class="dot"></i><code>evidence</code></span><span><i class="dash"></i>handed over</span><span><span class="g"></span>signed by an authority</span><span><span class="g ga"></span>signed by an actor</span><span>✓ holds · ✕ fails · ? cannot tell</span><span>Click a credential or a line.</span></p>
   <div class="band placeholder" id="band" hidden>
     <span class="tag">Not evaluated</span>
     <b>Recognition of the scheme owner</b>
     <span>(for example through an international arrangement) would tell this verifier who may permit the GS mark. Today each verifier configures its trust anchors itself.</span>
   </div>
-  <p class="legend">Lines read the credentials' own references:<i></i>cites as authority<i class="dot"></i>cites as evidence<i class="dash"></i>handed over. Green holds, red fails, amber cannot be told; grey is not evaluated. Select a credential to see who signs it, what it is about and who holds it.</p>
 
   <footer>
     <p>Evaluated in your browser by the repository's GS evaluator, as of <span id="evalTime">25 September 2026</span> (status lists expire). Nothing is fetched.</p>
@@ -48,8 +45,7 @@
 <dialog id="sheet" aria-labelledby="sheetTitle">
   <button class="close" type="button" id="sheetClose">Close</button>
   <h2 id="sheetTitle"></h2>
-  <dl class="map" id="sheetMap"></dl>
-  <details class="raw"><summary>Signed bytes</summary><pre id="sheetBody"></pre></details>
+  <div id="sheetContent"></div>
 </dialog>
 
 <script type="module">
@@ -81,8 +77,17 @@ catch (error) { fail('This browser could not run the evaluator (' + error.messag
 await mountBoard(api, {
   name: 'GS story', story: api.GS_STORY, actors: api.GS_ACTORS, assets: api.GS_ASSETS, defaults: api.GS_DEFAULT,
   parts: api.BOARD_PARTS, evaluate: state => api.evaluateGsBoard(state), rows: 3,
-  hosts: { nab: 'the accreditation body', zls: 'the scheme owner', 'gs-body': 'the GS body', maker: 'the manufacturer' },
+  hosts: { nab: 'the NAB', zls: 'the scheme owner', 'gs-body': 'the GS body', maker: 'the manufacturer' },
   facts,
+  types: {
+    GsAccreditation: 'An accreditation: the NAB states that the GS body may test and certify, for which product categories.',
+    GsSchemeAuthorization: 'A scheme permission: the scheme owner, in the role ZLS has for the GS mark, permits the GS body to award the mark, for named categories only.',
+    GsTestReport: "A type-examination report: the test result for the model. Evidence: it supports the certificate and grants nothing.",
+    GsInspectionReport: "A factory-inspection report: the production site was inspected. Evidence: it supports the certificate and grants nothing.",
+    GsCertificate: 'A GS certificate: the GS body certifies the model, under both its accreditation and its scheme permission.',
+    GsMarkCredential: 'A GS-mark credential: the manufacturer states that this unit carries the GS mark, acting under the GS certificate.',
+    ProductPassport: 'A digital product passport: the manufacturer describes the unit; its compliance section names the GS-mark credential as evidence.',
+  },
   actions: {
     ab: [{ type: 'toggle', key: 'revokeA', label: 'Revoke GS-A', control: 'revokeA' }],
     so: [{ type: 'toggle', key: 'revokeS', label: 'Revoke GS-S', control: 'revokeS' }],
@@ -96,7 +101,7 @@ await mountBoard(api, {
   },
   settings: [
     { type: 'seg', key: 'trust', label: 'Trusts', control: 'trust', options: [
-      { id: 'both', label: 'Both authorities', sub: 'AB and SO' }, { id: 'accreditation-only', label: 'Accreditation only', sub: 'abroad' }] },
+      { id: 'both', label: 'Both authorities', sub: 'NAB and SO' }, { id: 'accreditation-only', label: 'Accreditation only', sub: 'abroad' }] },
   ],
   note: 'Its question: may it rely on the <b>GS mark</b> in the passport\'s compliance information?',
   tags: (code, st) => [

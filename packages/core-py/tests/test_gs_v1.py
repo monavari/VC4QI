@@ -118,22 +118,23 @@ def sign(document: dict[str, Any]) -> str:
 def reissue_chain(
     steps: list[tuple[str, Callable[[dict[str, Any]], None] | None]],
 ) -> dict[str, str | None]:
-    """Re-issue bottom-up, updating relatedResource digests of re-issued credentials."""
+    """Re-issue bottom-up, updating the link digests of re-issued credentials."""
     overrides: dict[str, str | None] = {}
     for uri, edit in steps:
         d = doc(uri)
         if edit is not None:
             edit(d)
-        if isinstance(d.get("relatedResource"), list):
-            related = []
-            for r in d["relatedResource"]:
-                text = overrides.get(r["id"])
-                related.append(
-                    {"id": r["id"], "digestSRI": sha384_sri(text.encode("utf-8"))}
-                    if isinstance(text, str)
-                    else r
-                )
-            d["relatedResource"] = related
+        for field in ("termsOfUse", "evidence"):
+            if isinstance(d.get(field), list):
+                updated = []
+                for r in d[field]:
+                    text = overrides.get(r.get("id"))
+                    updated.append(
+                        {**r, "digestSRI": sha384_sri(text.encode("utf-8"))}
+                        if isinstance(text, str)
+                        else r
+                    )
+                d[field] = updated
         overrides[uri] = sign(d)
     return overrides
 
@@ -144,13 +145,9 @@ def certification(d: dict[str, Any]) -> dict[str, Any]:
 
 def without_reference(kind: str) -> Callable[[dict[str, Any]], None]:
     def edit(d: dict[str, Any]) -> None:
-        removed = next(
-            p for p in d["termsOfUse"] if p["authorizationCredential"]["type"] == kind
-        )
-        d["termsOfUse"] = [p for p in d["termsOfUse"] if p is not removed]
-        removed_id = removed["authorizationCredential"]["id"]
-        d["relatedResource"] = [
-            r for r in d["relatedResource"] if r["id"] != removed_id
+        # Entries name credentials by id only: the type is read from each one.
+        d["termsOfUse"] = [
+            p for p in d["termsOfUse"] if doc(p["id"])["type"][1] != kind
         ]
 
     return edit

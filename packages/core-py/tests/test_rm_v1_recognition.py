@@ -19,7 +19,7 @@ from qi_vc_core.reliance.rm_v1_artifacts import evaluate_rm_slice
 from qi_vc_core.reliance.status_list import MIN_STATUS_BITS, encode_status_list
 from qi_vc_core.reliance.types import VersionedIdentifier
 
-from .test_rm_v1_authority import reissue
+from .test_rm_v1_authority import link, reissue
 from .test_rm_v1_slice import (
     MANIFEST,
     PROFILE,
@@ -30,8 +30,8 @@ from .test_rm_v1_slice import (
     resign,
 )
 
-D197 = "https://producer.vc4qi.example/credentials/D197"
-D520 = "https://producer.vc4qi.example/credentials/D520"
+D197 = "https://producer.vc4qi.example/credentials/RM197"
+D520 = "https://producer.vc4qi.example/credentials/RM520"
 NAB = "https://nab.vc4qi.example/controller"
 RM_PRODUCTION = "Reference material production"
 
@@ -117,7 +117,7 @@ def test_e01_d178_is_relied_upon_through_the_recognition() -> None:
     assert URI["R"] in result.authorization[0].route_witness_ids
     assert URI["R"] in result.support[0].witness_ids
     assert any(
-        t.predicate == "related-resource-integrity"
+        t.predicate == "link-integrity"
         and t.node_use.startswith(f"{URI['A']} |")
         and t.reason.startswith(URI["R"])
         and t.state == "established"
@@ -143,15 +143,18 @@ def test_d197_authorized_and_rejected_only_by_the_guarded_rule() -> None:
 def test_e02_testing_only_contradicts_the_producer_route() -> None:
     def edit(document: dict[str, Any]) -> None:
         subject = _subject(document)
-        subject["recognizedTo"] = [
-            a
-            for a in subject["recognizedTo"]
-            if a["mainScope"]["activity"] != RM_PRODUCTION
+        subject["registration"] = [
+            e
+            for e in subject["registration"]
+            if e["mainScope"]["activity"] != RM_PRODUCTION
         ]
 
     result = run(recognition_with(edit))
     assert anchor(result).state == "contradicted"
-    assert "not to accredit for Reference material production" in anchor(result).reason
+    assert (
+        "registers https://nab.vc4qi.example/controller for Testing under "
+        "ISO/IEC 17025:2017, not for Reference material production"
+    ) in anchor(result).reason
     assert lab_anchor(result).state == "established"
     assert result.decision == "reject"
 
@@ -159,10 +162,10 @@ def test_e02_testing_only_contradicts_the_producer_route() -> None:
 def test_e02_laboratory_without_testing_contradicts_support() -> None:
     def edit(document: dict[str, Any]) -> None:
         subject = _subject(document)
-        subject["recognizedTo"] = [
-            a
-            for a in subject["recognizedTo"]
-            if a["mainScope"]["activity"] == RM_PRODUCTION
+        subject["registration"] = [
+            e
+            for e in subject["registration"]
+            if e["mainScope"]["activity"] == RM_PRODUCTION
         ]
 
     result = run(recognition_with(edit))
@@ -294,7 +297,6 @@ def test_malformed_recognition_rules_are_never_defaulted() -> None:
 def test_unreferenced_recognition_confers_nothing_even_when_supplied() -> None:
     accreditation = doc(URI["A"])
     del accreditation["termsOfUse"]
-    del accreditation["relatedResource"]
     overrides = reissue({URI["A"]: accreditation})
     req = _request(
         GLOBAL_ACI,
@@ -304,7 +306,10 @@ def test_unreferenced_recognition_confers_nothing_even_when_supplied() -> None:
         req, catalog_with(overrides), MANIFEST, GLOBAL_ACI
     ).result
     assert anchor(result).state == "not_established"
-    assert "points up to no RecognizedEntityCredential" in anchor(result).reason
+    assert (
+        "names no RecognizedEntityCredential in a RecognitionPolicy"
+        in anchor(result).reason
+    )
     assert lab_anchor(result).state == "established"
     assert result.decision == "not_established"
 
@@ -316,5 +321,37 @@ def test_reasons_match_typescript_for_the_accepted_case() -> None:
         "https://global-aci.vc4qi.example/controller (a configured anchor for "
         "recognize-accreditation-bodies) to accredit for Reference material production "
         "under ISO 17034:2016, in force at 2026-01-20T00:00:00Z, in "
-        "https://global-aci.vc4qi.example/credentials/R."
+        "https://global-aci.vc4qi.example/credentials/REC-NAB. Recognition grants no "
+        "authority; it accepts the body for this verifier."
     )
+
+
+def test_recognized_in_naming_another_credential_contradicts() -> None:
+    accreditation = doc(URI["A"])
+    accreditation["issuer"]["recognizedIn"] = {
+        "id": "https://global-aci.vc4qi.example/credentials/R-other",
+        "type": "RecognizedEntityCredential",
+    }
+    result = run(reissue({URI["A"]: accreditation}))
+    assert anchor(result).state == "contradicted"
+    assert (
+        "recognizedIn names https://global-aci.vc4qi.example/credentials/R-other"
+        in anchor(result).reason
+    )
+    assert result.decision == "reject"
+
+
+def test_recognition_named_as_a_grant_is_no_recognition() -> None:
+    # Only a RecognitionPolicy entry names a recognition: an IssuedUnderPolicy naming R
+    # is read as a grant, and R is no appointment either, so the issuer stands on
+    # nothing.
+    accreditation = doc(URI["A"])
+    accreditation["termsOfUse"] = [link(URI["R"])]
+    del accreditation["issuer"]["recognizedIn"]
+    result = run(reissue({URI["A"]: accreditation}))
+    assert not any(
+        t.predicate == "route:operational-scope:trust-anchor"
+        and t.state == "established"
+        for t in result.trace
+    )
+    assert result.decision != "accept"

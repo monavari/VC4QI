@@ -44,7 +44,7 @@ export function encodeBits(set: readonly number[]): string {
 }
 
 /** The signed status list `listText` re-issued with `set` bits on, from `validFrom`. */
-export function reissueStatusList(listText: string, set: readonly number[], validFrom: string): JsonObject {
+export function reissueStatusList(listText: string, set: readonly number[], validFrom: string, validUntil?: string): JsonObject {
   const { proof: _proof, ...list } = JSON.parse(listText) as JsonObject & { credentialSubject: JsonObject };
-  return { ...list, validFrom, credentialSubject: { ...list.credentialSubject, encodedList: encodeBits(set) } };
+  return { ...list, validFrom, ...(validUntil ? { validUntil } : {}), credentialSubject: { ...list.credentialSubject, encodedList: encodeBits(set) } };
 }

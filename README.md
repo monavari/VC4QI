@@ -9,8 +9,9 @@ accreditation, calibration, reference-material or certification credentials.
 
 - **Website and documentation:** <https://monavari.github.io/VC4QI/>
 - **Demonstrator (RM · DCC · GS · DPP):** <https://monavari.github.io/VC4QI/demo/>,
-  and the RM and GS stories on an actor board: <https://monavari.github.io/VC4QI/demo/rm/>,
-  <https://monavari.github.io/VC4QI/demo/gs/>
+  the RM story, its chain top to bottom with an explainer and scenarios grouped by the
+  verifier's question: <https://monavari.github.io/VC4QI/demo/rm/>, and the GS story on
+  an actor board: <https://monavari.github.io/VC4QI/demo/gs/>
 
 ## The idea
 

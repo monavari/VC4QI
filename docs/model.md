@@ -32,9 +32,9 @@ them for one domain; see [bindings](bindings.md).
 | --- | --- |
 | `@context` | Versioned JSON-LD meaning, processed safely, with no redefinition of protected terms |
 | `type`, `credentialSchema` | Declared types and validation; the verifier controls dispatch |
-| `termsOfUse` | A recognized authorization policy that names the authorizing credential |
+| `termsOfUse` | An entry whose `id` is the credential it names, with that credential's `digestSRI`: `IssuedUnderPolicy` for the grant issued under, or `RecognitionPolicy` for a recognition; one shared vocabulary (`https://vc4qi.example/ns/chain#`) in every binding. At the top of a chain, an appointment's `TrustFrameworkPolicy` names the legal basis instead of a credential |
 | `evidence` | Recognized supporting information (support, never authority) |
-| `relatedResource` | Integrity of referenced resources (SHA-384 SRI over exact bytes) |
+| `digestSRI` on a link | Integrity of the credential a `termsOfUse` or `evidence` entry names (SHA-384 SRI over exact bytes; VCDM 2.0 §5.3) |
 | `credentialStatus` | The selected status mechanism, with an authorized signer and freshness |
 
 A type named like a trust policy has no authority unless the binding interprets it.
@@ -162,9 +162,10 @@ CuZn39Pb3 under copper alloys under non-ferrous metals and alloys, discs under s
 forms, As, Cu, Zn and Pb under element contents). The hierarchy applies to matrix,
 form and property in containment, claim coverage and study scope, never runs
 downward, and without it a set contains nothing but itself; methods and quantity kinds
-stay exact. Validate quantity kind, unit, finite
-ordered bounds and uncertainty before comparing, and use exact decimal arithmetic in
-both languages with no hidden tolerance. Unsupported conversions yield
+stay exact. Values are PTB D-SI 2.2.1 reals ([bindings](bindings.md#quantity-values-ptb-d-si)):
+validate the QUDT quantity kind, the D-SI unit, finite ordered bounds and the expanded
+uncertainty before comparing, and use exact decimal arithmetic in both languages with
+no hidden tolerance. Unsupported units, conversions or uncertainty forms yield
 `not_established`; proven violations are `contradicted`.
 
 Three rules stay separate:
@@ -207,69 +208,53 @@ content must be bound to the exact claim, grantee, activity, scope version, prof
 time, and the signer's authority must be established independently. A point answer
 cannot prove that a whole scope is contained.
 
-Recognition (RM, experimental) answers who stands behind a grant's issuer, nothing
-more. Each recognition is its own credential: R, issued by an arrangement anchor (a
-fictional Global ACI stand-in) about one accreditation body, in the shape of a W3C
-Recognized Entities credential (Working Draft of 4 November 2026) with a single subject
-and its own revocation and suspension entries. The grants point up to it like every
-other link: A and H carry a `termsOfUse` policy whose `authorizationCredential` has type
-`RecognizedEntityCredential`, pinned by digest in `relatedResource`. A verifier whose
-profile anchors the accreditation body stops there, and R never decides for it. A
-verifier whose profile instead anchors the recognizer for the recognizer purpose
-(`bindingRules.recognition`: recognizer purpose, required action and the main scope per
-grant purpose) follows the link: R establishes the grant's issuer only if it is usable
-and not suspended, its issuer is an anchor for the recognizer purpose, its subject is
-the grant's issuer with stated actions, and one action is the required action for the
-grant's main scope (activity and normative document, compared exactly), recognized by
-its issuer and in force at the activity time. A recognition of another body, or for
-another main scope, contradicts; a missing recognition, entry or time is not
-established. R then joins the witness path. The profile names no recognition, and a
-recognition that nothing in the chain references confers nothing. Recognition does not
-replace QI scope, containment, restrictions, support or conformity: D520 is recognized
-and still out of scope. Suspending one body's recognition is one status bit; nothing is
-re-issued. The per-recognition shape and the `termsOfUse` link are this binding's
-proposal; the draft's own up-pointer is `issuer.recognizedIn`, which is not used, and
-the draft's context is not yet published, so the binding pins a stand-in context whose
-terms expand to the draft vocabulary.
+Recognition (RM, experimental) answers whether a verifier that trusts a recognizer
+should accept a grant's issuer, nothing more; it grants no authority. An accreditation
+body's authority is its national appointment, which a verifier that anchors the body
+trusts directly. Each recognition is its own credential: R, issued by an arrangement
+anchor (a fictional Global ACI stand-in) about one accreditation body, in the shape of a
+W3C Recognized Entities credential (Working Draft of 12 November 2026) with a single
+subject, the action in `recognizedTo`, the main scopes in `registration`, and its own
+revocation and suspension entries. Every upward link is a `termsOfUse` entry, followed
+and pinned the same way: its `id` is the credential it names, its `digestSRI` that
+credential's digest, and its type says what it means: `IssuedUnderPolicy` for a grant,
+`RecognitionPolicy` for a recognition. The NAB's accreditations carry a
+`RecognitionPolicy` entry naming the recognition, and mirror it as `issuer.recognizedIn`, which must then name the same
+credential. A verifier whose profile anchors the accreditation body stops there, and R
+never decides for it. A verifier whose profile instead anchors the recognizer for the
+recognizer purpose (`bindingRules.recognition`: recognizer purpose, required action and
+the main scope per grant purpose) follows the link: R establishes the grant's issuer
+only if it is usable and not suspended, its issuer is an anchor for the recognizer
+purpose, its subject is the grant's issuer with stated actions, one action is the
+required action recognized by its issuer and in force at the activity time, and its
+registration carries the grant's main scope (activity and normative document, compared
+exactly). A recognition of another body, or without that main scope, contradicts; a
+missing recognition, entry or time is not established. R then joins the witness path.
+The profile names no recognition, and a recognition that nothing in the chain names
+confers nothing. Recognition does not replace QI scope, containment, restrictions,
+support or conformity: D520 is recognized and still out of scope. Suspending one body's
+recognition is one status bit; nothing is re-issued. The per-recognition shape and the
+`RecognitionPolicy` link are this binding's resolution, not traversal alone.
 
-## 8. Security, time and disclosure
-
-- Every required credential and security resource gets the binding's real checks. A
-  constant key resolver is not identity evidence, and proof skipping is simulation.
-- Resolution is bounded (origin, redirects, media type, size, decompression, time).
-  Static resources are pinned by digest; status observations keep their time.
-- Evaluation, activity, issuance, validity, proof and status times are distinct.
-  `validFrom` is not issuance time. A request asks about its activity time, which is
-  the evaluation time for current reliance. Grants must be in force at that time, and
-  status at that time is established only by a status list of the same issuer that was
-  in force then and fresh then: a list signed later cannot say what held earlier, so a
-  question about the past with only current lists is not established, and a list the
-  issuer signed and kept from that time answers it. Status lists are dated credentials;
-  keeping them is what makes "was it valid when it was issued?" answerable. Finding a
-  kept list is the resolver's job (the RM fixtures keep January 2026 lists in their own
-  archive catalog); an issuer-written activity time can still be backdated without a
-  trusted timestamp.
-- Evidence may be supplied as a flat bundle or retrieved within budgets; extra
-  credentials confer nothing. Selective disclosure must keep every fact the request
-  needs: a valid disclosure proof that hides a required fact cannot establish reliance.
-
-## 9. Boundaries
-
-VC4QI specifies and demonstrates the conditions for QI reliance. It does not create
-institutional authority or prove physical truth. It does not require a wallet, LIMS,
-verifier service, timestamp service, ontology reasoner, rules engine or live
-institutional integration, and it claims no EBSI, EUDI, eIDAS or legal conformance.
-Recognition, signatures, query matching and schemas each establish only their own
-predicates; none alone establishes a reliance request.
-
-Decidability holds only under stated conditions: accepted mappings, terminating
-evaluators, finite route search and well-founded dependencies. A timeout is not
-falsity, and cost includes route search, cryptography, schema and RDF work and
-resolution, not traversal alone.
+Appointment (RM, experimental) is where the accreditation body's authority comes from:
+in the EU each member state appoints a single national accreditation body (Regulation
+(EC) No 765/2008, Art. 4(1)). APP, issued by a fictional state about the NAB, has the
+shape of EBSI's root trust-chain credential, `VerifiableAuthorisationForTrustChain`:
+`credentialSubject.permissionFor` names, per credential type the body may issue, its
+schema and jurisdiction, and its own `termsOfUse` is a `TrustFrameworkPolicy` naming the
+legal basis, not a parent credential. A and H name APP as the grant they were issued
+under (`IssuedUnderPolicy`, pinned by digest), beside their `RecognitionPolicy`. A
+verifier whose profile anchors the state for the appointer purpose
+(`bindingRules.appointment`: appointer purpose and jurisdiction) follows that link: APP
+establishes the grant's issuer only if it is usable and not suspended, issued by such an
+anchor, about the grant's issuer, permits the grant's type under the grant's own schema
+in the required jurisdiction, and was in force at the activity time. Standing is tried in
+order: the issuer is itself an anchor, then appointment, then recognition; any one is
+enough. Where EBSI points to a registry entry by URL, this binding pins the exact bytes.
 
 ## Standards
 
 [VCDM 2.0](https://www.w3.org/TR/2025/REC-vc-data-model-2.0-20250515/) (15 May 2025)
 provides the carriers; this project's bindings supply the QI interpretation. The
-[Recognized Entities Working Draft](https://www.w3.org/TR/2026/WD-vc-recognized-entities-1.0-20261104/)
-(4 November 2026) is experimental.
+[Recognized Entities Working Draft](https://www.w3.org/TR/2026/WD-vc-recognized-entities-1.0-20261112/)
+(12 November 2026) is experimental.

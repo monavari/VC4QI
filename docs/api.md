@@ -63,7 +63,7 @@ import { installBinding } from '@qi-vc/core/reliance/binding-node';
 // Manifest, one verifier profile, and a catalog of the pinned resources and signed test vectors.
 const { manifest, profile, catalog } = installBinding('bindings/experimental/rm-v1', 'rm-verifier-1');
 const request = reliance.createRelianceRequest({
-  requestId: 'urn:uuid:example', targetId: 'https://producer.vc4qi.example/credentials/D178',
+  requestId: 'urn:uuid:example', targetId: 'https://producer.vc4qi.example/credentials/RM178',
   selectedClaims: [{ id: 'as', sourcePointer: '/credentialSubject/materialPropertiesList/0/results/0' }],
   purpose: 'use-as-calibrant',
   binding: { id: manifest.id, version: manifest.version },
@@ -87,7 +87,7 @@ remain available at tag [`v0.3.0`](https://github.com/monavari/VC4QI/tree/v0.3.0
 | 0.3.0 | 0.4.0 |
 | --- | --- |
 | `verifyCredentialGraph(target, policy, options)` | A reliance request under a verifier-selected binding and profile |
-| `CredentialEvidenceReference` with three relations and six basis kinds | Native carriers (`termsOfUse`, `evidence`, `relatedResource`) interpreted by a binding |
+| `CredentialEvidenceReference` with three relations and six basis kinds | Native carriers (`termsOfUse`, `evidence`, each entry with its `digestSRI`) interpreted by a binding |
 | `verified` from zero FAIL results | Separate verification, authorization, support, conformity and a three-state decision |
 | Optional proof skipping in demos | Always-on protection |
 | Mandatory custom `scopeRef` | A verifier-owned claim-to-record witness |

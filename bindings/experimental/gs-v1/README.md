@@ -69,7 +69,8 @@ the EU Digital Product Passport of the Ecodesign for Sustainable Products Regula
 (ESPR) and its list of passport information: the unique product identifier (the subject),
 product name and model, GTIN, commodity code, the responsible economic operator and the
 manufacturing facility, when the unit was placed on the market, technical data (rated
-power), sustainability data (spare-part availability) and compliance information. The
+power, a PTB D-SI 2.2.1 real with QUDT quantity kind `Power` and unit `\watt`, without
+uncertainty), sustainability data (spare-part availability) and compliance information. The
 compliance information lists the GS mark (`/credentialSubject/complianceInformation/gsMark`)
 and cites the unit's GS-mark credential as `evidence`, bound by digest.
 

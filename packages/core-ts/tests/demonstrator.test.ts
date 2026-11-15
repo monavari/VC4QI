@@ -9,15 +9,17 @@ import { describe, expect, it } from 'vitest';
 const bundle = new URL('../../../site/demo/verifier.js', import.meta.url).href;
 type Result = {
   result: { decision: string };
-  questions: { id: string; state: string }[];
-  graph: { nodes: { uri: string; name: string; layer: number; present: boolean }[]; edges: { from: string; to: string; kind: string }[] };
+  questions: { id: string; state: string; summary: string }[];
+  graph: { nodes: { uri: string; name: string; layer: number; present: boolean }[]; edges: { from: string; to: string; kind: string; policy?: string }[] };
   texts: Record<string, string>;
 };
 type Api = {
   EXAMPLES: { id: string; cases: { id: string }[] }[];
   evaluateScenario: (o: Record<string, unknown>) => Promise<Result>;
-  RM_STORY: { id: string; part: string; issues?: string[]; state?: Record<string, unknown>; expect?: string }[];
-  RM_ASSETS: { code: string }[];
+  RM_STORY: { id: string; part: string; issues?: string[]; state?: Record<string, unknown>; expect?: string; panel?: string;
+    scenarios?: { id: string; state: Record<string, unknown>; expect: string }[] }[];
+  RM_ASSETS: { code: string; actor: string; about: string; heldBy: string }[];
+  RM_ACTORS: { id: string; publishes: { label: string; uri?: string }[] }[];
   evaluateRmBoard: (o?: Record<string, unknown>) => Promise<Board>;
   GS_STORY: { id: string; part: string; issues?: string[]; state?: Record<string, unknown>; expect?: string }[];
   GS_ASSETS: { code: string }[];
@@ -89,7 +91,7 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
 
   it('RM: the credential graph marks a withheld study as not present', async () => {
     const r = await run('rm', '178', { choice: 'fit', withhold: true });
-    expect(r.graph.nodes.find(n => n.name === 'S')?.present).toBe(false);
+    expect(r.graph.nodes.find(n => n.name === 'HOM-LOT1')?.present).toBe(false);
   });
 
   it('every example: tampering fails protection, withholding a credential is never accepted', async () => {
@@ -106,22 +108,40 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     const issued = api.RM_STORY.filter(s => s.part === 'build').flatMap(s => s.issues ?? []);
     expect([...issued].sort()).toEqual(api.RM_ASSETS.map(a => a.code).sort());
     const accepted = await api.evaluateRmBoard();
-    const uri = (code: string) => code === 'D' ? accepted.certificate : accepted.graph.nodes.find(n => n.name === code)!.uri;
+    const uri = (code: string) => accepted.uris[code]!;
     const validFrom = issued.map(code => (JSON.parse(accepted.texts[uri(code)]!) as { validFrom: string }).validFrom);
     expect(validFrom).toEqual([...validFrom].sort());
     for (const s of api.RM_STORY.filter(x => x.expect !== undefined)) {
       expect([s.id, (await api.evaluateRmBoard(s.state)).result.decision]).toEqual([s.id, s.expect]);
     }
-    // Only the design-rules page, the build steps, the proposal page and "Your turn"
-    // have no expected decision.
-    expect([...new Set(api.RM_STORY.filter(s => s.expect === undefined).map(s => s.part))])
-      .toEqual(['rules', 'build', 'proposal', 'play']);
+    // Every scenario reaches its decision.
+    for (const s of api.RM_STORY) {
+      for (const c of s.scenarios ?? []) {
+        expect([s.id, c.id, (await api.evaluateRmBoard(c.state)).result.decision]).toEqual([s.id, c.id, c.expect]);
+      }
+    }
+    // A step without an expected decision is a page, a build step, a group of scenarios or "Your turn".
+    expect(api.RM_STORY.filter(s => s.expect === undefined && !s.panel && !s.scenarios && s.part !== 'build' && s.part !== 'play').map(s => s.id)).toEqual([]);
+  });
+
+  it('RM board: what a card says about who signs it and whom it is about agrees with the signed credential', async () => {
+    // The board places a card by its asset entry (hand-written); the signed credential
+    // decides. Each issuer and each subject must match the actor the entry names.
+    const r = await api.evaluateRmBoard();
+    const key = (id: string) => api.RM_ACTORS.find(a => a.id === id)!.publishes.find(p => p.label === 'Key')!.uri;
+    for (const a of api.RM_ASSETS) {
+      const d = JSON.parse(r.texts[r.uris[a.code]!]!) as { issuer: string | { id: string }; credentialSubject: { id: string } };
+      const issuer = typeof d.issuer === 'string' ? d.issuer : d.issuer.id;
+      expect([a.code, issuer]).toEqual([a.code, key(a.actor)]);
+      if (a.about !== 'object') expect([a.code, d.credentialSubject.id]).toEqual([a.code, key(a.about)]);
+      else expect([a.code, d.credentialSubject.id]).toEqual([a.code, 'urn:vc4qi-example:batch:cuzn39pb3-disc-lot-1']);
+    }
   });
 
   it('RM board: documents signed in the browser verify like the generated fixtures', async () => {
     // The same value, signed live, is accepted exactly as D178 is.
     const own = await api.evaluateRmBoard({ certificate: 'custom', value: '178', uncertainty: '5' });
-    expect([own.result.decision, own.signedLive]).toEqual(['accept', ['https://producer.vc4qi.example/credentials/D-live']]);
+    expect([own.result.decision, own.signedLive]).toEqual(['accept', ['https://producer.vc4qi.example/credentials/RM-own']]);
     expect(answers(own)).toEqual(answers(await api.evaluateRmBoard()));
     // Method M2 is accredited but outside the producer's operational scope (M1 only).
     expect(answers(await api.evaluateRmBoard({ certificate: 'custom', value: '178', uncertainty: '5', method: 'M2' })).authorized).toBe('not_established');
@@ -140,7 +160,13 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     expect((await api.evaluateRmBoard({ trust: 'global-aci', suspendGaci: true })).signedLive)
       .toEqual(['https://global-aci.vc4qi.example/status/suspension/1']);
     // R is on the chain the graph reads: A and H point up to it.
-    expect((await api.evaluateRmBoard()).graph.edges.filter(e => e.to.endsWith('/credentials/R')).map(e => e.from.split('/').pop()).sort()).toEqual(['A', 'H']);
+    expect((await api.evaluateRmBoard()).graph.edges.filter(e => e.to.endsWith('/credentials/REC-NAB')).map(e => e.from.split('/').pop()).sort()).toEqual(['ACC-LAB', 'ACC-RMP']);
+    // The state that appointed the body: A and H were issued under APP; suspending APP stops
+    // a verifier that trusts the state, not one that trusts the body or Global ACI.
+    expect(answers(await api.evaluateRmBoard({ trust: 'state' }))).toEqual(answers(await api.evaluateRmBoard()));
+    expect((await api.evaluateRmBoard()).graph.edges.filter(e => e.to.endsWith('/credentials/APP-NAB'))
+      .map(e => `${e.from.split('/').pop()}:${e.policy}`).sort()).toEqual(['ACC-LAB:IssuedUnderPolicy', 'ACC-RMP:IssuedUnderPolicy']);
+    expect((await api.evaluateRmBoard({ trust: 'state', withhold: 'APP' })).result.decision).toBe('not_established');
     // Any credential of the chain left out: cannot tell, never accepted.
     for (const code of ['O', 'A', 'S', 'H']) {
       expect([code, (await api.evaluateRmBoard({ withhold: code })).result.decision]).toEqual([code, 'not_established']);
@@ -157,6 +183,12 @@ describe('the browser demonstrator bundle runs the evaluators', () => {
     expect((await api.evaluateRmBoard({ suspendA: true, asOf: 'issuance' })).result.decision).toBe('not_established');
     expect((await api.evaluateRmBoard({ suspendA: true, asOf: 'issuance', archive: true })).result.decision).toBe('accept');
     expect((await api.evaluateRmBoard({ suspendA: true, asOf: 'issuance', archive: true })).signedLive).toEqual([]);
+    // March 2028: RM178 has expired. Every issuer has published fresh lists, so the
+    // expiry is what fails; the later checks never read an expired certificate.
+    const later = await api.evaluateRmBoard({ asOf: 'later' });
+    expect([later.result.decision, later.signedLive.length]).toEqual(['reject', 8]);
+    expect([answers(later).authentic, answers(later).current]).toEqual(['established', 'contradicted']);
+    expect(later.questions.find(q => q.id === 'current')!.summary).toMatch(/Expired before 2028-03-15/);
     // Editing a live-signed certificate breaks its signature like any other.
     expect(answers(await api.evaluateRmBoard({ certificate: 'custom', value: '178', uncertainty: '5', tamper: true })).authentic).toBe('contradicted');
   });

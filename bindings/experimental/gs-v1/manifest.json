@@ -49,7 +49,7 @@
     {"fact": "grantee", "nativePath": "/credentialSubject/id", "expandedIri": "@id"},
     {"fact": "permittedActivity", "nativePath": "/credentialSubject/permittedActivity", "expandedIri": "https://vc4qi.example/bindings/gs/1#permittedActivity"},
     {"fact": "scopeRecords", "nativePath": "/credentialSubject/scope", "expandedIri": "https://vc4qi.example/bindings/gs/1#scope"},
-    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/authorizationCredential/id", "expandedIri": "https://vc4qi.example/bindings/gs/1#authorizationCredential"},
+    {"fact": "authorizingReference", "nativePath": "/termsOfUse/*/id", "expandedIri": "https://www.w3.org/2018/credentials#termsOfUse"},
     {"fact": "activityTime", "nativePath": "/credentialSubject/activityTime", "expandedIri": "https://vc4qi.example/bindings/gs/1#activityTime"},
     {"fact": "certification", "nativePath": "/credentialSubject/certification", "expandedIri": "https://vc4qi.example/bindings/gs/1#certification"},
     {"fact": "productModel", "nativePath": "/credentialSubject/productModelIri", "expandedIri": "https://vc4qi.example/bindings/gs/1#productModel"},
@@ -62,22 +62,23 @@
     "credentialSubject": {"minimum": 1, "maximum": 1},
     "scopeRecords": {"minimum": 1},
     "selectedAuthorizingPoliciesPerUse": {"minimum": 1, "maximum": 2},
-    "authorizingReferenceSelection": "by-declared-reference-type-per-route-half; resolved credential type must match (else contradicted); several of one type not_established",
+    "authorizingReferenceSelection": "by-the-type-each-named-credential-resolves-to, per route half; a named credential that cannot be read leaves it not_established; several of one type not_established",
     "selectedClaims": "the certification statement at /credentialSubject/certification; for a GS-mark credential its marking at /credentialSubject/marking; for a product passport only the GS-mark entry at /credentialSubject/complianceInformation/gsMark (other passport sections have no interpretation in this binding)",
     "ambiguousSelection": "not_established"
   },
   "discoveryAndIntegrity": {
-    "referenceCarriers": ["termsOfUse", "relatedResource", "credentialSchema"],
+    "referenceCarriers": ["termsOfUse", "evidence", "credentialSchema"],
     "discovery": "supplied-or-installed-static-catalog-only",
     "unknownUri": "not_established",
     "immutableRepresentation": "original-secured-bytes",
     "digestAlgorithm": "sha384",
     "digestEncoding": "SRI",
     "digestInput": "exact-original-secured-bytes",
-    "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse authorizationCredential references on the credential chain"
+    "digestCarrier": "digestSRI on the termsOfUse or evidence entry that names the credential (VCDM 2.0 section 5.3)",
+    "independentGrantBinding": "unsupported: authority is recognized only through termsOfUse IssuedUnderPolicy entries on the credential chain (the entry's id is the grant)"
   },
   "recognizedTypes": {
-    "authorizationPolicy": "https://vc4qi.example/bindings/gs/1#GsAuthorizationPolicy",
+    "authorizationPolicy": "https://vc4qi.example/ns/chain#IssuedUnderPolicy",
     "authorizationPolicyEstablishes": ["authorizing-reference-candidate"],
     "nonEstablishingByItself": ["authority", "scope", "conformity"]
   },
@@ -100,10 +101,11 @@
     ]
   },
   "scopeAndMapping": {
-    "mappingVersion": "gs-experimental-mapping-1",
+    "mappingVersion": "gs-experimental-mapping-2",
     "dimensions": ["productCategoryIri", "standardIris"],
     "standardRule": "one competence record must cover the category and every certified standard; a record listing standards against a certification naming none is not_established (no empty-array bypass)",
     "schemeRule": "one scheme record must cover the category",
+    "passportValues": {"reference": "PTB D-SI 2.2.1", "schema": "https://www.ptb.de/si/v2.2.1/SI_Format.xsd", "digestSRI": "sha384-FK8DweUwpgaSM7YHkndHPFs5ZcQM8b1ug4gJpNme+quQUFdLWEjyEi512P5i3Nd0", "rule": "passport technical data (rated power) is one si:real without uncertainty: quantityTypeQUDT Power (QUDT), unit \\watt; recorded, never interpreted"},
     "unsupported": ["display-label-equality", "standard-edition-succession", "product-variant-inheritance"]
   },
   "routesAndRestrictions": {

@@ -41,14 +41,10 @@ const statusEntry = closed({
   statusListIndex: { type: 'string', pattern: '^(0|[1-9][0-9]*)$' },
   statusListCredential: iri,
 });
-const authorizationPolicy = closed({
-  type: { const: 'GsAuthorizationPolicy' },
-  authorizationCredential: closed({ id: iri, type: { enum: ['GsAccreditation', 'GsSchemeAuthorization', 'GsCertificate'] } }),
-});
-const relatedResource = nonemptySet(closed({
-  id: iri,
-  digestSRI: { type: 'string', pattern: '^sha384-[A-Za-z0-9+/]{64}$' },
-}));
+// A link names a credential by its id and carries the digest of its exact bytes
+// (VCDM 2.0 §5.3); the entry's type says what the link means.
+const digestSRI = { type: 'string', pattern: '^sha384-[A-Za-z0-9+/]{64}$' };
+const authorizationPolicy = closed({ id: iri, type: { const: 'IssuedUnderPolicy' }, digestSRI });
 const proof = closed({
   type: { const: 'DataIntegrityProof' },
   cryptosuite: { const: 'eddsa-rdfc-2022' },
@@ -90,7 +86,7 @@ const grantSubject = (activities, record) => closed({
 });
 // A study is authorized by exactly one accreditation of its issuer.
 const studyPolicy = { type: 'array', minItems: 1, maxItems: 1, items: authorizationPolicy };
-const supportReference = closed({ id: iri, type: { enum: ['GsTypeExaminationReference', 'GsFactoryInspectionReference'] } });
+const supportReference = closed({ id: iri, type: { enum: ['GsTypeExaminationReference', 'GsFactoryInspectionReference'] }, digestSRI });
 
 const schemas = {
   // Competence: an accreditation of a certification body (certifying, which includes factory
@@ -104,11 +100,11 @@ const schemas = {
   // Study: a type examination of one product model against standards.
   'test-report.json': credentialSchema('test-report.json', 'GsTestReport', 'Type-examination test report',
     closed({ id: iri, activityTime: dateTime, productModelIri: iri, productCategoryIri: iri, standardIris: nonemptySet(iri), outcomeIri: iri }),
-    { termsOfUse: studyPolicy, relatedResource }, ['termsOfUse', 'relatedResource']),
+    { termsOfUse: studyPolicy }, ['termsOfUse']),
   // Study: an inspection of the manufacturer's production site.
   'inspection-report.json': credentialSchema('inspection-report.json', 'GsInspectionReport', 'Factory inspection report',
     closed({ id: iri, activityTime: dateTime, manufacturerIri: iri, outcomeIri: iri }),
-    { termsOfUse: studyPolicy, relatedResource }, ['termsOfUse', 'relatedResource']),
+    { termsOfUse: studyPolicy }, ['termsOfUse']),
   // Standards may be absent or empty so that the evaluator, not the schema, decides them.
   'certificate.json': credentialSchema('certificate.json', 'GsCertificate', 'GS certificate',
     closed({
@@ -120,8 +116,8 @@ const schemas = {
     }, ['id', 'activityTime', 'certification']),
     // Studies are cited as evidence; the evaluator, not the schema, decides whether they suffice.
     { termsOfUse: { type: 'array', minItems: 1, maxItems: 3, items: authorizationPolicy },
-      evidence: { type: 'array', minItems: 1, maxItems: 4, items: supportReference }, relatedResource },
-    ['termsOfUse', 'relatedResource']),
+      evidence: { type: 'array', minItems: 1, maxItems: 4, items: supportReference } },
+    ['termsOfUse']),
   // An experimental GS-mark credential: the manufacturer's claim that one serialized unit
   // carries the GS mark, authorized only through a GS certificate for the unit's model.
   // Today's GS scheme has no per-unit credential.
@@ -132,8 +128,8 @@ const schemas = {
       productModelIri: iri,
       marking: closed({ markIri: iri, productModelIri: iri }),
     }),
-    { termsOfUse: { type: 'array', minItems: 1, maxItems: 1, items: authorizationPolicy }, relatedResource },
-    ['termsOfUse', 'relatedResource']),
+    { termsOfUse: { type: 'array', minItems: 1, maxItems: 1, items: authorizationPolicy } },
+    ['termsOfUse']),
   // An experimental product passport for one serialized unit, shaped after the EU Digital
   // Product Passport of the ESPR (not ESPR conformance): product and operator identifiers,
   // technical and sustainability data, and compliance information whose GS-mark entry is
@@ -148,12 +144,18 @@ const schemas = {
       commodityCode: { type: 'string', pattern: '^[0-9]{8}$' },
       economicOperatorIri: iri,
       facilityIri: iri,
-      technicalData: closed({ ratedPowerW: decimal }),
+      // Rated power as a PTB D-SI 2.2.1 real (QUDT kind, D-SI unit), without uncertainty.
+      technicalData: closed({ ratedPower: closed({ real: closed({
+        label: { type: 'string', minLength: 1 },
+        quantityTypeQUDT: { enum: ['Power'] },
+        value: decimal,
+        unit: { enum: ['\\watt'] },
+      }, ['quantityTypeQUDT', 'value', 'unit']) }) }),
       sustainability: closed({ sparePartsAvailabilityYears: decimal }),
       complianceInformation: closed({ gsMark: closed({ markIri: iri, productModelIri: iri }) }),
     }),
-    { evidence: { type: 'array', minItems: 1, maxItems: 1, items: closed({ id: iri, type: { const: 'GsMarkCredentialReference' } }) }, relatedResource },
-    ['evidence', 'relatedResource']),
+    { evidence: { type: 'array', minItems: 1, maxItems: 1, items: closed({ id: iri, type: { const: 'GsMarkCredentialReference' }, digestSRI }) } },
+    ['evidence']),
   'status-list.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     $id: `${SCHEMA_BASE}status-list.json`,

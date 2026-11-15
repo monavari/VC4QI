@@ -155,7 +155,8 @@ async function main() {
   }
 
   const sri = (text: string) => sha384SRI(new TextEncoder().encode(text));
-  const policy = (id: string, type: string) => ({ type: 'GsAuthorizationPolicy', authorizationCredential: { id, type } });
+  // A link names a credential by its id, with the digest of its exact bytes (VCDM 2.0 §5.3).
+  const policy = (id: string, text: string) => ({ id, type: 'IssuedUnderPolicy', digestSRI: sri(text) });
   const household = [gs('EN-60335-1'), gs('EN-60335-2-23')];
 
   const aText = record(A_ID, 'credentials/GS-A.json', 'application/vc', serialize(await sign({
@@ -195,8 +196,7 @@ async function main() {
     name: 'Initial factory inspection',
     credentialSubject: { id: PLANT, activityTime: '2026-01-20T09:00:00Z',
       manufacturerIri: MAKER, outcomeIri: gs('Pass') },
-    termsOfUse: [policy(A_ID, 'GsAccreditation')],
-    relatedResource: [{ id: A_ID, digestSRI: sri(aText) }],
+    termsOfUse: [policy(A_ID, aText)],
   }, body, '2026-01-25T00:00:00Z')));
   const testReport = async (id: string, file: string, issuer: Party, model: string, category: string, standards: string[],
     at: string, accreditation: [string, string], name: string) =>
@@ -205,8 +205,7 @@ async function main() {
       name,
       credentialSubject: { id: `${model}#type-examination`, activityTime: at, productModelIri: model,
         productCategoryIri: category, standardIris: standards, outcomeIri: gs('Pass') },
-      termsOfUse: [policy(accreditation[0], 'GsAccreditation')],
-      relatedResource: [{ id: accreditation[0], digestSRI: sri(accreditation[1]) }],
+      termsOfUse: [policy(accreditation[0], accreditation[1])],
     }, issuer, at)));
   const tr1Text = await testReport(TR1_ID, 'credentials/TR-1.json', body, HD01, gs('HouseholdAppliance'), household,
     '2026-02-10T00:00:00Z', [A_ID, aText], 'Type examination of hair dryer HD-01 (GS body laboratory)');
@@ -222,10 +221,9 @@ async function main() {
       name,
       credentialSubject: { id: model, activityTime: at, manufacturerIri: MAKER,
         certification: { productCategoryIri: category, standardIris: standards } },
-      termsOfUse: [policy(A_ID, 'GsAccreditation'), policy(S_ID, 'GsSchemeAuthorization')],
-      evidence: [{ id: study[0], type: 'GsTypeExaminationReference' }, { id: FI_ID, type: 'GsFactoryInspectionReference' }],
-      relatedResource: [{ id: A_ID, digestSRI: sri(aText) }, { id: S_ID, digestSRI: sri(sText) },
-        { id: study[0], digestSRI: sri(study[1]) }, { id: FI_ID, digestSRI: sri(fiText) }],
+      termsOfUse: [policy(A_ID, aText), policy(S_ID, sText)],
+      evidence: [{ id: study[0], type: 'GsTypeExaminationReference', digestSRI: sri(study[1]) },
+        { id: FI_ID, type: 'GsFactoryInspectionReference', digestSRI: sri(fiText) }],
     }, body, validFrom)));
   const c1Text = await certificate(C_ID, 'credentials/GSC-1.json', HD01, gs('HouseholdAppliance'), household,
     '2026-02-27T10:00:00Z', '2026-03-01T00:00:00Z', [TR1_ID, tr1Text], 'GS certificate, hair dryer HD-01');
@@ -249,8 +247,7 @@ async function main() {
         productModelIri: model,
         marking: { markIri: gs('GsMark'), productModelIri: markModel },
       },
-      termsOfUse: [policy(certId, 'GsCertificate')],
-      relatedResource: [{ id: certId, digestSRI: sri(certText) }],
+      termsOfUse: [policy(certId, certText)],
     }, issuer, at)));
   const HD01_0042 = 'urn:vc4qi-example:unit:hd-01-sn-0042';
   const HD01_0001 = 'urn:vc4qi-example:unit:hd-01-sn-0001';
@@ -283,12 +280,13 @@ async function main() {
         commodityCode: '85163100',
         economicOperatorIri: MAKER,
         facilityIri: PLANT,
-        technicalData: { ratedPowerW },
+        // Rated power as a PTB D-SI real (QUDT quantity kind, D-SI unit); a nameplate
+        // value carries no uncertainty, which D-SI allows. Not interpreted by the binding.
+        technicalData: { ratedPower: { real: { label: 'rated power', quantityTypeQUDT: 'Power', value: ratedPowerW, unit: '\\watt' } } },
         sustainability: { sparePartsAvailabilityYears },
         complianceInformation: { gsMark: { markIri: gs('GsMark'), productModelIri: model } },
       },
-      evidence: [{ id: markId, type: 'GsMarkCredentialReference' }],
-      relatedResource: [{ id: markId, digestSRI: sri(markText) }],
+      evidence: [{ id: markId, type: 'GsMarkCredentialReference', digestSRI: sri(markText) }],
     }, maker, at)));
   };
   await passport(DPP1_ID, 'credentials/DPP-1.json', HD01_0042, HD01, '2026-05-10T00:00:00Z', P1_ID, m1Text);

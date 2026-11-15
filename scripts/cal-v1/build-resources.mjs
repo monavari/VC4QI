@@ -32,17 +32,36 @@ const closed = (properties, required = Object.keys(properties)) => ({
   type: 'object', required, properties, additionalProperties: false,
 });
 const nonemptySet = items => ({ type: 'array', minItems: 1, uniqueItems: true, items });
-const pressureUnit = { enum: ['Pa', 'kPa', 'MPa'] };
+// PTB D-SI 2.2.1 (https://www.ptb.de/si/v2.2.1/SI_Format.xsd): the pressure unit
+// identifiers the binding accepts, one spelling each, and QUDT quantity-kind names as
+// D-SI's quantityTypeQUDT carries them.
+const pressureUnit = { enum: ['\\pascal', '\\kilo\\pascal', '\\mega\\pascal'] };
+const quantityTypeQUDT = { enum: ['Pressure'] };
+// One D-SI si:real with an expanded uncertainty (D-SI element names; label optional).
+const real = closed({
+  label: { type: 'string', minLength: 1 },
+  quantityTypeQUDT,
+  value: decimal,
+  unit: pressureUnit,
+  measurementUncertaintyUnivariate: closed({
+    expandedMU: closed({
+      valueExpandedMU: decimal,
+      coverageFactor: decimal,
+      coverageProbability: decimal,
+      distribution: { type: 'string', minLength: 1 },
+    }, ['valueExpandedMU', 'coverageFactor']),
+  }),
+}, ['quantityTypeQUDT', 'value', 'unit', 'measurementUncertaintyUnivariate']);
 
 const scopeRecord = closed({
   id: iri,
-  quantityKindIri: iri,
+  quantityTypeQUDT,
   allowedMethodIris: nonemptySet(iri),
   range: closed({ from: decimal, to: decimal, unit: pressureUnit }),
   // Optional: the admitted calibration and measurement capability (smallest expanded
   // uncertainty). Whether it applies is a verifier-profile rule.
   cmcFloor: closed({ value: decimal, unit: pressureUnit }),
-}, ['id', 'quantityKindIri', 'allowedMethodIris', 'range']);
+}, ['id', 'quantityTypeQUDT', 'allowedMethodIris', 'range']);
 const statusEntry = closed({
   id: iri,
   type: { const: 'BitstringStatusListEntry' },
@@ -50,14 +69,10 @@ const statusEntry = closed({
   statusListIndex: { type: 'string', pattern: '^(0|[1-9][0-9]*)$' },
   statusListCredential: iri,
 });
-const authorizationPolicy = closed({
-  type: { const: 'CalAuthorizationPolicy' },
-  authorizationCredential: closed({ id: iri, type: { enum: ['CalAccreditation', 'CalOperationalScope', 'CalLegalMandate'] } }),
-});
-const relatedResource = nonemptySet(closed({
-  id: iri,
-  digestSRI: { type: 'string', pattern: '^sha384-[A-Za-z0-9+/]{64}$' },
-}));
+// A link names a credential by its id and carries the digest of its exact bytes
+// (VCDM 2.0 §5.3); the entry's type says what the link means.
+const digestSRI = { type: 'string', pattern: '^sha384-[A-Za-z0-9+/]{64}$' };
+const authorizationPolicy = closed({ id: iri, type: { const: 'IssuedUnderPolicy' }, digestSRI });
 const proof = closed({
   type: { const: 'DataIntegrityProof' },
   cryptosuite: { const: 'eddsa-rdfc-2022' },
@@ -67,15 +82,12 @@ const proof = closed({
   proofValue: { type: 'string', pattern: '^z[1-9A-HJ-NP-Za-km-z]+$' },
 });
 // Methods may be absent or empty so that the evaluator, not the schema, decides S18.
+// Each result is one D-SI real; the group's quantity kind is the one its results name.
 const measurementGroup = closed({
   id: iri,
-  quantityKindIri: iri,
   methodIris: { type: 'array', uniqueItems: true, items: iri },
-  results: {
-    type: 'array', minItems: 1,
-    items: closed({ value: decimal, unit: pressureUnit, expandedUncertainty: decimal, coverageFactor: decimal }),
-  },
-}, ['id', 'quantityKindIri', 'results']);
+  results: { type: 'array', minItems: 1, items: closed({ real }) },
+}, ['id', 'results']);
 
 function credentialSchema(file, type, title, subject, extra = {}, requiredExtra = []) {
   const id = `${SCHEMA_BASE}${file}`;
@@ -108,20 +120,20 @@ const grantSubject = activities => closed({
   permittedActivity: { ...nonemptySet(iri), items: { enum: activities.map(a => `${ACT}${a}`) } },
   scope: nonemptySet(scopeRecord),
 });
-const authorizedBy = { termsOfUse: { type: 'array', minItems: 1, maxItems: 2, items: authorizationPolicy }, relatedResource };
+const authorizedBy = { termsOfUse: { type: 'array', minItems: 1, maxItems: 2, items: authorizationPolicy } };
 
 const schemas = {
   'accreditation.json': credentialSchema('accreditation.json', 'CalAccreditation', 'Calibration or testing laboratory accreditation',
     grantSubject(['issueCalibrationCertificate', 'maintainCalibrationScope', 'issueTestReport'])),
   // A laboratory's own bounded operational (capability) scope, projected within its accreditation.
   'operational-scope.json': credentialSchema('operational-scope.json', 'CalOperationalScope', 'Calibration operational scope',
-    grantSubject(['issueCalibrationCertificate']), authorizedBy, ['termsOfUse', 'relatedResource']),
+    grantSubject(['issueCalibrationCertificate']), authorizedBy, ['termsOfUse']),
   // A statutory designation of a national metrology institute; fictional, with no legal effect.
   'legal-mandate.json': credentialSchema('legal-mandate.json', 'CalLegalMandate', 'Statutory metrology mandate',
     grantSubject(['issueCalibrationCertificate'])),
   'certificate.json': credentialSchema('certificate.json', 'CalCertificate', 'Calibration certificate (DCC)',
     closed({ id: iri, activityTime: dateTime, measurementGroups: { type: 'array', minItems: 1, items: measurementGroup } }),
-    authorizedBy, ['relatedResource']),
+    authorizedBy),
   // A test report whose measuring instrument must be supported by its own calibration.
   'test-report.json': credentialSchema('test-report.json', 'CalTestReport', 'Test report supported by a calibration',
     closed({
@@ -130,10 +142,10 @@ const schemas = {
     }),
     {
       ...authorizedBy,
-      evidence: { type: 'array', minItems: 1, items: closed({ id: iri, type: { const: 'CalCalibrationReference' } }) },
+      evidence: { type: 'array', minItems: 1, items: closed({ id: iri, type: { const: 'CalCalibrationReference' }, digestSRI }) },
     },
     // Evidence is optional here so that the evaluator, not the schema, decides missing support.
-    ['termsOfUse', 'relatedResource']),
+    ['termsOfUse']),
   'status-list.json': {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     $id: `${SCHEMA_BASE}status-list.json`,

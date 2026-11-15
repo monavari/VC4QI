@@ -29,10 +29,13 @@ the design is as it is.
 The [demonstrator](https://monavari.github.io/VC4QI/demo/) runs the repository's evaluators in your browser on
 signed test credentials. It offers four examples: a reference material (RM), calibration
 certificates (DCC), a GS certificate and an experimental product passport (DPP). The
-[RM story](https://monavari.github.io/VC4QI/demo/rm/) and the
-[GS story](https://monavari.github.io/VC4QI/demo/gs/) put a chain on an actor board, one
-column per party, where accreditation bodies can suspend or revoke, the RM producer can
-certify a value you type, and the verifier's own profile decides. The source is on
+[RM story](https://monavari.github.io/VC4QI/demo/rm/) opens with one credential and
+its links, builds the chain by five issuer rules in lanes of authority, introduces the
+verifier's profile and its six checks, then plays scenarios grouped by the question the
+verifier asks; an explainer opens for each credential, link and check. The
+[GS story](https://monavari.github.io/VC4QI/demo/gs/) puts the GS chain on an actor board,
+one column per party, where the national accreditation body can revoke and the verifier's
+own profile decides. The source is on
 [GitHub](https://github.com/monavari/VC4QI); contribution rules are in
 [CONTRIBUTING](../CONTRIBUTING.md).
 

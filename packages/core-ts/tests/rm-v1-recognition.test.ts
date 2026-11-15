@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // Recognition of the accreditation body by an arrangement anchor, one credential per
-// recognized body (a W3C Recognized Entities credential, Working Draft of 4 November
-// 2026): ledger E01-E03 and E16-E20. A and H point up to R through termsOfUse, pinned
-// by digest; the verifier abroad trusts only the fictional Global ACI stand-in.
+// recognized body (a W3C Recognized Entities credential, Working Draft of 12 November
+// 2026): ledger E01-E03 and E16-E20. A and H name R in a termsOfUse RecognitionPolicy,
+// pinned by digest, and mirror it as issuer.recognizedIn; recognition grants no
+// authority. The verifier abroad trusts only the fictional Global ACI stand-in.
 import { describe, expect, it } from 'vitest';
 import { loadRelianceProfile, type RelianceProfile } from '../src/reliance/index.js';
 import { evaluateRmSlice } from '../src/reliance/rm-v1-slice.js';
 import type { JsonObject } from '../src/types.js';
 import {
-  catalogWith, globalAciProfile, globalAciProfileJson, json, manifest, profile, reissue, request, statusListWith, URI,
-} from './rm-v1-helpers.js';
+  catalogWith, globalAciProfile, globalAciProfileJson, json, manifest, profile, reissue, request, statusListWith, URI, link } from './rm-v1-helpers.js';
 
 type Result = Awaited<ReturnType<typeof evaluateRmSlice>>['result'];
 const abroad = (p: RelianceProfile = globalAciProfile, target: string = URI.D) =>
@@ -22,6 +22,8 @@ const anchorBasis = (result: Result) => result.trace.find(t => t.predicate === '
 const labAnchor = (result: Result) => result.trace.find(t => t.predicate === 'support:laboratory-anchor');
 const subject = (r: JsonObject) => r.credentialSubject as JsonObject;
 const actions = (r: JsonObject) => subject(r).recognizedTo as JsonObject[];
+const registration = (r: JsonObject) => subject(r).registration as JsonObject[];
+const scopeOf = (entry: JsonObject) => entry.mainScope as JsonObject;
 const RM_PRODUCTION = 'Reference material production';
 
 /** R re-issued by Global ACI after `edit`, and the chain below it re-pinned and re-signed. */
@@ -38,20 +40,20 @@ describe('E01-E03: the verifier abroad follows A and H up to the recognition of 
     // Identical to the Python mirror's reason (test_reasons_match_typescript_for_the_accepted_case).
     expect(anchorBasis(result)?.reason).toBe(`${URI.NAB} is recognized by ${URI.GACI} (a configured anchor for `
       + 'recognize-accreditation-bodies) to accredit for Reference material production under ISO 17034:2016, '
-      + `in force at 2026-01-20T00:00:00Z, in ${URI.R}.`);
+      + `in force at 2026-01-20T00:00:00Z, in ${URI.R}. Recognition grants no authority; it accepts the body for this verifier.`);
     expect(labAnchor(result)).toMatchObject({ state: 'established' });
     expect(labAnchor(result)?.reason).toMatch(/Testing under ISO\/IEC 17025:2017/);
     expect(result.authorization[0]?.routeWitnessIds).toContain(URI.R);
     expect(result.support[0]?.witnessIds).toContain(URI.R);
     expect(result.trace.find(t => t.predicate === 'restriction:accreditation-suspension')).toMatchObject({ state: 'established' });
-    expect(result.trace.some(t => t.predicate === 'related-resource-integrity' && t.nodeUse.startsWith(`${URI.A} |`)
+    expect(result.trace.some(t => t.predicate === 'link-integrity' && t.nodeUse.startsWith(`${URI.A} |`)
       && t.reason.startsWith(URI.R) && t.state === 'established')).toBe(true);
     expect(result.conformity).toMatchObject({ requested: true, state: 'established' });
     expect(result.decision).toBe('accept');
   });
 
   it('E03: recognized, action recognized, and D520 is still outside the producer\'s scope', async () => {
-    const result = await run({}, globalAciProfile, 'https://producer.vc4qi.example/credentials/D520');
+    const result = await run({}, globalAciProfile, 'https://producer.vc4qi.example/credentials/RM520');
     expect(anchorBasis(result)).toMatchObject({ state: 'established' });
     expect(result.authorization[0]?.state).toBe('contradicted');
     expect(result.authorization[0]?.reasons.join(' ')).toMatch(/50|500|range/);
@@ -59,7 +61,7 @@ describe('E01-E03: the verifier abroad follows A and H up to the recognition of 
   });
 
   it('D197 is authorized through R and rejected only by the verifier\'s guarded rule', async () => {
-    const result = await run({}, globalAciProfile, 'https://producer.vc4qi.example/credentials/D197');
+    const result = await run({}, globalAciProfile, 'https://producer.vc4qi.example/credentials/RM197');
     expect(result.authorization[0]?.state).toBe('established');
     expect(result.conformity).toMatchObject({ state: 'contradicted' });
     expect(result.decision).toBe('reject');
@@ -67,18 +69,18 @@ describe('E01-E03: the verifier abroad follows A and H up to the recognition of 
 
   it('E02: a recognition only for testing contradicts the producer route', async () => {
     const overrides = await recognitionWith(r => {
-      subject(r).recognizedTo = actions(r).filter(a => (a.mainScope as JsonObject).activity !== RM_PRODUCTION);
+      subject(r).registration = registration(r).filter(e => scopeOf(e).activity !== RM_PRODUCTION);
     });
     const result = await run(overrides);
     expect(anchorBasis(result)).toMatchObject({ state: 'contradicted' });
-    expect(anchorBasis(result)?.reason).toMatch(/not to accredit for Reference material production/);
+    expect(anchorBasis(result)?.reason).toMatch(/registers https:\/\/nab\.vc4qi\.example\/controller for Testing under ISO\/IEC 17025:2017, not for Reference material production/);
     expect(labAnchor(result)).toMatchObject({ state: 'established' });
     expect(result.decision).toBe('reject');
   });
 
   it('E02 (laboratory): a recognition without the testing main scope contradicts required support', async () => {
     const overrides = await recognitionWith(r => {
-      subject(r).recognizedTo = actions(r).filter(a => (a.mainScope as JsonObject).activity === RM_PRODUCTION);
+      subject(r).registration = registration(r).filter(e => scopeOf(e).activity === RM_PRODUCTION);
     });
     const result = await run(overrides);
     expect(anchorBasis(result)).toMatchObject({ state: 'established' });
@@ -100,7 +102,7 @@ describe('E16-E20: what a recognition cannot do', () => {
   it('E17: Global ACI suspends its recognition of the NAB, and reliance through it is contradicted', async () => {
     const result = await run({ [URI.GACI_SUSPENSION]: await statusListWith(URI.GACI_SUSPENSION, [0]) });
     expect(anchorBasis(result)).toMatchObject({ state: 'contradicted' });
-    expect(anchorBasis(result)?.reason).toMatch(/has suspended its recognition https:\/\/global-aci\.vc4qi\.example\/credentials\/R/);
+    expect(anchorBasis(result)?.reason).toMatch(/has suspended its recognition https:\/\/global-aci\.vc4qi\.example\/credentials\/REC-NAB/);
     expect(result.decision).toBe('reject');
   });
 
@@ -172,17 +174,38 @@ describe('E16-E20: what a recognition cannot do', () => {
     expect(anchorBasis(result)?.reason).toMatch(/recognition rules are malformed/);
   });
 
-  it('a recognition that nothing in the chain references confers nothing, even when supplied', async () => {
+  it('a recognition that nothing in the chain names confers nothing, even when supplied and mirrored in issuer.recognizedIn', async () => {
+    // A keeps its issuer.recognizedIn mirror: discovery through recognizedIn alone is unsupported.
     const A = json(URI.A);
     delete A.termsOfUse;
-    delete A.relatedResource;
     const overrides = await reissue({ [URI.A]: A });
     const req = request({ profile: { id: globalAciProfile.id, version: globalAciProfile.version },
       suppliedEvidence: [URI.A, URI.O, URI.S, URI.H, URI.R] });
     const result = await evaluateRmSlice(req, catalogWith(overrides), manifest, globalAciProfile).then(e => e.result);
     expect(anchorBasis(result)).toMatchObject({ state: 'not_established' });
-    expect(anchorBasis(result)?.reason).toMatch(/points up to no RecognizedEntityCredential/);
+    expect(anchorBasis(result)?.reason).toMatch(/names no RecognizedEntityCredential in a RecognitionPolicy/);
     expect(labAnchor(result)).toMatchObject({ state: 'established' });
     expect(result.decision).toBe('not_established');
+  });
+
+  it('an issuer.recognizedIn that names another credential than the RecognitionPolicy contradicts', async () => {
+    const A = json(URI.A);
+    (A.issuer as JsonObject).recognizedIn = { id: 'https://global-aci.vc4qi.example/credentials/R-other', type: 'RecognizedEntityCredential' };
+    const result = await run(await reissue({ [URI.A]: A }));
+    expect(anchorBasis(result)).toMatchObject({ state: 'contradicted' });
+    expect(anchorBasis(result)?.reason).toMatch(/recognizedIn names https:\/\/global-aci\.vc4qi\.example\/credentials\/R-other/);
+    expect(result.decision).toBe('reject');
+  });
+
+  it('recognition is not authority: R named as an IssuedUnderPolicy grant is no recognition and grants nothing', async () => {
+    const A = json(URI.A);
+    A.termsOfUse = [link(URI.R)];
+    delete (A.issuer as JsonObject).recognizedIn;
+    const result = await run(await reissue({ [URI.A]: A }));
+    // Only a RecognitionPolicy entry names a recognition: an IssuedUnderPolicy naming R is
+    // read as a grant, and R is no appointment either, so the issuer stands on nothing.
+    expect(anchorBasis(result)).toMatchObject({ state: 'not_established' });
+    expect(anchorBasis(result)?.reason).toMatch(/names no RecognizedEntityCredential in a RecognitionPolicy/);
+    expect(result.decision).not.toBe('accept');
   });
 });

@@ -19,6 +19,7 @@ from fractions import Fraction
 from typing import Any
 
 from .catalog import StaticResource, StaticResourceCatalog
+from .dsi import DsiUnit, read_expanded_real
 from .manifest import BindingManifest
 from .profile import RelianceProfile
 from .rm_scope import format_decimal, parse_decimal
@@ -73,7 +74,14 @@ CAL_V1_CONTEXT = "https://vc4qi.example/contexts/cal/1"
 CAL_V1_VOCAB = "https://vc4qi.example/bindings/cal/1#"
 CAL_V1_SCHEMA_BASE = "https://vc4qi.example/schemas/cal/1/"
 CAL_V1_DIRECTORY = REPO_ROOT / "bindings" / "experimental" / "cal-v1"
-CAL_UNIT_EXPONENTS: dict[str, int] = {"Pa": 0, "kPa": 3, "MPa": 6}
+# Supported pressure units: D-SI identifiers as powers of ten relative to Pa, one
+# spelling each (dsi.py); every other unit stays not established.
+CAL_UNITS: dict[str, DsiUnit] = {
+    "\\pascal": DsiUnit(0, "Pa"),
+    "\\kilo\\pascal": DsiUnit(3, "kPa"),
+    "\\mega\\pascal": DsiUnit(6, "MPa"),
+}
+CAL_UNIT_EXPONENTS: dict[str, int] = {unit: u.exponent for unit, u in CAL_UNITS.items()}
 
 CAL_V1_ARTIFACT_BINDING = ArtifactBinding(
     "calibration v1",
@@ -122,7 +130,7 @@ def _short(iri: Any) -> str:
 @dataclass(frozen=True)
 class MappedGroup:
     id: str
-    quantity_kind_iri: str
+    quantity_type_qudt: str  # QUDT quantity kind shared by every result's D-SI real
     method_iris: tuple[str, ...]
     results: tuple[tuple[Fraction, Fraction], ...]  # (value, U) in Pa
 
@@ -137,36 +145,44 @@ class CalOutcome:
 
 
 def map_group(group: Any, pointer: str) -> CalOutcome:
-    """Gate 4: exact pascal quantities for every result of the group, k = 2 only."""
+    """Gate 4: exact pascal quantities from each result's PTB D-SI real, k = 2 only.
+
+    Every result names the same QUDT quantity kind, which is the group's.
+    """
     sources = (pointer,)
-    if (
-        not isinstance(group, dict)
-        or not isinstance(group.get("id"), str)
-        or not isinstance(group.get("quantityKindIri"), str)
-    ):
+    if not isinstance(group, dict) or not isinstance(group.get("id"), str):
         return CalOutcome(
             "not_established",
-            "The selected measurement group has no identifier or quantity kind.",
+            "The selected measurement group has no identifier.",
             sources,
         )
     results: list[tuple[Fraction, Fraction]] = []
+    kinds: set[Any] = set()
     for index, result in enumerate(group.get("results") or []):
-        r = result if isinstance(result, dict) else {}
-        k = parse_decimal(r.get("coverageFactor"))
+        real = read_expanded_real(
+            result.get("real") if isinstance(result, dict) else None
+        )
+        if not real.ok:
+            return CalOutcome(
+                "not_established", f"Result {index} has {real.reason}.", sources
+            )
+        kind = real.quantity_type_qudt
+        kinds.add(kind if isinstance(kind, str) else None)
+        k = parse_decimal(real.coverage_factor)
         if k is None or k != 2:
             return CalOutcome(
                 "not_established",
-                f"Result {index}: coverage factor {r.get('coverageFactor')} is not the "
+                f"Result {index}: coverage factor {real.coverage_factor} is not the "
                 "binding's k = 2.",
                 sources,
             )
-        value = to_pascal(r.get("value"), r.get("unit"))
-        uncertainty = to_pascal(r.get("expandedUncertainty"), r.get("unit"))
+        value = to_pascal(real.value, real.unit)
+        uncertainty = to_pascal(real.value_expanded_mu, real.unit)
         if value is None or uncertainty is None:
             return CalOutcome(
                 "not_established",
-                f"Result {index}: unit {r.get('unit')} or a number has no supported "
-                "mapping (Pa, kPa, MPa).",
+                f"Result {index}: unit {real.unit} or a number has no supported "
+                "D-SI mapping (Pa, kPa, MPa).",
                 sources,
             )
         results.append((value, uncertainty))
@@ -174,17 +190,36 @@ def map_group(group: Any, pointer: str) -> CalOutcome:
         return CalOutcome(
             "not_established", "The measurement group has no results.", sources
         )
+    kind = next(iter(kinds)) if len(kinds) == 1 else None
+    if not isinstance(kind, str):
+        return CalOutcome(
+            "not_established",
+            "The results of the group do not name one quantity kind "
+            "(quantityTypeQUDT).",
+            sources,
+        )
     methods = tuple(m for m in group.get("methodIris") or [] if isinstance(m, str))
     listed = ", ".join(_short(m) for m in methods)
     return CalOutcome(
         "established",
-        f"Mapped {_short(group['id'])}: {_short(group['quantityKindIri'])}, "
+        f"Mapped {_short(group['id'])}: {kind}, "
         f"{len(results)} result(s) in Pa, methods [{listed}].",
         sources,
-        group=MappedGroup(
-            group["id"], group["quantityKindIri"], methods, tuple(results)
-        ),
+        group=MappedGroup(group["id"], kind, methods, tuple(results)),
     )
+
+
+def group_quantity_type(group: Any) -> str | None:
+    """The one QUDT quantity kind every result of a measurement group names, if any."""
+    results = group.get("results") if isinstance(group, dict) else None
+    kinds = {
+        r["real"].get("quantityTypeQUDT")
+        if isinstance(r, dict) and isinstance(r.get("real"), dict)
+        else None
+        for r in (results if isinstance(results, list) else [])
+    }
+    kind = next(iter(kinds)) if len(kinds) == 1 else None
+    return kind if isinstance(kind, str) else None
 
 
 def group_coverage(
@@ -225,10 +260,10 @@ def group_coverage(
             )
             continue
         failures: list[str] = []
-        if record.get("quantityKindIri") != group.quantity_kind_iri:
+        if record.get("quantityTypeQUDT") != group.quantity_type_qudt:
             failures.append(
-                f"quantity kind {_short(group.quantity_kind_iri)} ≠ "
-                f"{_short(record.get('quantityKindIri'))}"
+                f"quantity kind {group.quantity_type_qudt} ≠ "
+                f"{record.get('quantityTypeQUDT')}"
             )
         allowed = [
             m for m in record.get("allowedMethodIris") or [] if isinstance(m, str)
@@ -276,7 +311,7 @@ def group_coverage(
                 rid,
                 "established",
                 f"{_short(rid)} covers {_short(group.id)}: "
-                f"{_short(group.quantity_kind_iri)}, methods [{methods}], "
+                f"{group.quantity_type_qudt}, methods [{methods}], "
                 f"{len(group.results)} result(s) within {_kpa(low)}–{_kpa(high)} kPa"
                 f"{floor_note}",
             )
@@ -342,7 +377,7 @@ def cal_direct_accreditation(
         "CalAccreditation",
         lookup,
         (target.uri,),
-        "CalAuthorizationPolicy",
+        "IssuedUnderPolicy",
     )
     bases.append(basis)
     if a_node is None or a_node.document is None:
@@ -416,10 +451,10 @@ def cal_contained_in(
                 continue
             p_low, p_high = p_range
             failures: list[str] = []
-            if c.get("quantityKindIri") != p.get("quantityKindIri"):
+            if c.get("quantityTypeQUDT") != p.get("quantityTypeQUDT"):
                 failures.append(
-                    f"quantity kind {_short(c.get('quantityKindIri'))} ≠ "
-                    f"{_short(p.get('quantityKindIri'))}"
+                    f"quantity kind {c.get('quantityTypeQUDT')} ≠ "
+                    f"{p.get('quantityTypeQUDT')}"
                 )
             allowed = list(p.get("allowedMethodIris") or [])
             wider = [m for m in methods if m not in allowed]
@@ -508,7 +543,7 @@ def cal_operational_scope(
         "CalOperationalScope",
         lookup,
         (target.uri,),
-        "CalAuthorizationPolicy",
+        "IssuedUnderPolicy",
     )
     bases.append(basis)
     if o_node is None or o_node.document is None:
@@ -540,7 +575,7 @@ def cal_operational_scope(
         "CalAccreditation",
         lookup,
         (target.uri, o_node.uri),
-        "CalAuthorizationPolicy",
+        "IssuedUnderPolicy",
     )
     bases.append(grant_basis)
     if a_node is None or a_node.document is None:
@@ -602,7 +637,7 @@ def cal_statutory_mandate(
         "CalLegalMandate",
         lookup,
         (target.uri,),
-        "CalAuthorizationPolicy",
+        "IssuedUnderPolicy",
     )
     bases.append(basis)
     if m_node is None or m_node.document is None:
@@ -842,17 +877,25 @@ def instrument_calibration_support(
         )
     group_sources = ("/credentialSubject/measurementGroups",)
     used = [
-        g.get("quantityKindIri")
+        group_quantity_type(g)
         for g in r.get("measurementGroups") or []
         if isinstance(g, dict)
     ]
     calibrated = [
-        g.get("quantityKindIri")
+        group_quantity_type(g)
         for g in c.get("measurementGroups") or []
         if isinstance(g, dict)
     ]
     uncovered = [q for q in used if q not in calibrated]
-    if not used:
+    if any(q is None for q in used):
+        bases.append(
+            _unknown(
+                "same-quantity",
+                "A report group does not name one quantity kind (quantityTypeQUDT).",
+                group_sources,
+            )
+        )
+    elif not used:
         bases.append(
             _unknown(
                 "same-quantity", "The report has no measurement groups.", group_sources

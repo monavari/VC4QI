@@ -75,10 +75,10 @@ export function loadRelianceProfile(input: unknown): RelianceProfile {
   }
   const conformity = input.conformity;
   if (!isObject(conformity) || !Array.isArray(conformity.requirements) || !Array.isArray(conformity.decisionRules) ||
-      conformity.requirements.some(r => !isObject(r) || !nonempty(r.id) || !nonempty(r.propertyIri) || !nonempty(r.quantityKindIri) ||
+      conformity.requirements.some(r => !isObject(r) || !nonempty(r.id) || !nonempty(r.propertyIri) || !nonempty(r.quantityTypeQUDT) ||
         !isObject(r.upperLimit) || typeof r.upperLimit.value !== 'string' || !DECIMAL.test(r.upperLimit.value) || !nonempty(r.upperLimit.unit)) ||
       conformity.decisionRules.some(r => !isObject(r) || !nonempty(r.id) || !ACCEPT_WHEN.includes(r.acceptWhen as string))) {
-    throw new TypeError('Reliance profile conformity needs requirements (id, propertyIri, quantityKindIri, upperLimit) and decisionRules (id, acceptWhen).');
+    throw new TypeError('Reliance profile conformity needs requirements (id, propertyIri, quantityTypeQUDT, upperLimit) and decisionRules (id, acceptWhen).');
   }
   if (input.bindingRules !== undefined && !isObject(input.bindingRules)) {
     throw new TypeError('Reliance profile bindingRules must be an object when present.');
@@ -106,7 +106,7 @@ export function loadRelianceProfile(input: unknown): RelianceProfile {
     mapping: Object.freeze({ methodSuccession: mapping.methodSuccession as MethodSuccession }),
     conformity: Object.freeze({
       requirements: Object.freeze(requirements.map(r => Object.freeze({
-        id: r.id, propertyIri: r.propertyIri, quantityKindIri: r.quantityKindIri,
+        id: r.id, propertyIri: r.propertyIri, quantityTypeQUDT: r.quantityTypeQUDT,
         upperLimit: Object.freeze({ value: r.upperLimit.value, unit: r.upperLimit.unit }),
       }))),
       decisionRules: Object.freeze(decisionRules.map(r => Object.freeze({ id: r.id, acceptWhen: r.acceptWhen }))),
