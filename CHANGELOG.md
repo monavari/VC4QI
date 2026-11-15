@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Calibration shares the NAB's roots.** The calibration binding's accreditation body is
+  the RM binding's NAB, with the same appointment APP-NAB and recognition REC-NAB, signed
+  once: APP-NAB also permits `CalAccreditation`, and REC-NAB registers Calibration
+  (ISO/IEC 17025) beside RM production and testing. CAL-A and CAL-T name both by digest
+  (`IssuedUnderPolicy`, `RecognitionPolicy`, `issuer.recognizedIn`), and the calibration
+  routes decide the issuer's standing with RM's check. New profiles
+  `cal-verifier-state-1` and `cal-verifier-global-aci-1`; the calibration binding
+  installs the RM carriers to read the roots, and a binding may accept more than one
+  schema per type (the roots' status lists). The demonstrator's DCC example asks whom
+  the verifier trusts: this NAB, the state or Global ACI.
 - **Front page uses the screen width; the demonstrator opens on the RM story.** The
   site's front page widens to 72rem on laptops: the title beside a QR card, three tiles
   for the RM story, the GS story and the examples, the six questions in one row, status
