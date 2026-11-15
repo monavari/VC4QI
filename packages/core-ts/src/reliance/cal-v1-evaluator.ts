@@ -11,6 +11,7 @@
 import { semanticAnd, semanticOr } from './index.js';
 import { CAL_V1_VOCAB } from './cal-v1.js';
 import { readExpandedReal, type DsiUnit } from './dsi.js';
+import { grantIssuerStanding } from './recognized-entities.js';
 import { compareDecimal, formatDecimal, parseDecimal, type Decimal } from './rm-scope.js';
 import {
   anchor, authorizingReference, claimAuthority, composeAuthority, grantee, inForceAtActivity, permits, route,
@@ -226,6 +227,9 @@ const targetType = (doc: Doc) => (Array.isArray(doc.type) ? String(doc.type[1]) 
 /**
  * Route "direct-accreditation": target ← CA (accreditation naming its issuer) ← anchor.
  * The activity and anchor purpose follow the target type (certificate or test report).
+ * CA's issuer stands as a configured anchor, or, when the profile accepts them, through
+ * the state's appointment or Global ACI's recognition CA names (grantIssuerStanding, the
+ * same check as RM); the deciding root joins the route's chain.
  */
 export function calDirectAccreditation(target: NodeFacts & { document: Doc }, lookup: NodeLookup, profile: RelianceProfile): RouteResult {
   const D = target.document;
@@ -243,7 +247,9 @@ export function calDirectAccreditation(target: NodeFacts & { document: Doc }, lo
   chain.push(ref.node.uri);
   bases.push(grantee('principal-binding', A, D.issuer, 'Accreditation CA'));
   bases.push(permission('activity-permission', A, kind.activity, kind.what, 'CA'));
-  bases.push(anchor('trust-anchor', A, kind.purpose, profile));
+  const standing = grantIssuerStanding('trust-anchor', A, kind.purpose, profile, lookup, subjectOf(D).activityTime);
+  bases.push(standing.basis);
+  if (standing.via) chain.push(standing.via);
   bases.push(inForceAtActivity(D, [['CA', A]]));
   return route('direct-accreditation', bases, chain, ref.node.uri);
 }
@@ -280,7 +286,9 @@ export function calOperationalScope(target: NodeFacts & { document: Doc }, looku
   const projection = calContainedIn(list(subjectOf(O).scope).filter(isObject), list(subjectOf(A).scope).filter(isObject),
     profile.bindingRules.applyCmcFloor === true);
   bases.push({ id: 'bounded-projection', state: projection.state, reason: projection.reason, sources: projection.sources });
-  bases.push(anchor('trust-anchor', A, 'accredit-calibration-laboratories', profile));
+  const standing = grantIssuerStanding('trust-anchor', A, 'accredit-calibration-laboratories', profile, lookup, subjectOf(D).activityTime);
+  bases.push(standing.basis);
+  if (standing.via) chain.push(standing.via);
   bases.push(inForceAtActivity(D, [['O', O], ['CA', A]]));
   return route('operational-scope', bases, chain, ref.node.uri);
 }

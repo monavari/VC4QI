@@ -67,7 +67,11 @@ KEY = {
     MINISTRY: "ministry",
     "https://nmi.vc4qi.example/controller": "nmi",
     "https://testlab.vc4qi.example/controller": "tlab",
+    "https://state.vc4qi.example/controller": "state",
+    "https://global-aci.vc4qi.example/controller": "global-aci",
 }
+APP = "https://state.vc4qi.example/credentials/APP-NAB"
+REC = "https://global-aci.vc4qi.example/credentials/REC-NAB"
 G1 = "/credentialSubject/measurementGroups/0"
 G2 = "/credentialSubject/measurementGroups/1"
 
@@ -98,7 +102,8 @@ def catalog_with(overrides: Mapping[str, str | None] | None = None) -> Any:
 
 def sign(document: dict[str, Any]) -> str:
     unsigned = {k: v for k, v in document.items() if k != "proof"}
-    issuer = document["issuer"]
+    raw = document["issuer"]
+    issuer = raw["id"] if isinstance(raw, dict) else raw
     seed = hashlib.sha256(
         f"vc4qi-rm-v1-insecure-fixture-key:{KEY[issuer]}".encode()
     ).digest()
@@ -646,3 +651,106 @@ def test_support_requires_the_calibrations_own_authority() -> None:
 
 def test_certificates_carry_no_support_obligation() -> None:
     assert run().support == ()
+
+
+# The NAB's shared roots: a verifier that trusts the state, or Global ACI, not the NAB.
+STATE_PROFILE = load_reliance_profile(profile_json("cal-verifier-state-1.json"))
+GACI_PROFILE = load_reliance_profile(profile_json("cal-verifier-global-aci-1.json"))
+
+
+def certificate(
+    profile: Any, target: str = DCC, evidence: tuple[str, ...] = (CA,)
+) -> RelianceRequest:
+    return request(
+        target_id=target,
+        supplied_evidence=evidence,
+        selected_claims=(SelectedClaim("g1", G1),),
+        profile=selects(profile),
+    )
+
+
+def test_cal_grants_name_the_rm_roots_by_digest() -> None:
+    rm = read_pinned_resources(
+        CAL_V1_DIRECTORY.parent / "rm-v1/test-vectors/signed/catalog.json"
+    )
+    for grant in (CA, CAL_T):
+        links = doc(grant)["termsOfUse"]
+        assert [(link["type"], link["id"]) for link in links] == [
+            ("IssuedUnderPolicy", APP),
+            ("RecognitionPolicy", REC),
+        ]
+        for link in links:
+            pinned = next(r for r in rm if r.uri == link["id"])
+            assert link["digestSRI"] == pinned.digest_sri
+
+
+def test_state_verifier_accepts_through_the_appointment() -> None:
+    result = run(None, certificate(STATE_PROFILE), STATE_PROFILE)
+    anchor = entry(result, "route:direct-accreditation:trust-anchor")
+    assert anchor.state == "established"
+    assert "appointed by https://state.vc4qi.example/controller" in anchor.reason
+    assert result.authorization[0].route_witness_ids == (
+        "route:direct-accreditation",
+        DCC,
+        CA,
+        APP,
+        f"record:{CA}#scope-pressure",
+    )
+    assert result.decision == "accept"
+
+
+def test_global_aci_verifier_accepts_through_recognition_for_calibration() -> None:
+    direct = run(None, certificate(GACI_PROFILE), GACI_PROFILE)
+    anchor = entry(direct, "route:direct-accreditation:trust-anchor")
+    assert "for Calibration under ISO/IEC 17025:2017" in anchor.reason
+    assert REC in direct.authorization[0].route_witness_ids
+    assert direct.decision == "accept"
+    scoped = run(None, certificate(GACI_PROFILE, DCC2, (OPS, CA)), GACI_PROFILE)
+    assert entry(scoped, "route:operational-scope:trust-anchor").state == "established"
+    assert scoped.decision == "accept"
+
+
+def test_global_aci_verifier_accepts_the_report_and_its_calibration() -> None:
+    result = run_report(None, GACI_PROFILE)
+    anchor = entry(result, "route:direct-accreditation:trust-anchor")
+    assert "for Testing under ISO/IEC 17025:2017" in anchor.reason
+    assert result.support[0].state == "established"
+    assert result.decision == "accept"
+
+
+def test_recognition_without_calibration_contradicts() -> None:
+    def drop(d: dict[str, Any]) -> None:
+        subject(d)["registration"] = [
+            e
+            for e in subject(d)["registration"]
+            if e["mainScope"]["activity"] != "Calibration"
+        ]
+
+    result = run(
+        reissue_chain([(REC, drop), (CA, None), (DCC, None)]),
+        certificate(GACI_PROFILE),
+        GACI_PROFILE,
+    )
+    anchor = entry(result, "route:direct-accreditation:trust-anchor")
+    assert anchor.state == "contradicted"
+    assert "not for Calibration under urn:iso:std:iso-iec:17025:ed-3" in anchor.reason
+    assert result.decision == "not_established"
+
+
+def test_appointment_without_cal_accreditation_contradicts() -> None:
+    def drop(d: dict[str, Any]) -> None:
+        subject(d)["permissionFor"] = [
+            p
+            for p in subject(d)["permissionFor"]
+            if "CalAccreditation" not in p["types"]
+        ]
+
+    result = run(
+        reissue_chain([(APP, drop), (CA, None), (DCC, None)]),
+        certificate(STATE_PROFILE),
+        STATE_PROFILE,
+    )
+    anchor = entry(result, "route:direct-accreditation:trust-anchor")
+    assert anchor.state == "contradicted"
+    assert "RmpAccreditation, LabAccreditation, not CalAccreditation" in anchor.reason
+    assert result.decision == "not_established"

@@ -96,7 +96,7 @@ describe('E23-E28: what an appointment decides, and for whom', () => {
     }));
     expect(anchorBasis(result)).toMatchObject({ state: 'established' });
     expect(labAnchor(result)).toMatchObject({ state: 'contradicted' });
-    expect(labAnchor(result)?.reason).toMatch(/permits https:\/\/nab\.vc4qi\.example\/controller to issue RmpAccreditation, not LabAccreditation/);
+    expect(labAnchor(result)?.reason).toMatch(/permits https:\/\/nab\.vc4qi\.example\/controller to issue RmpAccreditation, CalAccreditation, not LabAccreditation/);
     expect(result.decision).toBe('reject');
   });
 

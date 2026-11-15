@@ -208,7 +208,7 @@ content must be bound to the exact claim, grantee, activity, scope version, prof
 time, and the signer's authority must be established independently. A point answer
 cannot prove that a whole scope is contained.
 
-Recognition (RM, experimental) answers whether a verifier that trusts a recognizer
+Recognition (RM and calibration, experimental) answers whether a verifier that trusts a recognizer
 should accept a grant's issuer, nothing more; it grants no authority. An accreditation
 body's authority is its national appointment, which a verifier that anchors the body
 trusts directly. Each recognition is its own credential: R, issued by an arrangement
@@ -236,7 +236,7 @@ support or conformity: D520 is recognized and still out of scope. Suspending one
 recognition is one status bit; nothing is re-issued. The per-recognition shape and the
 `RecognitionPolicy` link are this binding's resolution, not traversal alone.
 
-Appointment (RM, experimental) is where the accreditation body's authority comes from:
+Appointment (RM and calibration, experimental) is where the accreditation body's authority comes from:
 in the EU each member state appoints a single national accreditation body (Regulation
 (EC) No 765/2008, Art. 4(1)). APP, issued by a fictional state about the NAB, has the
 shape of EBSI's root trust-chain credential, `VerifiableAuthorisationForTrustChain`:
@@ -251,6 +251,14 @@ anchor, about the grant's issuer, permits the grant's type under the grant's own
 in the required jurisdiction, and was in force at the activity time. Standing is tried in
 order: the issuer is itself an anchor, then appointment, then recognition; any one is
 enough. Where EBSI points to a registry entry by URL, this binding pins the exact bytes.
+
+The calibration binding shares both roots. Its accreditation body is the same NAB, so
+there is one appointment and one recognition, not one per binding: APP also permits the
+NAB to issue `CalAccreditation`, and R registers Calibration under ISO/IEC 17025 beside
+RM production and testing. The calibration and testing accreditations (CAL-A, CAL-T)
+name APP and R exactly as A and H do, and the calibration routes decide their issuer's
+standing with the same check. A calibration accreditation is still a different
+credential from an RM one: another type, schema, scope and grantee.
 
 ## Standards
 

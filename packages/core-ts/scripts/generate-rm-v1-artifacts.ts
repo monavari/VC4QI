@@ -13,10 +13,12 @@
 //     RM178 (D178): the RM certificate, x = 178 mg/kg, U = 5, k = 2, with the Cu, Zn and Pb
 //       values of the M375a DRMD transcription as further certified results; RM197 and
 //       RM520, hypothetical reissues with x = 197 / 520;
-//     REC-NAB (R): a fictional Global ACI stand-in's recognition of the NAB for RM production
-//       and testing (a W3C Recognized Entities credential with one subject);
+//     REC-NAB (R): a fictional Global ACI stand-in's recognition of the NAB for RM production,
+//       testing and calibration (a W3C Recognized Entities credential with one subject);
 //     APP-NAB (APP): a fictional state's appointment of the NAB (Regulation (EC) No 765/2008,
 //       Art. 4(1)) in the shape of EBSI's VerifiableAuthorisationForTrustChain.
+//   REC-NAB and APP-NAB are the roots of the one NAB, shared with the calibration binding:
+//   its calibration and testing accreditations name these same two credentials.
 //   Every credential carries a name. ACC-RMP and ACC-LAB name sets (non-ferrous metals and
 //   alloys, element contents, solid forms), as an accreditation annex does; LIST-RMP,
 //   HOM-LOT1 and RM178 name members.
@@ -35,6 +37,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createProof } from '../src/proofs/index.js';
+import { CAL_V1_SCHEMA_BASE } from '../src/reliance/cal-v1.js';
 import {
   catalogDocumentLoader, RECOGNIZED_ENTITIES_DRAFT_CONTEXT, RM_V1_CONTEXT, RM_V1_SCHEMA_BASE, RM_V1_VOCAB, sha384SRI,
   VC_V2_CONTEXT,
@@ -280,7 +283,7 @@ async function main() {
     validUntil: '2029-01-01T00:00:00Z',
     credentialSchema: { id: `${RM_V1_SCHEMA_BASE}recognized-entity.json`, type: 'JsonSchema' },
     name: 'Recognition of the NAB',
-    description: 'Global ACI recognizes the national accreditation body (NAB) to accredit, for RM production and testing. '
+    description: 'Global ACI recognizes the national accreditation body (NAB) to accredit, for RM production, testing and calibration. '
       + 'Fictional fixture in the shape of a W3C Recognized Entities credential. Not issued or endorsed by '
       + 'Global Accreditation Cooperation Incorporated or any accreditation body.',
     credentialSubject: {
@@ -291,6 +294,7 @@ async function main() {
       registration: [
         { id: `${signatory}#rm-production`, mainScope: mainScope('Reference material production', 'urn:iso:std:iso:17034:ed-1', 'ISO 17034:2016') },
         { id: `${signatory}#testing`, mainScope: mainScope('Testing', 'urn:iso:std:iso-iec:17025:ed-3', 'ISO/IEC 17025:2017') },
+        { id: `${signatory}#calibration`, mainScope: mainScope('Calibration', 'urn:iso:std:iso-iec:17025:ed-3', 'ISO/IEC 17025:2017') },
       ],
     },
   }, gaci, '2024-01-01T00:00:00Z')), FIXTURE);
@@ -303,8 +307,8 @@ async function main() {
   // the chain points to law, not to another credential. The appointment, not Global ACI's
   // recognition, is where the NAB's authority comes from.
   const JURISDICTION = 'https://publications.europa.eu/resource/authority/atu/DEU';
-  const permission = (file: string, type: string) =>
-    ({ schemaId: `${RM_V1_SCHEMA_BASE}${file}`, types: ['VerifiableCredential', type], jurisdiction: JURISDICTION });
+  const permission = (file: string, type: string, base = RM_V1_SCHEMA_BASE) =>
+    ({ schemaId: `${base}${file}`, types: ['VerifiableCredential', type], jurisdiction: JURISDICTION });
   const appText = record(APPOINTMENT, 'credentials/APP-NAB.json', 'application/vc', serialize(await sign({
     ...envelope(APPOINTMENT, APPOINTMENT_TYPE, 'appointment.json', STATE, '2020-01-01T00:00:00Z', '2035-01-01T00:00:00Z'),
     name: 'Appointment of the NAB',
@@ -312,7 +316,9 @@ async function main() {
       + 'Fictional fixture in the shape of an EBSI VerifiableAuthorisationForTrustChain. Not issued by any state.',
     credentialSubject: {
       id: NAB,
-      permissionFor: [permission('rmp-accreditation.json', 'RmpAccreditation'), permission('lab-accreditation.json', 'LabAccreditation')],
+      // One appointment of one body: what the NAB may issue in every binding, RM and calibration.
+      permissionFor: [permission('rmp-accreditation.json', 'RmpAccreditation'), permission('lab-accreditation.json', 'LabAccreditation'),
+        permission('accreditation.json', 'CalAccreditation', CAL_V1_SCHEMA_BASE)],
     },
     termsOfUse: {
       type: 'TrustFrameworkPolicy',

@@ -153,7 +153,8 @@ def test_e02_testing_only_contradicts_the_producer_route() -> None:
     assert anchor(result).state == "contradicted"
     assert (
         "registers https://nab.vc4qi.example/controller for Testing under "
-        "ISO/IEC 17025:2017, not for Reference material production"
+        "ISO/IEC 17025:2017, Calibration under ISO/IEC 17025:2017, not for Reference "
+        "material production"
     ) in anchor(result).reason
     assert lab_anchor(result).state == "established"
     assert result.decision == "reject"

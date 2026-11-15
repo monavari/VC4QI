@@ -259,7 +259,7 @@ try { api = await import('./verifier.js'); }
 catch (error) { fail('This browser could not run the evaluator (' + error.message + ').'); throw error; }
 $('evalTime').textContent = new Date(api.EVALUATION_TIME).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
-const DEFAULT_CHOICE = { rm: 'fit', dcc: 'own', dpp: 'both' };
+const DEFAULT_CHOICE = { rm: 'fit', dcc: 'nab', dpp: 'both' };
 const state = { example: 'rm', caseId: undefined, choice: undefined, tamper: false, withhold: false };
 let seq = 0, current;
 const exampleOf = id => api.EXAMPLES.find(e => e.id === id) ?? api.EXAMPLES[0];

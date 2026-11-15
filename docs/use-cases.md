@@ -71,7 +71,12 @@ are checked byte-for-byte across languages by the parity vector.
 - **Direct accreditation.** DCC-1 has two pressure groups (1000 kPa and 5 MPa). Each is
   covered by CAL-A's record (0–10 MPa, PressureComparison, CMC 0.5 kPa). A value of
   15 MPa in the first group rejects even though the second passes. An uncertainty below
-  the CMC rejects when the profile applies the floor.
+  the CMC rejects when the profile applies the floor. CAL-A comes from the RM example's
+  accreditation body and names the same roots: a verifier that trusts the state
+  (`cal-verifier-state-1`) accepts the body through its appointment APP-NAB, one abroad
+  that trusts Global ACI (`cal-verifier-global-aci-1`) through its recognition REC-NAB
+  for Calibration. A recognition without Calibration, or an appointment that does not
+  permit calibration accreditations, contradicts that route.
 - **Capability.** DCC-2 is issued under the laboratory's own scope CAL-O (0–2 MPa). CAL-O
   must lie within CAL-A. A group at 5 MPa is inside CAL-A but outside CAL-O, and is
   rejected: the parent never rescues the child.

@@ -48,6 +48,28 @@ const ACCREDITATION_ONLY = 'gs-verifier-dpp-accreditation-only (demonstrator)';
     trustAnchors: base.trustAnchors.filter(anchor => anchor.id !== 'https://zls.vc4qi.example/controller') });
 }
 
+/**
+ * The DCC example's "whom I trust" choice: the case's own profile with the accreditation
+ * body's anchor replaced by the state (through its appointment of the body) or Global ACI
+ * (through its recognition), taken from the shipped cal-verifier-state-1 and
+ * cal-verifier-global-aci-1. Derived here so that every case keeps its own routes; other
+ * anchors (the ministry of the NMI case) stay, since that chain does not pass the body.
+ */
+const NAB_CONTROLLER = 'https://nab.vc4qi.example/controller';
+type ProfileJson = { id: string; description: string; trustAnchors: { id: string }[]; bindingRules: Record<string, unknown> };
+function trustingRoot(baseName: string, root: 'state' | 'gaci'): string {
+  const name = `${baseName} via ${root} (demonstrator)`;
+  if (loaded.cal.profiles[name] === undefined) {
+    const base = resources.cal.profiles[baseName] as ProfileJson;
+    const shipped = resources.cal.profiles[root === 'state' ? 'cal-verifier-state-1' : 'cal-verifier-global-aci-1'] as ProfileJson;
+    loaded.cal.profiles[name] = loadRelianceProfile({ ...base, id: `${base.id}-via-${root}`,
+      description: `Demonstrator-only variant of ${baseName} that trusts ${root === 'state' ? 'the state' : 'Global ACI'}, not the accreditation body. Fictional.`,
+      trustAnchors: [...base.trustAnchors.filter(anchor => anchor.id !== NAB_CONTROLLER), ...shipped.trustAnchors],
+      bindingRules: { ...base.bindingRules, ...shipped.bindingRules } });
+  }
+  return name;
+}
+
 // ---------------------------------------------------------------- examples and cases
 
 const short = (iri: unknown) => String(iri).split(/[#/:]/).pop() ?? '';
@@ -139,10 +161,11 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     intro: 'May I rely on each measurement group of this calibration?',
     caseLabel: 'Issuer',
     cases: DCC_CASES,
-    choice: { label: 'The verifier accepts', options: [
-      { id: 'own', label: 'This route', sublabel: 'own profile' },
-      { id: 'direct-only', label: 'Direct accreditation only', sublabel: 'cal-verifier-1' }] },
-    note: 'A JSON-LD simplification of a DCC: each result is a PTB D-SI 2.2.1 real, as in the DCC, but not native DCC XML. All parties and keys are fictional.' },
+    choice: { label: 'The verifier trusts', options: [
+      { id: 'nab', label: 'This NAB', sublabel: 'the accreditation body' },
+      { id: 'state', label: 'The state', sublabel: 'its appointment, APP-NAB' },
+      { id: 'gaci', label: 'Global ACI', sublabel: 'its recognition, REC-NAB' }] },
+    note: 'A JSON-LD simplification of a DCC: each result is a PTB D-SI 2.2.1 real, as in the DCC, but not native DCC XML. The accreditation body is the RM example\'s, with the same two roots: the state\'s appointment and Global ACI\'s recognition. All parties and keys are fictional.' },
   { id: 'gs', tab: 'GS', title: 'GS mark',
     intro: 'May I rely on the GS mark on this product?',
     caseLabel: 'Product',
@@ -434,7 +457,7 @@ export async function evaluateScenario(options: ScenarioOptions): Promise<Scenar
   const texts = options.tamper ? { [spec.target]: file.text.replace(spec.tamper[0], spec.tamper[1]) } : {};
   const r = await evaluate({
     binding: spec.binding,
-    profileName: example.id === 'dcc' && options.choice === 'direct-only' ? 'cal-verifier-1'
+    profileName: example.id === 'dcc' && (options.choice === 'state' || options.choice === 'gaci') ? trustingRoot(spec.profile, options.choice)
       : example.id === 'dpp' && options.choice === 'accreditation-only' ? ACCREDITATION_ONLY : spec.profile,
     requestId: `urn:vc4qi:demonstrator:${example.id}:${spec.id}`,
     target: spec.target, claims: spec.claims, supplied: spec.supplied, texts,
