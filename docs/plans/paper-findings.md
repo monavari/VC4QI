@@ -62,6 +62,16 @@ done yet; these are inputs for the work before release 0.5.0.
    offline, but the exported helpers do not. Make the default strict, with an explicit
    opt-in to fetch, and test it.
 
+## Two activity times
+
+18. **The request's activity time and the certificate's are never compared.** Status is
+    evaluated at `request.activityTime` (`binding-chain.ts`), while grant validity and
+    issuer standing are evaluated at the certificate's `credentialSubject.activityTime`
+    (`rm-v1-authority.ts`). A request about 20 January for a certificate whose subject says
+    another day mixes two times silently. Decide whether a historical request must name the
+    certificate's own activity time (contradict or not establish otherwise), add a ledger
+    case, and document both times in `docs/model.md`.
+
 ## Quality (from the pre-release audit)
 
 10. Python lint is not in CI; Ruff (23) and mypy (30) findings are recorded but not fixed.
