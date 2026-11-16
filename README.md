@@ -13,6 +13,54 @@ accreditation, calibration, reference-material or certification credentials.
   verifier's question: <https://monavari.github.io/VC4QI/demo/rm/>, and the GS story on
   an actor board: <https://monavari.github.io/VC4QI/demo/gs/>
 
+## Attribution and citation
+
+VC4QI was created by **Mehran Monavari**. If you use it in a publication, please cite
+both the paper and the software. The metadata is in [CITATION.cff](CITATION.cff);
+GitHub's "Cite this repository" button reads it but shows only the paper, so both
+references are given here.
+
+### Paper
+
+> Mehran Monavari (2026). *Verifiable Trust Chains for Quality Infrastructure: A
+> Verification Framework over W3C Verifiable Credentials.*
+
+The venue and DOI will be added when they are available.
+
+### Software
+
+> Mehran Monavari (2026). *VC4QI: Verifiable Credentials for Quality Infrastructure*,
+> version 0.4.0 [Software]. Zenodo. <https://doi.org/10.5281/zenodo.23979553>
+
+To cite the latest version instead of 0.4.0, use the concept DOI
+<https://doi.org/10.5281/zenodo.20612364>.
+
+```bibtex
+@unpublished{monavari2026trustchains,
+  author = {Monavari, Mehran},
+  title  = {Verifiable Trust Chains for Quality Infrastructure: A Verification
+            Framework over {W3C} Verifiable Credentials},
+  year   = {2026},
+  note   = {Venue and DOI to be added}
+}
+
+@software{monavari2026vc4qi,
+  author    = {Monavari, Mehran},
+  title     = {{VC4QI}: Verifiable Credentials for Quality Infrastructure},
+  version   = {0.4.0},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.23979553},
+  url       = {https://doi.org/10.5281/zenodo.23979553}
+}
+```
+
+Authorship and copyright are separate: Mehran Monavari is the sole author, and the
+copyright notice reads "VC4QI Contributors" (see [NOTICE](NOTICE)). Citation is requested, not required by the licenses. Under
+Apache-2.0, section 4(d), anyone who redistributes the code keeps the attribution
+notices in [NOTICE](NOTICE), and CC BY 4.0 requires credit when the documentation is
+reused.
+
 ## The idea
 
 Credentials represent institutional authority and evidence; they do not create it. The
@@ -68,4 +116,6 @@ Project records: [acceptance ledger](docs/acceptance-ledger.csv),
 
 ## License
 
-Code: [Apache-2.0](LICENSE). Documentation: [CC BY 4.0](LICENSE-docs).
+Code: [Apache-2.0](LICENSE), the unmodified text of
+<https://www.apache.org/licenses/LICENSE-2.0>. Documentation: [CC BY 4.0](LICENSE-docs).
+Attribution notices are in [NOTICE](NOTICE).
