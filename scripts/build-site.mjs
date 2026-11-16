@@ -17,6 +17,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, normalize, posix, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Marked } from 'marked';
+import { citationFrom, squash } from './citation.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CHECK = process.argv.includes('--check');
@@ -38,8 +39,13 @@ const NAV = [
   ]],
   ['Project records', [
     ['docs/adrs/README.md', 'Architecture decisions'],
+    ['docs/cite.md', 'Cite'],
   ]],
 ];
+// Pages written by the build instead of read from a Markdown file: the Cite page comes from CITATION.cff.
+let citation;
+try { citation = citationFrom(readFileSync(join(ROOT, 'CITATION.cff'), 'utf8')); } catch (error) { console.error(error.message); process.exit(1); }
+const GENERATED = new Map([['docs/cite.md', { markdown: citation.markdown, origin: 'CITATION.cff' }]]);
 const git = args => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' });
 const adrs = git(['ls-files', 'docs/adrs/*.md']).split('\n').filter(p => p && !p.endsWith('README.md'));
 const PUBLISHED = [...NAV.flatMap(([, pages]) => pages.map(([p]) => p)), ...adrs];
@@ -141,7 +147,7 @@ function render(source) {
       },
     },
   });
-  const markdown = readFileSync(join(ROOT, source), 'utf8');
+  const markdown = GENERATED.get(source)?.markdown ?? readFileSync(join(ROOT, source), 'utf8');
   const title = (markdown.match(/^# (.+)$/m)?.[1] ?? 'VC4QI').replace(/`/g, '');
   const description = describe(markdown, source);
   // Tables scroll horizontally on narrow screens.
@@ -164,13 +170,13 @@ ${socialTags({ title: `${title} · VC4QI`, description, path: out })}
 <link rel="stylesheet" href="${up}assets/docs.css">
 </head>
 <body>
-<header class="top"><a class="brand" href="${up}index.html"><strong>VC4QI</strong></a><nav class="toplinks"><a href="${up}docs/index.html">Documentation</a><a href="${up}demo/">Demonstrator</a><a href="${REPO}">GitHub</a></nav></header>
+<header class="top"><a class="brand" href="${up}index.html"><strong>VC4QI</strong></a><nav class="toplinks"><a href="${up}docs/index.html">Documentation</a><a href="${up}demo/">Demonstrator</a><a href="${up}docs/cite.html">Cite</a><a href="${REPO}">GitHub</a></nav></header>
 <div class="layout">
 <details class="side" open><summary>Contents</summary><nav aria-label="Documentation">${nav}</nav></details>
 <script>if (matchMedia('(max-width: 52rem)').matches) document.querySelector('details.side').removeAttribute('open');</script>
 <main>
 ${body}
-<footer><a href="${REPO}/blob/main/${source}">View this page on GitHub</a> · Documentation under CC BY 4.0 · All authorities, keys and grants in the examples are fictional.</footer>
+<footer><a href="${REPO}/blob/main/${GENERATED.get(source)?.origin ?? source}">${GENERATED.has(source) ? `Generated from ${GENERATED.get(source).origin}` : 'View this page on GitHub'}</a> · Documentation under CC BY 4.0 · All authorities, keys and grants in the examples are fictional.</footer>
 </main>
 </div>
 </body>
@@ -199,6 +205,12 @@ for (const source of PUBLISHED) {
   const target = join(OUT, outputPath(source));
   mkdirSync(dirname(target), { recursive: true });
   writeFileSync(target, render(source));
+}
+
+// The README repeats the citations by hand (GitHub shows it first); they must match CITATION.cff.
+const readme = squash(readFileSync(join(ROOT, 'README.md'), 'utf8'));
+for (const text of [...citation.references, ...citation.facts]) {
+  if (!readme.includes(squash(text))) problems.push(`README.md is out of step with CITATION.cff: ${squash(text).slice(0, 80)}`);
 }
 
 // Check every other Markdown file's relative links, so READMEs stay correct on GitHub.
