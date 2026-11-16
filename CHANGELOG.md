@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Attribution and citation.** A root `NOTICE` names Mehran Monavari as the author of
+  VC4QI and gives the associated paper and the Zenodo archive of 0.4.0; it is
+  informational and keeps the copyright line "VC4QI Contributors". The README gains an
+  "Attribution and citation" section with copyable references and BibTeX for the paper
+  and the software. `CITATION.cff` gains the version DOI 10.5281/zenodo.23979553 and the
+  concept DOI 10.5281/zenodo.20612364, and asks for both citations.
+
 - **Calibration shares the NAB's roots.** The calibration binding's accreditation body is
   the RM binding's NAB, with the same appointment APP-NAB and recognition REC-NAB, signed
   once: APP-NAB also permits `CalAccreditation`, and REC-NAB registers Calibration

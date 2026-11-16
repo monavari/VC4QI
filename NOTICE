@@ -1,0 +1,27 @@
+VC4QI: Verifiable Credentials for Quality Infrastructure
+Copyright 2026 VC4QI Contributors
+
+Author: Mehran Monavari
+Source: https://github.com/monavari/VC4QI
+
+VC4QI was created by Mehran Monavari. Other contributions are recorded in the
+project's Git history. Authorship is stated here for attribution; it does not
+change who holds the copyright.
+
+Associated paper:
+  Mehran Monavari (2026). Verifiable Trust Chains for Quality Infrastructure:
+  A Verification Framework over W3C Verifiable Credentials. Venue and DOI to
+  be added.
+
+Software archive:
+  Mehran Monavari (2026). VC4QI: Verifiable Credentials for Quality
+  Infrastructure, version 0.4.0. Zenodo.
+  https://doi.org/10.5281/zenodo.23979553
+
+If you use VC4QI in a publication, please cite both the paper and the
+software; see CITATION.cff and the "Attribution and citation" section of
+README.md. This is a request, not a condition of the licenses.
+
+The code is licensed under the Apache License, Version 2.0 (LICENSE) and the
+documentation under CC BY 4.0 (LICENSE-docs). This NOTICE is informational and
+does not modify either license.
