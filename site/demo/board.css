@@ -47,6 +47,7 @@ button, input, select{ font:inherit; color:inherit; }
 .links a{ text-decoration:none; font-weight:650; font-size:.9rem; padding:.35rem .8rem; border-radius:999px; color:var(--muted); }
 .links a:hover{ background:var(--wash); color:var(--ink); }
 .links a[aria-current="page"]{ background:var(--petrol); color:var(--on-petrol); }
+@media (max-width:36rem){ .topbar .in{ flex-wrap:wrap; gap:var(--s1) var(--s3); } .topbar .links{ margin-left:0; flex:1 1 100%; } .topbar .links a{ padding:.3rem .65rem; font-size:.85rem; } }
 
 /* story navigation */
 .storynav{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s3); padding:var(--s3) 0; border-bottom:1px solid var(--line); }

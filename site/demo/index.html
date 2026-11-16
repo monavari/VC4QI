@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <!-- Addresses from before this page existed (demo/#rm, demo/#dcc/nmi, …) open the examples page. -->
-<script>if (location.hash.length > 1) location.replace('examples/' + location.hash);</script>
+<script>if (/^#(rm|dcc|gs|dpp)(\/|$)/.test(location.hash)) location.replace('examples/' + location.hash);</script>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Demonstrator · VC4QI</title>
@@ -35,6 +35,7 @@ p{ margin:.5rem 0; }
 .masthead a.brand{ flex:none; }
 .masthead nav a{ color:var(--muted); text-decoration:none; }
 .masthead nav a:hover, .masthead nav a[aria-current]{ color:var(--link); text-decoration:underline; }
+@media (max-width:36rem){ .masthead .wrap{ flex-direction:column; align-items:flex-start; gap:.1rem; padding-top:.5rem; padding-bottom:.5rem; } .masthead nav{ justify-content:flex-start; } }
 
 h1{ font-size:clamp(1.8rem, 4.5vw, 2.5rem); line-height:1.15; margin:0; padding-top:2.2rem; letter-spacing:-.01em; }
 .lead{ font-size:clamp(1.05rem, 1.6vw, 1.2rem); margin:1rem 0 0; max-width:42rem; }
