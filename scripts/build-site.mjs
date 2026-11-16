@@ -11,7 +11,7 @@
 // GitHub link. Every relative link and heading anchor in the repository's Markdown is
 // checked (except the append-only report and historical snapshots); a broken one fails
 // the build.
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join, normalize, posix, relative } from 'node:path';
@@ -23,6 +23,7 @@ const CHECK = process.argv.includes('--check');
 const OUT = CHECK ? mkdtempSync(join(tmpdir(), 'vc4qi-site-')) : join(ROOT, '_site');
 const REPO = 'https://github.com/monavari/VC4QI';
 const SITE = 'https://monavari.github.io/VC4QI/';
+const OG_IMAGE = `${SITE}assets/og-card.png`;
 
 /** Published pages, in navigation order. Paths are repository-relative. */
 const NAV = [
@@ -91,6 +92,34 @@ function resolveLink(source, href, fromOutput) {
 }
 
 const escapeHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const unescapeHtml = s => s.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+
+/**
+ * A page description: the first paragraph after the title (skipping an ADR's "Status" section,
+ * which is one word), plain text, cut on a word boundary.
+ */
+function describe(markdown, source) {
+  const tokens = new Marked().lexer(markdown);
+  let section = '';
+  const first = tokens.slice(tokens.findIndex(t => t.type === 'heading' && t.depth === 1) + 1).find(t => {
+    if (t.type === 'heading') section = plain(t.tokens).toLowerCase();
+    return t.type === 'paragraph' && section !== 'status';
+  });
+  if (!first) {
+    problems.push(`${source}: no paragraph after the title to use as the page description`);
+    return '';
+  }
+  const text = unescapeHtml(plain(first.tokens)).replace(/\s+/g, ' ').trim();
+  if (text.length <= 160) return text.replace(/:$/, '.');
+  return text.slice(0, 160).replace(/\s+\S*$/, '').replace(/[\s,;:.\u2013\u2014-]+$/, '') + '\u2026';
+}
+
+/** Open Graph and Twitter card tags; `path` is the page's address below the site root. */
+const socialTags = ({ title, description, path }) => [
+  ['og:type', 'website'], ['og:site_name', 'VC4QI'], ['og:title', title], ['og:description', description],
+  ['og:url', SITE + path], ['og:image', OG_IMAGE], ['og:image:width', '1200'], ['og:image:height', '630'],
+  ['og:image:alt', 'VC4QI: Verifiable Credentials for Quality Infrastructure'],
+].map(([k, v]) => `<meta property="${k}" content="${escapeHtml(v)}">`).join('\n') + '\n<meta name="twitter:card" content="summary_large_image">';
 
 function render(source) {
   const out = outputPath(source);
@@ -114,6 +143,7 @@ function render(source) {
   });
   const markdown = readFileSync(join(ROOT, source), 'utf8');
   const title = (markdown.match(/^# (.+)$/m)?.[1] ?? 'VC4QI').replace(/`/g, '');
+  const description = describe(markdown, source);
   // Tables scroll horizontally on narrow screens.
   const body = marked.parse(markdown).replace(/<table>/g, '<div class="table"><table>').replace(/<\/table>/g, '</table></div>');
   const depth = out.split('/').length - 1;
@@ -127,8 +157,10 @@ function render(source) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="icon" href="data:,">
+<link rel="icon" href="${up}assets/favicon.svg" type="image/svg+xml">
 <title>${escapeHtml(title)} · VC4QI</title>
+<meta name="description" content="${escapeHtml(description)}">
+${socialTags({ title: `${title} · VC4QI`, description, path: out })}
 <link rel="stylesheet" href="${up}assets/docs.css">
 </head>
 <body>
@@ -150,6 +182,19 @@ ${body}
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 cpSync(join(ROOT, 'site'), OUT, { recursive: true });
+const htmlFiles = dir => readdirSync(dir, { withFileTypes: true }).flatMap(e => (e.isDirectory() ? htmlFiles(join(dir, e.name)) : e.name.endsWith('.html') ? [join(dir, e.name)] : []));
+const isRedirect = html => /http-equiv="refresh"/.test(html);
+// The hand-written pages carry their own title and description; the card tags are added here so
+// that the absolute addresses are written once. Redirect stubs get no card.
+for (const file of htmlFiles(OUT)) {
+  const html = readFileSync(file, 'utf8');
+  if (isRedirect(html)) continue;
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? '';
+  const description = html.match(/<meta name="description" content="([^"]*)">/)?.[1];
+  const rel = relative(OUT, file).split('\\').join('/').replace(/index\.html$/, '');
+  if (description === undefined) { problems.push(`site/${relative(OUT, file)}: no meta description`); continue; }
+  writeFileSync(file, html.replace('</head>', `${socialTags({ title: unescapeHtml(title), description: unescapeHtml(description), path: rel })}\n</head>`));
+}
 for (const source of PUBLISHED) {
   const target = join(OUT, outputPath(source));
   mkdirSync(dirname(target), { recursive: true });
@@ -163,6 +208,18 @@ for (const file of git(['ls-files', '-co', '--exclude-standard', '*.md']).split(
   const text = readFileSync(join(ROOT, file), 'utf8').replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
   for (const match of text.matchAll(LINK)) resolveLink(file, match[1]);
 }
+
+// Every published page has a real favicon, and every page that is not a redirect has a description
+// and a social card.
+for (const file of htmlFiles(OUT)) {
+  const html = readFileSync(file, 'utf8');
+  const name = relative(OUT, file);
+  if (!/<link rel="icon" href="(?!data:)[^"]+"/.test(html)) problems.push(`${name}: no favicon (an empty data: icon does not count)`);
+  if (isRedirect(html)) continue;
+  if (!/<meta name="description" content="[^"]{20,}">/.test(html)) problems.push(`${name}: no meta description`);
+  if (!html.includes('<meta property="og:image" ')) problems.push(`${name}: no social card`);
+}
+for (const asset of ['assets/favicon.svg', 'assets/og-card.png']) if (!existsSync(join(OUT, asset))) problems.push(`${asset}: missing`);
 
 if (CHECK) rmSync(OUT, { recursive: true, force: true });
 if (problems.length > 0) {
