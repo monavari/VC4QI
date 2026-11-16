@@ -40,7 +40,7 @@ and evidence: **81 passing, 3 excluded as unsupported, 12 not implemented**.
 
 Ledger evidence that cites `evidence.md` refers to the phase log retired in 0.4.0; it
 is at commit
-[`fc36bc6`](https://github.com/monavari/VC4QI/blob/fc36bc6/docs/plans/evidence.md).
+[`c443978`](https://github.com/monavari/VC4QI/blob/c443978/docs/plans/evidence.md).
 
 ## Latest checks
 

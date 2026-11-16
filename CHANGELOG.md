@@ -305,7 +305,7 @@
   v0.3 schema validator and scenario tests.
 - Project records are condensed: the reconciliation report, phase plans, evidence log,
   handover, traceability tables, manuscript feedback and superseded ADRs are removed
-  (they remain in the history at commit `fc36bc6`). The acceptance ledger moves to
+  (they remain in the history at commit `c443978`). The acceptance ledger moves to
   `docs/acceptance-ledger.csv`.
 - The repository carries no institutional affiliation; the RM example is named M375a.
 - GS binding: factory inspection is authorized by the certification body's certification
