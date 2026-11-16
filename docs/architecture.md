@@ -78,3 +78,8 @@ and certifying a typed value sign new documents in the browser
 keys; the evaluator treats them like any other input. The pages'
 design rules (principles, visual hierarchy, colour, shape and line
 vocabulary) are in [`apps/demonstrator/DESIGN.md`](../apps/demonstrator/DESIGN.md).
+
+`scripts/build-site.mjs` renders these docs into the site, writes each page's description
+and social card tags, and fails if a page lacks a favicon, description or card. The Cite
+page is not a Markdown file: `scripts/citation.mjs` builds it from `CITATION.cff`, and the
+build checks that the README repeats the same references.
