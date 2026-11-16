@@ -55,9 +55,8 @@ To cite the latest version instead of 0.4.0, use the concept DOI
 }
 ```
 
-Authorship and copyright are separate: Mehran Monavari is the author, and the copyright
-notice reads "VC4QI Contributors" (see [NOTICE](NOTICE)); other contributions are
-recorded in the Git history. Citation is requested, not required by the licenses. Under
+Authorship and copyright are separate: Mehran Monavari is the sole author, and the
+copyright notice reads "VC4QI Contributors" (see [NOTICE](NOTICE)). Citation is requested, not required by the licenses. Under
 Apache-2.0, section 4(d), anyone who redistributes the code keeps the attribution
 notices in [NOTICE](NOTICE), and CC BY 4.0 requires credit when the documentation is
 reused.
