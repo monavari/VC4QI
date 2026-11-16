@@ -85,6 +85,19 @@ done yet; these are inputs for the work before release 0.5.0.
     authority is modelled; decide whether to keep a real code (EBSI requires one from that
     table) or use a clearly fictional value, and say so in the fixture description.
 
+## Ledger cases the paper cites but cannot point to
+
+22. **Three recognition tests without ledger IDs** (`rm-v1-recognition.test.ts`): an
+    `issuer.recognizedIn` naming another credential than the `RecognitionPolicy` (reject);
+    a recognition named by nothing in the chain (not established); a recognition named as
+    an `IssuedUnderPolicy` grant. Give each a case.
+23. **Weak assertion.** The "recognition named as a grant" test asserts only that the
+    decision is not `accept`; assert the intended verdict.
+24. **P04 has no test named for it.** The ledger marks P04 passing, but no TypeScript or
+    Python test mentions P04. Point the row at the test that covers it or add one.
+25. **S09 row and test disagree.** The ledger says As/M1 and Pb/M2 with a claim As/M2; the
+    test uses Pb/M3 and As/M3. Align them.
+
 ## Quality (from the pre-release audit)
 
 10. Python lint is not in CI; Ruff (23) and mypy (30) findings are recorded but not fixed.
