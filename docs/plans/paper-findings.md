@@ -72,6 +72,19 @@ done yet; these are inputs for the work before release 0.5.0.
     certificate's own activity time (contradict or not establish otherwise), add a ledger
     case, and document both times in `docs/model.md`.
 
+## Untested claims and fixture choices
+
+19. **No test at a decimal boundary a double cannot hold.** Exact decimal reading is tested
+    (`rm-v1-resources.test.ts`, `dsi.test.ts`) and S04 tests an inclusive limit with
+    integers (195 + 5 = 200). Add a case such as x = 0.1, U = 0.2 against a bound of 0.3.
+20. **Claims not on the producer's list.** RM178 certifies As, Cu, Zn and Pb; LIST-RMP
+    covers As only, and every test selects the As result. Add a case selecting the Cu
+    result and assert that no record covers it.
+21. **Jurisdiction code of the fictional state.** APP-NAB's `permissionFor.jurisdiction`
+    is the EU authority-table code for Germany (`atu/DEU`). The paper says no real
+    authority is modelled; decide whether to keep a real code (EBSI requires one from that
+    table) or use a clearly fictional value, and say so in the fixture description.
+
 ## Quality (from the pre-release audit)
 
 10. Python lint is not in CI; Ruff (23) and mypy (30) findings are recorded but not fixed.
