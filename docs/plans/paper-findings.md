@@ -19,6 +19,12 @@ done yet; these are inputs for the work before release 0.5.0.
    `package.json`, `packages/core-ts/package.json`, `packages/core-py/pyproject.toml`,
    `CITATION.cff`, the README BibTeX and the header of `docs/status.md`.
 
+## Citation metadata
+
+13. **Paper title changed.** The paper's subtitle is now "Design Rules and a Verification
+    Contract over W3C Verifiable Credentials" (main title unchanged). Update the preferred
+    citation in `CITATION.cff`, the README BibTeX and `NOTICE` when the paper is posted.
+
 ## Stale text the paper would contradict
 
 4. `packages/core-ts/src/reliance/evaluate.ts`, header comment: legacy credentials
