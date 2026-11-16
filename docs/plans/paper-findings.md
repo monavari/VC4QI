@@ -19,6 +19,20 @@ done yet; these are inputs for the work before release 0.5.0.
    `package.json`, `packages/core-ts/package.json`, `packages/core-py/pyproject.toml`,
    `CITATION.cff`, the README BibTeX and the header of `docs/status.md`.
 
+## Ledger wording
+
+14. **E16 and E18 wording.** Their expected results ("no authority through it",
+    "recognition without stated actions is not authority") read as if recognition could
+    otherwise be authority. The paper says recognition grants no authority; reword both
+    rows, for example "recognition contradicted; nothing is established through it".
+15. **P13 is narrower than its tests.** The row covers only "historical query with only
+    current status"; the tests under P13 also show the kept January list answering status
+    on the activity day. Split the kept-list half into its own case or widen the row.
+16. **Old letters in the ledger.** Rows still say A, H, O, S, D178, R; the fixtures and
+    the paper use ACC-RMP, ACC-LAB, LIST-RMP, HOM-LOT1, RM178, REC-NAB.
+17. **Upward-only membership has no ledger ID.** The test "the hierarchy never runs
+    downward" (`rm-v1-authority.test.ts`) backs design rule 5; give it a case.
+
 ## Citation metadata
 
 13. **Paper title changed.** The paper's subtitle is now "Design Rules and a Verification
