@@ -48,6 +48,8 @@ code { font: .88em var(--mono); background: var(--wash); padding: .1em .3em; bor
 pre { background: var(--wash); padding: .9rem 1rem; border-radius: 8px; overflow-x: auto; }
 pre code { background: none; padding: 0; overflow-wrap: normal; }
 .table { overflow-x: auto; margin: 1rem 0; }
+/* Identifiers in tables stay whole; the table scrolls sideways instead of breaking them. */
+.table code { overflow-wrap: normal; white-space: nowrap; }
 table { border-collapse: collapse; font-size: .92rem; min-width: 100%; }
 th, td { border-bottom: 1px solid var(--line); padding: .45rem .6rem; text-align: left; vertical-align: top; }
 th { background: var(--wash); font-weight: 600; }
