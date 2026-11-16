@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- **Website, phase 1: fixes, a demonstrator overview and a Cite page.** `demo/` is now an
+  overview that explains the RM story, the GS story and the four examples, with direct
+  links to each case; the four-case tool moved to `demo/examples/` (old `demo/#rm`
+  addresses forward to it; the printed QR code and the `site/m375a/` redirect still work).
+  Every page has a meta description, Open Graph and Twitter card tags with a rendered
+  card (`site/assets/og-card.png`, from `scripts/og-card.html`) and a real favicon, and
+  `pnpm docs:check` fails when a page lacks one. Identifiers in tables no longer break
+  mid-word on phones. A Cite page is generated from `CITATION.cff` by
+  `scripts/citation.mjs` (a strict reader for the subset of YAML the file uses, no new
+  dependency), and `docs:check` fails if the README's references, BibTeX, DOIs or titles
+  differ from it. Long documentation pages get an "On this page" box, and every page
+  links to the previous and next page.
 - **Attribution and citation.** A root `NOTICE` names Mehran Monavari as the author of
   VC4QI and gives the associated paper and the Zenodo archive of 0.4.0; it is
   informational and keeps the copyright line "VC4QI Contributors". The README gains an

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<link rel="icon" href="data:,">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>VC4QI</title>
 <meta name="description" content="VC4QI: Verifiable Credentials for Quality Infrastructure. A research reference implementation for evaluating reliance on accreditation, certification and reference-material credentials.">
@@ -30,10 +30,11 @@ p{ margin:.5rem 0; }
 /* masthead */
 .masthead{ border-bottom:1px solid var(--line); font-size:.85rem; color:var(--muted); }
 .masthead .wrap{ display:flex; justify-content:space-between; align-items:center; gap:1rem; min-height:3rem; }
-.masthead strong{ color:var(--red); letter-spacing:.02em; }
-.masthead nav{ display:flex; gap:1.2rem; flex-wrap:wrap; }
+.masthead strong{ color:var(--red); letter-spacing:.02em; flex:none; }
+.masthead nav{ display:flex; gap:.4rem 1rem; flex-wrap:wrap; justify-content:flex-end; }
 .masthead nav a{ color:var(--muted); text-decoration:none; }
 .masthead nav a:hover{ color:var(--link); text-decoration:underline; }
+@media (max-width:36rem){ .masthead .wrap{ flex-direction:column; align-items:flex-start; gap:.1rem; padding-top:.5rem; padding-bottom:.5rem; } .masthead nav{ justify-content:flex-start; } }
 
 /* hero */
 .hero{ display:grid; gap:2rem; align-items:center; padding:2.4rem 0 2rem; }
@@ -96,8 +97,9 @@ footer p{ margin:0; }
   <div class="wrap">
     <strong>VC4QI</strong>
     <nav aria-label="Site">
-      <a href="demo/rm/">Demonstrator</a>
+      <a href="demo/">Demonstrator</a>
       <a href="docs/index.html">Documentation</a>
+      <a href="docs/cite.html">Cite</a>
       <a href="https://github.com/monavari/VC4QI">GitHub</a>
     </nav>
   </div>
@@ -110,13 +112,13 @@ footer p{ margin:0; }
       <p class="lead">Accreditation certificates, operational scopes, calibration and reference-material certificates can be issued as W3C Verifiable Credentials. VC4QI asks what a verifier may actually rely on when it receives them.</p>
       <p class="muted">Credentials represent institutional authority and evidence. They do not create it. The verifier selects the profile and decides which answers it needs.</p>
       <div class="actions">
-        <a class="btn" href="demo/rm/">Open the demonstrator</a>
+        <a class="btn" href="demo/">Open the demonstrator</a>
         <a class="btn ghost" href="docs/index.html">Read the documentation</a>
       </div>
     </div>
     <figure class="scan">
       <img src="assets/qr-demo.svg" alt="QR code linking to monavari.github.io/VC4QI/demo/rm/" width="176" height="176">
-      <figcaption><b>Scan to open the demonstrator</b>monavari.github.io/VC4QI/demo/rm/</figcaption>
+      <figcaption><b>Scan to open the RM story</b>monavari.github.io/VC4QI/demo/rm/</figcaption>
     </figure>
   </div>
 
@@ -136,7 +138,7 @@ footer p{ margin:0; }
         <p>The GS body, its test reports and the certificate behind a mark in a product passport. Revoke the body's authority, withdraw the certificate or edit the serial, and see what still holds.</p>
         <span class="go">Open the GS story →</span>
       </a>
-      <a class="tile" href="demo/#rm">
+      <a class="tile" href="demo/examples/#rm">
         <span class="tag">Examples</span>
         <b>Four cases, one verifier</b>
         <p>A certified reference material (M375a), calibration certificates (DCC), a GS certificate and a product passport. Switch the verifier, tamper with a credential or leave one out, and watch the six answers change.</p>
@@ -173,7 +175,7 @@ footer p{ margin:0; }
         <li><a href="docs/model.html">Reliance model</a><span>The rules a verifier applies before relying on a credential</span></li>
         <li><a href="docs/status.html">Status</a><span>What runs today, the acceptance ledger and open issues</span></li>
         <li><a href="https://github.com/monavari/VC4QI">Source code on GitHub</a><span>Code under Apache-2.0, documentation under CC BY 4.0</span></li>
-        <li><a href="https://github.com/monavari/VC4QI/blob/main/CITATION.cff">How to cite</a><span>Citation metadata for the software</span></li>
+        <li><a href="docs/cite.html">How to cite</a><span>The paper and the software, with BibTeX</span></li>
       </ul>
     </div>
   </section>

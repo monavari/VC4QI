@@ -57,13 +57,14 @@ arithmetic and gate 4–6 traces. Known differences:
 
 ## Demonstrator and website
 
-The demonstrator (`site/demo`, with RM, DCC, GS and DPP tabs, and the RM and GS actor
-boards in `site/demo/rm` and `site/demo/gs`) runs entirely in the
+The demonstrator (`site/demo`, an overview page that explains each demo; the RM, DCC,
+GS and DPP examples in `site/demo/examples`; and the RM and GS actor boards in
+`site/demo/rm` and `site/demo/gs`) runs entirely in the
 browser: `pnpm -C apps/demonstrator build` bundles the repository's RM, calibration and
 GS slice evaluators (all seven gates) with the pinned resources, signed fixtures and
 verifier profiles of all three bindings into `site/demo/verifier.js`, and CI checks the
-bundle is current. `site/m375a/` redirects to the RM tab so the poster QR code stays
-valid; the front page's QR code (`site/assets/qr-demo.svg`) opens the RM story, `site/demo/rm/`. Node's `crypto` and `zlib` are replaced by browser shims
+bundle is current. `site/m375a/` redirects to the RM example so the poster QR code stays
+valid, and the old `demo/#rm` addresses forward to `demo/examples/`; the front page's QR code (`site/assets/qr-demo.svg`) opens the RM story, `site/demo/rm/`. Node's `crypto` and `zlib` are replaced by browser shims
 (`apps/demonstrator/crypto-browser.ts`, and a bounded gunzip in `zlib-browser.ts` using
 `fflate`), so status lists are verified in the browser too. Nothing is fetched and no
 server is needed; `packages/core-ts/tests/demonstrator.test.ts` runs the shipped bundle
@@ -77,3 +78,8 @@ and certifying a typed value sign new documents in the browser
 keys; the evaluator treats them like any other input. The pages'
 design rules (principles, visual hierarchy, colour, shape and line
 vocabulary) are in [`apps/demonstrator/DESIGN.md`](../apps/demonstrator/DESIGN.md).
+
+`scripts/build-site.mjs` renders these docs into the site, writes each page's description
+and social card tags, and fails if a page lacks a favicon, description or card. The Cite
+page is not a Markdown file: `scripts/citation.mjs` builds it from `CITATION.cff`, and the
+build checks that the README repeats the same references.
