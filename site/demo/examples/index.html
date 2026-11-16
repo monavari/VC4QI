@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VC4QI demonstrator</title>
+<meta name="description" content="Quality Infrastructure credentials verified in your browser by the VC4QI reliance evaluator: examples for a reference material, calibration certificates, a GS mark and a product passport. The RM and GS stories are on their own pages.">
+<style>
+:root{
+  --petrol:#00556E; --cyan:#00AFF0; --red:#D2001E;
+  --paper:#FFFFFF; --raise:#FFFFFF; --wash:#F3F5F6; --tcyan:#E3F5FD; --line:#DADEE1;
+  --ink:#14232A; --muted:#56656D; --soft:#8A979E; --accent:#00556E;
+  /* Reliance states: holds, fails, cannot tell, not asked. */
+  --g-auth:#6A4C9C; --g-act:#2D6CB5;
+  --ok:#1B7A47; --ok-wash:#E7F4EC; --bad:#C8102E; --bad-wash:#FCEBEE;
+  --unk:#9A5B00; --unk-wash:#FFF3DC; --off:#8A979E; --off-wash:#F3F5F6; --on-state:#FFFFFF;
+  /* Verdict banners keep white text in both themes. */
+  --v-ok:#1B7A47; --v-bad:#C8102E; --v-unk:#8A5300; --v-busy:#56656D;
+  --s1:.25rem; --s2:.5rem; --s3:.75rem; --s4:1rem; --s5:1.5rem; --s6:2rem; --s7:3rem;
+  --radius:10px;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --tcyan:#0F2F3C; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --accent:#5CC8E8; --petrol:#0A6A86;
+    --g-auth:#B79CF2; --g-act:#7FB2F0; --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D; --on-state:#0E1A1F; }
+}
+:root[data-theme="dark"]{ --paper:#0E1A1F; --raise:#132228; --wash:#16262D; --tcyan:#0F2F3C; --line:#2A3B43; --ink:#E6ECEE; --muted:#A3B2B8; --soft:#7D8E95; --accent:#5CC8E8; --petrol:#0A6A86;
+  --g-auth:#B79CF2; --g-act:#7FB2F0; --ok:#52C98C; --ok-wash:#10291C; --bad:#FF6B7D; --bad-wash:#35161C; --unk:#F2B84B; --unk-wash:#33260E; --off:#7D8E95; --off-wash:#16262D; --on-state:#0E1A1F; }
+:root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+*,*::before,*::after{ box-sizing:inherit; }
+html{ font-size:16px; scroll-padding-top:env(safe-area-inset-top,0px); -webkit-text-size-adjust:100%; }
+@media (min-width:64rem){ html{ font-size:17px; } }
+@media (min-width:110rem){ html{ font-size:18px; } }
+body{ margin:0; background:var(--paper); color:var(--ink); font:1rem/1.55 var(--sans); }
+main{ max-width:76rem; margin:0 auto; padding:0 16px var(--s7); }
+a{ color:inherit; text-underline-offset:3px; }
+button{ font:inherit; color:inherit; }
+:focus-visible{ outline:3px solid var(--cyan); outline-offset:2px; border-radius:4px; }
+[hidden]{ display:none !important; }
+
+/* top bar */
+.topbar{ position:sticky; top:0; z-index:5; background:var(--paper); border-bottom:1px solid var(--line); }
+.topbar .in{ max-width:76rem; margin:0 auto; padding:var(--s2) 16px; display:flex; align-items:center; gap:var(--s4); }
+.brand{ font-size:.9rem; text-decoration:none; white-space:nowrap; } .brand strong{ color:var(--red); }
+.tabs{ display:flex; flex-wrap:wrap; justify-content:flex-end; gap:var(--s1); margin-left:auto; }
+.tabs a{ text-decoration:none; font-weight:650; font-size:.9rem; padding:.35rem .8rem; border-radius:999px; color:var(--muted); }
+.tabs a:hover{ background:var(--wash); color:var(--ink); }
+.tabs a[aria-current="page"]{ background:var(--petrol); color:#fff; }
+
+/* heading block: kicker, title, lead, then the controls */
+.head{ padding-top:var(--s5); }
+.kicker{ margin:0 0 var(--s2); font-size:.78rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); }
+h1{ margin:0 0 var(--s3); font-size:clamp(1.55rem, 1.2rem + .9vw, 2rem); line-height:1.2; font-weight:750; letter-spacing:-.01em; max-width:46rem; }
+.intro{ margin:0; font-size:1.12rem; line-height:1.55; color:var(--muted); max-width:46rem; }
+.controls{ display:grid; gap:var(--s3); margin-top:var(--s5); max-width:46rem; }
+.controls:empty{ display:none; }
+
+/* example controls */
+.seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+.seg button{ border:0; background:transparent; padding:var(--s2) var(--s2); font-size:.9rem; cursor:pointer; line-height:1.25; }
+.seg button small{ display:block; font-size:.74rem; color:var(--muted); }
+.seg button[aria-pressed="true"]{ background:var(--wash); font-weight:650; box-shadow:inset 0 -3px 0 var(--cyan); }
+.seg button + button{ border-left:1px solid var(--line); }
+@media (max-width:30rem){ .seg.many{ grid-auto-flow:row; grid-template-columns:1fr 1fr; } .seg.many button:nth-child(3){ border-left:0; } .seg.many button:nth-child(n+3){ border-top:1px solid var(--line); } }
+.label{ font-size:.78rem; font-weight:600; color:var(--muted); margin:var(--s1) 0 calc(-1 * var(--s1)); }
+.toggles{ display:flex; flex-wrap:wrap; gap:var(--s1) var(--s5); font-size:.9rem; color:var(--muted); }
+.toggles label{ display:flex; align-items:center; gap:var(--s2); cursor:pointer; }
+.toggles input{ width:1.05rem; height:1.05rem; accent-color:var(--petrol); }
+
+/* stage: one column on phones (a chain being built right after the heading); on wide
+   screens the heading, result and credential sit beside the chain */
+.stage{ display:flex; flex-direction:column; gap:var(--s6); }
+.col{ display:contents; }
+.head{ order:-2; }
+@media (min-width:64rem){
+  .stage{ display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr); gap:var(--s7); align-items:start; }
+  .col{ display:flex; flex-direction:column; gap:var(--s5); min-width:0; }
+  .head{ order:0; }
+  #sec-g{ padding-top:var(--s5); }
+}
+section{ margin:0; }
+h2{ margin:0 0 var(--s3); font-size:.78rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.legend{ margin:calc(-1 * var(--s1)) 0 var(--s4); font-size:.82rem; color:var(--muted); display:flex; flex-wrap:wrap; gap:.15rem 1rem; }
+.legend > span{ white-space:nowrap; }
+.legend i{ display:inline-block; width:2rem; height:0; vertical-align:middle; margin-right:.35rem; border-top:3px solid var(--soft); }
+.legend i.dot{ border-top-style:dotted; }
+.legend i.rec{ border-top:none; height:3px; background:repeating-linear-gradient(90deg, var(--soft) 0 12px, transparent 12px 16px, var(--soft) 16px 18px, transparent 18px 22px); }
+.legend .g{ display:inline-block; width:.8rem; height:.8rem; border-radius:3px; vertical-align:-1px; margin-right:.35rem; background:var(--g-auth); }
+.legend .g.ga{ background:var(--g-act); }
+.legend code{ font:600 .78rem var(--mono); color:var(--petrol); }
+
+/* verdict and the six questions */
+.result{ display:grid; gap:var(--s3); }
+.verdict{ display:flex; gap:var(--s4); align-items:center; border-radius:var(--radius); padding:var(--s4) var(--s5); color:#fff; background:var(--v-ok); }
+.verdict.reject{ background:var(--v-bad); } .verdict.unknown{ background:var(--v-unk); } .verdict.busy{ background:var(--v-busy); }
+.verdict .mark{ flex:none; width:2.6rem; height:2.6rem; border-radius:50%; background:#fff; display:grid; place-items:center; font-size:1.25rem; font-weight:800; color:var(--v-ok); }
+.verdict.reject .mark{ color:var(--v-bad); } .verdict.unknown .mark{ color:var(--v-unk); } .verdict.busy .mark{ color:var(--v-busy); }
+.verdict b{ display:block; font-size:1.3rem; line-height:1.25; }
+.verdict small{ display:block; margin-top:var(--s1); font-size:.95rem; line-height:1.4; opacity:.95; overflow-wrap:anywhere; }
+.questions{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--s2); }
+@media (max-width:30rem){ .questions{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+.q{ border-radius:8px; background:var(--off-wash); border-left:5px solid var(--off); }
+.q.s-established{ background:var(--ok-wash); border-left-color:var(--ok); }
+.q.s-contradicted{ background:var(--bad-wash); border-left-color:var(--bad); }
+.q.s-not_established{ background:var(--unk-wash); border-left-color:var(--unk); }
+.q summary{ list-style:none; cursor:pointer; padding:var(--s2) var(--s3); display:flex; flex-direction:column; gap:.1rem; }
+.q summary::-webkit-details-marker{ display:none; }
+.q summary b{ font-size:.95rem; font-weight:650; }
+.q[open]{ grid-column:1 / -1; }
+.state{ font-size:.82rem; font-weight:700; white-space:nowrap; }
+.st-established{ color:var(--ok); } .st-contradicted{ color:var(--bad); } .st-not_established{ color:var(--unk); }
+.st-not_asked, .st-not_required{ color:var(--muted); }
+.why{ margin:0 var(--s3) var(--s2); font-size:.9rem; }
+.trace{ margin:0 var(--s3) var(--s3); padding:0; list-style:none; border-top:1px solid var(--line); }
+.trace li{ font-size:.8rem; padding:var(--s1) 0; display:grid; grid-template-columns:6.5rem 1fr; gap:var(--s2); border-bottom:1px dashed var(--line); overflow-wrap:anywhere; }
+.trace li:last-child{ border-bottom:0; }
+.trace code{ font:.72rem var(--mono); color:var(--muted); display:block; overflow-wrap:anywhere; }
+
+/* credential chain */
+.graph{ position:relative; display:grid; gap:2.6rem; }
+.graph svg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
+.layer{ display:flex; gap:var(--s3); justify-content:center; position:relative; z-index:1; }
+.node{ flex:1 1 0; max-width:13rem; min-width:0; text-align:left; background:var(--raise); color:var(--ink); border:2px solid var(--line); border-radius:var(--radius); padding:var(--s2) var(--s3); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+.node:hover{ border-color:var(--muted); }
+.node{ position:relative; }
+.node b{ display:inline-block; font:700 .85rem/1 var(--mono); padding:.2rem .4rem; border-radius:5px; background:var(--wash); border:1px solid var(--line); }
+.node .role{ display:block; margin-top:.3rem; font-size:.92rem; font-weight:650; color:var(--ink); }
+.node code{ display:block; font:600 .7rem/1.3 var(--mono); color:var(--petrol); overflow-wrap:anywhere; }
+/* The signer's group: violet an authority, blue an actor (as on the boards). */
+.node.g-authority, .node.g-actor{ padding-left:calc(var(--s3) + 4px); }
+.node.g-authority::before, .node.g-actor::before{ content:""; position:absolute; left:3px; top:5px; bottom:5px; width:4px; border-radius:2px; background:var(--g-auth); }
+.node.g-actor::before{ background:var(--g-act); }
+.node small{ display:block; font-size:.76rem; line-height:1.35; color:var(--muted); overflow-wrap:anywhere; }
+
+.node.n-established{ border-color:var(--ok); }
+.node.n-contradicted{ border-color:var(--bad); background:var(--bad-wash); }
+.node.n-not_established{ border-color:var(--unk); background:var(--unk-wash); }
+.node.target{ box-shadow:0 0 0 3px var(--paper), 0 0 0 6px var(--cyan); }
+.node.missing{ background:transparent; border:2px dashed var(--unk); color:var(--muted); box-shadow:none; cursor:default; }
+.badge{ display:inline-block; margin-top:var(--s2); font-size:.7rem; font-weight:700; padding:.08rem .5rem; border-radius:999px; color:var(--on-state); background:var(--off); }
+.badge.b-established{ background:var(--ok); } .badge.b-contradicted{ background:var(--bad); } .badge.b-not_established{ background:var(--unk); }
+.edge{ fill:none; stroke-width:2.5; }
+.edge.support{ stroke-dasharray:2 5; stroke-linecap:round; stroke-width:3; }
+.edge-label{ font:600 .68rem var(--mono); fill:var(--petrol); text-anchor:middle; dominant-baseline:middle; paint-order:stroke; stroke:var(--paper); stroke-width:4px; stroke-linejoin:round; }
+.edge.recognition{ stroke-dasharray:12 4 2 4; }
+.e-established, .e-not_required{ stroke:var(--ok); } .e-unused{ stroke:var(--soft); } .e-contradicted{ stroke:var(--bad); stroke-width:3.5; } .e-not_established{ stroke:var(--unk); stroke-width:3; }
+
+/* credential card */
+.cards{ display:grid; gap:var(--s4); }
+.vc{ border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:var(--raise); }
+.vc header{ background:var(--tcyan); border-bottom:1px solid var(--line); padding:var(--s3) var(--s4); display:flex; justify-content:space-between; gap:var(--s3); align-items:baseline; }
+.vc header b{ font-size:1.02rem; font-weight:700; } .vc header span{ font:.78rem var(--mono); color:var(--muted); }
+.vc header .tampered{ background:var(--bad); color:#fff; padding:.1rem .5rem; border-radius:999px; font:700 .75rem var(--sans); }
+.vc .body{ padding:var(--s3) var(--s4) var(--s4); }
+.kv{ display:grid; grid-template-columns:10rem 1fr; gap:var(--s1) var(--s3); font-size:.92rem; margin:.15rem 0; }
+.kv span{ color:var(--muted); } .kv b{ font-weight:600; overflow-wrap:anywhere; }
+@media (max-width:30rem){ .kv{ grid-template-columns:7rem 1fr; } }
+table{ width:100%; border-collapse:collapse; font-size:.9rem; margin:var(--s3) 0 var(--s1); }
+th{ text-align:left; font-size:.72rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--line); padding:var(--s1) var(--s2); }
+td{ padding:var(--s2); border-bottom:1px solid var(--line); vertical-align:top; font-variant-numeric:tabular-nums; }
+td.num{ text-align:right; }
+tr.sel td{ background:var(--tcyan); font-weight:700; }
+.meta{ margin-top:var(--s3); padding-top:var(--s2); border-top:1px solid var(--line); }
+.meta .kv{ font-size:.8rem; } .meta .kv b{ font:.78rem var(--mono); font-weight:400; }
+.scope{ font-size:.85rem; margin:var(--s1) 0 0 var(--s4); padding:0; }
+
+details.raw summary{ cursor:pointer; font-weight:600; padding:var(--s2) 0; font-size:.9rem; }
+pre{ font:.74rem/1.45 var(--mono); background:var(--wash); padding:var(--s4); border-radius:8px; overflow-x:auto; max-height:26rem; }
+dialog{ border:0; border-radius:14px 14px 0 0; width:100%; max-width:46rem; margin:auto auto 0; padding:var(--s4) var(--s4) calc(var(--s4) + env(safe-area-inset-bottom,0px)); background:var(--paper); color:var(--ink); max-height:84vh; }
+dialog::backdrop{ background:rgba(0,20,26,.45); }
+dialog h2{ font-size:1.05rem; letter-spacing:0; text-transform:none; color:var(--ink); }
+dialog .close{ float:right; border:1px solid var(--line); background:var(--paper); border-radius:8px; padding:.3rem .7rem; cursor:pointer; }
+
+footer{ margin-top:var(--s7); border-top:1px solid var(--line); padding-top:var(--s4); font-size:.82rem; color:var(--muted); }
+footer p{ margin:var(--s1) 0; max-width:60rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="in">
+  <a class="brand" href="../../"><strong>VC4QI</strong></a>
+  <nav class="tabs" id="tabs" aria-label="Examples"></nav>
+</div></header>
+<main>
+
+  <div class="stage" id="stage">
+    <div class="col">
+      <div class="head">
+        <p class="kicker" id="kicker"></p>
+        <h1 id="title">VC4QI demonstrator</h1>
+        <p class="intro" id="intro"></p>
+        <div class="controls" id="controls"></div>
+      </div>
+
+      <div class="result" id="result">
+        <div class="verdict busy" id="verdict" role="status" aria-live="polite">
+          <div class="mark" id="mark">…</div>
+          <div><b id="vTitle">Evaluating</b><small id="vSub">Loading the evaluator…</small></div>
+        </div>
+        <div class="questions" id="questions"></div>
+      </div>
+
+      <section id="sec-vc" aria-labelledby="h-vc">
+        <h2 id="h-vc">The credential</h2>
+        <div class="cards" id="vc"></div>
+        <details class="raw"><summary>Signed bytes</summary><pre id="raw"></pre></details>
+      </section>
+    </div>
+
+    <div class="col" id="side">
+      <section id="sec-g" aria-labelledby="h-g">
+        <h2 id="h-g">Credential chain</h2>
+        <p class="legend" id="legend"></p>
+        <div class="graph" id="graph"></div>
+      </section>
+    </div>
+  </div>
+
+  <footer>
+    <p>Evaluated in your browser by the repository's own evaluator, as of <span id="evalTime">25 September 2026</span> (status lists expire). Nothing is fetched.</p>
+    <p id="exampleNote"></p>
+    <p><a href="../../">Project</a> · <a href="../../docs/use-cases.html">How it works</a> · <a href="https://github.com/monavari/VC4QI">Code</a> · Mehran Monavari</p>
+  </footer>
+</main>
+
+<dialog id="sheet" aria-labelledby="sheetTitle">
+  <button class="close" type="button" id="sheetClose">Close</button>
+  <h2 id="sheetTitle"></h2><div id="sheetCard"></div>
+  <details class="raw"><summary>Signed bytes</summary><pre id="sheetBody"></pre></details>
+</dialog>
+
+<script type="module">
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const short = iri => String(iri ?? '').split('#').pop().split(/[/:]/).pop();
+// PTB D-SI 2.2.1 unit identifiers the bindings accept, shown by their symbols.
+const UNIT_SYMBOL = { '\\milli\\gram\\kilogram\\tothe{-1}': 'mg/kg', '\\kilogram\\kilogram\\tothe{-1}': 'kg/kg', '\\percent': '%',
+  '\\pascal': 'Pa', '\\kilo\\pascal': 'kPa', '\\mega\\pascal': 'MPa', '\\watt': 'W' };
+const sym = unit => UNIT_SYMBOL[unit] ?? String(unit ?? '');
+const mu = real => real?.measurementUncertaintyUnivariate?.expandedMU ?? {};
+// The D-SI identifier under its symbol, small and wrapping (identifiers are long).
+const dsiId = unit => "<br><code style='font-size:.78em;word-break:break-all'>" + esc(unit) + '</code>';
+const LABEL = { established: '✓ yes', contradicted: '✕ no', not_established: '? cannot tell', not_asked: 'not asked', not_required: 'not required' };
+const LEGEND = '<span><i></i>grant <code>IssuedUnderPolicy</code></span><span><i class="rec"></i>recognition <code>RecognitionPolicy</code>, no authority</span>'
+  + '<span><i class="dot"></i><code>evidence</code></span><span><span class="g"></span>signed by an authority</span><span><span class="g ga"></span>signed by an actor</span>'
+  + '<span>✓ holds · ✕ fails · ? cannot tell</span><span>Ringed: the credential checked. Click a box to open it.</span>';
+const QUESTIONS = { authentic: 'Authentic', current: 'Current', understood: 'Understood', authorized: 'Authorized', supported: 'Supported', fit: 'Fit for use' };
+const ORDER = ['authentic', 'current', 'understood', 'authorized', 'supported', 'fit'];
+
+function fail(message) {
+  $('verdict').className = 'verdict unknown'; $('mark').textContent = '?';
+  $('vTitle').textContent = 'Not established'; $('vSub').textContent = message;
+}
+let api;
+try { api = await import('../verifier.js'); }
+catch (error) { fail('This browser could not run the evaluator (' + error.message + ').'); throw error; }
+$('evalTime').textContent = new Date(api.EVALUATION_TIME).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+const DEFAULT_CHOICE = { rm: 'fit', dcc: 'nab', dpp: 'both' };
+const state = { example: 'rm', caseId: undefined, choice: undefined, tamper: false, withhold: false };
+let seq = 0, current;
+const exampleOf = id => api.EXAMPLES.find(e => e.id === id) ?? api.EXAMPLES[0];
+
+function readHash() {
+  const [ex, c] = location.hash.replace(/^#/, '').split('/');
+  const example = exampleOf(ex);
+  state.example = example.id;
+  state.caseId = example.cases.some(x => x.id === c) ? c : example.cases[0].id;
+  state.choice = DEFAULT_CHOICE[example.id];
+  state.tamper = false; state.withhold = false;
+}
+function writeHash() {
+  history.replaceState(null, '', '#' + state.example + '/' + state.caseId);
+}
+
+function renderTabs() {
+  $('tabs').innerHTML = "<a href='../'>Overview</a><a href='../rm/'>RM story</a><a href='../gs/'>GS story</a>" + api.EXAMPLES
+    .map(e => "<a href='#" + e.id + "'" + (e.id === state.example ? " aria-current='page'" : '') + '>' + esc(e.tab) + '</a>').join('');
+}
+
+$('legend').innerHTML = LEGEND;
+function segment(label, options, value, key, many) {
+  return "<p class='label'>" + esc(label) + "</p><div class='seg" + (many ? ' many' : '') + "' role='group' aria-label='" + esc(label) + "' data-key='" + key + "'>"
+    + options.map(o => "<button type='button' data-value='" + esc(o.id) + "' aria-pressed='" + (o.id === value) + "'>" + esc(o.label) + '<small>' + esc(o.sublabel) + '</small></button>').join('') + '</div>';
+}
+function renderControls() {
+  const ex = exampleOf(state.example), spec = ex.cases.find(c => c.id === state.caseId);
+  $('kicker').textContent = 'Example · ' + ex.tab;
+  $('title').textContent = ex.title; $('intro').textContent = ex.intro; $('exampleNote').textContent = ex.note;
+  document.title = ex.title + ' · VC4QI demonstrator';
+  let h = segment(ex.caseLabel, ex.cases, state.caseId, 'caseId', ex.cases.length > 3);
+  if (ex.choice) h += segment(ex.choice.label, ex.choice.options, state.choice, 'choice', false);
+  h += "<div class='toggles'><label><input type='checkbox' id='tamper'" + (state.tamper ? ' checked' : '') + '> Tamper with it</label>'
+    + "<label><input type='checkbox' id='withhold'" + (state.withhold ? ' checked' : '') + '> ' + esc(spec.withhold.label) + '</label></div>';
+  $('controls').innerHTML = h;
+  $('controls').querySelectorAll('.seg').forEach(seg => seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    state[seg.dataset.key] = b.dataset.value;
+    if (seg.dataset.key === 'caseId') { state.tamper = false; state.withhold = false; }
+    writeHash(); renderControls(); go();
+  })));
+  $('tamper').addEventListener('change', function () { state.tamper = this.checked; go(); });
+  $('withhold').addEventListener('change', function () { state.withhold = this.checked; go(); });
+}
+
+// The decisive sentence of a coverage reason (for example the scheme half that fails).
+const decisive = reason => reason.split(/(?<=\.) /).find(x => /≠|No single|not in the/.test(x)) ?? reason;
+function renderVerdict(R) {
+  const v = $('verdict'), d = R.result.decision, q = Object.fromEntries(R.questions.map(x => [x.id, x]));
+  let t, s, m;
+  if (d === 'accept') {
+    v.className = 'verdict'; m = '✓'; t = 'Accepted';
+    s = q.fit.state === 'established' ? 'Authorized and fit for use.' : 'Authentic, current and authorized' + (q.supported.state === 'established' ? ', with its required support.' : '.');
+  } else if (d === 'reject') {
+    v.className = 'verdict reject'; m = '✕';
+    const failed = ORDER.find(k => q[k].state === 'contradicted');
+    t = 'Rejected: not ' + (QUESTIONS[failed] ?? '').toLowerCase();
+    const coverage = q.authorized.details.find(e => e.predicate.startsWith('claim-coverage:') && e.state === 'contradicted');
+    const basis = q.authorized.details.find(e => /^route:[^:]+:/.test(e.predicate) && e.state === 'contradicted');
+    s = failed === 'authentic' ? 'The signature no longer matches the bytes.'
+      : failed === 'authorized' && (coverage ?? basis) ? decisive((coverage ?? basis).reason)
+      : q[failed]?.summary ?? '';
+  } else {
+    v.className = 'verdict unknown'; m = '?'; t = 'Not established';
+    const open = ORDER.filter(k => q[k].state === 'not_established');
+    // With a single open question, its first reason is the headline (for example the missing anchor).
+    s = open.length === 1 ? q[open[0]].summary.split(/(?<=\.) /)[0]
+      : open.length ? 'Cannot tell whether it is ' + open.map(k => QUESTIONS[k].toLowerCase()).join(' or ') + '.' : 'Required evidence is missing.';
+  }
+  $('mark').textContent = m;
+  $('vTitle').textContent = t; $('vSub').textContent = s;
+}
+
+function renderQuestions(R) {
+  const box = $('questions'); const opened = new Set([...box.querySelectorAll('details[open]')].map(d => d.dataset.id));
+  box.innerHTML = R.questions.map(q => {
+    const rows = q.details.map(e => "<li><span class='state st-" + e.state + "'>" + LABEL[e.state] + '</span><span>' + esc(e.reason)
+      + '<code>gate ' + e.gate + ' · ' + esc(e.predicate) + ' · ' + esc(short(e.nodeUse.split('|')[0].trim())) + '</code></span></li>').join('');
+    return "<details class='q s-" + q.state + "' data-id='" + q.id + "'" + (opened.has(q.id) ? ' open' : '') + '><summary>'
+      + '<b>' + QUESTIONS[q.id] + "</b><span class='state st-" + q.state + "'>" + LABEL[q.state] + '</span></summary>'
+      + "<p class='why'>" + esc(q.summary) + '</p>' + (rows ? "<ul class='trace'>" + rows + '</ul>' : '') + '</details>';
+  }).join('');
+}
+
+// ---------------------------------------------------------------- credential card
+
+const kv = (k, v) => "<div class='kv'><span>" + esc(k) + '</span><b>' + v + '</b></div>';
+const date = s => esc(String(s ?? '').slice(0, 10));
+const iris = a => (a ?? []).map(short).join(', ');
+function claimHTML(D, selected) {
+  const s = D.credentialSubject ?? {}, type = D.type?.[1];
+  let h = '';
+  if (type === 'RmCertificate') {
+    const m = s.materials?.[0] ?? {};
+    h += kv('Material', esc(m.name ?? '') + ' (' + esc(short(m.matrixIri)) + ', ' + esc(short(m.formIri)) + ')') + kv('Batch', esc(short(s.id))) + kv('Certified on', date(s.activityTime));
+    h += '<table><thead><tr><th>Certified property</th><th>Quantity (QUDT)</th><th class="num">Value</th><th class="num">U (k)</th><th>Unit (D-SI)</th><th>Method</th></tr></thead><tbody>';
+    (s.materialPropertiesList ?? []).forEach((set, i) => (set.results ?? []).forEach((r, j) => {
+      const q = r.data?.quantity?.real ?? {}, u = mu(q), p = '/credentialSubject/materialPropertiesList/' + i + '/results/' + j;
+      h += "<tr class='" + (selected.includes(p) ? 'sel' : '') + "'><td>" + esc(short(r.propertyIri)) + (selected.includes(p) ? ' · selected' : '') + '</td><td>' + esc(q.quantityTypeQUDT) + "</td><td class='num'>" + esc(q.value) + "</td><td class='num'>"
+        + esc(u.valueExpandedMU) + ' (' + esc(u.coverageFactor) + ')</td><td>' + esc(sym(q.unit)) + dsiId(q.unit) + '</td><td>' + esc(short(r.methodIri)) + '</td></tr>';
+    }));
+    return h + '</tbody></table>';
+  }
+  if (Array.isArray(s.measurementGroups)) {
+    h += kv('Item', esc(short(s.id))) + (s.instrumentIri ? kv('Instrument', esc(short(s.instrumentIri))) : '') + kv('Measured on', date(s.activityTime));
+    h += '<table><thead><tr><th>Group</th><th>Quantity (QUDT)</th><th class="num">Value</th><th class="num">U (k)</th><th>Method</th></tr></thead><tbody>';
+    s.measurementGroups.forEach((g, i) => (g.results ?? []).forEach(r => {
+      const p = '/credentialSubject/measurementGroups/' + i;
+      const q = r.real ?? {}, u = mu(q);
+      h += "<tr class='" + (selected.includes(p) ? 'sel' : '') + "'><td>g" + (i + 1) + '</td><td>' + esc(q.quantityTypeQUDT) + "</td><td class='num'>" + esc(q.value) + ' ' + esc(sym(q.unit))
+        + "</td><td class='num'>" + esc(u.valueExpandedMU) + ' ' + esc(sym(q.unit)) + ' (' + esc(u.coverageFactor) + ')</td><td>' + esc(iris(g.methodIris)) + '</td></tr>';
+    }));
+    return h + '</tbody></table>';
+  }
+  if (type === 'GsMarkCredential') {
+    return kv('Product unit', esc(short(s.id))) + kv('Model', esc(short(s.productModelIri)))
+      + kv('Mark claimed', esc(short(s.marking?.markIri)) + ' for ' + esc(short(s.marking?.productModelIri)))
+      + kv('Placed on market', date(s.activityTime)) + kv('Issued by', esc(D.issuer));
+  }
+  if (type === 'ProductPassport') {
+    const evaluated = selected.includes('/credentialSubject/complianceInformation/gsMark');
+    const mark = s.complianceInformation?.gsMark;
+    h += kv('Product', esc(s.productName ?? '')) + kv('Unique product identifier', esc(short(s.id))) + kv('Model', esc(short(s.productModelIri)))
+      + kv('GTIN', esc(s.gtin ?? '')) + kv('Commodity code', esc(s.commodityCode ?? '')) + kv('Economic operator', esc(s.economicOperatorIri ?? ''))
+      + kv('Facility', esc(short(s.facilityIri))) + kv('Placed on market', date(s.activityTime));
+    h += '<table><thead><tr><th>Passport section</th><th>Content</th><th>Evaluated</th></tr></thead><tbody>';
+    const power = s.technicalData?.ratedPower?.real ?? {};
+    h += '<tr><td>Technical data</td><td>Rated power ' + esc(power.value) + ' ' + esc(sym(power.unit)) + ' (D-SI real, QUDT ' + esc(power.quantityTypeQUDT) + ')' + dsiId(power.unit) + '</td><td>no</td></tr>';
+    h += '<tr><td>Sustainability</td><td>Spare parts for ' + esc(s.sustainability?.sparePartsAvailabilityYears) + ' years</td><td>no</td></tr>';
+    h += "<tr class='" + (evaluated ? 'sel' : '') + "'><td>Compliance: GS mark</td><td>" + esc(short(mark?.markIri)) + ' for model ' + esc(short(mark?.productModelIri))
+      + ' · GS-mark credential ' + esc((D.evidence ?? []).map(e => short(e.id)).join(', ')) + '</td><td>' + (evaluated ? 'yes' : 'no') + '</td></tr>';
+    return h + '</tbody></table>';
+  }
+  if (type === 'GsCertificate') {
+    return kv('Model', esc(short(s.id))) + kv('Manufacturer', esc(s.manufacturerIri ?? '')) + kv('Category', esc(short(s.certification?.productCategoryIri)))
+      + kv('Standards', esc(iris(s.certification?.standardIris))) + kv('Certified on', date(s.activityTime));
+  }
+  if (Array.isArray(s.permittedActivity)) {
+    h += kv('Granted to', esc(s.id)) + kv('May', esc(iris(s.permittedActivity)));
+    h += "<div class='kv'><span>Scope</span><b><ul class='scope'>" + (s.scope ?? []).map(r => '<li>' + esc(Object.entries(r).filter(([k]) => k !== 'id')
+      .map(([k, v]) => (Array.isArray(v) ? iris(v) : typeof v === 'object' ? Object.values(v).join(' ') : short(v))).join(' · ')) + '</li>').join('') + '</ul></b></div>';
+    return h;
+  }
+  for (const [k, v] of Object.entries(s)) {
+    h += kv(k.replace(/Iris?$/, '').replace(/([A-Z])/g, ' $1').toLowerCase(), esc(Array.isArray(v) ? iris(v) : typeof v === 'object' ? JSON.stringify(v) : /Time$/.test(k) ? date(v) : short(v)));
+  }
+  return h;
+}
+function cardHTML(D, selected, tampered) {
+  const code = api.RM_CODES?.[short(D.id)] ?? short(D.id);
+  let h = "<div class='vc'><header><b>" + esc(D.name ?? code + ' · ' + D.type[1]) + '</b>' + (tampered ? "<span class='tampered'>tampered</span>" : '<span>' + esc(code) + '</span>') + '</header>';
+  h += "<div class='body'>" + claimHTML(D, selected) + "<div class='meta'>";
+  h += kv('issuer', esc(D.issuer)) + kv('valid', date(D.validFrom) + ' – ' + date(D.validUntil));
+  // Each term of use is a grant (authorizationCredential) or a recognition (recognitionCredential).
+  const grants = (D.termsOfUse ?? []).filter(t => t.authorizationCredential).map(t => short(t.authorizationCredential.id));
+  const recognitions = (D.termsOfUse ?? []).filter(t => t.recognitionCredential).map(t => short(t.recognitionCredential.id));
+  if (grants.length) h += kv('issued under', esc(grants.join(', ')));
+  if (recognitions.length) h += kv('recognized in', esc(recognitions.join(', ')) + ' (no authority)');
+  if (D.evidence) h += kv('evidence', esc(D.evidence.map(e => short(e.id)).join(', ')));
+  if (D.credentialStatus) h += kv('status', esc(short(D.credentialStatus.statusListCredential)) + ' #' + esc(D.credentialStatus.statusListIndex));
+  if (D.proof) h += kv('proof', esc(D.proof.cryptosuite) + ' · ' + esc(short(D.proof.verificationMethod)));
+  return h + '</div></div></div>';
+}
+function renderVC(R) {
+  $('vc').innerHTML = cardHTML(R.target, R.spec.claims.map(c => c.sourcePointer), R.options.tamper);
+  $('raw').textContent = R.texts[R.spec.target];
+}
+
+// ---------------------------------------------------------------- graph
+
+function renderGraph(R) {
+  const g = $('graph'); g.innerHTML = '';
+  const nodes = R.graph.nodes;
+  const depth = Math.max(...nodes.map(n => n.layer));
+  const boxes = new Map();
+  for (let l = depth; l >= 0; l--) {
+    const layer = nodes.filter(x => x.layer === l);
+    if (layer.length === 0) continue;
+    const row = document.createElement('div'); row.className = 'layer';
+    for (const n of layer) {
+      const b = document.createElement('button'); b.type = 'button';
+      b.className = 'node' + (n.target ? ' target' : '') + (n.present ? ' n-' + n.state : ' missing') + (n.group ? ' g-' + n.group : '');
+      const badge = n.present ? "<span class='badge b-" + n.state + "'>" + (n.state === 'established' ? 'verified ✓' : n.state === 'contradicted' ? 'invalid ✕' : 'not checked') + '</span>' : '';
+      b.innerHTML = '<b>' + esc(n.code) + "</b><span class='role'>" + esc(n.role) + '</span>' + (n.type ? '<code>' + esc(n.type) + '</code>' : '') + '<small>' + esc(n.parties) + '</small>' + badge;
+      if (n.present) b.addEventListener('click', () => openSheet(n, R)); else b.disabled = true;
+      row.appendChild(b); boxes.set(n.uri, b);
+    }
+    g.appendChild(row);
+  }
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  g.prepend(svg);
+  const draw = () => {
+    const base = g.getBoundingClientRect();
+    // Each line ends in a head that follows its last stretch (it arrives vertically), and is
+    // labelled with its field: the termsOfUse type, or evidence.
+    const COLOUR = { established: 'var(--ok)', not_required: 'var(--ok)', contradicted: 'var(--bad)', not_established: 'var(--unk)', unused: 'var(--soft)' };
+    // A label sits where its line is clear of the others: near the source when lines meet at
+    // one target, near the target when they leave one source.
+    const count = key => R.graph.edges.filter(x => x[key] === undefined ? false : true).reduce((m, x) => m.set(x[key], (m.get(x[key]) ?? 0) + 1), new Map());
+    const into = count('to'), outOf = count('from');
+    svg.innerHTML = R.graph.edges.map(e => {
+      const a = boxes.get(e.from)?.getBoundingClientRect(), b = boxes.get(e.to)?.getBoundingClientRect();
+      if (!a || !b) return '';
+      const x1 = a.left + a.width / 2 - base.left, y1 = a.top - base.top, x2 = b.left + b.width / 2 - base.left, y2 = b.bottom - base.top + 9;
+      const my = (y1 + y2) / 2, c = COLOUR[e.state] ?? 'var(--soft)';
+      return "<path class='edge " + e.kind + ' e-' + e.state + "' d='M" + x1 + ' ' + y1 + ' C' + x1 + ' ' + my + ' ' + x2 + ' ' + my + ' ' + x2 + ' ' + y2 + "'/>"
+        + "<path d='M" + x2 + ' ' + (y2 - 9) + ' L' + (x2 - 5.5) + ' ' + (y2 + 2) + ' L' + (x2 + 5.5) + ' ' + (y2 + 2) + " z' fill='" + c + "'/>"
+        + (() => {
+          const t = into.get(e.to) > 1 ? 0.3 : outOf.get(e.from) > 1 ? 0.72 : 0.5, u = 1 - t;
+          const lx = x1 + (x2 - x1) * (3 * u * t * t + t * t * t), ly = u * u * u * y1 + 3 * u * u * t * my + 3 * u * t * t * my + t * t * t * y2;
+          return "<text class='edge-label' x='" + lx.toFixed(1) + "' y='" + ly.toFixed(1) + "'>" + esc(e.policy) + '</text>';
+        })();
+    }).join('');
+  };
+  draw();
+  current = draw;
+}
+window.addEventListener('resize', () => current?.());
+
+function openSheet(n, R) {
+  const doc = JSON.parse(R.texts[n.uri]);
+  $('sheetTitle').textContent = n.code + ' · ' + n.role;
+  $('sheetCard').innerHTML = cardHTML(doc, [], false);
+  $('sheetBody').textContent = R.texts[n.uri];
+  const s = $('sheet'); if (s.showModal) s.showModal(); else s.setAttribute('open', '');
+}
+$('sheetClose').addEventListener('click', () => { const s = $('sheet'); if (s.close) s.close(); else s.removeAttribute('open'); });
+$('sheet').addEventListener('click', function (e) { if (e.target === this && this.close) this.close(); });
+
+async function run() {
+  const my = ++seq;
+  delete document.body.dataset.decision;
+  $('verdict').className = 'verdict busy'; $('mark').textContent = '…'; $('vTitle').textContent = 'Evaluating'; $('vSub').textContent = '';
+  const R = await api.evaluateScenario({ ...state });
+  if (my !== seq) return;
+  renderVerdict(R); renderQuestions(R); renderVC(R); renderGraph(R);
+  document.body.dataset.decision = R.result.decision;
+}
+const go = () => run().catch(e => fail('The evaluator could not run: ' + e.message));
+function route() { readHash(); renderTabs(); renderControls(); go(); }
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>
