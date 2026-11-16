@@ -117,4 +117,6 @@ Project records: [acceptance ledger](docs/acceptance-ledger.csv),
 
 ## License
 
-Code: [Apache-2.0](LICENSE). Documentation: [CC BY 4.0](LICENSE-docs).
+Code: [Apache-2.0](LICENSE), the unmodified text of
+<https://www.apache.org/licenses/LICENSE-2.0>. Documentation: [CC BY 4.0](LICENSE-docs).
+Attribution notices are in [NOTICE](NOTICE).

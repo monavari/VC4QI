@@ -8,6 +8,12 @@
   "Attribution and citation" section with copyable references and BibTeX for the paper
   and the software. `CITATION.cff` gains the version DOI 10.5281/zenodo.23979553 and the
   concept DOI 10.5281/zenodo.20612364, and asks for both citations.
+- **LICENSE is the official Apache License 2.0 text.** The previous file was a reworded
+  version (among other changes, section 8 excluded "exemplary" instead of
+  "consequential" damages, and section 4 ended with a different grant). It is replaced by
+  the unmodified text of <https://www.apache.org/licenses/LICENSE-2.0.txt> (SHA-256
+  `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`); the copyright line
+  is in `NOTICE`.
 
 - **Calibration shares the NAB's roots.** The calibration binding's accreditation body is
   the RM binding's NAB, with the same appointment APP-NAB and recognition REC-NAB, signed
