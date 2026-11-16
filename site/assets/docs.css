@@ -53,6 +53,17 @@ pre code { background: none; padding: 0; overflow-wrap: normal; }
 table { border-collapse: collapse; font-size: .92rem; min-width: 100%; }
 th, td { border-bottom: 1px solid var(--line); padding: .45rem .6rem; text-align: left; vertical-align: top; }
 th { background: var(--wash); font-weight: 600; }
+/* contents box, previous / next */
+.toc { background: var(--wash); border-radius: 8px; padding: .7rem 1rem .8rem; margin: 1rem 0 1.4rem; font-size: .92rem; }
+.toc p { margin: 0 0 .3rem; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.toc ul { list-style: none; margin: 0; padding: 0; columns: 2 16rem; column-gap: 2rem; }
+.toc li { margin: .15rem 0; break-inside: avoid; }
+.toc li.d3 { margin-left: 1rem; font-size: .88rem; }
+.pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2.5rem; }
+.pager a { display: block; max-width: 48%; padding: .6rem .9rem; border: 1px solid var(--line); border-radius: 8px; text-decoration: none; font-weight: 600; }
+.pager a:hover { background: var(--wash); }
+.pager a span { display: block; font-size: .78rem; font-weight: 400; color: var(--muted); }
+.pager a[rel="next"] { margin-left: auto; text-align: right; }
 footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .84rem; color: var(--muted); }
 
 @media (max-width: 52rem) {

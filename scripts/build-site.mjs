@@ -127,9 +127,13 @@ const socialTags = ({ title, description, path }) => [
   ['og:image:alt', 'VC4QI: Verifiable Credentials for Quality Infrastructure'],
 ].map(([k, v]) => `<meta property="${k}" content="${escapeHtml(v)}">`).join('\n') + '\n<meta name="twitter:card" content="summary_large_image">';
 
+/** Pages in reading order, for the previous and next links. */
+const READING = NAV.flatMap(([, pages]) => pages);
+
 function render(source) {
   const out = outputPath(source);
   const seen = new Map();
+  const headings = [];
   const marked = new Marked({
     gfm: true,
     renderer: {
@@ -138,6 +142,7 @@ function render(source) {
         const n = seen.get(base) ?? 0;
         seen.set(base, n + 1);
         const id = n === 0 ? base : `${base}-${n}`;
+        headings.push({ depth, id, text: plain(tokens) });
         return `<h${depth} id="${id}">${this.parser.parseInline(tokens)}<a class="anchor" href="#${id}" aria-label="Link to this section">#</a></h${depth}>\n`;
       },
       link({ href, title, tokens }) {
@@ -151,7 +156,20 @@ function render(source) {
   const title = (markdown.match(/^# (.+)$/m)?.[1] ?? 'VC4QI').replace(/`/g, '');
   const description = describe(markdown, source);
   // Tables scroll horizontally on narrow screens.
-  const body = marked.parse(markdown).replace(/<table>/g, '<div class="table"><table>').replace(/<\/table>/g, '</table></div>');
+  let body = marked.parse(markdown).replace(/<table>/g, '<div class="table"><table>').replace(/<\/table>/g, '</table></div>');
+  // A contents box on long pages (four or more sections and about 600 words), after the title.
+  const sections = headings.filter(h => h.depth === 2 || h.depth === 3);
+  if (headings.filter(h => h.depth === 2).length >= 4 && markdown.split(/\s+/).length >= 600) {
+    const items = sections.map(h => `<li class="d${h.depth}"><a href="#${h.id}">${escapeHtml(h.text)}</a></li>`).join('');
+    body = body.replace('</h1>\n', `</h1>\n<nav class="toc" aria-label="On this page"><p>On this page</p><ul>${items}</ul></nav>\n`);
+  }
+  // Previous and next page in navigation order; a decision record links back to the list.
+  const here = READING.findIndex(([p]) => p === source);
+  const pagerLink = (rel, label, target) => `<a rel="${rel}" href="${posix.relative(posix.dirname(out), outputPath(target))}"><span>${label}</span>${escapeHtml(READING.find(([p]) => p === target)[1])}</a>`;
+  const pager = here >= 0
+    ? [here > 0 ? pagerLink('prev', '\u2190 Previous', READING[here - 1][0]) : '<span></span>', here < READING.length - 1 ? pagerLink('next', 'Next \u2192', READING[here + 1][0]) : '<span></span>']
+    : (source.startsWith('docs/adrs/') ? [pagerLink('up', '\u2190 Back to', 'docs/adrs/README.md'), '<span></span>'] : []);
+  if (pager.length > 0) body += `<nav class="pager" aria-label="Pages">${pager.join('')}</nav>\n`;
   const depth = out.split('/').length - 1;
   const up = '../'.repeat(depth);
   const nav = NAV.map(([group, pages]) => `<p class="group">${group}</p><ul>${pages.map(([p, label]) => {
